@@ -3,7 +3,7 @@ import { businessInboxUrl, replaceUrl } from "@insurance-poc/routes";
 import {
   getSessionBusinessType,
   hasSession,
-} from "@insurance-poc/util";
+} from "@insurance-poc/utils";
 
 export function RedirectIfSession({ children }: { children: ReactNode }) {
   const businessType = getSessionBusinessType();

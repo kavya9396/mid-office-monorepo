@@ -16,8 +16,8 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
-import { CustomButton } from "@insurance-poc/ui";
-import { formatIndianCurrency } from "@insurance-poc/util";
+import { AppButton } from "@insurance-poc/ui";
+import { formatIndianCurrency } from "@insurance-poc/utils";
 import {
   fetchGroupInbox,
   type InboxData,
@@ -115,12 +115,12 @@ export function GroupInboxPage() {
           <Alert
             severity="error"
             action={
-              <CustomButton
+              <AppButton
                 size="small"
                 onClick={() => setReloadKey((value) => value + 1)}
               >
                 Retry
-              </CustomButton>
+              </AppButton>
             }
           >
             {error}
@@ -218,12 +218,12 @@ export function GroupInboxPage() {
                           </TableCell>
                           <TableCell>{task.status ?? "-"}</TableCell>
                           <TableCell align="right">
-                            <CustomButton
+                            <AppButton
                               size="small"
                               onClick={() => openTask(task)}
                             >
                               Open
-                            </CustomButton>
+                            </AppButton>
                           </TableCell>
                         </TableRow>
                       ))}

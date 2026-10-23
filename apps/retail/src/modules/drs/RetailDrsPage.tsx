@@ -7,8 +7,8 @@ import Container from "@mui/material/Container";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import { CustomButton } from "@insurance-poc/ui";
-import { formatIndianCurrency } from "@insurance-poc/util";
+import { AppButton } from "@insurance-poc/ui";
+import { formatIndianCurrency } from "@insurance-poc/utils";
 import {
   fetchRetailDrsRecord,
   type DrsRecord,
@@ -106,12 +106,12 @@ export function RetailDrsPage() {
             <Alert
               severity="error"
               action={
-                <CustomButton
+                <AppButton
                   size="small"
                   onClick={() => setReloadKey((value) => value + 1)}
                 >
                   Retry
-                </CustomButton>
+                </AppButton>
               }
             >
               {status.message}
@@ -161,25 +161,13 @@ export function RetailDrsPage() {
             </Paper>
           ) : null}
 
-          <Alert severity="info">
-            Page-load id {window.__pocAppBoot ?? "unavailable"}. Opening the
-            summary stays on this id.
-          </Alert>
           <Stack direction="row" spacing={1}>
-            <CustomButton
-              onClick={() => {
-                const search = params.toString();
-                navigate(search ? `/summary?${search}` : "/summary");
-              }}
-            >
-              Open summary
-            </CustomButton>
-            <CustomButton
+            <AppButton
               variant="outlined"
               onClick={() => navigate("/inbox")}
             >
               Back to Inbox
-            </CustomButton>
+            </AppButton>
           </Stack>
         </Stack>
     </Container>

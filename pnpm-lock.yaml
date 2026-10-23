@@ -23,15 +23,18 @@ importers:
       '@emotion/styled':
         specifier: ^11.14.0
         version: 11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1)
+      '@hookform/resolvers':
+        specifier: ^6.0.0
+        version: 6.0.0(react-hook-form@7.90.0(@types/react@18.3.31)(react@18.3.1))(zod@4.6.7)
       '@insurance-poc/routes':
         specifier: workspace:*
         version: link:../../packages/routes
       '@insurance-poc/ui':
         specifier: workspace:*
         version: link:../../packages/ui
-      '@insurance-poc/util':
+      '@insurance-poc/utils':
         specifier: workspace:*
-        version: link:../../packages/util
+        version: link:../../packages/utils
       '@mui/material':
         specifier: ^6.4.12
         version: 6.5.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -41,9 +44,15 @@ importers:
       react-dom:
         specifier: ^18.3.1
         version: 18.3.1(react@18.3.1)
+      react-hook-form:
+        specifier: ^7.90.0
+        version: 7.90.0(@types/react@18.3.31)(react@18.3.1)
       react-router-dom:
         specifier: ^7.6.2
         version: 7.18.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      zod:
+        specifier: ^4.6.7
+        version: 4.6.7
     devDependencies:
       '@types/react':
         specifier: ^18.3.23
@@ -78,9 +87,9 @@ importers:
       '@insurance-poc/ui':
         specifier: workspace:*
         version: link:../../packages/ui
-      '@insurance-poc/util':
+      '@insurance-poc/utils':
         specifier: workspace:*
-        version: link:../../packages/util
+        version: link:../../packages/utils
       '@mui/material':
         specifier: ^6.4.12
         version: 6.5.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -127,9 +136,9 @@ importers:
       '@insurance-poc/ui':
         specifier: workspace:*
         version: link:../../packages/ui
-      '@insurance-poc/util':
+      '@insurance-poc/utils':
         specifier: workspace:*
-        version: link:../../packages/util
+        version: link:../../packages/utils
       '@mui/material':
         specifier: ^6.4.12
         version: 6.5.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -199,7 +208,7 @@ importers:
         specifier: ^5.8.3
         version: 5.9.3
 
-  packages/util:
+  packages/utils:
     devDependencies:
       typescript:
         specifier: ^5.8.3
@@ -504,6 +513,84 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@hookform/resolvers@6.0.0':
+    resolution: {integrity: sha512-6iBzQnB+YwAveVc8HUi6QYLITn5X+xNKRMFIcNXHZlvp2aTI7yWbj4n/JodXxirMCcBc4VCjb2aYAJh4x07mVw==}
+    peerDependencies:
+      '@sinclair/typebox': '>=0.25.24'
+      '@standard-schema/spec': ^1.0.0
+      '@typeschema/main': '>=0.13.7'
+      '@vinejs/vine': ^2.0.0 || ^3.0.0 || ^4.0.0
+      ajv: ^8.12.0
+      ajv-errors: ^3.0.0
+      ajv-formats: ^2.1.1
+      arktype: ^2.0.0
+      ata-validator: ^1.23.0
+      class-transformer: '>=0.4.0'
+      class-validator: '>=0.12.0'
+      computed-types: ^1.0.0
+      effect: ^4.0.0
+      fluentvalidation-ts: ^3.0.0
+      fp-ts: ^2.7.0
+      io-ts: ^2.0.0
+      joi: ^17.0.0 || ^18.0.0
+      nope-validator: '>=0.12.0'
+      react-hook-form: ^7.55.0
+      superstruct: '>=0.12.0'
+      typanion: ^3.3.2
+      valibot: '>=0.31.0 || ^1.0.0-beta.4 || ^1.0.0-rc'
+      vest: '>=6.0.0'
+      yup: ^1.0.0
+      zod: ^3.25.0 || ^4.0.0
+    peerDependenciesMeta:
+      '@sinclair/typebox':
+        optional: true
+      '@standard-schema/spec':
+        optional: true
+      '@typeschema/main':
+        optional: true
+      '@vinejs/vine':
+        optional: true
+      ajv:
+        optional: true
+      ajv-errors:
+        optional: true
+      ajv-formats:
+        optional: true
+      arktype:
+        optional: true
+      ata-validator:
+        optional: true
+      class-transformer:
+        optional: true
+      class-validator:
+        optional: true
+      computed-types:
+        optional: true
+      effect:
+        optional: true
+      fluentvalidation-ts:
+        optional: true
+      fp-ts:
+        optional: true
+      io-ts:
+        optional: true
+      joi:
+        optional: true
+      nope-validator:
+        optional: true
+      superstruct:
+        optional: true
+      typanion:
+        optional: true
+      valibot:
+        optional: true
+      vest:
+        optional: true
+      yup:
+        optional: true
+      zod:
+        optional: true
+
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
 
@@ -780,6 +867,9 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@standard-schema/utils@0.3.0':
+    resolution: {integrity: sha512-e7Mew686owMaPJVNNLs55PUvgz371nKgwsc4vxE49zsODpJEnxgxRo2y/OKrqueavXgZNMDVj3DdHFlaSAeU8g==}
+
   '@turbo/darwin-64@2.11.10':
     resolution: {integrity: sha512-By4idRap5+nLnMuRzLB4qkOPRlvNdyY1ne4VJYDyUoUB11H94k7uif9mbe3JT8JSNXs1D68uMcBj6hJ/jMQRvA==}
     cpu: [x64]
@@ -1048,6 +1138,16 @@ packages:
     peerDependencies:
       react: ^18.3.1
 
+  react-hook-form@7.90.0:
+    resolution: {integrity: sha512-+NdG0FLzCPhFOp2NNxaUYLF9fyZhNjx9FTBBSYWF71/l6BBlmIc/j6xlp3DbaHWLJbIG7Zd8oznA19xJClU97w==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      '@types/react': '*'
+      react: ^16.8.0 || ^17 || ^18 || ^19
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+
   react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
 
@@ -1189,6 +1289,9 @@ packages:
   yaml@1.10.3:
     resolution: {integrity: sha512-vIYeF1u3CjlhAFekPPAk2h/Kv4T3mAkMox5OymRiJQB0spDP10LHvt+K7G9Ny6NuuMAb25/6n1qyUjAcGNf/AA==}
     engines: {node: '>= 6'}
+
+  zod@4.6.7:
+    resolution: {integrity: sha512-g8W2D2kU6a8untc053fX1uVBKzM7yqAxW/3zwk83+6RyF2+SKOuV+c0wBDhUwzV1PaGapmZH+rmcUzPf+3CGwg==}
 
 snapshots:
 
@@ -1467,6 +1570,13 @@ snapshots:
   '@esbuild/win32-x64@0.25.12':
     optional: true
 
+  '@hookform/resolvers@6.0.0(react-hook-form@7.90.0(@types/react@18.3.31)(react@18.3.1))(zod@4.6.7)':
+    dependencies:
+      '@standard-schema/utils': 0.3.0
+      react-hook-form: 7.90.0(@types/react@18.3.31)(react@18.3.1)
+    optionalDependencies:
+      zod: 4.6.7
+
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
       '@jridgewell/sourcemap-codec': 1.6.0
@@ -1672,6 +1782,8 @@ snapshots:
 
   '@rollup/rollup-win32-x64-msvc@4.64.12':
     optional: true
+
+  '@standard-schema/utils@0.3.0': {}
 
   '@turbo/darwin-64@2.11.10':
     optional: true
@@ -1928,6 +2040,12 @@ snapshots:
       react: 18.3.1
       scheduler: 0.23.2
 
+  react-hook-form@7.90.0(@types/react@18.3.31)(react@18.3.1):
+    dependencies:
+      react: 18.3.1
+    optionalDependencies:
+      '@types/react': 18.3.31
+
   react-is@16.13.1: {}
 
   react-is@19.3.1: {}
@@ -2054,3 +2172,5 @@ snapshots:
   yallist@3.1.1: {}
 
   yaml@1.10.3: {}
+
+  zod@4.6.7: {}

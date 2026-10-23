@@ -1,5 +1,5 @@
 {
-  "name": "@insurance-poc/util",
+  "name": "@insurance-poc/utils",
   "version": "0.0.0",
   "private": true,
   "type": "module",

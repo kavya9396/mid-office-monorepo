@@ -5,7 +5,7 @@ import { devConfig, monorepoRoot } from "../../scripts/dev-config.mjs";
 const sharedPackages = [
   "@insurance-poc/routes",
   "@insurance-poc/ui",
-  "@insurance-poc/util",
+  "@insurance-poc/utils",
 ];
 
 function proxyPrefix(base: string): string {

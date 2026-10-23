@@ -587,7 +587,7 @@ Group continue serving their existing artifacts. The browser still sees
 │   └── util/
 │       └── src/
 │           ├── formatIndianCurrency.ts
-│           ├── RegexPatterns.ts
+│           ├── regexPatterns.ts
 │           ├── session.ts
 │           └── index.ts
 ├── mock/
