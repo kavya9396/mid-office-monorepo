@@ -119,7 +119,7 @@ export function LoginPage() {
                 autoComplete="current-password"
                 fullWidth
               />
-              <CustomButton type="submit" disabled={submitting} fullWidth>
+              <CustomButton variant="outlined" type="submit" disabled={submitting} fullWidth>
                 {submitting ? "Signing in..." : "Sign in"}
               </CustomButton>
             </Stack>
