@@ -1,0 +1,69 @@
+{
+  "userId": "UW001",
+  "poolData": {
+    "CVT_TASK": [
+      {
+        "applicationNo": "RET1001",
+        "taskId": "TSK-CVT-001",
+        "customerName": "Asha Rao",
+        "productName": "Retail Term Life",
+        "businessType": "RETAIL",
+        "appliedSa": 1500000,
+        "annualPremium": 18500,
+        "status": "Pending"
+      },
+      {
+        "applicationNo": "GRP2001",
+        "taskId": "TSK-CVT-002",
+        "customerName": "Northwind Industries",
+        "productName": "Group Term Life",
+        "businessType": "GROUP",
+        "appliedSa": 5000000,
+        "annualPremium": 92000,
+        "status": "Pending"
+      },
+      {
+        "applicationNo": "RET1002",
+        "taskId": "TSK-CVT-003",
+        "customerName": "Rahul Mehta",
+        "productName": "Retail Endowment",
+        "businessType": "RETAIL",
+        "appliedSa": "50000",
+        "annualPremium": 1234.5,
+        "status": "In review"
+      }
+    ],
+    "DVT_TASK": [
+      {
+        "applicationNo": "GRP2002",
+        "taskId": "TSK-DVT-001",
+        "customerName": "Harbor Credit Union",
+        "productName": "Group Credit Life",
+        "businessType": "GROUP",
+        "appliedSa": 2500000,
+        "annualPremium": "140000",
+        "status": "Pending"
+      },
+      {
+        "applicationNo": "RET1003",
+        "taskId": "TSK-DVT-002",
+        "customerName": "Meera Iyer",
+        "productName": "Retail Whole Life",
+        "businessType": "RETAIL",
+        "appliedSa": 750000,
+        "annualPremium": 24320.5,
+        "status": "Pending"
+      },
+      {
+        "applicationNo": "UNK9001",
+        "taskId": "TSK-DVT-003",
+        "customerName": "Unassigned Case",
+        "productName": "Unknown product",
+        "businessType": "UNKNOWN",
+        "appliedSa": 10000,
+        "annualPremium": 500,
+        "status": "Blocked"
+      }
+    ]
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "insurance-poc",
+  "private": true,
+  "version": "0.0.0",
+  "packageManager": "pnpm@10.15.0",
+  "scripts": {
+    "dev": "turbo run dev --filter=@insurance-poc/common --filter=@insurance-poc/retail --filter=@insurance-poc/group",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "dev:common": "pnpm --filter @insurance-poc/common dev",
+    "dev:retail": "pnpm --filter @insurance-poc/retail dev",
+    "dev:group": "pnpm --filter @insurance-poc/group dev",
+    "preview": "node scripts/serve-gateway.mjs",
+    "verify:deployments": "node scripts/verify-independent-builds.mjs"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.6",
+    "typescript": "^5.8.3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild"]
+  }
+}

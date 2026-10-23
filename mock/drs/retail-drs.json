@@ -1,0 +1,40 @@
+{
+  "records": [
+    {
+      "applicationNo": "RET1001",
+      "taskId": "TSK-CVT-001",
+      "customerName": "Asha Rao",
+      "productName": "Retail Term Life",
+      "businessType": "RETAIL",
+      "appliedSa": 1500000,
+      "annualPremium": 18500,
+      "policyTerm": 30,
+      "premiumPayingTerm": 30,
+      "status": "Pending"
+    },
+    {
+      "applicationNo": "RET1002",
+      "taskId": "TSK-CVT-003",
+      "customerName": "Rahul Mehta",
+      "productName": "Retail Endowment",
+      "businessType": "RETAIL",
+      "appliedSa": "50000",
+      "annualPremium": 1234.5,
+      "policyTerm": 20,
+      "premiumPayingTerm": 15,
+      "status": "In review"
+    },
+    {
+      "applicationNo": "RET1003",
+      "taskId": "TSK-DVT-002",
+      "customerName": "Meera Iyer",
+      "productName": "Retail Whole Life",
+      "businessType": "RETAIL",
+      "appliedSa": 750000,
+      "annualPremium": 24320.5,
+      "policyTerm": 25,
+      "premiumPayingTerm": 25,
+      "status": "Pending"
+    }
+  ]
+}

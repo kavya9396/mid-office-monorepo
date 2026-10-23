@@ -1,0 +1,14 @@
+{
+  "host": "localhost",
+  "previewPort": 8080,
+  "ports": {
+    "common": 5183,
+    "retail": 5184,
+    "group": 5185
+  },
+  "viteBase": {
+    "common": "/",
+    "retail": "/retail/",
+    "group": "/group/"
+  }
+}

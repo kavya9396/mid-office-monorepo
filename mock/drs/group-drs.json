@@ -1,0 +1,28 @@
+{
+  "records": [
+    {
+      "applicationNo": "GRP2001",
+      "taskId": "TSK-CVT-002",
+      "customerName": "Northwind Industries",
+      "productName": "Group Term Life",
+      "businessType": "GROUP",
+      "appliedSa": 5000000,
+      "annualPremium": 92000,
+      "policyTerm": 1,
+      "premiumPayingTerm": 1,
+      "status": "Pending"
+    },
+    {
+      "applicationNo": "GRP2002",
+      "taskId": "TSK-DVT-001",
+      "customerName": "Harbor Credit Union",
+      "productName": "Group Credit Life",
+      "businessType": "GROUP",
+      "appliedSa": 2500000,
+      "annualPremium": "140000",
+      "policyTerm": 5,
+      "premiumPayingTerm": 5,
+      "status": "Pending"
+    }
+  ]
+}
