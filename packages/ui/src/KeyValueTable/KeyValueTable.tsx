@@ -65,7 +65,6 @@ export default function KeyValueTable({
           sx={{
             "& td": {
               borderColor: "#D4D7DB",
-              fontFamily: "Mulish, sans-serif",
               fontSize: "12px",
               color: "#4B5563",
               py: 1.1,

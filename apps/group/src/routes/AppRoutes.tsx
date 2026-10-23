@@ -6,10 +6,10 @@ import {
 } from "react-router-dom";
 import { SummaryPage } from "@insurance-poc/common/summary";
 import { appBasename, viteBase } from "@insurance-poc/routes";
-import { GroupDrsPage } from "../modules/drs/GroupDrsPage";
 import { GroupInboxPage } from "../modules/inbox/GroupInboxPage";
 import { GroupAppLayout } from "./GroupAppLayout";
 import { RequireSession } from "./RequireSession";
+import DvtUser from "../modules/drs/DvtUser";
 
 export function AppRoutes() {
   return (
@@ -24,7 +24,7 @@ export function AppRoutes() {
         >
           <Route index element={<Navigate to="/inbox" replace />} />
           <Route path="/inbox" element={<GroupInboxPage />} />
-          <Route path="/drs" element={<GroupDrsPage />} />
+          <Route path="/drs" element={<DvtUser />} />
           <Route
             path="/summary"
             element={
