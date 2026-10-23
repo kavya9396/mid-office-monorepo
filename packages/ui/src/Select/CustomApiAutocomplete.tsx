@@ -1,8 +1,11 @@
+
 import { useEffect, useId, useRef, useState } from "react";
 import {
   Box,
   CircularProgress,
+  SxProps,
   TextField,
+  Theme,
   Typography,
 } from "@mui/material";
 import Autocomplete from "@mui/material/Autocomplete";
@@ -36,15 +39,23 @@ export type CustomApiAutocompleteProps = {
   fetchErrorText?: string;
 };
 
-type SearchRequest = { query: string; id: number };
+type SearchRequest = {
+  query: string;
+  id: number;
+};
+
 type SearchResult = {
   id: number;
   status: "loading" | "success" | "error";
   options: ApiAutocompleteOption[];
 };
 
-/** A controlled single-select dropdown with API results after 3+ characters.
- * Keep fetchOptions stable (outside the parent component or with useCallback).
+/**
+ * A controlled single-select dropdown with API results
+ * after 3+ characters.
+ *
+ * Keep fetchOptions stable using useCallback or by
+ * defining it outside the parent component.
  */
 export default function CustomApiAutocomplete({
   id,
@@ -61,16 +72,19 @@ export default function CustomApiAutocomplete({
   helperText,
   noOptionsText = "No options found",
   fetchErrorText = "Unable to load options. Please try again.",
-}: CustomApiAutocompleteProps) {
+}: Readonly<CustomApiAutocompleteProps>) {
   const generatedId = useId();
   const inputId = id ?? `api-autocomplete-${generatedId}`;
   const minimum = Math.max(3, minCharacters);
+
   const [search, setSearch] = useState<SearchRequest | null>(null);
   const [result, setResult] = useState<SearchResult | null>(null);
   const [wantsOpen, setWantsOpen] = useState(false);
+
   const requestIdRef = useRef(0);
   const controllerRef = useRef<AbortController | null>(null);
 
+  // Cancel the current search
   const cancelSearch = () => {
     requestIdRef.current += 1;
     controllerRef.current?.abort();
@@ -78,35 +92,69 @@ export default function CustomApiAutocomplete({
     setWantsOpen(false);
   };
 
+  // Begin a new search
   const beginSearch = (text: string) => {
-    // Invalidate old responses immediately, before effect cleanup runs.
+    // Invalidate old responses before effect cleanup.
     requestIdRef.current += 1;
     controllerRef.current?.abort();
-    setSearch({ query: text.trim(), id: requestIdRef.current });
+
+    setSearch({
+      query: text.trim(),
+      id: requestIdRef.current,
+    });
+
     setWantsOpen(true);
   };
 
+  // Fetch options after debounce
   useEffect(() => {
-    if (!search || disabled || search.query.length < minimum) return;
+    if (
+      !search ||
+      disabled ||
+      search.query.length < minimum
+    ) {
+      return;
+    }
 
     const controller = new AbortController();
     controllerRef.current = controller;
+
     const isCurrent = () =>
-      !controller.signal.aborted && requestIdRef.current === search.id;
+      !controller.signal.aborted &&
+      requestIdRef.current === search.id;
 
     const timer = setTimeout(async () => {
-      if (!isCurrent()) return;
-      setResult({ id: search.id, status: "loading", options: [] });
+      if (!isCurrent()) {
+        return;
+      }
+
+      setResult({
+        id: search.id,
+        status: "loading",
+        options: [],
+      });
 
       try {
-        const options = await fetchOptions(search.query, controller.signal);
+        const options = await fetchOptions(
+          search.query,
+          controller.signal
+        );
+
         if (isCurrent()) {
-          setResult({ id: search.id, status: "success", options });
+          setResult({
+            id: search.id,
+            status: "success",
+            options,
+          });
         }
       } catch {
-        // Aborted or superseded searches must never replace newer results.
+        // Ignore aborted or superseded requests.
         if (isCurrent()) {
-          setResult({ id: search.id, status: "error", options: [] });
+          setResult({
+            id: search.id,
+            status: "error",
+            options: [],
+          });
         }
       }
     }, Math.max(0, debounceMs));
@@ -114,53 +162,119 @@ export default function CustomApiAutocomplete({
     return () => {
       clearTimeout(timer);
       controller.abort();
-      if (controllerRef.current === controller) controllerRef.current = null;
-    };
-  }, [search, disabled, minimum, debounceMs, fetchOptions]);
 
+      if (controllerRef.current === controller) {
+        controllerRef.current = null;
+      }
+    };
+  }, [
+    search,
+    disabled,
+    minimum,
+    debounceMs,
+    fetchOptions,
+  ]);
+
+  // Search state
   const canSearch =
-    !disabled && search !== null && search.query.length >= minimum;
+    !disabled &&
+    search !== null &&
+    search.query.length >= minimum;
+
   const currentResult =
-    canSearch && result?.id === search?.id ? result : null;
+    canSearch && result?.id === search?.id
+      ? result
+      : null;
+
   const isSearching =
-    canSearch && (!currentResult || currentResult.status === "loading");
+    canSearch &&
+    (!currentResult || currentResult.status === "loading");
+
   const hasResponse =
-    currentResult !== null && currentResult.status !== "loading";
+    currentResult !== null &&
+    currentResult.status !== "loading";
+
   const searchFailed = currentResult?.status === "error";
+
   const visibleOptions =
-    currentResult?.status === "success" ? currentResult.options : [];
-  const displayedHelper = searchFailed
-    ? fetchErrorText
-    : isSearching
-      ? "Searching..."
-      : helperText ?? `Type at least ${minimum} characters to search`;
+    currentResult?.status === "success"
+      ? currentResult.options
+      : [];
+
+  // SonarQube S3358 fix: No nested ternary
+  let displayedHelper =
+    helperText ??
+    `Type at least ${minimum} characters to search`;
+
+  if (searchFailed) {
+    displayedHelper = fetchErrorText;
+  } else if (isSearching) {
+    displayedHelper = "Searching...";
+  }
+
+  // Label styles
+const labelStyles: SxProps<Theme> = label
+  ? {
+      display: "block",
+      fontSize: "12px",
+      fontWeight: 600,
+      mb: 0.5,
+    }
+  : {
+      position: "absolute",
+      width: 1,
+      height: 1,
+      p: 0,
+      m: -1,
+      overflow: "hidden",
+      clip: "rect(0, 0, 0, 0)",
+      whiteSpace: "nowrap",
+      border: 0,
+    };
 
   return (
-    <Box sx={{ width: fullWidth ? "100%" : 240, maxWidth: "100%" }}>
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+    <Box
+      sx={{
+        width: fullWidth ? "100%" : 240,
+        maxWidth: "100%",
+      }}
+    >
+      {/* Label and loading indicator */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+        }}
+      >
         <Typography
           component="label"
           htmlFor={inputId}
-          sx={label ? {
-            display: "block", fontSize: "12px", fontWeight: 600, mb: 0.5,
-          } : {
-            position: "absolute", width: 1, height: 1, p: 0, m: -1,
-            overflow: "hidden", clip: "rect(0, 0, 0, 0)",
-            whiteSpace: "nowrap", border: 0,
-          }}
+          sx={labelStyles}
         >
           {label || placeholder}
         </Typography>
+
         {isSearching && (
           <CircularProgress
             size={14}
             aria-label="Searching options"
-            sx={{ ml: "auto", mb: 0.5, color: "#EA7617" }}
+            sx={{
+              ml: "auto",
+              mb: 0.5,
+              color: "#EA7617",
+            }}
           />
         )}
       </Box>
 
-      <Autocomplete<ApiAutocompleteOption, false, false, false>
+      {/* API Autocomplete */}
+      <Autocomplete<
+        ApiAutocompleteOption,
+        false,
+        false,
+        false
+      >
         id={inputId}
         value={value}
         options={visibleOptions}
@@ -172,9 +286,11 @@ export default function CustomApiAutocomplete({
           if (reason === "input") {
             beginSearch(text);
           } else if (
-            reason === "clear" || reason === "reset" || reason === "selectOption"
+            reason === "clear" ||
+            reason === "reset" ||
+            reason === "selectOption"
           ) {
-            // Setting a selected label or clearing the field is not a search.
+            // Selecting or clearing is not a new search.
             cancelSearch();
           }
         }}
@@ -184,31 +300,51 @@ export default function CustomApiAutocomplete({
         clearOnBlur={false}
         getOptionLabel={(option) => option.label}
         getOptionKey={(option) => option.value}
-        isOptionEqualToValue={(option, selected) => option.value === selected.value}
-        getOptionDisabled={(option) => Boolean(option.disabled)}
-        // The API already filters results; do not filter them again locally.
+        isOptionEqualToValue={(option, selected) =>
+          option.value === selected.value
+        }
+        getOptionDisabled={(option) =>
+          Boolean(option.disabled)
+        }
+        // API handles filtering.
         filterOptions={(options) => options}
         disabled={disabled}
         fullWidth={fullWidth}
         size="small"
         loading={isSearching}
-        noOptionsText={searchFailed ? fetchErrorText : noOptionsText}
+        noOptionsText={
+          searchFailed
+            ? fetchErrorText
+            : noOptionsText
+        }
         slotProps={{
-          paper: { sx: { mt: 0.5 } },
+          paper: {
+            sx: {
+              mt: 0.5,
+            },
+          },
           listbox: {
             sx: {
               maxHeight: 300,
               fontSize: "12px",
-              "& .MuiAutocomplete-option": { minHeight: 40 },
+
+              "& .MuiAutocomplete-option": {
+                minHeight: 40,
+              },
+
               "& .MuiAutocomplete-option.Mui-focused": {
                 backgroundColor: "#FFEAD7",
               },
+
               "& .MuiAutocomplete-option.Mui-focusVisible": {
                 backgroundColor: "#FFEAD7",
               },
+
               "& .MuiAutocomplete-option[aria-selected='true']": {
-                backgroundColor: "#f8e9ea", color: "#7b1d21",
+                backgroundColor: "#f8e9ea",
+                color: "#7b1d21",
               },
+
               "& .MuiAutocomplete-option[aria-selected='true'].Mui-focused": {
                 backgroundColor: "#f3d6d8",
               },
@@ -221,15 +357,22 @@ export default function CustomApiAutocomplete({
             borderRadius: "8px",
             backgroundColor: "#fff",
             fontSize: "12px",
-            "&:hover:not(.Mui-disabled):not(.Mui-error) .MuiOutlinedInput-notchedOutline": {
-              borderColor: "#EA7617",
-            },
-            "&.Mui-focused:not(.Mui-error) .MuiOutlinedInput-notchedOutline": {
-              borderColor: "#EA7617", borderWidth: "2px",
-            },
+
+            "&:hover:not(.Mui-disabled):not(.Mui-error) .MuiOutlinedInput-notchedOutline":
+              {
+                borderColor: "#EA7617",
+              },
+
+            "&.Mui-focused:not(.Mui-error) .MuiOutlinedInput-notchedOutline":
+              {
+                borderColor: "#EA7617",
+                borderWidth: "2px",
+              },
           },
+
           "& .MuiAutocomplete-input::placeholder": {
-            color: "#9ca3af", opacity: 1,
+            color: "#9ca3af",
+            opacity: 1,
           },
         }}
         renderInput={(params) => (

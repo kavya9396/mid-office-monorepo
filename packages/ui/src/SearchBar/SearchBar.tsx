@@ -42,7 +42,7 @@ export default function SearchBar({
   placeholder = "Search by application number...",
   width = 200,
   focusColor = "#EA7617",
-}: SearchInputProps) {
+}: Readonly<SearchInputProps>) {
   const [value, setValue] = useState("");
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {

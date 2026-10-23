@@ -48,12 +48,14 @@ export default function Badge({
   onClick,
   clickable,
   ...chipProps
-}: BadgeProps) {
+}: Readonly<BadgeProps>) {
   const colors = variantColors[variant];
   const displayLabel = label ?? variant;
   const interactive = clickable ?? Boolean(onClick);
   const hasCount = count !== undefined;
-  const isRequirementVariant = REQUIREMENT_STATUSES.some((status) => status === variant);
+const isRequirementVariant = (
+  REQUIREMENT_STATUSES as readonly BadgeVariant[]
+).includes(variant);
 
   const requirementStyles: SxProps<Theme> = {
     height: "auto",

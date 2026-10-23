@@ -1,24 +1,29 @@
+
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 
 export type BusinessType = "RETAIL" | "GROUP";
 
+export type BusinessTypeToggleProps = {
+  value: BusinessType;
+  onChange: (businessType: BusinessType) => void;
+  disabled?: boolean;
+};
+
 export function BusinessTypeToggle({
   value,
   onChange,
   disabled = false,
-}: {
-  value: BusinessType;
-  onChange: (businessType: BusinessType) => void;
-  disabled?: boolean;
-}) {
+}: Readonly<BusinessTypeToggleProps>) {
   return (
     <ToggleButtonGroup
       value={value}
       exclusive
       disabled={disabled}
       onChange={(_, nextValue: BusinessType | null) => {
-        if (nextValue && nextValue !== value) onChange(nextValue);
+        if (nextValue && nextValue !== value) {
+          onChange(nextValue);
+        }
       }}
       size="small"
       aria-label="Business type"
@@ -31,13 +36,20 @@ export function BusinessTypeToggle({
           "&.Mui-selected": {
             backgroundColor: "#ffffff",
             color: "#0d47a1",
-            "&:hover": { backgroundColor: "#f5f5f5" },
+            "&:hover": {
+              backgroundColor: "#f5f5f5",
+            },
           },
         },
       }}
     >
-      <ToggleButton value="RETAIL">Retail</ToggleButton>
-      <ToggleButton value="GROUP">Group</ToggleButton>
+      <ToggleButton value="RETAIL">
+        Retail
+      </ToggleButton>
+
+      <ToggleButton value="GROUP">
+        Group
+      </ToggleButton>
     </ToggleButtonGroup>
   );
 }
