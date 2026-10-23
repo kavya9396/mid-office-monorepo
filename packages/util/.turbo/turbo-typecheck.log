@@ -1,0 +1,4 @@
+
+> @insurance-poc/util@0.0.0 typecheck /Users/skabdulchaman/Monorepo_POC/packages/util
+> tsc --noEmit
+

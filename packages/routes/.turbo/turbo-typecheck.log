@@ -1,0 +1,4 @@
+
+> @insurance-poc/routes@0.0.0 typecheck /Users/skabdulchaman/Monorepo_POC/packages/routes
+> tsc --noEmit
+
