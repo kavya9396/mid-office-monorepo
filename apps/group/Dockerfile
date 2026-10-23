@@ -26,7 +26,7 @@ COPY apps/retail/package.json ./apps/retail/package.json
 COPY apps/group/package.json ./apps/group/package.json
 COPY packages/routes/package.json ./packages/routes/package.json
 COPY packages/ui/package.json ./packages/ui/package.json
-COPY packages/util/package.json ./packages/util/package.json
+COPY packages/utils/package.json ./packages/utils/package.json
 
 RUN pnpm install --frozen-lockfile
 

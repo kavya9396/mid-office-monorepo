@@ -1,5 +1,5 @@
 import inboxMock from "../../../../mock/inbox/inbox.json";
-import { getSessionUser } from "@insurance-poc/util";
+import { getSessionUser } from "@insurance-poc/utils";
 
 export interface InboxTask {
   applicationNo: string;

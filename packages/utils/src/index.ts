@@ -1,5 +1,5 @@
 export { formatIndianCurrency, default } from "./formatIndianCurrency";
-export { RegexPatterns } from "./RegexPatterns";
+export { RegexPatterns } from "./regexPatterns";
 export {
   clearToken,
   getSessionBusinessType,

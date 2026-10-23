@@ -4,7 +4,6 @@ import {
   Route,
   Routes,
 } from "react-router-dom";
-import { SummaryPage } from "@insurance-poc/common/summary";
 import { appBasename, viteBase } from "@insurance-poc/routes";
 import { GroupDrsPage } from "../modules/drs/GroupDrsPage";
 import { GroupInboxPage } from "../modules/inbox/GroupInboxPage";
@@ -25,12 +24,6 @@ export function AppRoutes() {
           <Route index element={<Navigate to="/inbox" replace />} />
           <Route path="/inbox" element={<GroupInboxPage />} />
           <Route path="/drs" element={<GroupDrsPage />} />
-          <Route
-            path="/summary"
-            element={
-              <SummaryPage businessType="GROUP" />
-            }
-          />
           <Route path="*" element={<Navigate to="/inbox" replace />} />
         </Route>
       </Routes>
