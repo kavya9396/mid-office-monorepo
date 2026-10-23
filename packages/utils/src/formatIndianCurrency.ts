@@ -17,7 +17,9 @@ const indianNumberFormatter = new Intl.NumberFormat("en-IN", {
 export function formatIndianCurrency(
   value: number | string | null | undefined,
 ): string {
-  if (value == null) return "-";
+  if (value === null || value === undefined) {
+    return "-";
+  }
 
   let amount: number;
 

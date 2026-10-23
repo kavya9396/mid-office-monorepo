@@ -9,7 +9,7 @@ export {
   type RequirementBadgeVariant,
 } from "./Badge/Badge";
 export { default as BadgeWithCount } from "./Badge/BadgeWithCount";
-export { default as AppButton } from "./Button/Button";
+export { default as CustomButton } from "./Button/Button";
 export { default as Calendar, type CalendarProps } from "./Calendar/Calendar";
 export { default as CustomCheckbox } from "./Checkbox/Checkbox";
 export { default as CustomDialog } from "./Dialog/Dialog";
