@@ -858,3 +858,13 @@ Before using this design in production:
 - Review browser security controls such as CSP, HTTPS, secure cookies, and logout propagation.
 
 # mid-office-monorepo
+
+
+pnpm install
+
+** if port is in use
+netstat -ano | findstr :{PORT_NO}
+tasklist /FI "PID eq {TASK_ID}"   
+taskkill /PID {TASK_ID} /F   
+pnpm --filter @insurance-poc/common dev    
+pnpm dev
