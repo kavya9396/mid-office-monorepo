@@ -3,15 +3,14 @@ import { createTheme } from "@mui/material/styles";
 export const appTheme = createTheme({
   palette: {
     primary: {
-      main: "#0d47a1",
+      main: "#E45F14",
     },
     background: {
-      default: "#f4f6f8",
+      default: "#fff8f3",
     },
   },
   typography: {
-    fontFamily:
-      'system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+    fontFamily: '"Mulish", sans-serif',
   },
   shape: {
     borderRadius: 8,

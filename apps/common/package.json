@@ -9,6 +9,11 @@
       "import": "./src/services/loginService.ts",
       "default": "./src/services/loginService.ts"
     },
+    "./detail-card": {
+      "types": "./src/components/DetailCard.tsx",
+      "import": "./src/components/DetailCard.tsx",
+      "default": "./src/components/DetailCard.tsx"
+    },
     "./summary": {
       "types": "./src/modules/summary/SummaryPage.tsx",
       "import": "./src/modules/summary/SummaryPage.tsx",
