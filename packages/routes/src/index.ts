@@ -60,10 +60,26 @@ export function drsUrl(
   return null;
 }
 
+function isAbsoluteUrl(url: string): boolean {
+  return url.startsWith("http://") || url.startsWith("https://");
+}
+
+function isStandaloneDevPort(): boolean {
+  if (typeof window === "undefined") return false;
+  const port = window.location.port;
+  return port === String(devPorts.retail) || port === String(devPorts.group);
+}
+
+function resolveNavigationUrl(url: string): string {
+  if (isAbsoluteUrl(url) || !isStandaloneDevPort()) return url;
+  const path = url.startsWith("/") ? url : `/${url}`;
+  return `${devGatewayOrigin}${path}`;
+}
+
 export function assignUrl(url: string): void {
-  window.location.assign(url);
+  window.location.assign(resolveNavigationUrl(url));
 }
 
 export function replaceUrl(url: string): void {
-  window.location.replace(url);
+  window.location.replace(resolveNavigationUrl(url));
 }

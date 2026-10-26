@@ -8,6 +8,11 @@
       "types": "./src/services/loginService.ts",
       "import": "./src/services/loginService.ts",
       "default": "./src/services/loginService.ts"
+    },
+    "./header": {
+      "types": "./src/components/layout/Header.tsx",
+      "import": "./src/components/layout/Header.tsx",
+      "default": "./src/components/layout/Header.tsx"
     }
   },
   "scripts": {

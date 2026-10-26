@@ -1,6 +1,10 @@
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
-import { devConfig, monorepoRoot } from "../../scripts/dev-config.mjs";
+import {
+  devConfig,
+  monorepoRoot,
+  proxyToDevApp,
+} from "../../scripts/dev-config.mjs";
 
 const sharedPackages = [
   "@insurance-poc/routes",
@@ -28,16 +32,8 @@ export default defineConfig({
       allow: [monorepoRoot],
     },
     proxy: {
-      [proxyPrefix(devConfig.viteBase.retail)]: {
-        target: `http://${devConfig.host}:${devConfig.ports.retail}`,
-        changeOrigin: true,
-        ws: true,
-      },
-      [proxyPrefix(devConfig.viteBase.group)]: {
-        target: `http://${devConfig.host}:${devConfig.ports.group}`,
-        changeOrigin: true,
-        ws: true,
-      },
+      [proxyPrefix(devConfig.viteBase.retail)]: proxyToDevApp(devConfig.ports.retail),
+      [proxyPrefix(devConfig.viteBase.group)]: proxyToDevApp(devConfig.ports.group),
     },
   },
 });
