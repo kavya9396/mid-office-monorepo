@@ -11,7 +11,7 @@ import {
   getSessionUser,
   hasSession,
   setSessionBusinessType,
-} from "@insurance-poc/util";
+} from "@insurance-poc/utils";
 
 export function RequireSession({ children }: { children: ReactNode }) {
   const userId = getSessionUser()?.userId ?? null;

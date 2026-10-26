@@ -10,7 +10,7 @@ const sharedPackages = [
   "@insurance-poc/common",
   "@insurance-poc/routes",
   "@insurance-poc/ui",
-  "@insurance-poc/util",
+  "@insurance-poc/utils",
 ];
 
 export default defineConfig({
