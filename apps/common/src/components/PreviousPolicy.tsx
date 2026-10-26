@@ -348,7 +348,7 @@ const PagedTable = ({ title, columns, rows, wide = false }: Readonly<PagedTableP
           alignItems: "center",
           gap: 2,
           minHeight: 34,
-          padding: 8,
+          // padding: 8,
           backgroundColor: grey[100],
         }}
       >
@@ -414,7 +414,6 @@ export function PreviousPolicy({ roleType = "CUW_TASK" }: Readonly<PreviousPolic
           <CustomAccordion
             title={`Previous Policies - ${member.label}`}
             titleFontSize={12}
-            detailPadding={16}
             defaultExpanded={member.key === "lifeAssured1"}
           >
             <PagedTable title="Dedupe - Posidex" columns={DEDUPE_COLUMNS} rows={DEDUPE_POSIDEX} />
