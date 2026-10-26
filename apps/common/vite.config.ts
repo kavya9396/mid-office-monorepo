@@ -4,6 +4,7 @@ import {
   devConfig,
   monorepoRoot,
   proxyToDevApp,
+  redirectBareAppRoots,
 } from "../../scripts/dev-config.mjs";
 
 const sharedPackages = [
@@ -20,7 +21,7 @@ function proxyPrefix(base: string): string {
 export default defineConfig({
   base: devConfig.viteBase.common,
   clearScreen: false,
-  plugins: [react()],
+  plugins: [redirectBareAppRoots(), react()],
   optimizeDeps: {
     exclude: sharedPackages,
   },

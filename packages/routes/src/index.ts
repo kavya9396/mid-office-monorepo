@@ -9,10 +9,6 @@ import devConfig from "./dev-config.json";
  * Separate production origins need SSO or a parent-domain session instead.
  */
 
-export const devGatewayOrigin = `http://${devConfig.host}:${devConfig.ports.common}`;
-
-export const devPorts = devConfig.ports;
-
 export const viteBase = devConfig.viteBase;
 
 export const previewPort = devConfig.previewPort;
@@ -60,26 +56,10 @@ export function drsUrl(
   return null;
 }
 
-function isAbsoluteUrl(url: string): boolean {
-  return url.startsWith("http://") || url.startsWith("https://");
-}
-
-function isStandaloneDevPort(): boolean {
-  if (typeof window === "undefined") return false;
-  const port = window.location.port;
-  return port === String(devPorts.retail) || port === String(devPorts.group);
-}
-
-function resolveNavigationUrl(url: string): string {
-  if (isAbsoluteUrl(url) || !isStandaloneDevPort()) return url;
-  const path = url.startsWith("/") ? url : `/${url}`;
-  return `${devGatewayOrigin}${path}`;
-}
-
 export function assignUrl(url: string): void {
-  window.location.assign(resolveNavigationUrl(url));
+  window.location.assign(url);
 }
 
 export function replaceUrl(url: string): void {
-  window.location.replace(resolveNavigationUrl(url));
+  window.location.replace(url);
 }
