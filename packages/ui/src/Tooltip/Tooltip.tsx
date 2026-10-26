@@ -16,7 +16,7 @@ export default function CustomTooltip({
   placement = "top",
   describeChild = true,
   arrow = false,
-}: CustomTooltipProps) {
+}: Readonly<CustomTooltipProps>) {
   return (
     <Tooltip
       title={title}

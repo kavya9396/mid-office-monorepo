@@ -48,6 +48,7 @@ const CustomTextField = ({
   htmlInputProps,
   labelText,
   mandatory = false,
+  slotProps,
   ...props
 }: CustomTextFieldProps) => {
   return (
@@ -79,7 +80,8 @@ const CustomTextField = ({
         size={size}
         variant={variant}
         slotProps={{
-          htmlInput: htmlInputProps,
+          ...slotProps,
+          htmlInput: htmlInputProps ?? slotProps?.htmlInput,
         }}
         sx={{
           ...inputStyles,

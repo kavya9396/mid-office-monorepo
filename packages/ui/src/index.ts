@@ -1,11 +1,3 @@
-export { AppHeader } from "./AppHeader";
-export { AppSnackbar } from "./AppSnackbar";
-export { BusinessTypeSelect } from "./BusinessTypeSelect";
-export {
-  BusinessTypeToggle,
-  type BusinessType,
-} from "./BusinessTypeToggle";
-export { CustomButton } from "./CustomButton";
 export { appTheme } from "./theme";
 export { CloseIcon, KeyRightArrowIcon } from "./icons/Icons";
 
@@ -18,8 +10,7 @@ export {
   type RequirementBadgeVariant,
 } from "./Badge/Badge";
 export { default as BadgeWithCount } from "./Badge/BadgeWithCount";
-// Themed button; named AppButton to avoid clashing with the existing CustomButton above.
-export { default as AppButton } from "./Button/Button";
+export { default as CustomButton } from "./Button/Button";
 export { default as Calendar, type CalendarProps } from "./Calendar/Calendar";
 export { default as CustomCheckbox } from "./Checkbox/Checkbox";
 export { default as CustomDialog } from "./Dialog/Dialog";
@@ -45,4 +36,5 @@ export { default as CustomSnackbar } from "./SnackBar/Snackbar";
 export { default as CustomTable, type Column } from "./Table/Table";
 export { default as CustomTabs, type TabItem } from "./Tabs/Tabs";
 export { default as CustomTextField } from "./TextField/TextField";
+export { EyeIcon, EyeSlashIcon } from "./icons/Icons";
 export { default as CustomTooltip } from "./Tooltip/Tooltip";

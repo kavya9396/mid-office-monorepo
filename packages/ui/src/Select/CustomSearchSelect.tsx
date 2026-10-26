@@ -43,7 +43,7 @@ export default function CustomSearchSelect({
     helperText,
     disabled = false,
     noOptionsText = "No options found",
-}: CustomSearchSelectProps) {
+}: Readonly<CustomSearchSelectProps>) {
     const generatedId = useId();
     const inputId = id ?? `search-select-${generatedId}`;
     const selectedOption = options.find((option) => option.value === value) ?? null;

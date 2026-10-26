@@ -27,7 +27,7 @@ export default function CustomRadioGroup({
   value,
   onChange,
   row = false,
-}: CustomRadioGroupProps) {
+}: Readonly<CustomRadioGroupProps>) {
   return (
     <FormControl>
       {label && (

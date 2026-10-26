@@ -1,3 +1,4 @@
+
 import Chip from "@mui/material/Chip";
 import type { SxProps, Theme } from "@mui/material/styles";
 import type { ReactElement } from "react";
@@ -20,10 +21,13 @@ type BadgeWithCountProps = {
   sx?: SxProps<Theme>;
 };
 
-const variantColors: Record<
-  RequirementBadgeVariant,
-  { bg: string; color: string; border?: string }
-> = {
+type VariantColor = {
+  bg: string;
+  color: string;
+  border?: string;
+};
+
+const variantColors: Record<RequirementBadgeVariant, VariantColor> = {
   All: {
     bg: "#FFFFFF",
     color: "#063E6F",
@@ -63,8 +67,11 @@ export default function BadgeWithCount({
   icon,
   size = "small",
   sx,
-}: BadgeWithCountProps) {
-  const v = variantColors[variant];
+}: Readonly<BadgeWithCountProps>) {
+  const variantStyle = variantColors[variant];
+
+  // Normalize custom styles without nested ternary
+  const customStyles: SxProps<Theme> = sx ?? [];
 
   return (
     <Chip
@@ -77,14 +84,18 @@ export default function BadgeWithCount({
       size={size}
       sx={[
         {
-          backgroundColor: v.bg,
-          color: v.color,
-          border: v.border ?? "none",
+          backgroundColor: variantStyle.bg,
+          color: variantStyle.color,
+          border: variantStyle.border ?? "none",
           "& .MuiChip-icon": {
             color: "inherit",
           },
         },
-        ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+        ...(
+          Array.isArray(customStyles)
+            ? customStyles
+            : [customStyles]
+        ),
       ]}
     />
   );

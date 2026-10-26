@@ -46,7 +46,7 @@ export default function CustomTabs<T extends string>({
   value,
   onChange,
   sx,
-}: CustomTabsProps<T>) {
+}: Readonly<CustomTabsProps<T>>) {
   return (
     <Box sx={[containerStyles, ...(Array.isArray(sx) ? sx : [sx])]}>
       {tabs.map((tab) => {

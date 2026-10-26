@@ -13,11 +13,6 @@
       "types": "./src/components/DetailCard.tsx",
       "import": "./src/components/DetailCard.tsx",
       "default": "./src/components/DetailCard.tsx"
-    },
-    "./summary": {
-      "types": "./src/modules/summary/SummaryPage.tsx",
-      "import": "./src/modules/summary/SummaryPage.tsx",
-      "default": "./src/modules/summary/SummaryPage.tsx"
     }
   },
   "scripts": {
@@ -28,13 +23,16 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@hookform/resolvers": "^6.0.0",
     "@insurance-poc/routes": "workspace:*",
     "@insurance-poc/ui": "workspace:*",
-    "@insurance-poc/util": "workspace:*",
+    "@insurance-poc/utils": "workspace:*",
     "@mui/material": "^6.4.12",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^7.6.2"
+    "react-hook-form": "^7.90.0",
+    "react-router-dom": "^7.6.2",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@types/react": "^18.3.23",
