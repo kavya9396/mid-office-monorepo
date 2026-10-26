@@ -1,5 +1,10 @@
 export { appTheme, colors } from "./theme";
-export { CloseIcon, KeyRightArrowIcon, RefreshIcon } from "./icons/Icons";
+export {
+  CloseIcon,
+  KeyRightArrowIcon,
+  LinkIcon,
+  RefreshIcon,
+} from "./icons/Icons";
 
 export { default as CustomAccordion } from "./Accordion/Accordion";
 export {
@@ -36,5 +41,5 @@ export { default as CustomSnackbar } from "./SnackBar/Snackbar";
 export { default as CustomTable, type Column } from "./Table/Table";
 export { default as CustomTabs, type TabItem } from "./Tabs/Tabs";
 export { default as CustomTextField } from "./TextField/TextField";
-export { EyeIcon, EyeSlashIcon } from "./Icons/Icons";
+export { EyeIcon, EyeSlashIcon } from "./icons/Icons";
 export { default as CustomTooltip } from "./Tooltip/Tooltip";

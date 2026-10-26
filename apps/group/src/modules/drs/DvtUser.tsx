@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { Box, Typography } from "@mui/material";
-import { CustomDialog } from "@insurance-poc/ui";
+import { CustomDialog, CustomSnackbar } from "@insurance-poc/ui";
 import {
   DecisionBar,
   DecisionComparisonTable,
@@ -14,6 +14,11 @@ import {
   type DetailTable,
 } from "@insurance-poc/common/detail-card";
 import { LifeAssured } from "@insurance-poc/common/life-assured";
+import {
+  QuickLinks,
+  type QuickLinkItem,
+} from "@insurance-poc/common/quick-links";
+import { PreviousPolicyDialog } from "@insurance-poc/common/previous-policy";
 import { mockApplicants } from "./lifeAssuredData";
 
 type CardType = "APPLICATION" | "SOURCE" | "GROUP" | "RISK";
@@ -170,6 +175,7 @@ export interface DvtUserProps {
   quickLinks?: QuickLinkItem[];
   previousPolicyMode?: "page" | "modal";
 }
+
 type BreDecision = {
   decision: string;
   remarks: string;
@@ -210,6 +216,7 @@ const formatBreTimestamp = (value?: string) => {
   const meridiem = Number(hours) < 12 ? "am" : "pm";
   return `${Number(day)} ${MONTHS[Number(month) - 1]} ${year}, ${String(hour12).padStart(2, "0")}:${minutes}:00 ${meridiem}`;
 };
+
 const DvtUser = ({
   quickLinks,
   previousPolicyMode = "page",
@@ -219,7 +226,6 @@ const DvtUser = ({
   const applicationNo =
     params.get("applicationNo")?.trim() || mockResponse.data.applicationNo;
 
-  const { cardDetails } = mockResponse.data;
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
   const [previousPolicyOpen, setPreviousPolicyOpen] = useState(false);
 
@@ -241,7 +247,8 @@ const DvtUser = ({
         }
       },
     }));
-      const { cardDetails } = mockResponse.data;
+
+  const { cardDetails } = mockResponse.data;
   const { breDecision, latestBreDecision } = mockBre;
   const [breDetailOpen, setBreDetailOpen] = useState(false);
 
@@ -284,7 +291,6 @@ const DvtUser = ({
       <Box
         sx={{
           p: 2,
-
           display: "grid",
           gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
           gap: 2,
@@ -313,6 +319,7 @@ const DvtUser = ({
         message={snackbarMessage ?? ""}
         onClose={() => setSnackbarMessage(null)}
       />
+
       <DecisionBar
         title="BRE Decision"
         items={[
