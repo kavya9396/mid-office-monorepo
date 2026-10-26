@@ -1,3 +1,5 @@
+
+import type { ReactNode, Key } from "react";
 import {
   Paper,
   Box,
@@ -9,6 +11,7 @@ import {
   TableCell,
   TableBody,
 } from "@mui/material";
+
 import CustomButton from "../Button/Button";
 
 export type Column<T> = {
@@ -16,8 +19,12 @@ export type Column<T> = {
   header?: string;
   width?: string;
   sticky?: "left" | "right";
-  render?: (value: T[keyof T], row: T, rowIndex: number) => React.ReactNode;
-  headerRender?: () => React.ReactNode;
+  render?: (
+    value: T[keyof T],
+    row: T,
+    rowIndex: number
+  ) => ReactNode;
+  headerRender?: () => ReactNode;
   renderSelectAll?: () => void;
 };
 
@@ -25,7 +32,10 @@ type CustomTableProps<T> = {
   title?: string;
   columns: Column<T>[];
   data: T[];
-  headerAction?: React.ReactNode;
+  headerAction?: ReactNode;
+
+  // Each row must have a stable, unique key.
+  getRowId: (row: T) => Key;
 };
 
 export default function CustomTable<T extends object>({
@@ -33,7 +43,8 @@ export default function CustomTable<T extends object>({
   columns = [],
   data = [],
   headerAction,
-}: CustomTableProps<T>) {
+  getRowId,
+}: Readonly<CustomTableProps<T>>) {
   return (
     <Paper
       elevation={0}
@@ -56,10 +67,15 @@ export default function CustomTable<T extends object>({
             alignItems: "center",
           }}
         >
-          <Typography sx={{ fontSize: "12px", fontWeight: 700 }}>
+          <Typography
+            sx={{
+              fontSize: "12px",
+              fontWeight: 700,
+            }}
+          >
             {title}
           </Typography>
-          {headerAction}
+
           {headerAction && <Box>{headerAction}</Box>}
         </Box>
       )}
@@ -71,6 +87,7 @@ export default function CustomTable<T extends object>({
           sx={{
             width: "100%",
             tableLayout: "fixed",
+
             "& th": {
               backgroundColor: "#FFEAD7",
               color: "#000",
@@ -99,6 +116,7 @@ export default function CustomTable<T extends object>({
             },
           }}
         >
+          {/* TABLE HEADER */}
           <TableHead>
             <TableRow>
               {columns.map((col) => (
@@ -138,7 +156,7 @@ export default function CustomTable<T extends object>({
                       </Typography>
                     )}
 
-                    {/* SUB ACTION (Select All) */}
+                    {/* SELECT ALL */}
                     {col.renderSelectAll && (
                       <CustomButton
                         variant="text"
@@ -147,6 +165,7 @@ export default function CustomTable<T extends object>({
                           fontSize: "12px",
                           p: 0,
                           textDecoration: "underline",
+
                           "&:hover": {
                             textDecoration: "underline",
                             backgroundColor: "transparent",
@@ -163,24 +182,33 @@ export default function CustomTable<T extends object>({
             </TableRow>
           </TableHead>
 
-          {/* BODY */}
+          {/* TABLE BODY */}
           <TableBody>
             {data.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={columns.length || 1} align="center">
-                  <Typography sx={{ fontSize: "11px", py: 1 }}>
+                <TableCell
+                  colSpan={columns.length || 1}
+                  align="center"
+                >
+                  <Typography
+                    sx={{
+                      fontSize: "11px",
+                      py: 1,
+                    }}
+                  >
                     No data available
                   </Typography>
                 </TableCell>
               </TableRow>
             ) : (
               data.map((row, rowIndex) => (
-                <TableRow key={rowIndex}>
+                <TableRow key={getRowId(row)}>
                   {columns.map((col) => {
                     const value = row[col.key];
+
                     const content = col.render
                       ? col.render(value, row, rowIndex)
-                      : (value as React.ReactNode);
+                      : (value as ReactNode);
 
                     return (
                       <TableCell
@@ -200,7 +228,9 @@ export default function CustomTable<T extends object>({
                         {col.render ? (
                           content
                         ) : (
-                          <Typography sx={{ fontSize: "10px" }}>
+                          <Typography
+                            sx={{ fontSize: "10px" }}
+                          >
                             {content}
                           </Typography>
                         )}

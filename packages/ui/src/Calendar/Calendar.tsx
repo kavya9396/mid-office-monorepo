@@ -40,18 +40,21 @@ export default function Calendar({
     maxDate,
     disableTodayAndFuture = true,
     shouldDisableDate,
-}: CalendarProps) {
+}: Readonly<CalendarProps>) {
     const id = useId();
     const [validationError, setValidationError] =
         useState<DateValidationError>(null);
 
     // Use local calendar dates rather than a fixed number of milliseconds.
-    const yesterday = dayjs().startOf("day").subtract(1, "day");
-    const effectiveMaxDate = disableTodayAndFuture
-        ? maxDate && maxDate.isBefore(yesterday, "day")
-            ? maxDate
-            : yesterday
-        : maxDate;
+   const yesterday = dayjs().startOf("day").subtract(1, "day");
+
+let effectiveMaxDate = maxDate;
+
+if (disableTodayAndFuture) {
+    effectiveMaxDate = maxDate?.isBefore(yesterday, "day")
+        ? maxDate
+        : yesterday;
+}
 
     const validationMessage = (() => {
         switch (validationError) {

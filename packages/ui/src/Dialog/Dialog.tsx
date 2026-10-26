@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import type { ReactNode } from "react";
 
-import { CloseIcon } from "../icons/Icons";
+import { CloseIcon } from "../Icons/Icons";
 
 interface CustomDialogProps extends Omit<DialogProps, "title"> {
   title?: ReactNode;

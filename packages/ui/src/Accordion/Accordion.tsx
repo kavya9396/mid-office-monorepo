@@ -6,7 +6,7 @@ import {
   Typography,
   Box,
 } from "@mui/material";
-import { KeyDownArrowIcon, KeyUpArrowIcon } from "../icons/Icons";
+import { KeyDownArrowIcon, KeyUpArrowIcon } from "../Icons/Icons";
 
 type CustomAccordionProps = {
   title: string;
@@ -32,7 +32,7 @@ export default function CustomAccordion({
   titleFontSize = 14,
   detailPadding = "5px",
   titleColor = "#fff",
-}: CustomAccordionProps) {
+}: Readonly<CustomAccordionProps>) {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const isControlled = controlledExpanded !== undefined;
   const displayExpanded = isControlled ? controlledExpanded : expanded;

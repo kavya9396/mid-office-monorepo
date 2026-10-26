@@ -1,3 +1,5 @@
+
+import type { ReactNode } from "react";
 import {
   Box,
   Typography,
@@ -9,12 +11,13 @@ import {
 } from "@mui/material";
 
 export type KeyValueRow = {
+  id: string;
   firstLabel: string;
-  firstValue: React.ReactNode;
+  firstValue: ReactNode;
   secondLabel: string;
-  secondValue: React.ReactNode;
+  secondValue: ReactNode;
   thirdLabel: string;
-  thirdValue: React.ReactNode;
+  thirdValue: ReactNode;
 };
 
 type KeyValueTableProps = {
@@ -25,7 +28,7 @@ type KeyValueTableProps = {
 export default function KeyValueTable({
   title,
   rows,
-}: KeyValueTableProps) {
+}: Readonly<KeyValueTableProps>) {
   return (
     <Box
       sx={{
@@ -69,10 +72,12 @@ export default function KeyValueTable({
           }}
         >
           <TableBody>
-            {rows.map((row, index) => (
-              <TableRow key={index}>
+            {rows.map((row) => (
+              <TableRow key={row.id}>
                 {/* FIRST LABEL */}
                 <TableCell
+                  component="th"
+                  scope="row"
                   sx={{
                     backgroundColor: "#FFEAD7",
                     width: "16.66%",
@@ -84,12 +89,19 @@ export default function KeyValueTable({
                 </TableCell>
 
                 {/* FIRST VALUE */}
-                <TableCell sx={{ width: "16.66%", backgroundColor: "#fff" }}>
+                <TableCell
+                  sx={{
+                    width: "16.66%",
+                    backgroundColor: "#fff",
+                  }}
+                >
                   {row.firstValue}
                 </TableCell>
 
                 {/* SECOND LABEL */}
                 <TableCell
+                  component="th"
+                  scope="row"
                   sx={{
                     backgroundColor: "#FFEAD7",
                     width: "16.66%",
@@ -101,12 +113,19 @@ export default function KeyValueTable({
                 </TableCell>
 
                 {/* SECOND VALUE */}
-                <TableCell sx={{ width: "16.66%", backgroundColor: "#fff" }}>
+                <TableCell
+                  sx={{
+                    width: "16.66%",
+                    backgroundColor: "#fff",
+                  }}
+                >
                   {row.secondValue}
                 </TableCell>
 
                 {/* THIRD LABEL */}
                 <TableCell
+                  component="th"
+                  scope="row"
                   sx={{
                     backgroundColor: "#FFEAD7",
                     width: "16.66%",
@@ -118,7 +137,12 @@ export default function KeyValueTable({
                 </TableCell>
 
                 {/* THIRD VALUE */}
-                <TableCell sx={{ width: "16.66%", backgroundColor: "#fff" }}>
+                <TableCell
+                  sx={{
+                    width: "16.66%",
+                    backgroundColor: "#fff",
+                  }}
+                >
                   {row.thirdValue}
                 </TableCell>
               </TableRow>

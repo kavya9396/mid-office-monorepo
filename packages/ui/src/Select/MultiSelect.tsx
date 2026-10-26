@@ -44,7 +44,7 @@ export default function CustomMultiSelect({
     maxCount,
     showCheckbox = true,
     showSelectAll = false,
-}: CustomMultiSelectProps) {
+}: Readonly<CustomMultiSelectProps>) {
     const selectableValues = Array.from(
         new Set(
             options
