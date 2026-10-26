@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Assessment Comments</title>
+    <style>
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0
+        }
+
+        body {
+            font-family: Roboto, Arial, sans-serif;
+            background: #f5f5f5;
+            color: #323232;
+            font-size: 14px
+        }
+
+        button {
+            font: inherit
+        }
+
+        .header {
+            height: 57px;
+            display: flex;
+            align-items: stretch;
+            background: linear-gradient(to bottom, #F58220 0%, #E65318 42%, #C92E27 72%, #98252B 100%);
+            box-shadow: 0 3px 12px rgba(111, 24, 24, .25);
+            position: sticky;
+            top: 0;
+            z-index: 1200;
+            overflow: hidden
+        }
+
+        .back {
+            min-width: 10px;
+            width: 42px;
+            height: 57px;
+            border: 0;
+            border-right: 1px solid rgba(255, 255, 255, .25);
+            border-radius: 0;
+            background: rgba(126, 22, 31, .42);
+            color: #fff;
+            display: grid;
+            place-items: center;
+            cursor: pointer
+        }
+
+        .back:hover {
+            background: rgba(126, 22, 31, .62)
+        }
+
+        .back svg {
+            width: 19px;
+            height: 19px
+        }
+
+        .logo-section {
+            height: 57px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: stretch
+        }
+
+        .header-logo {
+            height: 100%;
+            width: 150px;
+            display: block;
+            object-fit: cover
+        }
+
+        .header-right {
+            min-width: 0;
+            height: 57px;
+            padding: 0 16px;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            color: #fff
+        }
+
+        .user-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px
+        }
+
+        .time {
+            min-width: 175px;
+            padding-right: 12px;
+            text-align: right;
+            border-right: 1px solid rgba(255, 255, 255, .35)
+        }
+
+        .now {
+            color: rgba(255, 255, 255, .9);
+            font-size: 12px;
+            line-height: 1.4
+        }
+
+        .session {
+            margin-top: 2px;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .2px
+        }
+
+        .user-btn {
+            min-width: 0;
+            padding: 4px 8px;
+            border: 0;
+            border-radius: 8px;
+            background: transparent;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            cursor: pointer
+        }
+
+        .user-btn:hover {
+            background: rgba(255, 255, 255, .14)
+        }
+
+        .avatar {
+            margin-right: 8px;
+            width: 35px;
+            height: 35px;
+            display: grid;
+            place-items: center;
+            flex-shrink: 0;
+            color: #fff;
+            background: rgba(255, 255, 255, .2);
+            border: 1px solid rgba(255, 255, 255, .45);
+            border-radius: 50%
+        }
+
+        .avatar svg {
+            width: 19px;
+            height: 19px
+        }
+
+        .username {
+            margin-right: 8px;
+            min-width: 80px;
+            max-width: 150px;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+            text-align: left;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis
+        }
+
+        .chev {
+            height: 20px;
+            display: flex;
+            align-items: center;
+            color: #fff
+        }
+
+        .menu {
+            display: none;
+            position: fixed;
+            right: 16px;
+            top: 65px;
+            width: 240px;
+            overflow: hidden;
+            background: #fff;
+            border: 1px solid #F1D7D0;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(70, 20, 20, .18);
+            z-index: 1400
+        }
+
+        .menu.open {
+            display: block
+        }
+
+        .menu-item {
+            padding: 10px 16px;
+            cursor: pointer;
+            color: #323232
+        }
+
+        .menu-item:hover {
+            background: #FFF3EE
+        }
+
+        .menu-flex {
+            display: flex;
+            align-items: center;
+            justify-content: space-between
+        }
+
+        .menu-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #9A2529
+        }
+
+        .menu-left span:last-child {
+            color: #323232
+        }
+
+        .break-min {
+            display: flex;
+            align-items: center;
+            color: #9A2529;
+            font-size: 12px;
+            font-weight: 700
+        }
+
+        .divider {
+            height: 1px;
+            background: #e0e0e0
+        }
+
+        .page {
+            width: 100%;
+            padding: 8px 0 0
+        }
+
+        .tables {
+            display: grid;
+            gap: 12px
+        }
+
+        .table-card {
+            width: 100%;
+            background: #FFFFFF;
+            border: 1px solid #D8D8D8;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: none
+        }
+
+        .table-title {
+            background: #E45F14;
+            color: #FFFFFF;
+            padding: 9.6px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            font-weight: 700;
+            line-height: 1.5
+        }
+
+        .pool-filters {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 5px;
+            min-height: 36px;
+            padding: 4px 6px;
+            border-bottom: 1px solid #E1E1E1;
+            background: #fafbfc
+        }
+
+        .pool-filter {
+            height: 24px;
+            padding: 0 8px;
+            border: 1px solid #dde2e6;
+            border-radius: 12px;
+            background: #f5f3f2;
+            color: #514A46;
+            font: inherit;
+            font-size: 10.5px;
+            font-weight: 600;
+            cursor: pointer
+        }
+
+        .pool-filter:hover,
+        .pool-filter.active {
+            border-color: #E45F14;
+            background: #fff1e6
+        }
+
+        .pool-filter:nth-child(2) { background: #eef6ff; color: #2F668F }
+        .pool-filter:nth-child(3) { background: #eef8f1; color: #28743C }
+        .pool-filter:nth-child(4) { background: #fff3e8; color: #b54a00 }
+        .pool-filter:nth-child(5) { background: #fdebec; color: #B3262E }
+        .pool-filter:nth-child(6) { background: #f3eeff; color: #6C4AA0 }
+        .pool-filter.active { color: #C4500D }
+
+        .pool-count {
+            display: inline-grid;
+            min-width: 17px;
+            height: 17px;
+            padding: 0 4px;
+            margin-left: 4px;
+            place-items: center;
+            border-radius: 9px;
+            background: #697780;
+            color: #fff;
+            font-size: 9.5px;
+            font-weight: 700
+        }
+
+        .pool-filter:nth-child(2) .pool-count { background: #46799F }
+        .pool-filter:nth-child(3) .pool-count { background: #28743C }
+        .pool-filter:nth-child(4) .pool-count { background: #E45F14 }
+        .pool-filter:nth-child(5) .pool-count { background: #B3262E }
+        .pool-filter:nth-child(6) .pool-count { background: #6C4AA0 }
+
+
+        .table-scroll {
+            width: 100%;
+            overflow-x: auto
+        }
+
+        .table-pagination {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+            min-height: 42px;
+            padding: 7px 16px;
+            border-top: 1px solid #E1E1E1;
+            background: #fff
+        }
+
+        .table-pagination span { color: #6F6F6F; font-size: 11px }
+        .table-pagination button {
+            min-width: 28px;
+            height: 28px;
+            border: 1px solid #D8D8D8;
+            border-radius: 4px;
+            background: #fff;
+            color: #9A2529;
+            font-weight: 700;
+            cursor: pointer
+        }
+        .table-pagination button:hover:not(:disabled) { background: #FFF0E5 }
+        .table-pagination button:disabled { color: #B5ADAA; border-color: #E7E2E0; cursor: not-allowed }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            background: #FFFFFF;
+            border-spacing: 0
+        }
+
+        th {
+            background: #FFEAD7;
+            color: #000;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 4px 8px;
+            line-height: 1.2;
+            border-bottom: 1px solid #D6D6D6;
+            text-align: left;
+            vertical-align: inherit
+        }
+
+        th .th-text {
+            font-size: 12px;
+            font-weight: 600;
+            color: #000;
+            line-height: 1.2;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start
+        }
+
+        td {
+            color: #4A4A4A;
+            font-size: 11px;
+            padding: 4px 8px;
+            line-height: 1.2;
+            border-bottom: 1px solid #E1E1E1;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+            text-align: left;
+            vertical-align: inherit
+        }
+
+        td .cell-text {
+            font-size: 10px;
+            line-height: 1.5;
+            color: inherit
+        }
+
+        .audit-table td:last-child .cell-text {
+            white-space: pre-line;
+            overflow-wrap: anywhere
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none
+        }
+
+        .empty {
+            border: 1px dashed #D9D9D9;
+            border-radius: 12px;
+            padding: 16px;
+            background: #FFFFFF;
+            text-align: center;
+            color: #6F6F6F;
+            font-size: 14px;
+            font-weight: 600
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .35);
+            z-index: 1800;
+            align-items: center;
+            justify-content: center
+        }
+
+        .modal.open {
+            display: flex
+        }
+
+        .modal-card {
+            width: min(420px, calc(100% - 32px));
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, .25)
+        }
+
+
+        .modal-card h3 {
+            margin: 0 0 8px
+        }
+
+        .modal-card p {
+            margin: 0 0 18px;
+            color: #666
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end
+        }
+
+        .primary {
+            border: 1px solid #E45F14;
+            background: #E45F14;
+            color: #fff;
+            border-radius: 4px;
+            padding: 7px 16px;
+            font-weight: 600;
+            cursor: pointer
+        }
+
+        @media(max-width:600px) {
+            .header-right {
+                padding: 0 8px
+            }
+
+            .time,
+            .username {
+                display: none
+            }
+
+            .user-wrap {
+                gap: 4px
+            }
+
+            .table-scroll {
+                overflow-x: auto
+            }
+
+            .audit-table {
+                min-width: 1220px
+            }
+
+            .decision-table {
+                min-width: 720px
+            }
+
+            .special-remarks-table {
+                min-width: 620px
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <button class="back" id="backBtn" aria-label="Back to Inbox">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M15 18l-6-6 6-6" />
+            </svg>
+        </button>
+        <div class="logo-section"><img class="header-logo" src="source-images/ICICI Logo.svg" alt="ICICI Life Logo">
+        </div>
+        <div class="header-right">
+            <div class="user-wrap">
+                <div class="time">
+                    <div class="now" id="now"></div>
+                    <div class="session">Session: <span id="session">--:--</span></div>
+                </div>
+                <button class="user-btn" id="userBtn"><span class="avatar"><svg viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="1.8">
+                            <circle cx="12" cy="8" r="4" />
+                            <path d="M4.5 21c.7-4.2 3.2-6.5 7.5-6.5s6.8 2.3 7.5 6.5" />
+                        </svg></span><span class="username" id="username"></span><span class="chev"
+                        id="chev">⌄</span></button>
+            </div>
+        </div>
+    </header>
+
+    <div class="menu" id="userMenu">
+        <div class="menu-item" id="breakOpen">
+            <div class="menu-flex">
+                <div class="menu-left"><span>⏸</span><span>Breaktime</span></div>
+                <div class="break-min">30 mins&nbsp;›</div>
+            </div>
+        </div>
+        <div class="divider"></div>
+        <div class="menu-item" id="logout">
+            <div class="menu-left"><span>↪</span><span>Logout</span></div>
+        </div>
+    </div>
+
+    <main class="page">
+        <div class="tables">
+            <section class="table-card">
+                <div class="table-title">Assessment Comments</div>
+                <div class="pool-filters" id="poolFilters" aria-label="Filter by pool name"></div>
+                <div class="table-scroll">
+                    <table class="audit-table">
+                        <colgroup>
+                            <col style="width:8%">
+                            <col style="width:10%">
+                            <col style="width:8%">
+                            <col style="width:9%">
+                            <col style="width:8%">
+                            <col style="width:12%">
+                            <col style="width:45%">
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th><span class="th-text">User ID</span></th>
+                                <th><span class="th-text">User Name</span></th>
+                                <th><span class="th-text">Pool Name</span></th>
+                                <th><span class="th-text">Case Status</span></th>
+                                <th><span class="th-text">Decision</span></th>
+                                <th><span class="th-text">Date Updated On</span></th>
+                                <th><span class="th-text">Comments/Remarks</span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="auditBody"></tbody>
+                    </table>
+                </div>
+                <div id="auditPagination" class="table-pagination"></div>
+            </section>
+        </div>
+    </main>
+
+    <div class="modal" id="breakModal">
+        <div class="modal-card">
+            <h3>Breaktime</h3>
+            <p>Break time is set for 30 minutes.</p>
+            <div class="modal-actions"><button class="primary" id="breakClose">Close</button></div>
+        </div>
+    </div>
+
+
+    <script>
+        const auditRows = [
+            ["AC1024", "Senior Underwriter", "Sr UW", "Referred", "Refer", "Case referred for senior review.\nAwaiting senior underwriter approval.", "07/09/2026 11:36:09"],
+            ["ipru75474", "ipru75474", "CUW", "In Progress", "Pending", "Underwriting review initiated", "07/09/2026 10:52:41"],
+            ["UW304", "Underwriting User", "UW", "Completed", "Reject", "Consent document not uploaded", "07/09/2026 09:22:07"],
+            ["CUW890", "CUW Analyst", "CUW", "Referred", "Refer", "Medical review requested", "07/09/2026 08:54:14"],
+            ["UW327", "Underwriting User", "UW", "Completed", "Waived", "Requirement waived as per guidelines", "07/09/2026 08:18:10"],
+            ["SUW203", "Senior Underwriter", "Sr UW", "Completed", "Accept", "Senior underwriting review completed", "07/09/2026 08:04:28"],
+            ["HOD071", "Head of Department", "HOD", "Referred", "Refer", "Case escalated for HOD approval.\nDecision is pending from the approver.", "07/09/2026 07:49:56"],
+            ["CMO112", "Chief Medical Officer", "CMO", "In Progress", "Pending", "Medical opinion is under review and further supporting information is required before the final assessment can be completed.", "07/09/2026 07:35:19"],
+            ["UW405", "Underwriting User", "UW", "Completed", "Accept", "Underwriting assessment approved", "07/09/2026 07:20:44"]
+        ];
+        const esc = s => String(s ?? "-").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c]));
+        const paginationState = { audit: 1 };
+        const rowsPerPage = 10;
+        let selectedPool = "All";
+        function filteredAuditRows() { return selectedPool === "All" ? auditRows : auditRows.filter(row => row[2] === selectedPool) }
+        function renderPoolFilters() {
+            const pools = ["All", ...Array.from(new Set(auditRows.map(row => row[2])))];
+            document.getElementById("poolFilters").innerHTML = pools.map(pool => {
+                const count = pool === "All" ? auditRows.length : auditRows.filter(row => row[2] === pool).length;
+                return `<button type="button" class="pool-filter ${pool === selectedPool ? "active" : ""}" data-pool="${esc(pool)}">${esc(pool)}<span class="pool-count">${count}</span></button>`;
+            }).join("");
+        }
+        function renderPagedTable(key, rows, bodyId, paginationId) {
+            const totalPages = Math.max(1, Math.ceil(rows.length / rowsPerPage));
+            paginationState[key] = Math.min(Math.max(1, paginationState[key]), totalPages);
+            const start = (paginationState[key] - 1) * rowsPerPage;
+            document.getElementById(bodyId).innerHTML = rows.slice(start, start + rowsPerPage).map(r => {
+                const displayValues = [r[0], r[1], r[2], r[3], r[4], r[6], r[5]];
+                return `<tr>${displayValues.map(v => `<td><span class="cell-text">${esc(v)}</span></td>`).join("")}</tr>`;
+            }).join("");
+            document.getElementById(paginationId).innerHTML = `<span>${rows.length ? `${start + 1}-${Math.min(start + rowsPerPage, rows.length)} of ${rows.length}` : "0 of 0"}</span><button type="button" data-page="${key}" data-direction="previous" ${paginationState[key] === 1 ? "disabled" : ""} aria-label="Previous page">‹</button><span>Page ${paginationState[key]} of ${totalPages}</span><button type="button" data-page="${key}" data-direction="next" ${paginationState[key] === totalPages ? "disabled" : ""} aria-label="Next page">›</button>`;
+        }
+        function renderAllPagedTables() {
+            renderPoolFilters();
+            renderPagedTable("audit", filteredAuditRows(), "auditBody", "auditPagination");
+        }
+        document.addEventListener("click", e => {
+            const poolButton = e.target.closest("[data-pool]");
+            if (poolButton) { selectedPool = poolButton.dataset.pool; paginationState.audit = 1; renderAllPagedTables(); return }
+            const button = e.target.closest("[data-page]");
+            if (!button || button.disabled) return;
+            paginationState[button.dataset.page] += button.dataset.direction === "next" ? 1 : -1;
+            renderAllPagedTables();
+        });
+        renderAllPagedTables();
+
+        const userBtn = document.getElementById("userBtn"), menu = document.getElementById("userMenu"), chev = document.getElementById("chev");
+        userBtn.onclick = e => { e.stopPropagation(); menu.classList.toggle("open"); chev.textContent = menu.classList.contains("open") ? "⌃" : "⌄" };
+        document.addEventListener("click", e => { if (!menu.contains(e.target) && !userBtn.contains(e.target)) { menu.classList.remove("open"); chev.textContent = "⌄" } });
+        document.getElementById("breakOpen").onclick = () => { menu.classList.remove("open"); document.getElementById("breakModal").classList.add("open") };
+        document.getElementById("breakClose").onclick = () => document.getElementById("breakModal").classList.remove("open");
+        document.getElementById("logout").onclick = () => { try { localStorage.clear(); sessionStorage.clear() } catch (e) { } window.location.href = "./login.html" };
+        document.getElementById("backBtn").onclick = () => { window.location.href = "cvt-drs-prototype.html" };
+
+        document.getElementById("username").textContent = localStorage.getItem("username") || "ipru75474";
+        function formatNow(d) { return d.toLocaleString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" }) }
+        function updateNow() { document.getElementById("now").textContent = formatNow(new Date()) } updateNow(); setInterval(updateNow, 1000);
+        function getTimeout() { try { const raw = sessionStorage.getItem("masterData"); if (raw) { const p = JSON.parse(raw), misc = Array.isArray(p.misc) ? p.misc : (Array.isArray(p.data?.misc) ? p.data.misc : []); const m = misc.find(x => String(x.type ?? "").trim().toUpperCase() === "SES_TIMEOUT" && String(x.isActive ?? "Y").trim().toUpperCase() === "Y"); const n = Number(m?.value ?? m?.description); if (Number.isFinite(n) && n > 0) return n * 60000 } } catch (e) { } return 15 * 60000 }
+        let timeoutMs = getTimeout(), deadline = Date.now() + timeoutMs;
+        function resetSession() { timeoutMs = getTimeout(); deadline = Date.now() + timeoutMs }
+        ["mousedown", "keydown", "scroll", "touchstart"].forEach(ev => addEventListener(ev, resetSession, { passive: true }));
+        setInterval(() => { const latest = getTimeout(); if (latest !== timeoutMs) { timeoutMs = latest; deadline = Date.now() + timeoutMs } const ms = Math.max(0, deadline - Date.now()), sec = Math.ceil(ms / 1000), min = Math.floor(sec / 60); document.getElementById("session").textContent = String(min).padStart(2, "0") + ":" + String(sec % 60).padStart(2, "0"); if (ms === 0) window.location.href = "./login.html" }, 1000);
+    </script>
+</body>
+
+</html>
