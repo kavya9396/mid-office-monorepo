@@ -178,6 +178,7 @@ export function DetailCard({
                   header: col,
                 }))}
                 data={table.rows}
+                getRowId={(row) => table.columns.map((col) => row[col]).join("|")}
               />
             </Box>
           ))}

@@ -5,3 +5,5 @@ dist
 *.local
 *.tsbuildinfo
 .pnpm-store
+
+.bob

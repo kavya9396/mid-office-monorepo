@@ -4,10 +4,25 @@
   "version": "0.0.0",
   "type": "module",
   "exports": {
+    "./applicant-profile": {
+      "types": "./src/components/ApplicantProfile.tsx",
+      "import": "./src/components/ApplicantProfile.tsx",
+      "default": "./src/components/ApplicantProfile.tsx"
+    },
+    "./profile-fields": {
+      "types": "./src/components/ProfileFields.tsx",
+      "import": "./src/components/ProfileFields.tsx",
+      "default": "./src/components/ProfileFields.tsx"
+    },
     "./auth": {
       "types": "./src/services/loginService.ts",
       "import": "./src/services/loginService.ts",
       "default": "./src/services/loginService.ts"
+    },
+    "./decision-bar": {
+      "types": "./src/components/DecisionBar.tsx",
+      "import": "./src/components/DecisionBar.tsx",
+      "default": "./src/components/DecisionBar.tsx"
     },
     "./detail-card": {
       "types": "./src/components/DetailCard.tsx",
