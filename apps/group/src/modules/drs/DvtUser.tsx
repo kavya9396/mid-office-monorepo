@@ -11,8 +11,8 @@ import {
   type DetailAttribute,
   type DetailTable,
 } from "@insurance-poc/common/detail-card";
-import LifeAssuredSection from "./LifeAssuredSection";
-import { mockLifeAssured, mockProductDetail } from "./lifeAssured.mock";
+import { LifeAssured } from "@insurance-poc/common/life-assured";
+import { mockApplicants } from "./lifeAssuredData";
 
 type CardType = "APPLICATION" | "SOURCE" | "GROUP" | "RISK";
 
@@ -201,6 +201,8 @@ const DvtUser = () => {
   const [breDetailOpen, setBreDetailOpen] = useState(false);
 
   const handleBreRetrigger = () => console.log("BRE Retrigger clicked");
+  const handleApplicantAction = (action: string) => (applicantId: string) =>
+    console.log(`${action} clicked`, applicantId);
 
   const breRows: ComparisonRow[] = [
     {
@@ -263,6 +265,13 @@ const DvtUser = () => {
         onViewDetail={() => setBreDetailOpen(true)}
       />
 
+      <LifeAssured
+        applicants={mockApplicants}
+        onEdit={handleApplicantAction("Edit")}
+        onViewMedical={handleApplicantAction("View Medical")}
+        onViewFinancial={handleApplicantAction("View Financial")}
+      />
+
       <CustomDialog
         open={breDetailOpen}
         onClose={() => setBreDetailOpen(false)}
@@ -282,13 +291,6 @@ const DvtUser = () => {
           rows={breRows}
         />
       </CustomDialog>
-
-      <LifeAssuredSection
-        members={mockLifeAssured}
-        product={mockProductDetail}
-        onViewMedical={() => console.log("View Medical clicked")}
-        onViewFinancial={() => console.log("View Financial clicked")}
-      />
     </Box>
   );
 };

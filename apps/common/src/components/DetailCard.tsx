@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Box, IconButton, Typography, type DialogProps } from "@mui/material";
 import {
   CloseIcon,
+  colors,
   CustomDialog,
   CustomTable,
   KeyRightArrowIcon,
@@ -65,10 +66,10 @@ export function DetailCard({
       {/* SUMMARY CARD */}
       <Box
         sx={{
-          backgroundColor: "#fff",
+          backgroundColor: colors.white,
           borderTop: (theme) => `4px solid ${theme.palette.primary.main}`,
           borderRadius: "10px",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+          boxShadow: `0 2px 8px ${colors.shadowNeutral}`,
           px: 1.25,
           py: 1,
           width: "100%",
@@ -143,7 +144,7 @@ export function DetailCard({
               <IconButton
                 aria-label="Close dialog"
                 onClick={() => setOpen(false)}
-                sx={{ p: 0, color: "#fff" }}
+                sx={{ p: 0, color: colors.white }}
               >
                 <CloseIcon width={22} height={22} />
               </IconButton>
@@ -161,7 +162,7 @@ export function DetailCard({
               {expandedAttributes.map((attr) => (
                 <Box
                   key={attr.name}
-                  sx={{ py: 0.75, borderBottom: "1px solid #E5E5E5" }}
+                  sx={{ py: 0.75, borderBottom: `1px solid ${colors.borderLight}` }}
                 >
                   <FieldText {...attr} />
                 </Box>

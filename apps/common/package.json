@@ -28,6 +28,11 @@
       "types": "./src/components/DetailCard.tsx",
       "import": "./src/components/DetailCard.tsx",
       "default": "./src/components/DetailCard.tsx"
+    },
+    "./life-assured": {
+      "types": "./src/components/LifeAssured/LifeAssured.tsx",
+      "import": "./src/components/LifeAssured/LifeAssured.tsx",
+      "default": "./src/components/LifeAssured/LifeAssured.tsx"
     }
   },
   "scripts": {

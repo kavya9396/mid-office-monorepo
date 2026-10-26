@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import { Box, Button, Typography } from "@mui/material";
-import { CustomTable, RefreshIcon, type Column } from "@insurance-poc/ui";
+import { Box, Typography } from "@mui/material";
+import { colors, CustomButton, CustomTable, RefreshIcon, type Column } from "@insurance-poc/ui";
 
 /* ------------------------------------------------------------------ */
 /* Decision bar: title | Initial chip | Final chip | refresh | detail   */
@@ -43,10 +43,10 @@ export function DecisionBar({
         px: 1.5,
         py: 0.75,
         gap: 2,
-        border: "1px solid #E7DDD7",
+        border: `1px solid ${colors.borderBrand}`,
         borderRadius: 1.5,
         flexWrap: "wrap",
-        backgroundColor: "#fff"
+        backgroundColor: colors.white,
       }}
     >
       <Typography
@@ -55,7 +55,7 @@ export function DecisionBar({
           fontSize: 13,
           fontWeight: 700,
           color: (theme) => `${theme.palette.primary.main}`,
-          borderRight: "1px solid #E7DDD7",
+          borderRight: `1px solid ${colors.borderBrand}`,
         }}
       >
         {title}
@@ -68,7 +68,7 @@ export function DecisionBar({
             key={item.label}
             sx={{ display: "flex", alignItems: "center", gap: 0.75 }}
           >
-            <Typography sx={{ fontSize: 11, color: "#756D69" }}>
+            <Typography sx={{ fontSize: 11, color: colors.textSubtle }}>
               {item.label}
             </Typography>
             <Typography
@@ -78,9 +78,9 @@ export function DecisionBar({
                 fontSize: 12,
                 fontWeight: 700,
                 borderRadius: 1,
-                bgcolor: success ? "#EEF8F1" : "#F4F3F2",
-                border: `1px solid ${success ? "#B8DCC0" : "#DED9D6"}`,
-                color: success ? "#28743C" : "#4E4743",
+                bgcolor: success ? colors.chipSuccessBg : colors.chipNeutralBg,
+                border: `1px solid ${success ? colors.chipSuccessBorder : colors.chipNeutralBorder}`,
+                color: success ? colors.chipSuccessText : colors.chipNeutralText,
               }}
             >
               {item.value}
@@ -92,7 +92,7 @@ export function DecisionBar({
       <Box sx={{ flex: 1 }} />
 
       {onRefresh && (
-        <Button
+        <CustomButton
           size="small"
           variant="outlined"
           aria-label={refreshLabel}
@@ -112,7 +112,7 @@ export function DecisionBar({
       )}
 
       {onViewDetail && (
-        <Button
+        <CustomButton
           size="small"
           variant="outlined"
           onClick={onViewDetail}
@@ -123,7 +123,7 @@ export function DecisionBar({
           }}
         >
           {viewDetailLabel}
-        </Button>
+        </CustomButton>
       )}
     </Box>
   );
@@ -133,7 +133,7 @@ export function DecisionBar({
 /* Comparison table: label | initial | final, with changed-value marks  */
 /* ------------------------------------------------------------------ */
 
-const HIGHLIGHT = "#FFEAD7";
+const HIGHLIGHT = colors.highlight;
 
 export type ComparisonRow = {
   label: string;

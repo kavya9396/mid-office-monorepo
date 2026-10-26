@@ -92,7 +92,7 @@ export default function CustomTable<T extends object>({
               backgroundColor: "#FFEAD7",
               color: "#000",
               fontSize: "10px",
-              fontWeight: 600,
+              fontWeight: 500,
               py: 0.5,
               px: 1,
               lineHeight: 1.2,
@@ -148,7 +148,7 @@ export default function CustomTable<T extends object>({
                       <Typography
                         sx={{
                           fontSize: "12px",
-                          fontWeight: 600,
+                          fontWeight: 500,
                           color: "#000",
                         }}
                       >
