@@ -7,6 +7,7 @@ import {
 import { appBasename, viteBase } from "@insurance-poc/routes";
 import { RetailDrsPage } from "../modules/drs/RetailDrsPage";
 import { RetailInboxPage } from "../modules/inbox/RetailInboxPage";
+import { RetailPreviousPolicyPage } from "../modules/previousPolicy/RetailPreviousPolicyPage";
 import { RequireSession } from "./RequireSession";
 import { RetailAppLayout } from "./RetailAppLayout";
 
@@ -24,6 +25,7 @@ export function AppRoutes() {
           <Route index element={<Navigate to="/inbox" replace />} />
           <Route path="/inbox" element={<RetailInboxPage />} />
           <Route path="/drs" element={<RetailDrsPage />} />
+          <Route path="/previous-policy" element={<RetailPreviousPolicyPage />} />
           <Route path="*" element={<Navigate to="/inbox" replace />} />
         </Route>
       </Routes>

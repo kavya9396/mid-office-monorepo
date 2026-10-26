@@ -1,9 +1,17 @@
+import { useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Box } from "@mui/material";
 import {
   DetailCard,
   type DetailAttribute,
   type DetailTable,
 } from "@insurance-poc/common/detail-card";
+import {
+  QuickLinks,
+  type QuickLinkItem,
+} from "@insurance-poc/common/quick-links";
+import { PreviousPolicyDialog } from "@insurance-poc/common/previous-policy";
+import { CustomSnackbar } from "@insurance-poc/ui";
 
 type CardType = "APPLICATION" | "SOURCE" | "GROUP" | "RISK";
 
@@ -145,27 +153,86 @@ const mockResponse: {
   },
 };
 
-const DvtUser = () => {
+const DEFAULT_QUICK_LINKS: QuickLinkItem[] = [
+  { id: "applicant-profile", label: "Applicant Profile" },
+  { id: "proposal-documents", label: "Proposal Form & Documents" },
+  { id: "previous-policies", label: "Previous Policies" },
+  { id: "open-tasks", label: "Open Tasks" },
+  { id: "risk-details", label: "Risk Details" },
+  { id: "audit-trail", label: "Audit Trail" },
+  { id: "raise-grievance", label: "Raise Grievance" },
+];
+
+export interface DvtUserProps {
+  quickLinks?: QuickLinkItem[];
+  previousPolicyMode?: "page" | "modal";
+}
+
+const DvtUser = ({
+  quickLinks,
+  previousPolicyMode = "page",
+}: Readonly<DvtUserProps>) => {
+  const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const applicationNo =
+    params.get("applicationNo")?.trim() || mockResponse.data.applicationNo;
+
   const { cardDetails } = mockResponse.data;
+  const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
+  const [previousPolicyOpen, setPreviousPolicyOpen] = useState(false);
+
+  const linkItems =
+    quickLinks ??
+    DEFAULT_QUICK_LINKS.map((link) => ({
+      ...link,
+      onClick: () => {
+        if (link.id === "previous-policies") {
+          if (previousPolicyMode === "modal") {
+            setPreviousPolicyOpen(true);
+          } else {
+            navigate(
+              `/previous-policy?applicationNo=${encodeURIComponent(applicationNo)}`,
+            );
+          }
+        } else {
+          setSnackbarMessage(`Navigating to ${link.label}`);
+        }
+      },
+    }));
 
   return (
-    <Box
-      sx={{
-        p: 2,
-        display: "grid",
-        gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-        gap: 2,
-      }}
-    >
-      {cardDetails.map((card) => (
-        <DetailCard
-          key={card.type}
-          title={CARD_TITLES[card.type]}
-          attributes={card.attributes}
-          expandedAttributes={card.expandedAttributes}
-          tables={card.tables}
-        />
-      ))}
+    <Box sx={{ position: "relative", minHeight: "100%", pb: 8 }}>
+      <Box
+        sx={{
+          p: 2,
+          display: "grid",
+          gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+          gap: 2,
+        }}
+      >
+        {cardDetails.map((card) => (
+          <DetailCard
+            key={card.type}
+            title={CARD_TITLES[card.type]}
+            attributes={card.attributes}
+            expandedAttributes={card.expandedAttributes}
+            tables={card.tables}
+          />
+        ))}
+      </Box>
+
+      <QuickLinks items={linkItems} title="Quick Links" />
+
+      <PreviousPolicyDialog
+        open={previousPolicyOpen}
+        onClose={() => setPreviousPolicyOpen(false)}
+      />
+
+      <CustomSnackbar
+        open={Boolean(snackbarMessage)}
+        message={snackbarMessage ?? ""}
+        onClose={() => setSnackbarMessage(null)}
+      />
     </Box>
   );
 };

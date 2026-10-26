@@ -13,6 +13,16 @@
       "types": "./src/components/DetailCard.tsx",
       "import": "./src/components/DetailCard.tsx",
       "default": "./src/components/DetailCard.tsx"
+    },
+    "./quick-links": {
+      "types": "./src/components/QuickLinks.tsx",
+      "import": "./src/components/QuickLinks.tsx",
+      "default": "./src/components/QuickLinks.tsx"
+    },
+    "./previous-policy": {
+      "types": "./src/components/PreviousPolicy.tsx",
+      "import": "./src/components/PreviousPolicy.tsx",
+      "default": "./src/components/PreviousPolicy.tsx"
     }
   },
   "scripts": {
