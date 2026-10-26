@@ -69,6 +69,9 @@ const inlineLinkSx = {
   cursor: "pointer",
 };
 
+const compactLaptop = "@media (max-height: 800px)";
+const shortLaptop = "@media (max-height: 680px)";
+
 function toErrorMessage(reason: unknown, fallback: string): string {
   if (reason instanceof Error) {
     return reason.message;
@@ -109,7 +112,9 @@ function LoginArtwork() {
     <Box
       sx={{
         width: { xs: "0%", md: "50%" },
+        minHeight: 0,
         display: { xs: "none", md: "block" },
+        overflow: "hidden",
         position: "relative",
       }}
     >
@@ -120,6 +125,7 @@ function LoginArtwork() {
         sx={{
           width: "100%",
           height: "100%",
+          display: "block",
           objectFit: "cover",
         }}
       />
@@ -134,7 +140,13 @@ function LoginIntro() {
         component="img"
         src={IPRULogo}
         alt="ICICI Prudential Life Insurance"
-        sx={{ height: 72, width: "auto", mb: 1.5 }}
+        sx={{
+          height: 72,
+          width: "auto",
+          mb: 1.5,
+          [compactLaptop]: { height: 52, mb: 1 },
+          [shortLaptop]: { height: 40, mb: 0.5 },
+        }}
       />
       <Typography variant="body1" color="text.secondary">
         Log in to access your account
@@ -163,6 +175,8 @@ function CredentialsForm({
         display: "flex",
         flexDirection: "column",
         gap: 2,
+        [compactLaptop]: { gap: 1.25 },
+        [shortLaptop]: { gap: 1 },
       }}
     >
       <Box>
@@ -173,6 +187,13 @@ function CredentialsForm({
           tabs={businessTabs}
           value={businessType}
           onChange={onBusinessTypeChange}
+          sx={{
+            [compactLaptop]: { p: 0.5, gap: 0.5 },
+            "& button": {
+              [compactLaptop]: { py: 0.75 },
+              [shortLaptop]: { py: 0.5 },
+            },
+          }}
         />
       </Box>
 
@@ -238,6 +259,7 @@ function CredentialsForm({
         <Box
           sx={{
             mt: 1,
+            [compactLaptop]: { mt: 0.5 },
             display: "flex",
             flexDirection: "column",
             alignItems: "stretch",
@@ -280,7 +302,13 @@ function CredentialsForm({
         variant="contained"
         type="submit"
         disabled={!submission.canSubmit}
-        sx={{ mt: 1, py: 1.25, borderRadius: "50px" }}
+        sx={{
+          mt: 1,
+          py: 1.25,
+          borderRadius: "50px",
+          [compactLaptop]: { mt: 0.5, py: 1 },
+          [shortLaptop]: { mt: 0, py: 0.75 },
+        }}
       >
         {submitLabel}
       </CustomButton>
@@ -291,7 +319,7 @@ function CredentialsForm({
 function LegalFooter() {
   return (
     <Box sx={{ textAlign: "center" }}>
-      <Divider sx={{ mb: 1 }} />
+      <Divider sx={{ mb: 1, [compactLaptop]: { mb: 0.5 } }} />
       <Typography
         variant="caption"
         color="text.secondary"
@@ -330,6 +358,8 @@ function PoweredBy() {
         justifyContent: "center",
         gap: 1,
         py: 2,
+        [compactLaptop]: { py: 1 },
+        [shortLaptop]: { py: 0.75 },
       }}
     >
       <Typography variant="body2">Powered by</Typography>
@@ -377,8 +407,11 @@ export function LoginPage() {
   return (
     <Box
       sx={{
+        position: "fixed",
+        inset: 0,
         display: "flex",
-        height: "100vh",
+        height: "100dvh",
+        maxHeight: "100dvh",
         overflow: "hidden",
         bgcolor: "#FFFFFF",
       }}
@@ -400,13 +433,15 @@ export function LoginPage() {
             maxWidth: 400,
             flex: 1,
             minHeight: 0,
-            overflow: "auto",
+            overflow: "hidden",
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
             px: 4,
             py: 3,
             gap: 2.5,
+            [compactLaptop]: { py: 1.5, gap: 1.5 },
+            [shortLaptop]: { py: 1, gap: 1 },
           }}
         >
           <LoginIntro />
