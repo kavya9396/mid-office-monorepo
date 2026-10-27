@@ -34,6 +34,16 @@
       "import": "./src/components/Requirement Mgmt/RequirementMgmt.tsx",
       "default": "./src/components/Requirement Mgmt/RequirementMgmt.tsx"
     },
+    "./quick-links": {
+      "types": "./src/components/QuickLinks.tsx",
+      "import": "./src/components/QuickLinks.tsx",
+      "default": "./src/components/QuickLinks.tsx"
+    },
+    "./previous-policy": {
+      "types": "./src/components/PreviousPolicy.tsx",
+      "import": "./src/components/PreviousPolicy.tsx",
+      "default": "./src/components/PreviousPolicy.tsx"
+    },
     "./life-assured": {
       "types": "./src/components/LifeAssured/LifeAssured.tsx",
       "import": "./src/components/LifeAssured/LifeAssured.tsx",

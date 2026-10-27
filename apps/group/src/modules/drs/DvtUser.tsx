@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+
 import { Box, Typography } from "@mui/material";
-import { CustomDialog, DeleteIcon, EditIcon } from "@insurance-poc/ui";
+import { CustomSnackbar, CustomDialog, DeleteIcon, EditIcon } from "@insurance-poc/ui";
 import {
   DecisionBar,
   DecisionComparisonTable,
@@ -14,6 +16,11 @@ import {
 import { DecisionSection, type DecisionSubmitPayload } from "@insurance-poc/common/decision-section";
 import { LifeAssured } from "@insurance-poc/common/life-assured";
 import { RequirementMgmt } from "@insurance-poc/common/requirement-mgmt";
+import {
+  QuickLinks,
+  type QuickLinkItem,
+} from "@insurance-poc/common/quick-links";
+import { PreviousPolicyDialog } from "@insurance-poc/common/previous-policy";
 import { mockApplicants } from "./lifeAssuredData";
 import {
   mockRequirements,
@@ -162,6 +169,21 @@ const mockResponse: {
   },
 };
 
+const DEFAULT_QUICK_LINKS: QuickLinkItem[] = [
+  { id: "applicant-profile", label: "Applicant Profile" },
+  { id: "proposal-documents", label: "Proposal Form & Documents" },
+  { id: "previous-policies", label: "Previous Policies" },
+  { id: "open-tasks", label: "Open Tasks" },
+  { id: "risk-details", label: "Risk Details" },
+  { id: "audit-trail", label: "Audit Trail" },
+  { id: "raise-grievance", label: "Raise Grievance" },
+];
+
+export interface DvtUserProps {
+  quickLinks?: QuickLinkItem[];
+  previousPolicyMode?: "page" | "modal";
+}
+
 type BreDecision = {
   decision: string;
   remarks: string;
@@ -203,7 +225,37 @@ const formatBreTimestamp = (value?: string) => {
   return `${Number(day)} ${MONTHS[Number(month) - 1]} ${year}, ${String(hour12).padStart(2, "0")}:${minutes}:00 ${meridiem}`;
 };
 
-const DvtUser = () => {
+const DvtUser = ({
+  quickLinks,
+  previousPolicyMode = "page",
+}: Readonly<DvtUserProps>) => {
+  const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const applicationNo =
+    params.get("applicationNo")?.trim() || mockResponse.data.applicationNo;
+
+  const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
+  const [previousPolicyOpen, setPreviousPolicyOpen] = useState(false);
+
+  const linkItems =
+    quickLinks ??
+    DEFAULT_QUICK_LINKS.map((link) => ({
+      ...link,
+      onClick: () => {
+        if (link.id === "previous-policies") {
+          if (previousPolicyMode === "modal") {
+            setPreviousPolicyOpen(true);
+          } else {
+            navigate(
+              `/previous-policy?applicationNo=${encodeURIComponent(applicationNo)}`,
+            );
+          }
+        } else {
+          setSnackbarMessage(`Navigating to ${link.label}`);
+        }
+      },
+    }));
+
   const { cardDetails } = mockResponse.data;
   const { breDecision, latestBreDecision } = mockBre;
   const [breDetailOpen, setBreDetailOpen] = useState(false);
@@ -245,9 +297,10 @@ const DvtUser = () => {
   ];
 
   return (
-    <Box sx={{ p: 2, display: "grid", gap: 2 }}>
+    <Box sx={{ position: "relative", minHeight: "100%", pb: 8 }}>
       <Box
         sx={{
+          p: 2,
           display: "grid",
           gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
           gap: 2,
@@ -263,6 +316,19 @@ const DvtUser = () => {
           />
         ))}
       </Box>
+
+      <QuickLinks items={linkItems} title="Quick Links" />
+
+      <PreviousPolicyDialog
+        open={previousPolicyOpen}
+        onClose={() => setPreviousPolicyOpen(false)}
+      />
+
+      <CustomSnackbar
+        open={Boolean(snackbarMessage)}
+        message={snackbarMessage ?? ""}
+        onClose={() => setSnackbarMessage(null)}
+      />
 
       <DecisionBar
         title="BRE Decision"

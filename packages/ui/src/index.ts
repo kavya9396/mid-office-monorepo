@@ -1,5 +1,10 @@
 export { appTheme, colors } from "./theme";
-export { CloseIcon, KeyRightArrowIcon, RefreshIcon } from "./icons/Icons";
+export {
+  CloseIcon,
+  KeyRightArrowIcon,
+  LinkIcon,
+  RefreshIcon,
+} from "./icons/Icons";
 
 export { default as CustomAccordion } from "./Accordion/Accordion";
 export {

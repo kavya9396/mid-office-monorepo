@@ -35,7 +35,7 @@ type CustomTableProps<T> = {
   headerAction?: ReactNode;
 
   // Each row must have a stable, unique key.
-  getRowId: (row: T) => Key;
+  getRowId?: (row: T, index: number) => Key;
 };
 
 export default function CustomTable<T extends object>({
@@ -202,7 +202,7 @@ export default function CustomTable<T extends object>({
               </TableRow>
             ) : (
               data.map((row, rowIndex) => (
-                <TableRow key={getRowId(row)}>
+                <TableRow key={getRowId ? getRowId(row, rowIndex) : rowIndex}>
                   {columns.map((col) => {
                     const value = row[col.key];
 
