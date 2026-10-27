@@ -45,5 +45,5 @@ export {
   LogoutIcon,
   TimerPauseIcon,
   UserProfileIcon,
-} from "./icons/Icons";
+} from "./Icons/Icons";
 export { default as CustomTooltip } from "./Tooltip/Tooltip";
