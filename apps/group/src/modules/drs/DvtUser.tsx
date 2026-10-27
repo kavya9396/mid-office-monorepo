@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Box, Typography } from "@mui/material";
-import { CustomDialog } from "@insurance-poc/ui";
+import { CustomDialog, DeleteIcon, EditIcon } from "@insurance-poc/ui";
 import {
   DecisionBar,
   DecisionComparisonTable,
@@ -11,8 +11,16 @@ import {
   type DetailAttribute,
   type DetailTable,
 } from "@insurance-poc/common/detail-card";
+import { DecisionSection, type DecisionSubmitPayload } from "@insurance-poc/common/decision-section";
 import { LifeAssured } from "@insurance-poc/common/life-assured";
+import { RequirementMgmt } from "@insurance-poc/common/requirement-mgmt";
 import { mockApplicants } from "./lifeAssuredData";
+import {
+  mockRequirements,
+  requirementStatusOptions,
+  requirementStatusOrder,
+  requirementStatusVariants,
+} from "./requirementData";
 
 type CardType = "APPLICATION" | "SOURCE" | "GROUP" | "RISK";
 
@@ -203,6 +211,8 @@ const DvtUser = () => {
   const handleBreRetrigger = () => console.log("BRE Retrigger clicked");
   const handleApplicantAction = (action: string) => (applicantId: string) =>
     console.log(`${action} clicked`, applicantId);
+  const handleDecisionSubmit = (payload: DecisionSubmitPayload) =>
+    console.log("Submit DVT decision", payload);
 
   const breRows: ComparisonRow[] = [
     {
@@ -265,11 +275,45 @@ const DvtUser = () => {
         onViewDetail={() => setBreDetailOpen(true)}
       />
 
+      <RequirementMgmt
+        requirements={mockRequirements}
+        statusOptions={requirementStatusOptions}
+        statusOrder={requirementStatusOrder}
+        statusVariants={requirementStatusVariants}
+        addButton={{
+          label: "+ Add Requirement",
+          onClick: () => console.log("Add Requirement clicked"),
+        }}
+        rowActions={[
+          {
+            key: "edit",
+            label: "Edit requirement",
+            icon: <EditIcon width={16} height={16} />,
+            onClick: (row) => console.log("Edit requirement", row.id),
+          },
+          {
+            key: "delete",
+            label: "Remove requirement",
+            icon: <DeleteIcon width={16} height={16} />,
+            tone: "danger",
+            onClick: (row, { removeRow }) => {
+              console.log("Delete requirement", row.id);
+              removeRow();
+            },
+          },
+        ]}
+        onSave={(requirements) => console.log("Save requirements", requirements)}
+      />
+
       <LifeAssured
         applicants={mockApplicants}
         onEdit={handleApplicantAction("Edit")}
         onViewMedical={handleApplicantAction("View Medical")}
         onViewFinancial={handleApplicantAction("View Financial")}
+      />
+
+      <DecisionSection
+        onSubmit={handleDecisionSubmit}
       />
 
       <CustomDialog

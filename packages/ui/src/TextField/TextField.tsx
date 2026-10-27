@@ -9,9 +9,18 @@ type CustomTextFieldProps = TextFieldProps & {
 const inputStyles: TextFieldProps["sx"] = {
   "& .MuiInputBase-input": {
     fontSize: "12px",
+    boxSizing: "border-box",
+
+    "&::placeholder": {
+      fontSize: "12px",
+      opacity: 1,
+    },
   },
 
   "& .MuiOutlinedInput-root": {
+    height: "40px",
+    minHeight: "40px",
+    boxSizing: "border-box",
     borderRadius: "10px",
     backgroundColor: "#FFFFFF",
 
@@ -37,6 +46,25 @@ const inputStyles: TextFieldProps["sx"] = {
 
     "& input[type='date']::-webkit-calendar-picker-indicator:hover": {
       opacity: 1,
+    },
+
+    // Keep multiline fields at the same height
+    "&.MuiInputBase-multiline": {
+      height: "40px",
+      padding: "0 14px",
+    },
+
+    "& .MuiInputBase-inputMultiline": {
+      height: "auto",
+      padding: "0",
+      overflow: "auto",
+      fontSize: "12px",
+      boxSizing: "border-box",
+
+      "&::placeholder": {
+        fontSize: "12px",
+        opacity: 1,
+      },
     },
   },
 };
