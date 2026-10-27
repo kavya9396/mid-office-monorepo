@@ -3,6 +3,14 @@ import { Box, Typography } from "@mui/material";
 import { colors, CustomButton, CustomTabs, type TabItem } from "@insurance-poc/ui";
 import { ProfileImage } from "./ProfileImage";
 import type { FieldData } from "./Applicant Profile/Fields";
+import {
+  EditApplicantDialog,
+  type EditApplicantOptions,
+  type EditApplicantValues,
+  type NomineeEditRow,
+  type RiderEditRow,
+  type LoanEditValues,
+} from "./EditApplicantDialog";
 import { ImageDetails, type ImageDetailRecord } from "./Applicant Profile/Image Details";
 import { PersonalKyc } from "./Applicant Profile/Personal & KYC";
 import { ContactAddress } from "./Applicant Profile/Contact & Address";
@@ -10,7 +18,17 @@ import { ProductDetails } from "./Applicant Profile/Product Details";
 import { Nominee, type AppointeeRow, type NomineeRow } from "./Applicant Profile/Nominee";
 import { Lifestyle } from "./Applicant Profile/Lifestyle";
 
-export type { FieldData, ImageDetailRecord, NomineeRow, AppointeeRow };
+export type {
+  FieldData,
+  ImageDetailRecord,
+  NomineeRow,
+  AppointeeRow,
+  EditApplicantOptions,
+  EditApplicantValues,
+  NomineeEditRow,
+  RiderEditRow,
+  LoanEditValues,
+};
 
 export type LifeAssuredApplicant = {
   id: string;
@@ -27,11 +45,30 @@ export type LifeAssuredApplicant = {
   nominees: NomineeRow[];
   appointees: AppointeeRow[];
   lifestyleFields: FieldData[];
+  /** Values pre-filled in the Edit dialog. */
+  editValues?: Partial<EditApplicantValues>;
+  /** Nominee rows pre-filled in the Edit dialog. */
+  editNominees?: NomineeEditRow[];
+  /** Rider rows pre-filled in the Edit dialog. */
+  editRiders?: RiderEditRow[];
+  /** Base & loan values pre-filled in the Edit dialog. */
+  editLoan?: LoanEditValues;
 };
 
 export type LifeAssuredProps = {
   applicants: LifeAssuredApplicant[];
+  /** Fires when Edit is clicked; the edit dialog opens as well. */
   onEdit?: (applicantId: string) => void;
+  /** Fires when Save is clicked in the edit dialog with valid values. */
+  onSaveEdit?: (
+    applicantId: string,
+    values: EditApplicantValues,
+    nominees: NomineeEditRow[],
+    riders: RiderEditRow[],
+    loan: LoanEditValues,
+  ) => void;
+  /** Dropdown options for the edit dialog (masterData: gender, id_proof_type, resident_status). */
+  editOptions?: Partial<EditApplicantOptions>;
   onViewMedical?: (applicantId: string) => void;
   onViewFinancial?: (applicantId: string) => void;
 };
@@ -141,7 +178,21 @@ function ApplicantProfileSection({
   );
 }
 
-export function LifeAssured({ applicants, ...actions }: Readonly<LifeAssuredProps>) {
+export function LifeAssured({
+  applicants,
+  onEdit,
+  onSaveEdit,
+  editOptions,
+  ...actions
+}: Readonly<LifeAssuredProps>) {
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const editingApplicant = applicants.find((applicant) => applicant.id === editingId);
+
+  const handleEdit = (applicantId: string) => {
+    setEditingId(applicantId);
+    onEdit?.(applicantId);
+  };
+
   if (applicants.length === 0) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100px" }}>
@@ -153,8 +204,22 @@ export function LifeAssured({ applicants, ...actions }: Readonly<LifeAssuredProp
   return (
     <Box sx={{ display: "grid", gap: 2 }}>
       {applicants.map((applicant) => (
-        <ApplicantProfileSection key={applicant.id} applicant={applicant} {...actions} />
+        <ApplicantProfileSection key={applicant.id} applicant={applicant} onEdit={handleEdit} {...actions} />
       ))}
+
+      <EditApplicantDialog
+        open={Boolean(editingApplicant)}
+        onClose={() => setEditingId(null)}
+        initialValues={editingApplicant?.editValues}
+        initialNominees={editingApplicant?.editNominees}
+        initialRiders={editingApplicant?.editRiders}
+        initialLoan={editingApplicant?.editLoan}
+        options={editOptions}
+        onSave={(values, nominees, riders, loan) => {
+          if (editingApplicant) onSaveEdit?.(editingApplicant.id, values, nominees, riders, loan);
+          setEditingId(null);
+        }}
+      />
     </Box>
   );
 }

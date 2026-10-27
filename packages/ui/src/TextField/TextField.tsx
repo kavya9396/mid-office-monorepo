@@ -85,7 +85,6 @@ const CustomTextField = ({
         <Typography
           sx={{
             fontSize: "12px",
-            fontWeight: 600,
           }}
         >
           {labelText}

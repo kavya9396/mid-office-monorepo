@@ -209,7 +209,6 @@ export default function CustomSelect(props: CustomSelectProps) {
         <Typography
           sx={{
             fontSize: "12px",
-            fontWeight: 600,
           }}
         >
           {label}

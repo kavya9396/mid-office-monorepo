@@ -105,6 +105,25 @@ const mockSummary: SummaryMember[] = [
 // applicationOverview.productDetail[0] in the same mock
 const mockProductDetail = { code: "E36", productType: "" };
 
+// applicationOverview.riderDetails in the same mock (policyTerm -> rider term)
+const mockRiders = [
+  { riderName: "ICICI Pru Non-Linked Accidental Death and Disability Rider", sumAssured: 5000000, riderTerm: 36 },
+  { riderName: "ICICI Pru Non-Linked Accidental Death and Disability Rider", sumAssured: 5000000, riderTerm: 36 },
+  { riderName: "ICICI Pru Non-Linked Health Protect Rider", sumAssured: 5000000, riderTerm: 36 },
+];
+
+// applicationOverview.productDetail[0] (base) + groupDetails in the same mock; empty values stay empty
+const mockLoan = {
+  baseSumAssured: "",
+  loanAmount: "",
+  loanDisbursementDate: "",
+  loanShare: "",
+  loanTerm: "",
+  policyTerm: "",
+  masterCode: "",
+  loanAccountNumber: "",
+};
+
 // Fallback rows the prototype shows when the API sends no image records
 const mockImageRecords = [
   {
@@ -134,7 +153,7 @@ const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "
 
 // "1988-08-09T00:00" -> "9 Aug 1988" (same output as the prototype)
 const formatDate = (value?: string) => {
-  const match = value?.trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value?.trim() ?? "");
   if (!match) return "";
   const [, year, month, day] = match;
   return `${Number(day)} ${MONTHS[Number(month) - 1]} ${year}`;
@@ -169,6 +188,10 @@ const addressFields = (address?: Address): FieldData[] => [
 
 const fullName = (first: string, last: string) => [first, last].filter(Boolean).join(" ") || "-";
 
+// Summary values are loosely typed; only non-empty strings are valid name parts
+const joinNameParts = (...parts: unknown[]) =>
+  parts.filter((part): part is string => typeof part === "string" && part !== "").join(" ");
+
 const toApplicant = (member: SummaryMember, total: number): LifeAssuredApplicant => {
   const summary = member.proposerSummary;
   const kyc = member.kycDetails;
@@ -183,7 +206,7 @@ const toApplicant = (member: SummaryMember, total: number): LifeAssuredApplicant
     personalFields: [
       {
         label: "Applicant Name",
-        value: [summary.firstName, summary.middleName, summary.lastName].filter(Boolean).join(" "),
+        value: joinNameParts(summary.firstName, summary.middleName, summary.lastName),
       },
       { label: "Date of Birth", value: formatDate(summary.dob as string) },
       { label: "Age", value: years == null ? "-" : `${years} Years` },
@@ -252,6 +275,22 @@ const toApplicant = (member: SummaryMember, total: number): LifeAssuredApplicant
       appointeeDOB: formatDate(a.dob) || "-",
       appointeeRelationship: "-",
     })),
+    editNominees: member.nominee.map((n) => ({
+      firstName: n.firstName,
+      lastName: n.lastName,
+      dob: n.dob.slice(0, 10),
+      gender: n.gender,
+      proposerNomineeRelation: "",
+      percentage: String(n.percentage),
+      accountNumber: "",
+      ifsc: "",
+    })),
+    editRiders: mockRiders.map((r) => ({
+      riderName: r.riderName,
+      sumAssured: String(r.sumAssured),
+      riderTerm: String(r.riderTerm),
+    })),
+    editLoan: mockLoan,
     lifestyleFields: [
       { label: "Height", value: member.healthDetail.height },
       { label: "Weight", value: member.healthDetail.weight },

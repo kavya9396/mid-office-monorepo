@@ -80,7 +80,7 @@ if (disableTodayAndFuture) {
                     <Typography
                         component="label"
                         htmlFor={id}
-                        sx={{ display: "block", fontSize: "12px", fontWeight: 600 }}
+                        sx={{ display: "block", fontSize: "12px" }}
                     >
                         {label}
                         {required && <Box component="span" sx={{ color: "error.main" }}> *</Box>}

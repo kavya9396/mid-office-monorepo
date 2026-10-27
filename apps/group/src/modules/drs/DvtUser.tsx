@@ -297,10 +297,9 @@ const DvtUser = ({
   ];
 
   return (
-    <Box sx={{ position: "relative", minHeight: "100%", pb: 8 }}>
+    <Box sx={{ position: "relative", minHeight: "100%", p:2, display: "flex", gap:2, flexDirection: "column" }}>
       <Box
         sx={{
-          p: 2,
           display: "grid",
           gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
           gap: 2,
