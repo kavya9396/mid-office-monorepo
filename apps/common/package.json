@@ -30,9 +30,9 @@
       "default": "./src/components/DetailCard.tsx"
     },
     "./quick-links": {
-      "types": "./src/components/QuickLinks.tsx",
-      "import": "./src/components/QuickLinks.tsx",
-      "default": "./src/components/QuickLinks.tsx"
+      "types": "./src/modules/quick-links/index.ts",
+      "import": "./src/modules/quick-links/index.ts",
+      "default": "./src/modules/quick-links/index.ts"
     },
     "./previous-policy": {
       "types": "./src/components/PreviousPolicy.tsx",

@@ -162,13 +162,10 @@ const mockResponse: {
 };
 
 const DEFAULT_QUICK_LINKS: QuickLinkItem[] = [
-  { id: "applicant-profile", label: "Applicant Profile" },
   { id: "proposal-documents", label: "Proposal Form & Documents" },
-  { id: "previous-policies", label: "Previous Policies" },
-  { id: "open-tasks", label: "Open Tasks" },
-  { id: "risk-details", label: "Risk Details" },
+  { id: "previous-policies", label: "Previous Policy" },
+  { id: "open-tasks", label: "Open Task" },
   { id: "audit-trail", label: "Audit Trail" },
-  { id: "raise-grievance", label: "Raise Grievance" },
 ];
 
 export interface DvtUserProps {
