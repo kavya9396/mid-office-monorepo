@@ -43,6 +43,11 @@
       "types": "./src/components/LifeAssured/LifeAssured.tsx",
       "import": "./src/components/LifeAssured/LifeAssured.tsx",
       "default": "./src/components/LifeAssured/LifeAssured.tsx"
+    },
+    "./header": {
+      "types": "./src/components/layout/Header.tsx",
+      "import": "./src/components/layout/Header.tsx",
+      "default": "./src/components/layout/Header.tsx"
     }
   },
   "scripts": {

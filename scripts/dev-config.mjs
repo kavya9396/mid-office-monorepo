@@ -18,4 +18,96 @@ export function gatewayOrigin() {
   return `http://${devConfig.host}:${devConfig.ports.common}`;
 }
 
+function hasHtmlAcceptHeader(accept) {
+  if (Array.isArray(accept)) return accept.some((value) => value.includes("text/html"));
+  return accept?.includes("text/html") ?? false;
+}
+
+function acceptHeader(accept) {
+  if (Array.isArray(accept)) return accept.join(",");
+  return accept ?? "";
+}
+
+/**
+ * Canonicalize business-app roots before the gateway proxy hands the request
+ * to Vite. Retail and Group are both built with a trailing-slash base URL.
+ */
+export function redirectBareAppRoots() {
+  const appRoots = new Set([
+    devConfig.viteBase.retail.slice(0, -1),
+    devConfig.viteBase.group.slice(0, -1),
+  ]);
+
+  return {
+    name: "redirect-bare-app-roots",
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        if (!req.url || !hasHtmlAcceptHeader(req.headers.accept)) {
+          next();
+          return;
+        }
+
+        const url = new URL(req.url, gatewayOrigin());
+        if (!appRoots.has(url.pathname)) {
+          next();
+          return;
+        }
+
+        res.writeHead(308, { Location: `${url.pathname}/${url.search}` });
+        res.end();
+      });
+    },
+  };
+}
+
+/**
+ * Browser visits to the retail or group dev port stay on that port, so /login
+ * is outside the app base and sessionStorage is a different origin.
+ * Send document navigations to the common server. Proxied requests are marked
+ * and must pass through, otherwise /retail and /group would redirect forever.
+ */
+export function redirectDirectAccessToGateway() {
+  const gateway = gatewayOrigin();
+
+  return {
+    name: "redirect-direct-access-to-gateway",
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        if (req.headers["x-dev-gateway"] === "1") {
+          next();
+          return;
+        }
+
+        const isDocument =
+          req.headers["sec-fetch-dest"] === "document" ||
+          acceptHeader(req.headers.accept).includes("text/html");
+
+        if (!isDocument || !req.url) {
+          next();
+          return;
+        }
+
+        const path = req.url.startsWith("/") ? req.url : `/${req.url}`;
+        res.writeHead(302, { Location: `${gateway}${path}` });
+        res.end();
+      });
+    },
+  };
+}
+
+export function proxyToDevApp(port) {
+  return {
+    target: `http://${devConfig.host}:${port}`,
+    changeOrigin: true,
+    ws: true,
+    configure(proxy) {
+      const markGatewayRequest = (proxyReq) => {
+        proxyReq.setHeader("X-Dev-Gateway", "1");
+      };
+      proxy.on("proxyReq", markGatewayRequest);
+      proxy.on("proxyReqWs", markGatewayRequest);
+    },
+  };
+}
+
 export { monorepoRoot };

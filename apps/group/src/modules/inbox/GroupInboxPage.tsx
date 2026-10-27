@@ -243,8 +243,11 @@ export function GroupInboxPage() {
     }
 
     setNavError(null);
-    const query = new URLSearchParams({ applicationNo }).toString();
-    navigate(`/drs?${query}`);
+    const query = new URLSearchParams({ applicationNo });
+    if (selectedCategory) {
+      query.set("role", formatCategory(selectedCategory));
+    }
+    navigate(`/drs?${query.toString()}`);
   }
 
   const categories = data ? Object.keys(data.poolData) : [];

@@ -41,5 +41,15 @@ export { default as CustomSnackbar } from "./SnackBar/Snackbar";
 export { default as CustomTable, type Column } from "./Table/Table";
 export { default as CustomTabs, type TabItem } from "./Tabs/Tabs";
 export { default as CustomTextField } from "./TextField/TextField";
-export { EyeIcon, EyeSlashIcon } from "./icons/Icons";
+export {
+  EyeIcon,
+  EyeSlashIcon,
+  KeyDownArrowIcon,
+  KeyLeftArrowIcon,
+  KeyRightArrowIcon,
+  KeyUpArrowIcon,
+  LogoutIcon,
+  TimerPauseIcon,
+  UserProfileIcon,
+} from "./Icons/Icons";
 export { default as CustomTooltip } from "./Tooltip/Tooltip";

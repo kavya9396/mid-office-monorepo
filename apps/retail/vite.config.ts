@@ -4,6 +4,7 @@ import {
   devConfig,
   gatewayOrigin,
   monorepoRoot,
+  redirectDirectAccessToGateway,
 } from "../../scripts/dev-config.mjs";
 
 const sharedPackages = [
@@ -16,7 +17,7 @@ const sharedPackages = [
 export default defineConfig({
   base: devConfig.viteBase.retail,
   clearScreen: false,
-  plugins: [react()],
+  plugins: [redirectDirectAccessToGateway(), react()],
   optimizeDeps: {
     exclude: sharedPackages,
   },

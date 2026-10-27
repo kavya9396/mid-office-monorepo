@@ -9,10 +9,6 @@ import devConfig from "./dev-config.json";
  * Separate production origins need SSO or a parent-domain session instead.
  */
 
-export const devGatewayOrigin = `http://${devConfig.host}:${devConfig.ports.common}`;
-
-export const devPorts = devConfig.ports;
-
 export const viteBase = devConfig.viteBase;
 
 export const previewPort = devConfig.previewPort;
