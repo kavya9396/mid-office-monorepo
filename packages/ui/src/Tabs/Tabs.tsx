@@ -14,11 +14,11 @@ type CustomTabsProps<T extends string> = {
 };
 
 const containerStyles: SxProps<Theme> = {
-  p: 1,
+  p: "3px",
   display: "flex",
   alignItems: "center",
   flexWrap: "wrap",
-  gap: 1,
+  gap: "3px",
   borderRadius: "50px",
   border: "1px solid #E3E3E3",
   width: "fit-content",
@@ -28,13 +28,14 @@ const getTabStyles = (isActive: boolean): SxProps<Theme> => ({
   border: "none",
   cursor: "pointer",
   borderRadius: "999px",
-  px: 1,
-  py: 1,
-  fontSize: "12px",
+  px: "10px",
+  py: "4px",
+  fontSize: "11px",
   fontWeight: isActive ? 700 : 500,
   color: isActive ? "#FFFFFF" : "#7A7A7A",
   backgroundColor: isActive ? "#E45F14" : "transparent",
   transition: "all 0.2s ease",
+  lineHeight: 1.4,
 
   "&:hover": {
     backgroundColor: isActive ? "#E45F14" : "#F5F5F5",

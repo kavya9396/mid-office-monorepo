@@ -12,11 +12,8 @@ import { DetailCard } from "@insurance-poc/common/detail-card";
 import { DecisionSection, type DecisionSubmitPayload } from "@insurance-poc/common/decision-section";
 import { LifeAssured } from "@insurance-poc/common/life-assured";
 import { RequirementMgmt } from "@insurance-poc/common/requirement-mgmt";
-import {
-  QuickLinks,
-  type QuickLinkItem,
-} from "@insurance-poc/common/quick-links";
-import { PreviousPolicyDialog } from "@insurance-poc/common/previous-policy";
+import { QuickLinksModule } from "@insurance-poc/common/quick-links";
+import { ApplicantProfile } from "@insurance-poc/common/applicant-profile";
 import {
   requirementStatusOptions,
   requirementStatusOrder,
@@ -24,6 +21,7 @@ import {
 } from "./requirementData";
 import { useGetGroupDrsQuery } from "../../services/drsApi";
 import type { CardType } from "../../services/drsService";
+import { GROUP_QUICK_LINKS_CONFIG } from "../config/quickLinks.config";
 
 const CARD_TITLES: Record<CardType, string> = {
   APPLICATION: "Application Detail",
@@ -33,18 +31,9 @@ const CARD_TITLES: Record<CardType, string> = {
 };
 
 
-const DEFAULT_QUICK_LINKS: QuickLinkItem[] = [
-  { id: "applicant-profile", label: "Applicant Profile" },
-  { id: "proposal-documents", label: "Proposal Form & Documents" },
-  { id: "previous-policies", label: "Previous Policies" },
-  { id: "open-tasks", label: "Open Tasks" },
-  { id: "risk-details", label: "Risk Details" },
-  { id: "audit-trail", label: "Audit Trail" },
-  { id: "raise-grievance", label: "Raise Grievance" },
-];
+const quickLinksConfig = GROUP_QUICK_LINKS_CONFIG.dvt;
 
 export interface DvtUserProps {
-  quickLinks?: QuickLinkItem[];
   previousPolicyMode?: "page" | "modal";
 }
 
@@ -73,10 +62,7 @@ const formatBreTimestamp = (value?: string) => {
   return `${Number(day)} ${MONTHS[Number(month) - 1]} ${year}, ${String(hour12).padStart(2, "0")}:${minutes}:00 ${meridiem}`;
 };
 
-const DvtUser = ({
-  quickLinks,
-  previousPolicyMode = "page",
-}: Readonly<DvtUserProps>) => {
+const DvtUser = () => {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const requestedApplicationNo = params.get("applicationNo")?.trim() ?? "";
@@ -84,27 +70,8 @@ const DvtUser = ({
   const applicationNo = requestedApplicationNo || drs.data?.applicationNo || "";
 
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
-  const [previousPolicyOpen, setPreviousPolicyOpen] = useState(false);
+  const [applicantProfileOpen, setApplicantProfileOpen] = useState(false);
   const [breDetailOpen, setBreDetailOpen] = useState(false);
-
-  const linkItems =
-    quickLinks ??
-    DEFAULT_QUICK_LINKS.map((link) => ({
-      ...link,
-      onClick: () => {
-        if (link.id === "previous-policies") {
-          if (previousPolicyMode === "modal") {
-            setPreviousPolicyOpen(true);
-          } else {
-            navigate(
-              `/previous-policy?applicationNo=${encodeURIComponent(applicationNo)}`,
-            );
-          }
-        } else {
-          setSnackbarMessage(`Navigating to ${link.label}`);
-        }
-      },
-    }));
 
   const handleBreRetrigger = () => console.log("BRE Retrigger clicked");
   const handleApplicantAction = (action: string) => (applicantId: string) =>
@@ -180,11 +147,20 @@ const DvtUser = ({
         ))}
       </Box>
 
-      <QuickLinks items={linkItems} title="Quick Links" />
+      <QuickLinksModule
+        items={quickLinksConfig.items}
+        applicationNo={applicationNo}
+        roleType={params.get("role")?.trim() || quickLinksConfig.defaultRoleType}
+        onNavigate={(path) => navigate(path)}
+        onNotify={(message) => setSnackbarMessage(message)}
+        dialogItemIds={["applicant-profile"]}
+        onDialogItemClick={() => setApplicantProfileOpen(true)}
+        title="Quick Links"
+      />
 
-      <PreviousPolicyDialog
-        open={previousPolicyOpen}
-        onClose={() => setPreviousPolicyOpen(false)}
+      <ApplicantProfile
+        open={applicantProfileOpen}
+        onClose={() => setApplicantProfileOpen(false)}
       />
 
       <CustomSnackbar

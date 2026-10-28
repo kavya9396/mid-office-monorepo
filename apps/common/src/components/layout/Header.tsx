@@ -13,6 +13,7 @@ import Typography from "@mui/material/Typography";
 import { useLocation, useNavigate } from "react-router-dom";
 import { assignUrl, commonPaths } from "@insurance-poc/routes";
 import {
+  CustomTooltip,
   KeyDownArrowIcon,
   KeyLeftArrowIcon,
   KeyRightArrowIcon,
@@ -39,7 +40,11 @@ type MiscMaster = {
 
 export type HeaderProps = {
   inboxPath?: string;
+  drsPath?: string;
   onBackToInbox?: () => void;
+  onBackToDrs?: () => void;
+  onBack?: () => void;
+  backPath?: string;
   role?: string;
   applicationNo?: string;
 };
@@ -249,29 +254,102 @@ function TaskIdentity({
   role,
   applicationNo,
 }: Readonly<{ role?: string; applicationNo?: string }>) {
+  if (!role && !applicationNo) {
+    return <Box sx={{ flex: 1 }} />;
+  }
+
+  const roleText = role ? (
+    <Typography
+      noWrap
+      component="span"
+      sx={{
+        color: "#FFFFFF",
+        fontSize: { xs: 13, sm: 15 },
+        fontWeight: 700,
+        letterSpacing: 0.2,
+        lineHeight: 1.2,
+        minWidth: 0,
+        flexShrink: 1,
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+      }}
+    >
+      {role}
+    </Typography>
+  ) : null;
+
   return (
-    <Box sx={{ flex: 1, minWidth: 0, px: 1, textAlign: "center", color: "#FFFFFF" }}>
-      {role ? (
-        <Typography
-          noWrap
-          sx={{ color: "#FFFFFF", fontSize: 13, fontWeight: 700, lineHeight: 1.3 }}
-        >
-          {role}
-        </Typography>
-      ) : null}
-      {applicationNo ? (
-        <Typography
-          noWrap
-          sx={{
-            color: "rgba(255,255,255,0.9)",
-            fontSize: 12,
-            fontWeight: 700,
-            lineHeight: 1.3,
-          }}
-        >
-          {applicationNo}
-        </Typography>
-      ) : null}
+    <Box
+      sx={{
+        flex: 1,
+        minWidth: 0,
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        px: 1,
+      }}
+    >
+      <Box
+        sx={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: { xs: 0.75, sm: 1.25 },
+          minWidth: 0,
+          maxWidth: "100%",
+        }}
+      >
+        {role ? (
+          <CustomTooltip title={role} arrow placement="bottom">
+            <Box component="span" sx={{ minWidth: 0, display: "inline-flex" }}>
+              {roleText}
+            </Box>
+          </CustomTooltip>
+        ) : null}
+
+        {role && applicationNo ? (
+          <Typography
+            component="span"
+            sx={{
+              color: "rgba(255, 255, 255, 0.65)",
+              fontSize: { xs: 14, sm: 16 },
+              fontWeight: 400,
+              flexShrink: 0,
+              userSelect: "none",
+              lineHeight: 1,
+            }}
+          >
+            |
+          </Typography>
+        ) : null}
+
+        {applicationNo ? (
+          <Typography
+            noWrap
+            component="span"
+            sx={{
+              color: "#FFFFFF",
+              fontSize: { xs: 13, sm: 15 },
+              fontWeight: 700,
+              letterSpacing: 0.3,
+              flexShrink: 0,
+              lineHeight: 1.2,
+            }}
+          >
+            {/* <Box
+              component="span"
+              sx={{
+                color: "rgba(255, 255, 255, 0.85)",
+                fontWeight: 600,
+                fontSize: { xs: 12, sm: 13.5 },
+                mr: 0.5,
+              }}
+            >
+              App No:
+            </Box> */}
+            {applicationNo}
+          </Typography>
+        ) : null}
+      </Box>
     </Box>
   );
 }
@@ -433,7 +511,11 @@ function UserMenu({ username }: Readonly<{ username: string }>) {
 
 export function Header({
   inboxPath = "/inbox",
+  drsPath = "/drs",
   onBackToInbox,
+  onBackToDrs,
+  onBack,
+  backPath,
   role,
   applicationNo,
 }: Readonly<HeaderProps>) {
@@ -442,20 +524,61 @@ export function Header({
   const currentTime = useCurrentTime();
   const remainingMs = useSessionCountdown();
   const normalizedPathname = normalizePath(location.pathname).toLowerCase();
-  const showBackToInbox = !HIDDEN_TASK_PATHS.has(normalizedPathname);
-  const showTaskIdentity = showBackToInbox;
+  const showBack = !HIDDEN_TASK_PATHS.has(normalizedPathname);
+  const showTaskIdentity = showBack;
   const visibleRole = showTaskIdentity ? presentText(role) : undefined;
   const visibleApplicationNo = showTaskIdentity ? presentText(applicationNo) : undefined;
   const sessionUser = getSessionUser();
   const username = sessionUser?.displayName ?? sessionUser?.userId ?? "";
 
-  const handleBackToInbox = () => {
+  const isDrsSubPage =
+    normalizedPathname === "/previous-policy" ||
+    normalizedPathname === "/open-tasks" ||
+    normalizedPathname === "/audit-trail" ||
+    normalizedPathname === "/risk-details" ||
+    normalizedPathname === "/applicant-profile" ||
+    normalizedPathname.startsWith("/previous-policy/") ||
+    normalizedPathname.startsWith("/open-tasks/") ||
+    normalizedPathname.startsWith("/audit-trail/") ||
+    normalizedPathname.startsWith("/risk-details/") ||
+    normalizedPathname.startsWith("/applicant-profile/");
+
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+      return;
+    }
+
+    if (backPath) {
+      navigate(backPath);
+      return;
+    }
+
+    if (isDrsSubPage) {
+      if (onBackToDrs) {
+        onBackToDrs();
+        return;
+      }
+      const searchParams = new URLSearchParams(location.search);
+      if (applicationNo && !searchParams.has("applicationNo")) {
+        searchParams.set("applicationNo", applicationNo);
+      }
+      if (role && !searchParams.has("role")) {
+        searchParams.set("role", role);
+      }
+      const queryString = searchParams.toString() ? `?${searchParams.toString()}` : "";
+      navigate(`${drsPath}${queryString}`);
+      return;
+    }
+
     if (onBackToInbox) {
       onBackToInbox();
       return;
     }
     navigate(inboxPath);
   };
+
+  const backAriaLabel = isDrsSubPage ? "Back to DRS" : "Back to Inbox";
 
   return (
     <Box
@@ -474,10 +597,11 @@ export function Header({
         overflow: "hidden",
       }}
     >
-      {showBackToInbox ? (
+      {showBack ? (
         <Button
-          onClick={handleBackToInbox}
-          aria-label="Back to Inbox"
+          onClick={handleBack}
+          aria-label={backAriaLabel}
+          title={backAriaLabel}
           disableRipple
           startIcon={<KeyLeftArrowIcon />}
           sx={{

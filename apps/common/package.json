@@ -5,9 +5,9 @@
   "type": "module",
   "exports": {
     "./applicant-profile": {
-      "types": "./src/components/ApplicantProfile.tsx",
-      "import": "./src/components/ApplicantProfile.tsx",
-      "default": "./src/components/ApplicantProfile.tsx"
+      "types": "./src/components/Quick Links/ApplicantProfile.tsx",
+      "import": "./src/components/Quick Links/ApplicantProfile.tsx",
+      "default": "./src/components/Quick Links/ApplicantProfile.tsx"
     },
     "./profile-fields": {
       "types": "./src/components/ProfileFields.tsx",
@@ -35,14 +35,29 @@
       "default": "./src/components/Requirement Mgmt/RequirementMgmt.tsx"
     },
     "./quick-links": {
-      "types": "./src/components/QuickLinks.tsx",
-      "import": "./src/components/QuickLinks.tsx",
-      "default": "./src/components/QuickLinks.tsx"
+      "types": "./src/modules/quick-links/QuickLinksModule.tsx",
+      "import": "./src/modules/quick-links/QuickLinksModule.tsx",
+      "default": "./src/modules/quick-links/QuickLinksModule.tsx"
     },
     "./previous-policy": {
-      "types": "./src/components/PreviousPolicy.tsx",
-      "import": "./src/components/PreviousPolicy.tsx",
-      "default": "./src/components/PreviousPolicy.tsx"
+      "types": "./src/components/Quick Links/PreviousPolicy.tsx",
+      "import": "./src/components/Quick Links/PreviousPolicy.tsx",
+      "default": "./src/components/Quick Links/PreviousPolicy.tsx"
+    },
+    "./open-tasks": {
+      "types": "./src/components/Quick Links/OpenTasks.tsx",
+      "import": "./src/components/Quick Links/OpenTasks.tsx",
+      "default": "./src/components/Quick Links/OpenTasks.tsx"
+    },
+    "./risk-details": {
+      "types": "./src/components/Quick Links/RiskDetails.tsx",
+      "import": "./src/components/Quick Links/RiskDetails.tsx",
+      "default": "./src/components/Quick Links/RiskDetails.tsx"
+    },
+    "./audit-trail": {
+      "types": "./src/components/Quick Links/AuditTrail.tsx",
+      "import": "./src/components/Quick Links/AuditTrail.tsx",
+      "default": "./src/components/Quick Links/AuditTrail.tsx"
     },
     "./life-assured": {
       "types": "./src/components/LifeAssured/LifeAssured.tsx",
@@ -53,6 +68,11 @@
       "types": "./src/components/DecisionSection.tsx",
       "import": "./src/components/DecisionSection.tsx",
       "default": "./src/components/DecisionSection.tsx"
+    },
+    "./applicant-banner": {
+      "types": "./src/components/Header/ApplicantBanner.tsx",
+      "import": "./src/components/Header/ApplicantBanner.tsx",
+      "default": "./src/components/Header/ApplicantBanner.tsx"
     },
     "./header": {
       "types": "./src/components/layout/Header.tsx",

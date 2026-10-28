@@ -28,11 +28,6 @@ export type PreviousPolicyProps = {
   roleType?: string;
 };
 
-export type PreviousPolicyDialogProps = PreviousPolicyProps & {
-  open: boolean;
-  onClose: () => void;
-};
-
 /* -------------------------------------------------------------------------- */
 /* Theme                                                                      */
 /* -------------------------------------------------------------------------- */
@@ -475,24 +470,6 @@ export function PreviousPolicy({ roleType = "CUW_TASK" }: Readonly<PreviousPolic
         </CustomDialog>
       )}
     </div>
-  );
-}
-
-export function PreviousPolicyDialog({
-  open,
-  onClose,
-  roleType,
-}: Readonly<PreviousPolicyDialogProps>) {
-  return (
-    <CustomDialog
-      open={open}
-      onClose={onClose}
-      title="Previous Policies"
-      maxWidth="xl"
-      paperSx={{ borderRadius: "8px", maxHeight: "calc(100vh - 64px)" }}
-    >
-      <PreviousPolicy roleType={roleType} />
-    </CustomDialog>
   );
 }
 

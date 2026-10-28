@@ -2,5 +2,3 @@
 > @insurance-poc/common@0.0.0 typecheck C:\Users\KairaviBaxi\Desktop\New Design screens\Development\mid-office-monorepo\apps\common
 > tsc --noEmit
 
-src/components/DetailCard.tsx(183,17): error TS17001: JSX elements cannot have multiple attributes with the same name.
- ELIFECYCLE  Command failed with exit code 2.
