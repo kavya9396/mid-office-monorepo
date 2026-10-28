@@ -23,11 +23,6 @@ function hasHtmlAcceptHeader(accept) {
   return accept?.includes("text/html") ?? false;
 }
 
-function acceptHeader(accept) {
-  if (Array.isArray(accept)) return accept.join(",");
-  return accept ?? "";
-}
-
 /**
  * Canonicalize business-app roots before the gateway proxy hands the request
  * to Vite. Retail and Group are both built with a trailing-slash base URL.
@@ -61,35 +56,23 @@ export function redirectBareAppRoots() {
 }
 
 /**
- * Browser visits to the retail or group dev port stay on that port, so /login
- * is outside the app base and sessionStorage is a different origin.
- * Send document navigations to the common server. Proxied requests are marked
- * and must pass through, otherwise /retail and /group would redirect forever.
+ * Each business app registers only its own inbox mock. This keeps the mock
+ * endpoint with the app that owns its payload and future API configuration.
  */
-export function redirectDirectAccessToGateway() {
-  const gateway = gatewayOrigin();
-
+export function serveInboxMock(endpoint, fileName) {
   return {
-    name: "redirect-direct-access-to-gateway",
+    name: `serve-inbox-mock-${fileName}`,
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
-        if (req.headers["x-dev-gateway"] === "1") {
+        const pathname = req.url?.split("?")[0] ?? "";
+        if (pathname !== endpoint) {
           next();
           return;
         }
 
-        const isDocument =
-          req.headers["sec-fetch-dest"] === "document" ||
-          acceptHeader(req.headers.accept).includes("text/html");
-
-        if (!isDocument || !req.url) {
-          next();
-          return;
-        }
-
-        const path = req.url.startsWith("/") ? req.url : `/${req.url}`;
-        res.writeHead(302, { Location: `${gateway}${path}` });
-        res.end();
+        const filePath = path.join(monorepoRoot, fileName);
+        res.setHeader("Content-Type", "application/json; charset=utf-8");
+        fs.createReadStream(filePath).pipe(res);
       });
     },
   };

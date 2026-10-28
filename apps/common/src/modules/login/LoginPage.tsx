@@ -18,6 +18,7 @@ import {
 } from "@insurance-poc/ui";
 import {
   clearToken,
+  setRefreshToken,
   setSessionBusinessType,
   setSessionUser,
   setToken,
@@ -26,8 +27,8 @@ import { Controller, useForm, type Control } from "react-hook-form";
 import IBMLogo from "../../assets/IBM Logo.svg";
 import IPRULogo from "../../assets/ICICI_Logo_BG.svg";
 import LoginImage from "../../assets/Login-Image.svg";
-import { fetchJwt } from "../../services/jwtService";
-import { fetchLogin, type BusinessType } from "../../services/loginService";
+import { useLoginMutation } from "../../services/authApi";
+import type { BusinessType } from "../../services/loginService";
 import { loginSchema, type LoginForm } from "./loginSchema";
 
 type SnackbarState = {
@@ -72,39 +73,18 @@ const inlineLinkSx = {
 const compactLaptop = "@media (max-height: 800px)";
 const shortLaptop = "@media (max-height: 680px)";
 
-function toErrorMessage(reason: unknown, fallback: string): string {
-  if (reason instanceof Error) {
-    return reason.message;
-  }
-  return fallback;
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
 }
 
-async function establishSession(
-  username: string,
-  businessType: BusinessType,
-): Promise<void> {
-  const jwt = await fetchJwt();
-  const token = typeof jwt.token === "string" ? jwt.token.trim() : "";
-
-  if (!token) {
-    throw new Error("Authentication token was not returned.");
+function toErrorMessage(reason: unknown, fallback: string): string {
+  if (typeof reason === "string" && reason.trim().length > 0) return reason.trim();
+  if (reason instanceof Error && reason.message.length > 0) return reason.message;
+  if (isRecord(reason)) {
+    if (typeof reason.error === "string" && reason.error.length > 0) return reason.error;
+    if (typeof reason.message === "string" && reason.message.length > 0) return reason.message;
   }
-
-  setToken(token);
-
-  const loginResult = await fetchLogin(username, businessType);
-  if (loginResult.status !== "SUCCESS") {
-    throw new Error(loginResult.message);
-  }
-
-  const destination = businessInboxUrl(businessType);
-  if (!destination) {
-    throw new Error("Business Inbox is not configured.");
-  }
-
-  setSessionUser(loginResult.user);
-  setSessionBusinessType(businessType);
-  assignUrl(destination);
+  return fallback;
 }
 
 function LoginArtwork() {
@@ -378,6 +358,7 @@ export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [snackbar, setSnackbar] = useState<SnackbarState>(initialSnackbar);
 
+  const [login] = useLoginMutation();
   const { control, handleSubmit, formState } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
     mode: "onChange",
@@ -389,7 +370,20 @@ export function LoginPage() {
 
   const onSubmit = async (credentials: LoginForm) => {
     try {
-      await establishSession(credentials.username, businessType);
+      const loginResult = await login({
+        userId: credentials.username,
+        password: credentials.password,
+        businessType,
+      }).unwrap();
+      const destination = businessInboxUrl(businessType);
+      if (!destination) {
+        throw new Error("Business Inbox is not configured.");
+      }
+      setToken(loginResult.accessToken);
+      setRefreshToken(loginResult.refreshToken);
+      setSessionUser(loginResult.user);
+      setSessionBusinessType(businessType);
+      assignUrl(destination);
     } catch (reason: unknown) {
       clearToken();
       setSnackbar({

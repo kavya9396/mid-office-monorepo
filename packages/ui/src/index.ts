@@ -36,13 +36,20 @@ export { default as CustomTable, type Column } from "./Table/Table";
 export { default as CustomTabs, type TabItem } from "./Tabs/Tabs";
 export { default as CustomTextField } from "./TextField/TextField";
 export {
+  DangerIcon,
   EyeIcon,
   EyeSlashIcon,
+  FilterIcon,
   KeyDownArrowIcon,
   KeyLeftArrowIcon,
   KeyRightArrowIcon,
   KeyUpArrowIcon,
   LogoutIcon,
+  RefreshIcon,
+  SearchIcon,
+  SettingsIcon,
+  TickIcon,
+  TimeIcon,
   TimerPauseIcon,
   UserProfileIcon,
 } from "./icons/Icons";

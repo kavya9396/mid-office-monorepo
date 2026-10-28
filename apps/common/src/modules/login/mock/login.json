@@ -1,4 +1,6 @@
 {
+  "accessToken": "mock-jwt-token",
+  "refreshToken": "mock-refresh-token",
   "users": [
     {
       "userId": "UW001",
