@@ -1,0 +1,442 @@
+{
+  "success": true,
+  "data": {
+    "applicationNo": "OB90322247",
+    "screenType": "DVT_INFORMAL",
+    "businessType": "GROUP",
+    "rowDetails": [],
+    "cardDetails": [
+      {
+        "type": "APPLICATION",
+        "attributes": [
+          { "name": "Product", "value": "Group Term - GT01" },
+          { "name": "Channel", "value": "Agency" },
+          { "name": "Sum Assured", "value": "5000000" },
+          { "name": "MPH Name", "value": "ABC Bank" }
+        ],
+        "expandedAttributes": [
+          { "name": "Product", "value": "Group Term - GT01" },
+          { "name": "Channel", "value": "Agency" },
+          { "name": "Sum Assured", "value": "5000000" },
+          { "name": "MPH Name", "value": "ABC Bank" },
+          { "name": "TI Rider - SA", "value": "1000000" },
+          { "name": "ADBR SA", "value": "500000" },
+          { "name": "CI Rider SA", "value": "250000" },
+          { "name": "TFESA", "value": "" },
+          { "name": "TRSA", "value": "12000" },
+          { "name": "TSA", "value": "5000000" },
+          { "name": "TPSA", "value": "" },
+          { "name": "TFSA", "value": "1.2" },
+          { "name": "TMSA", "value": "" }
+        ],
+        "tables": [
+          {
+            "name": "Rider Details",
+            "columns": ["Rider", "Rider Code", "Sum Assured"],
+            "rows": [
+              { "Rider": "Rider 1", "Rider Code": "TI", "Sum Assured": "1000000" },
+              { "Rider": "Rider 2", "Rider Code": "ADBR", "Sum Assured": "500000" },
+              { "Rider": "Rider 3", "Rider Code": "CI", "Sum Assured": "250000" }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "SOURCE",
+        "attributes": [
+          { "name": "Call ID", "value": "" },
+          { "name": "Policy No.", "value": "" },
+          { "name": "Agent Name", "value": "Vinayaka-0112000" },
+          { "name": "Customer Type", "value": "New" }
+        ],
+        "expandedAttributes": [
+          { "name": "Call ID", "value": "" },
+          { "name": "Policy No.", "value": "" },
+          { "name": "Agent Name / Code", "value": "Ram / AG123" },
+          { "name": "Customer Type", "value": "New" },
+          { "name": "Policy Type", "value": "Group" },
+          { "name": "Premium", "value": "52000" },
+          { "name": "PT", "value": "20" },
+          { "name": "PPT", "value": "15" },
+          { "name": "Payment Mode", "value": "Annual" },
+          { "name": "Master Policy No.", "value": "" },
+          { "name": "LAN Number", "value": "LAN998877" },
+          { "name": "Login Date", "value": "2026-04-12" },
+          { "name": "Bank Name", "value": "ABC Bank" },
+          { "name": "Bank Branch", "value": "Mumbai" },
+          { "name": "Source", "value": "Group Portal" }
+        ],
+        "tables": []
+      },
+      {
+        "type": "GROUP",
+        "attributes": [
+          { "name": "Coverage Option", "value": "Decreasing" },
+          { "name": "Coverage Status", "value": "Active" },
+          { "name": "Moratorium", "value": "Y" },
+          { "name": "Moratorium Period", "value": "" }
+        ],
+        "expandedAttributes": [
+          { "name": "Coverage Option", "value": "Decreasing" },
+          { "name": "Coverage Status", "value": "Active" },
+          { "name": "Moratorium", "value": "Y" },
+          { "name": "Moratorium Period", "value": "" },
+          { "name": "Share of Loan", "value": "100" },
+          { "name": "Loan Type", "value": "Home Loan" },
+          { "name": "Bank Type", "value": "Private" },
+          { "name": "Type of Loan", "value": "Secured" },
+          { "name": "Date of Loan Disbursement", "value": "2026-03-01" },
+          { "name": "Loan Term", "value": "240" },
+          { "name": "Loan Amount", "value": "5000000" }
+        ],
+        "tables": []
+      },
+      {
+        "type": "RISK",
+        "attributes": [
+          { "name": "Accuity Risk Indicator", "value": "Low" },
+          { "name": "Adverse IIB match", "value": "N" },
+          { "name": "Risk Flag", "value": "" },
+          { "name": "High Risk Category", "value": "" }
+        ],
+        "expandedAttributes": [
+          { "name": "Accuity Risk Indicator", "value": "Low" },
+          { "name": "Adverse IIB match", "value": "N" },
+          { "name": "Risk Flag", "value": "" },
+          { "name": "High Risk Category", "value": "" },
+          { "name": "Source", "value": "Group Portal" }
+        ],
+        "tables": []
+      }
+    ],
+    "breDecision": {
+      "decision": "DC",
+      "remarks": "Product Non Eligible",
+      "discrepancy": "ACR#OCD#PAN#ADP#AGE#IDM#KYP",
+      "action": "Decline",
+      "timestamp": "14/08/2026, 1108hrs",
+      "reTriggerCount": 2
+    },
+    "latestBreDecision": {
+      "decision": "ST",
+      "remarks": "Product Non Eligible",
+      "discrepancy": "ACR#OCD#PAN#ADP#AGE#IDM#KYP#NYC",
+      "action": "Decline",
+      "timestamp": "14/08/2026, 1108hrs",
+      "reTriggerCount": 2
+    },
+    "requirementManagement": [
+      {
+        "requirementId": 11792,
+        "status": "pending",
+        "ocrStatus": "pass",
+        "team": "UW",
+        "category": "Consent",
+        "subCategory": "Policy confirmation",
+        "document": "OTP",
+        "reason": "Document not uplaoded",
+        "fupCode": "OTP",
+        "description": "OTP-Policy confirmation/ consent code required"
+      },
+      {
+        "requirementId": 11790,
+        "status": "Accept",
+        "ocrStatus": "pass",
+        "team": "COPS",
+        "category": "KYC",
+        "subCategory": "Ageproof",
+        "document": "PAN Card",
+        "reason": "Documents not submitted",
+        "fupCode": "AGE",
+        "description": "AGE-Age proof of life assured (Passport - front & back or Driving License or Pan Card or Aadhaar - front & back)"
+      },
+      {
+        "requirementId": 11791,
+        "status": "pending",
+        "ocrStatus": "pass",
+        "team": "COPS",
+        "category": "KYC",
+        "subCategory": "PAN Card",
+        "document": "PAN /Form 60",
+        "reason": "Documents not submitted",
+        "fupCode": "PAL",
+        "description": "PAL- Please submit PAN Card copy linked with your Aadhaar"
+      },
+      {
+        "requirementId": 11795,
+        "status": "pending",
+        "ocrStatus": "pass",
+        "team": "COPS",
+        "category": "KYC",
+        "subCategory": "PAN Card",
+        "document": "Photo",
+        "reason": "Documents not submitted",
+        "fupCode": "KYP",
+        "description": "KYP- Upload recent photograph of proposer"
+      },
+      {
+        "requirementId": 11793,
+        "status": "waived",
+        "ocrStatus": "pass",
+        "team": "COPS",
+        "category": "KYC",
+        "subCategory": "ID proof",
+        "document": "Drving License",
+        "reason": "Documents not submitted",
+        "fupCode": "IDM",
+        "description": "IDM- Upload valid ID proof of proposer (Passport - front & back or Driving License or Pan Card or Aadhaar - front & back)"
+      },
+      {
+        "requirementId": 11794,
+        "status": "Accept",
+        "ocrStatus": "pass",
+        "team": "COPS",
+        "category": "KYC",
+        "subCategory": "Address Proof",
+        "document": "Driving License",
+        "reason": "Documents not submitted",
+        "fupCode": "ADP",
+        "description": "ADP-Address proof of the proposer matching with application form (Passport - front & back or Aadhaar - front & back or Driving License or Voter id)"
+      },
+      {
+        "requirementId": 12069,
+        "status": "pending",
+        "ocrStatus": "",
+        "team": "COPS",
+        "category": "Medical",
+        "subCategory": "SPAARC call",
+        "document": "SPAARC call ID",
+        "reason": "Call ID to be raised for details mismatch in Application form",
+        "fupCode": "SCI",
+        "description": "SPAARC call ID to be raised (related to Name, address, DOB, Pin Code, gender & residential status mismatch as per the IUW form)"
+      }
+    ],
+    "lifeAssured": {
+      "summary": [
+        {
+          "memberType": "lifeassured1",
+          "proposerSummary": {
+            "firstName": "Rudra",
+            "middleName": "Prakash",
+            "lastName": "Sangha",
+            "gender": "Male",
+            "maritalStatus": "",
+            "dob": "1988-08-09T00:00",
+            "age": { "years": 38 },
+            "profileImage": "",
+            "nationality": "India",
+            "countryOfResidence": "India",
+            "residentStatus": "IND",
+            "education": "Graduate",
+            "designation": "Manager",
+            "disabled": "",
+            "udidNumber": "UDID-98765"
+          },
+          "kycDetails": {
+            "panNumber": "",
+            "identityProofType": "Aadhaar",
+            "identityProofNumber": "AAAAA1111A",
+            "addressProof": "Aadhaar",
+            "incomeProof": "Aadhaar",
+            "existingCkycNumber": "NA",
+            "pep": "No",
+            "criminalProceedings": "No",
+            "panFlag": "Verified",
+            "panAadharSeedingStatus": "Y",
+            "identityProofExpiryDate": "2099-12-31T00:00",
+            "pranNo": "123456789012",
+            "pranNoVerification": "Verified"
+          },
+          "address": [
+            {
+              "type": "communication",
+              "addressLine1": "malad",
+              "addressLine2": "malad",
+              "addressLine3": "",
+              "landmark": "prism",
+              "city": "mumbai",
+              "state": "maharashtra",
+              "pinCode": "400064",
+              "residingCountry": ""
+            },
+            {
+              "type": "permanent",
+              "addressLine1": "RFRF",
+              "addressLine2": "FGHJK",
+              "addressLine3": "FGHJKL",
+              "landmark": "",
+              "city": "THANE",
+              "state": "Maharashtra",
+              "pinCode": "400709",
+              "residingCountry": "India"
+            }
+          ],
+          "contactDetails": {
+            "mobileNo": "9878716726",
+            "alternateMobileNo": "",
+            "std": "",
+            "landlineNo": "",
+            "emailId": "TRSTR@GMAIL.COM",
+            "emailPref": "Y",
+            "smsPref": "Y"
+          },
+          "healthDetail": { "height": "165.1", "weight": "67", "bmi": "25.0" },
+          "nominee": [
+            {
+              "firstName": "Smit",
+              "lastName": "Sangha",
+              "dob": "1991-03-12T00:00",
+              "gender": "Male",
+              "percentage": 0
+            }
+          ],
+          "appointee": [
+            {
+              "firstName": "Shivani",
+              "lastName": "Sangha",
+              "dob": "1991-03-12T00:00",
+              "gender": "Female"
+            }
+          ]
+        },
+        {
+          "memberType": "lifeassured2",
+          "proposerSummary": {
+            "firstName": "Rudra",
+            "middleName": "Prakash",
+            "lastName": "Sangha",
+            "gender": "Male",
+            "maritalStatus": "",
+            "dob": "1988-08-09T00:00",
+            "age": { "years": 38 },
+            "profileImage": "",
+            "nationality": "India",
+            "countryOfResidence": "India",
+            "residentStatus": "IND",
+            "education": "Graduate",
+            "designation": "Manager",
+            "disabled": "",
+            "udidNumber": "UDID-98765"
+          },
+          "kycDetails": {
+            "panNumber": "",
+            "identityProofType": "Aadhaar",
+            "identityProofNumber": "AAAAA1111A",
+            "addressProof": "Aadhaar",
+            "incomeProof": "Aadhaar",
+            "existingCkycNumber": "NA",
+            "pep": "No",
+            "criminalProceedings": "No",
+            "panFlag": "Verified",
+            "panAadharSeedingStatus": "Y",
+            "identityProofExpiryDate": "2099-12-31T00:00",
+            "pranNo": "123456789012",
+            "pranNoVerification": "Verified"
+          },
+          "address": [
+            {
+              "type": "communication",
+              "addressLine1": "malad",
+              "addressLine2": "malad",
+              "addressLine3": "",
+              "landmark": "prism",
+              "city": "mumbai",
+              "state": "maharashtra",
+              "pinCode": "400064",
+              "residingCountry": ""
+            },
+            {
+              "type": "permanent",
+              "addressLine1": "RFRF",
+              "addressLine2": "FGHJK",
+              "addressLine3": "FGHJKL",
+              "landmark": "",
+              "city": "THANE",
+              "state": "Maharashtra",
+              "pinCode": "400709",
+              "residingCountry": "India"
+            }
+          ],
+          "contactDetails": {
+            "mobileNo": "9878716726",
+            "alternateMobileNo": "",
+            "std": "",
+            "landlineNo": "",
+            "emailId": "TRSTR@GMAIL.COM",
+            "emailPref": "Y",
+            "smsPref": "Y"
+          },
+          "healthDetail": { "height": "165.1", "weight": "67", "bmi": "25.0" },
+          "nominee": [
+            {
+              "firstName": "Smit",
+              "lastName": "Sangha",
+              "dob": "1991-03-12T00:00",
+              "gender": "Male",
+              "percentage": 0
+            }
+          ],
+          "appointee": [
+            {
+              "firstName": "Shivani",
+              "lastName": "Sangha",
+              "dob": "1991-03-12T00:00",
+              "gender": "Female"
+            }
+          ]
+        }
+      ],
+      "productDetail": { "code": "E36", "productType": "" },
+      "riderDetails": [
+        {
+          "riderName": "ICICI Pru Non-Linked Accidental Death and Disability Rider",
+          "sumAssured": 5000000,
+          "riderTerm": 36
+        },
+        {
+          "riderName": "ICICI Pru Non-Linked Accidental Death and Disability Rider",
+          "sumAssured": 5000000,
+          "riderTerm": 36
+        },
+        {
+          "riderName": "ICICI Pru Non-Linked Health Protect Rider",
+          "sumAssured": 5000000,
+          "riderTerm": 36
+        }
+      ],
+      "loan": {
+        "baseSumAssured": "",
+        "loanAmount": "",
+        "loanDisbursementDate": "",
+        "loanShare": "",
+        "loanTerm": "",
+        "policyTerm": "",
+        "masterCode": "",
+        "loanAccountNumber": ""
+      },
+      "imageRecords": [
+        {
+          "imageType": "Live photograph",
+          "document": "Applicant selfie",
+          "faceMatchScore": "98.6%",
+          "imageQuality": "Good",
+          "remarks": "Face matched successfully"
+        },
+        {
+          "imageType": "Identity proof",
+          "document": "Aadhaar photograph",
+          "faceMatchScore": "96.2%",
+          "imageQuality": "Good",
+          "remarks": "Image is clear and readable"
+        },
+        {
+          "imageType": "Proposal form",
+          "document": "Signed proposal image",
+          "faceMatchScore": "94.8%",
+          "imageQuality": "Acceptable",
+          "remarks": "Signature and image verified"
+        }
+      ]
+    }
+  }
+}

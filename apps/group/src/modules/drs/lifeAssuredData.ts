@@ -23,131 +23,36 @@ type SummaryMember = {
   appointee: { firstName: string; lastName: string; dob: string; gender: string }[];
 };
 
-// Same values as summary[lifeassured1/2] in /mock/drs/drs.mock.json inside dvt-drs.html
-const baseMember: Omit<SummaryMember, "memberType"> = {
-  proposerSummary: {
-    firstName: "Rudra",
-    middleName: "Prakash",
-    lastName: "Sangha",
-    gender: "Male",
-    maritalStatus: "",
-    dob: "1988-08-09T00:00",
-    age: { years: 38 },
-    profileImage: "",
-    nationality: "India",
-    countryOfResidence: "India",
-    residentStatus: "IND",
-    education: "Graduate",
-    designation: "Manager",
-    disabled: "",
-    udidNumber: "UDID-98765",
-  },
-  kycDetails: {
-    panNumber: "",
-    identityProofType: "Aadhaar",
-    identityProofNumber: "AAAAA1111A",
-    addressProof: "Aadhaar",
-    incomeProof: "Aadhaar",
-    existingCkycNumber: "NA",
-    pep: "No",
-    criminalProceedings: "No",
-    panFlag: "Verified",
-    panAadharSeedingStatus: "Y",
-    identityProofExpiryDate: "2099-12-31T00:00",
-    pranNo: "123456789012",
-    pranNoVerification: "Verified",
-  },
-  address: [
-    {
-      type: "communication",
-      addressLine1: "malad",
-      addressLine2: "malad",
-      addressLine3: "",
-      landmark: "prism",
-      city: "mumbai",
-      state: "maharashtra",
-      pinCode: "400064",
-      residingCountry: "",
-    },
-    {
-      type: "permanent",
-      addressLine1: "RFRF",
-      addressLine2: "FGHJK",
-      addressLine3: "FGHJKL",
-      landmark: "",
-      city: "THANE",
-      state: "Maharashtra",
-      pinCode: "400709",
-      residingCountry: "India",
-    },
-  ],
-  contactDetails: {
-    mobileNo: "9878716726",
-    alternateMobileNo: "",
-    std: "",
-    landlineNo: "",
-    emailId: "TRSTR@GMAIL.COM",
-    emailPref: "Y",
-    smsPref: "Y",
-  },
-  healthDetail: { height: "165.1", weight: "67", bmi: "25.0" },
-  nominee: [
-    { firstName: "Smit", lastName: "Sangha", dob: "1991-03-12T00:00", gender: "Male", percentage: 0 },
-  ],
-  appointee: [{ firstName: "Shivani", lastName: "Sangha", dob: "1991-03-12T00:00", gender: "Female" }],
+type ProductDetail = { code: string; productType: string };
+
+type RiderDetail = { riderName: string; sumAssured: number; riderTerm: number };
+
+type LoanDetail = {
+  baseSumAssured: string;
+  loanAmount: string;
+  loanDisbursementDate: string;
+  loanShare: string;
+  loanTerm: string;
+  policyTerm: string;
+  masterCode: string;
+  loanAccountNumber: string;
 };
 
-const mockSummary: SummaryMember[] = [
-  { memberType: "lifeassured1", ...baseMember },
-  { memberType: "lifeassured2", ...baseMember },
-];
-
-// applicationOverview.productDetail[0] in the same mock
-const mockProductDetail = { code: "E36", productType: "" };
-
-// applicationOverview.riderDetails in the same mock (policyTerm -> rider term)
-const mockRiders = [
-  { riderName: "ICICI Pru Non-Linked Accidental Death and Disability Rider", sumAssured: 5000000, riderTerm: 36 },
-  { riderName: "ICICI Pru Non-Linked Accidental Death and Disability Rider", sumAssured: 5000000, riderTerm: 36 },
-  { riderName: "ICICI Pru Non-Linked Health Protect Rider", sumAssured: 5000000, riderTerm: 36 },
-];
-
-// applicationOverview.productDetail[0] (base) + groupDetails in the same mock; empty values stay empty
-const mockLoan = {
-  baseSumAssured: "",
-  loanAmount: "",
-  loanDisbursementDate: "",
-  loanShare: "",
-  loanTerm: "",
-  policyTerm: "",
-  masterCode: "",
-  loanAccountNumber: "",
+type ImageRecord = {
+  imageType: string;
+  document: string;
+  faceMatchScore: string;
+  imageQuality: string;
+  remarks: string;
 };
 
-// Fallback rows the prototype shows when the API sends no image records
-const mockImageRecords = [
-  {
-    imageType: "Live photograph",
-    document: "Applicant selfie",
-    faceMatchScore: "98.6%",
-    imageQuality: "Good",
-    remarks: "Face matched successfully",
-  },
-  {
-    imageType: "Identity proof",
-    document: "Aadhaar photograph",
-    faceMatchScore: "96.2%",
-    imageQuality: "Good",
-    remarks: "Image is clear and readable",
-  },
-  {
-    imageType: "Proposal form",
-    document: "Signed proposal image",
-    faceMatchScore: "94.8%",
-    imageQuality: "Acceptable",
-    remarks: "Signature and image verified",
-  },
-];
+export type LifeAssuredSource = {
+  summary: SummaryMember[];
+  productDetail: ProductDetail;
+  riderDetails: RiderDetail[];
+  loan: LoanDetail;
+  imageRecords: ImageRecord[];
+};
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -192,7 +97,14 @@ const fullName = (first: string, last: string) => [first, last].filter(Boolean).
 const joinNameParts = (...parts: unknown[]) =>
   parts.filter((part): part is string => typeof part === "string" && part !== "").join(" ");
 
-const toApplicant = (member: SummaryMember, total: number): LifeAssuredApplicant => {
+const toApplicant = (
+  member: SummaryMember,
+  total: number,
+  productDetail: ProductDetail,
+  riders: RiderDetail[],
+  loan: LoanDetail,
+  imageRecords: ImageRecord[],
+): LifeAssuredApplicant => {
   const summary = member.proposerSummary;
   const kyc = member.kycDetails;
   const contact = member.contactDetails;
@@ -202,7 +114,7 @@ const toApplicant = (member: SummaryMember, total: number): LifeAssuredApplicant
     id: member.memberType,
     label: memberLabel(member.memberType, total),
     profileImage: text(summary.profileImage) as string | undefined,
-    imageRecords: mockImageRecords,
+    imageRecords,
     personalFields: [
       {
         label: "Applicant Name",
@@ -254,8 +166,8 @@ const toApplicant = (member: SummaryMember, total: number): LifeAssuredApplicant
       { label: "Negative Pincode", value: undefined },
     ],
     productFields: [
-      { label: "Product Code", value: mockProductDetail.code },
-      { label: "Product Type", value: mockProductDetail.productType },
+      { label: "Product Code", value: productDetail.code },
+      { label: "Product Type", value: productDetail.productType },
       { label: "Fund Source", value: undefined },
       { label: "Partner Type", value: undefined },
     ],
@@ -285,12 +197,12 @@ const toApplicant = (member: SummaryMember, total: number): LifeAssuredApplicant
       accountNumber: "",
       ifsc: "",
     })),
-    editRiders: mockRiders.map((r) => ({
+    editRiders: riders.map((r) => ({
       riderName: r.riderName,
       sumAssured: String(r.sumAssured),
       riderTerm: String(r.riderTerm),
     })),
-    editLoan: mockLoan,
+    editLoan: loan,
     lifestyleFields: [
       { label: "Height", value: member.healthDetail.height },
       { label: "Weight", value: member.healthDetail.weight },
@@ -306,6 +218,15 @@ const toApplicant = (member: SummaryMember, total: number): LifeAssuredApplicant
   };
 };
 
-export const mockApplicants: LifeAssuredApplicant[] = mockSummary.map((member) =>
-  toApplicant(member, mockSummary.length),
-);
+export function mapApplicants(source: LifeAssuredSource): LifeAssuredApplicant[] {
+  return source.summary.map((member) =>
+    toApplicant(
+      member,
+      source.summary.length,
+      source.productDetail,
+      source.riderDetails,
+      source.loan,
+      source.imageRecords,
+    ),
+  );
+}
