@@ -34,6 +34,8 @@ export type LifeAssuredProps = {
   onEdit?: (applicantId: string) => void;
   onViewMedical?: (applicantId: string) => void;
   onViewFinancial?: (applicantId: string) => void;
+  /** When true the profile image column is hidden (e.g. inside a dialog). */
+  hideProfileImage?: boolean;
 };
 
 type ProfileTab =
@@ -62,6 +64,7 @@ function ApplicantProfileSection({
   onEdit,
   onViewMedical,
   onViewFinancial,
+  hideProfileImage = false,
 }: Readonly<ApplicantProfileSectionProps>) {
   const [tab, setTab] = useState<ProfileTab>("imageDetails");
 
@@ -97,10 +100,14 @@ function ApplicantProfileSection({
         bgcolor: colors.white,
         boxShadow: `0 3px 12px ${colors.shadowBrand}`,
         display: "grid",
-        gridTemplateColumns: { xs: "1fr", sm: "108px minmax(0, 1fr)" },
+        gridTemplateColumns: hideProfileImage
+          ? "1fr"
+          : { xs: "1fr", sm: "108px minmax(0, 1fr)" },
       }}
     >
-      <ProfileImage label={applicant.label} image={applicant.profileImage} />
+      {!hideProfileImage && (
+        <ProfileImage label={applicant.label} image={applicant.profileImage} />
+      )}
 
       <Box sx={{ minWidth: 0 }}>
         <Box
@@ -108,15 +115,14 @@ function ApplicantProfileSection({
             display: "flex",
             alignItems: "center",
             gap: 1,
-            px: 1.25,
-            py: 0.75,
-            bgcolor: colors.surfaceAccent,
+            px: 1,
+            py: 0.5,
             borderBottom: `1px solid ${colors.borderAccent}`,
             flexWrap: "wrap",
           }}
         >
-          <CustomTabs tabs={PROFILE_TABS} value={tab} onChange={setTab} sx={{ minWidth: 0, bgcolor: colors.white }} />
-          <Box sx={{ ml: "auto", display: "flex", alignItems: "center", gap: 0.75, flexShrink: 0 }}>
+          <CustomTabs tabs={PROFILE_TABS} value={tab} onChange={setTab} />
+          <Box sx={{ ml: "auto", display: "flex", alignItems: "center", gap: 0.5, flexShrink: 0 }}>
             {onEdit && (
               <CustomButton variant="outlined" onClick={() => onEdit(applicant.id)}>
                 Edit
@@ -135,13 +141,15 @@ function ApplicantProfileSection({
           </Box>
         </Box>
 
-        <Box sx={{ p: 0.75 }}>{renderTab()}</Box>
+        <Box sx={{ p: 0.5 }}>{renderTab()}</Box>
       </Box>
     </Box>
   );
 }
 
 export function LifeAssured({ applicants, ...actions }: Readonly<LifeAssuredProps>) {
+  const [activeId, setActiveId] = useState<string>(applicants[0]?.id ?? "");
+
   if (applicants.length === 0) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100px" }}>
@@ -150,11 +158,29 @@ export function LifeAssured({ applicants, ...actions }: Readonly<LifeAssuredProp
     );
   }
 
+  const memberTabs: TabItem<string>[] = applicants.map((a) => ({ key: a.id, label: a.label }));
+  const activeApplicant = applicants.find((a) => a.id === activeId) ?? applicants[0];
+
   return (
-    <Box sx={{ display: "grid", gap: 2 }}>
-      {applicants.map((applicant) => (
-        <ApplicantProfileSection key={applicant.id} applicant={applicant} {...actions} />
-      ))}
+    <Box>
+      {applicants.length > 1 && (
+        <Box
+          sx={{
+            px: 1,
+            py: 0.5,
+            borderBottom: `1px solid ${colors.borderAccent}`,
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
+          <CustomTabs
+            tabs={memberTabs}
+            value={activeId}
+            onChange={setActiveId}
+          />
+        </Box>
+      )}
+      <ApplicantProfileSection applicant={activeApplicant} {...actions} />
     </Box>
   );
 }

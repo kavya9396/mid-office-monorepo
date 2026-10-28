@@ -535,9 +535,13 @@ export function Header({
     normalizedPathname === "/previous-policy" ||
     normalizedPathname === "/open-tasks" ||
     normalizedPathname === "/audit-trail" ||
+    normalizedPathname === "/risk-details" ||
+    normalizedPathname === "/applicant-profile" ||
     normalizedPathname.startsWith("/previous-policy/") ||
     normalizedPathname.startsWith("/open-tasks/") ||
-    normalizedPathname.startsWith("/audit-trail/");
+    normalizedPathname.startsWith("/audit-trail/") ||
+    normalizedPathname.startsWith("/risk-details/") ||
+    normalizedPathname.startsWith("/applicant-profile/");
 
   const handleBack = () => {
     if (onBack) {

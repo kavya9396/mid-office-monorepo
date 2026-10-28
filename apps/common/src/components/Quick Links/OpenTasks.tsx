@@ -3,7 +3,6 @@ import { Box, Typography } from "@mui/material";
 import {
   appTheme,
   CustomButton,
-  CustomDialog,
   CustomTable,
   type Column,
 } from "@insurance-poc/ui";
@@ -28,11 +27,6 @@ export interface OpenTasksProps {
   tasks?: OpenTaskItem[];
   title?: string;
   pageSize?: number;
-}
-
-export interface OpenTasksDialogProps extends OpenTasksProps {
-  open: boolean;
-  onClose: () => void;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -365,30 +359,6 @@ export function OpenTasks({
         </Box>
       </Box>
     </Box>
-  );
-}
-
-/* -------------------------------------------------------------------------- */
-/* OpenTasksDialog Component                                                  */
-/* -------------------------------------------------------------------------- */
-
-export function OpenTasksDialog({
-  open,
-  onClose,
-  tasks,
-  title = "Open Tasks",
-  pageSize = 5,
-}: Readonly<OpenTasksDialogProps>) {
-  return (
-    <CustomDialog
-      open={open}
-      onClose={onClose}
-      title={title}
-      maxWidth="lg"
-      paperSx={{ borderRadius: "8px", maxHeight: "calc(100vh - 64px)" }}
-    >
-      <OpenTasks tasks={tasks} title={title} pageSize={pageSize} />
-    </CustomDialog>
   );
 }
 

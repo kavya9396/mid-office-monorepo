@@ -26,6 +26,8 @@ import {
 
 type ChipColor = "primary" | "warning" | "default";
 
+const DRS_PATH = "/drs";
+
 function formatCategory(key: string): string {
   return key.replaceAll("_", " ");
 }
@@ -247,7 +249,7 @@ export function GroupInboxPage() {
     if (selectedCategory) {
       query.set("role", formatCategory(selectedCategory));
     }
-    navigate(`/drs?${query.toString()}`);
+    navigate(`${DRS_PATH}?${query.toString()}`);
   }
 
   const categories = data ? Object.keys(data.poolData) : [];

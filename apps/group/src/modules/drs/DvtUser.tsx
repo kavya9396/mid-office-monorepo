@@ -14,11 +14,12 @@ import {
   type DetailTable,
 } from "@insurance-poc/common/detail-card";
 import { LifeAssured } from "@insurance-poc/common/life-assured";
-import {
-  QuickLinksModule,
-  type QuickLinkItem,
-} from "@insurance-poc/common/quick-links";
+import { QuickLinksModule } from "@insurance-poc/common/quick-links";
+import { ApplicantProfile } from "@insurance-poc/common/applicant-profile";
+import { GROUP_QUICK_LINKS_CONFIG } from "../config/quickLinks.config";
 import { mockApplicants } from "./lifeAssuredData";
+
+const quickLinksConfig = GROUP_QUICK_LINKS_CONFIG.dvt;
 
 type CardType = "APPLICATION" | "SOURCE" | "GROUP" | "RISK";
 
@@ -160,19 +161,6 @@ const mockResponse: {
   },
 };
 
-const DEFAULT_QUICK_LINKS: QuickLinkItem[] = [
-  { id: "proposal-documents", label: "Proposal Form & Documents" },
-  { id: "previous-policies", label: "Previous Policy" },
-  { id: "open-tasks", label: "Open Task" },
-  { id: "audit-trail", label: "Audit Trail" },
-];
-
-export interface DvtUserProps {
-  quickLinks?: QuickLinkItem[];
-  previousPolicyMode?: "page" | "modal";
-  openTasksMode?: "page" | "modal";
-}
-
 type BreDecision = {
   decision: string;
   remarks: string;
@@ -214,17 +202,14 @@ const formatBreTimestamp = (value?: string) => {
   return `${Number(day)} ${MONTHS[Number(month) - 1]} ${year}, ${String(hour12).padStart(2, "0")}:${minutes}:00 ${meridiem}`;
 };
 
-const DvtUser = ({
-  quickLinks,
-  previousPolicyMode = "page",
-  openTasksMode = "page",
-}: Readonly<DvtUserProps>) => {
+const DvtUser = () => {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const applicationNo =
     params.get("applicationNo")?.trim() || mockResponse.data.applicationNo;
 
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
+  const [applicantProfileOpen, setApplicantProfileOpen] = useState(false);
 
   const { cardDetails } = mockResponse.data;
   const { breDecision, latestBreDecision } = mockBre;
@@ -286,13 +271,13 @@ const DvtUser = ({
       </Box>
 
       <QuickLinksModule
-        items={quickLinks ?? DEFAULT_QUICK_LINKS}
+        items={quickLinksConfig.items}
         applicationNo={applicationNo}
-        roleType={params.get("role")?.trim() || "DVT User"}
-        previousPolicyMode={previousPolicyMode}
-        openTasksMode={openTasksMode}
+        roleType={params.get("role")?.trim() || quickLinksConfig.defaultRoleType}
         onNavigate={(path) => navigate(path)}
         onNotify={(message) => setSnackbarMessage(message)}
+        dialogItemIds={["applicant-profile"]}
+        onDialogItemClick={() => setApplicantProfileOpen(true)}
         title="Quick Links"
       />
 
@@ -314,6 +299,15 @@ const DvtUser = ({
       />
 
       <LifeAssured
+        applicants={mockApplicants}
+        onEdit={handleApplicantAction("Edit")}
+        onViewMedical={handleApplicantAction("View Medical")}
+        onViewFinancial={handleApplicantAction("View Financial")}
+      />
+
+      <ApplicantProfile
+        open={applicantProfileOpen}
+        onClose={() => setApplicantProfileOpen(false)}
         applicants={mockApplicants}
         onEdit={handleApplicantAction("Edit")}
         onViewMedical={handleApplicantAction("View Medical")}
