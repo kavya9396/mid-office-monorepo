@@ -16,9 +16,20 @@ mid-office-monorepo/
 │   │   │   ├── App.tsx
 │   │   │   ├── main.tsx
 │   │   │   ├── vite-env.d.ts
-│   │   │   ├── assets/                # IBM Logo.svg, ICICI_Logo.svg, Login-Image.svg
-│   │   │   ├── components/
-│   │   │   │   └── DetailCard.tsx     # Shared business component (exported via subpath)
+│   │   │   ├── assets/                # IBM Logo.svg, ICICI_Logo.svg, ICICI_Logo_BG.svg, Login-Image.svg
+│   │   │   ├── components/            # Shared business components (exported via subpaths)
+│   │   │   │   ├── AppHeader.tsx      # AppHeader (exported as @insurance-poc/common/app-header)
+│   │   │   │   ├── DvtSectionViewer.tsx # DvtSectionViewer (exported as @insurance-poc/common/dvt-section-viewer)
+│   │   │   │   ├── DvtReportPage.tsx  # DvtReportPage type="medical|financial" (exported as @insurance-poc/common/dvt-report-page)
+│   │   │   │   ├── DecisionBar.tsx    # DecisionBar, DecisionComparisonTable
+│   │   │   │   ├── DetailCard.tsx
+│   │   │   │   ├── PreviousPolicy.tsx # PreviousPolicy, PreviousPolicyDialog
+│   │   │   │   ├── QuickLinks.tsx
+│   │   │   │   └── LifeAssured/
+│   │   │   │       ├── LifeAssured.tsx
+│   │   │   │       ├── ProfileImage.tsx
+│   │   │   │       └── Applicant Profile/   # Contact & Address, Fields, Image Details,
+│   │   │   │                                #   Lifestyle, Nominee, Personal & KYC, Product Details
 │   │   │   ├── modules/
 │   │   │   │   └── login/
 │   │   │   │       ├── LoginPage.tsx
@@ -28,10 +39,12 @@ mid-office-monorepo/
 │   │   │   │   └── guards.tsx         # RedirectIfSession guard
 │   │   │   └── services/
 │   │   │       ├── jwtService.ts      # Mock JWT fetch
-│   │   │       └── loginService.ts    # Mock auth (exported as @insurance-poc/common/auth)
+│   │   │       ├── loginService.ts    # Mock auth (exported as @insurance-poc/common/auth)
+│   │   │       └── dvtReportService.ts # DVT report data service (BFF placeholder; used by DvtSectionViewer)
 │   │   ├── Dockerfile
 │   │   ├── index.html
-│   │   ├── package.json               # exports map: ./auth, ./detail-card
+│   │   ├── package.json               # exports map: ./auth, ./app-header, ./dvt-section-viewer, ./dvt-report-page,
+│   │   │                              #   ./decision-bar, ./detail-card, ./quick-links, ./previous-policy, ./life-assured (+ 2 stale, see §1)
 │   │   ├── tsconfig.json
 │   │   └── vite.config.ts             # Dev gateway — proxies /retail and /group
 │   │
@@ -43,15 +56,23 @@ mid-office-monorepo/
 │   │   │   ├── modules/
 │   │   │   │   ├── drs/
 │   │   │   │   │   └── RetailDrsPage.tsx
-│   │   │   │   └── inbox/
-│   │   │   │       └── RetailInboxPage.tsx
+│   │   │   │   ├── inbox/
+│   │   │   │   │   └── RetailInboxPage.tsx
+│   │   │   │   ├── mas/
+│   │   │   │   │   ├── MasDrsPage.tsx             # MAS DRS shell: AppHeader + empty <main> (route /mas/drs; opened from Inbox MAS_TASK)
+│   │   │   │   │   ├── MASAuditTrailPage.tsx
+│   │   │   │   │   ├── MASMedicalReportPage.tsx  # thin wrapper → DvtReportPage type="medical"
+│   │   │   │   │   └── MASFinancialReportPage.tsx # thin wrapper → DvtReportPage type="financial"
+│   │   │   │   └── previousPolicy/
+│   │   │   │       └── RetailPreviousPolicyPage.tsx
 │   │   │   ├── routes/
 │   │   │   │   ├── AppRoutes.tsx
 │   │   │   │   ├── RequireSession.tsx # Re-verifies RETAIL authorization on mount
 │   │   │   │   └── RetailAppLayout.tsx
 │   │   │   └── services/
 │   │   │       ├── drsService.ts
-│   │   │       └── inboxService.ts
+│   │   │       ├── inboxService.ts
+│   │   │       └── masAuditTrailService.ts
 │   │   ├── Dockerfile
 │   │   ├── index.html
 │   │   ├── package.json
@@ -65,9 +86,12 @@ mid-office-monorepo/
 │       │   ├── vite-env.d.ts
 │       │   ├── modules/
 │       │   │   ├── drs/
-│       │   │   │   └── DvtUser.tsx
-│       │   │   └── inbox/
-│       │   │       └── GroupInboxPage.tsx
+│       │   │   │   ├── DvtUser.tsx
+│       │   │   │   └── lifeAssuredData.ts
+│       │   │   ├── inbox/
+│       │   │   │   └── GroupInboxPage.tsx
+│       │   │   └── previousPolicy/
+│       │   │       └── GroupPreviousPolicyPage.tsx
 │       │   ├── routes/
 │       │   │   ├── AppRoutes.tsx
 │       │   │   ├── GroupAppLayout.tsx
@@ -99,7 +123,7 @@ mid-office-monorepo/
 │   │   │   │   └── Checkbox.tsx       # CustomCheckbox
 │   │   │   ├── Dialog/
 │   │   │   │   └── Dialog.tsx         # CustomDialog
-│   │   │   ├── Icons/
+│   │   │   ├── icons/
 │   │   │   │   └── Icons.tsx          # All SVG icons — proxy here, never import @mui/icons-material directly
 │   │   │   ├── KeyValueTable/
 │   │   │   │   └── KeyValueTable.tsx  # KeyValueTable, KeyValueRow
@@ -129,7 +153,7 @@ mid-office-monorepo/
 │   │   ├── src/
 │   │   │   ├── dev-config.json        # Single source of truth: ports, base paths, host
 │   │   │   └── index.ts               # commonPaths, retailPaths, groupPaths, businessInboxUrl,
-│   │   │                              #   drsUrl, replaceUrl, assignUrl, appBasename
+│   │   │                              #   drsUrl, previousPolicyUrl, replaceUrl, assignUrl, appBasename
 │   │   ├── package.json               # exports: "." → src/index.ts (no build step)
 │   │   └── tsconfig.json
 │   │
@@ -161,7 +185,8 @@ mid-office-monorepo/
 ├── design-reference/                  # UI source of truth — never imported into the app build
 │   └── ui-prototypes/
 │       ├── Retail/                    # CUW, Pre issuance CUW, CVT, Pre issuance CVT, SUW/Reinstatement,
-│       │                              #   MAS, PIVV, IT Task, MMT Grievance, Claim Audit, Ref Screens
+│       │                              #   MAS, PIVV, IT Task, MMT Grievance, Claim Audit, Ref Screens,
+│       │                              #   Reinsurer
 │       ├── Group/                     # DVT Informal, GUW Formal, GUW Informal
 │       └── search-application/        # Search Application (read-only cross-line)
 │
@@ -182,6 +207,8 @@ mid-office-monorepo/
 │       └── screens/                   # Per-screen specs (component tree, routes, API shapes)
 │           ├── README.md
 │           ├── 00-shared-layout.md    # AppHeader, Sidebar, ApplicantBanner, design tokens
+│           ├── context-ingestion-manifest.md
+│           ├── shared-login.md
 │           ├── retail-cuw.md
 │           ├── retail-pre-issuance-cuw.md
 │           ├── retail-cvt.md
@@ -200,7 +227,7 @@ mid-office-monorepo/
 │           └── search-application.md
 │
 ├── .bob/                              # Bob AI assistant configuration
-│   ├── commands/                      # Slash commands: /annotate /spec /build /build-like /check /inventory
+│   ├── commands/                      # annotate.md spec.md build.md build-like.md check.md inventory.md pipeline.md (interactive orchestrator)
 │   ├── rules/                         # 01-spec-rules.md — annotation schema, design tokens, template
 │   ├── rules-agent/AGENTS.md          # Non-obvious coding rules (Agent/Code mode)
 │   ├── rules-ask/AGENTS.md            # Documentation context (Ask mode)
@@ -213,7 +240,10 @@ mid-office-monorepo/
 ├── .dockerignore
 ├── .gitignore
 ├── .npmrc
+├── AGENTS.md                          # Repo-wide guidance for agents
+├── README.md
 ├── package.json                       # Root: pnpm@10.15.0, turbo scripts, devDependencies
+├── pnpm-lock.yaml
 ├── pnpm-workspace.yaml                # Workspace globs: apps/*, packages/*
 ├── tsconfig.base.json                 # Shared TS config: strict, noUnusedLocals, moduleResolution:bundler
 └── turbo.json                         # Pipeline: build → ^typecheck; dev (no cache); globalDependencies: mock/**
@@ -234,9 +264,21 @@ mid-office-monorepo/
   | Subpath | Source file | Contents |
   |---|---|---|
   | `@insurance-poc/common/auth` | `src/services/loginService.ts` | `fetchLogin`, `authorizeBusiness`, `AuthenticatedUser`, `BusinessType` |
+  | `@insurance-poc/common/app-header` | `src/components/AppHeader.tsx` | `AppHeader`, `AppHeaderProps`, `ProfileMenuItem` |
+  | `@insurance-poc/common/dvt-section-viewer` | `src/components/DvtSectionViewer.tsx` | `DvtSectionViewer`, `DvtSectionViewerProps` |
+  | `@insurance-poc/common/dvt-report-page` | `src/components/DvtReportPage.tsx` | `DvtReportPage`, `DvtReportPageProps` |
   | `@insurance-poc/common/detail-card` | `src/components/DetailCard.tsx` | `DetailCard`, `DetailCardProps`, `DetailAttribute`, `DetailTable` |
+  | `@insurance-poc/common/decision-bar` | `src/components/DecisionBar.tsx` | `DecisionBar`, `DecisionComparisonTable`, `DecisionBarItem`, `DecisionBarProps`, `ComparisonRow` |
+  | `@insurance-poc/common/quick-links` | `src/components/QuickLinks.tsx` | `QuickLinks`, `QuickLinkItem`, `QuickLinksProps` |
+  | `@insurance-poc/common/previous-policy` | `src/components/PreviousPolicy.tsx` | `PreviousPolicy`, `PreviousPolicyDialog`, `PreviousPolicyProps` |
+  | `@insurance-poc/common/life-assured` | `src/components/LifeAssured/LifeAssured.tsx` | `LifeAssured`, `LifeAssuredApplicant`, `LifeAssuredProps`, `FieldData`, `ImageDetailRecord`, `NomineeRow`, `AppointeeRow` |
 
-- **Workstreams owned**: Login, shared summary screen (future).
+  > **Stale exports:** `./applicant-profile` (`src/components/ApplicantProfile.tsx`) and
+  > `./profile-fields` (`src/components/ProfileFields.tsx`) are declared in `package.json` but the
+  > target files do not exist (superseded by `LifeAssured/`). Remove them or restore the files.
+
+- **Workstreams owned**: Login, shared business components (decision bar, quick links, previous
+  policy, life assured).
 
 ### `apps/retail` — Retail Underwriting SPA (`@insurance-poc/retail`)
 
@@ -288,7 +330,8 @@ Wraps MUI v6 + Emotion. All components are exported from `packages/ui/src/index.
 | `BadgeWithCount` | `Badge/BadgeWithCount.tsx` | Badge with numeric counter |
 | `SearchBar` | `SearchBar/SearchBar.tsx` | Search input |
 | `Calendar`, `CalendarProps` | `Calendar/Calendar.tsx` | Date picker (MUI x-date-pickers + dayjs) |
-| `CloseIcon`, `KeyRightArrowIcon`, `EyeIcon`, `EyeSlashIcon` | `Icons/Icons.tsx` | SVG icons |
+| `CloseIcon`, `KeyDownArrowIcon`, `KeyLeftArrowIcon`, `KeyRightArrowIcon`, `LinkIcon`, `LogoutIcon`, `RefreshIcon`, `UserProfileIcon`, `EyeIcon`, `EyeSlashIcon` | `icons/Icons.tsx` | SVG icons |
+| `colors` | `theme.ts` | Shared colour token map |
 
 ### `@insurance-poc/routes` — Route Constants & URL Helpers
 
@@ -298,10 +341,11 @@ Single source of truth for all ports, base paths, and cross-SPA navigation.
 |---|---|
 | `dev-config.json` | `host`, `ports` (common: 5183, retail: 5184, group: 5185), `viteBase`, `previewPort` (8080) |
 | `commonPaths` | `{ home: "/", login: "/login" }` |
-| `retailPaths` | `{ root, inbox, drs }` |
-| `groupPaths` | `{ root, inbox, drs }` |
+| `retailPaths` | `{ root, inbox, drs, masDrs, previousPolicy }` |
+| `groupPaths` | `{ root, inbox, drs, previousPolicy }` |
 | `businessInboxUrl(businessType)` | Returns inbox URL for `"RETAIL"` or `"GROUP"` |
 | `drsUrl(businessType, applicationNo)` | Returns DRS URL with `?applicationNo=` query param |
+| `previousPolicyUrl(businessType, applicationNo)` | Returns previous-policy URL with `?applicationNo=` query param |
 | `replaceUrl(url)` | `window.location.replace(url)` — use for cross-SPA navigation |
 | `assignUrl(url)` | `window.location.assign(url)` — use for cross-SPA navigation |
 | `appBasename(base)` | Strips trailing slash for React Router basename |
@@ -337,6 +381,7 @@ Local JSON files consumed exclusively through service modules. `mock/` is declar
 | `mock/inbox/inbox.json` | `apps/retail` + `apps/group` inboxService | `poolData` by category; `businessType` field filters per app |
 | `mock/drs/retail-drs.json` | `apps/retail` drsService | DRS records keyed by `applicationNo` |
 | `mock/drs/group-drs.json` | `apps/group` drsService | DRS records keyed by `applicationNo` |
+| `mock/mas/mas-audit-trail.json` | `apps/retail` masAuditTrailService | MAS audit trail entries (mock; BFF placeholder) |
 
 **Service pattern** (all services follow this pattern — screens never import mock JSON directly):
 

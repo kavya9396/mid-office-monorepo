@@ -34,6 +34,7 @@ export const retailPaths = {
   root: retailBase,
   inbox: `${retailBase}/inbox`,
   drs: `${retailBase}/drs`,
+  masDrs: `${retailBase}/mas/drs`,
   previousPolicy: `${retailBase}/previous-policy`,
 } as const;
 
