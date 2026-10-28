@@ -14,12 +14,21 @@ type Address = {
 
 type SummaryMember = {
   memberType: string;
-  proposerSummary: Record<string, string | number | { years: number } | null>;
+  proposerSummary: Record<string, string | number | boolean | { years: number; days?: number } | null>;
   kycDetails: Record<string, string>;
   address: Address[];
   contactDetails: Record<string, string>;
   healthDetail: { height: string; weight: string; bmi: string };
-  nominee: { firstName: string; lastName: string; dob: string; gender: string; percentage: number }[];
+  nominee: {
+    firstName: string;
+    lastName: string;
+    dob: string;
+    gender: string;
+    percentage: number;
+    proposerNomineeRelation?: string;
+    accountNumber?: string;
+    ifsc?: string;
+  }[];
   appointee: { firstName: string; lastName: string; dob: string; gender: string }[];
 };
 
@@ -27,7 +36,7 @@ type ProductDetail = { code: string; productType: string };
 
 type RiderDetail = { riderName: string; sumAssured: number; riderTerm: number };
 
-type LoanDetail = {
+export type LoanDetail = {
   baseSumAssured: string;
   loanAmount: string;
   loanDisbursementDate: string;
@@ -38,20 +47,12 @@ type LoanDetail = {
   loanAccountNumber: string;
 };
 
-type ImageRecord = {
-  imageType: string;
-  document: string;
-  faceMatchScore: string;
-  imageQuality: string;
-  remarks: string;
-};
-
 export type LifeAssuredSource = {
-  summary: SummaryMember[];
+  summary: unknown[];
   productDetail: ProductDetail;
   riderDetails: RiderDetail[];
   loan: LoanDetail;
-  imageRecords: ImageRecord[];
+  imageRecords: never[];
 };
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -103,7 +104,6 @@ const toApplicant = (
   productDetail: ProductDetail,
   riders: RiderDetail[],
   loan: LoanDetail,
-  imageRecords: ImageRecord[],
 ): LifeAssuredApplicant => {
   const summary = member.proposerSummary;
   const kyc = member.kycDetails;
@@ -114,7 +114,7 @@ const toApplicant = (
     id: member.memberType,
     label: memberLabel(member.memberType, total),
     profileImage: text(summary.profileImage) as string | undefined,
-    imageRecords,
+    imageRecords: [],
     personalFields: [
       {
         label: "Applicant Name",
@@ -219,14 +219,13 @@ const toApplicant = (
 };
 
 export function mapApplicants(source: LifeAssuredSource): LifeAssuredApplicant[] {
-  return source.summary.map((member) =>
+  return (source.summary as SummaryMember[]).map((member) =>
     toApplicant(
       member,
       source.summary.length,
       source.productDetail,
       source.riderDetails,
       source.loan,
-      source.imageRecords,
     ),
   );
 }

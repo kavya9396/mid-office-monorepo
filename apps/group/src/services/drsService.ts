@@ -17,6 +17,7 @@ export type CardDetail = {
 
 export type BreDecision = {
   decision: string;
+  initialDecision: string;
   remarks: string;
   discrepancy: string;
   action: string;
@@ -28,7 +29,6 @@ export type GroupDrsData = {
   applicationNo: string;
   cardDetails: CardDetail[];
   breDecision: BreDecision;
-  latestBreDecision: BreDecision;
   requirements: RequirementItem[];
   applicants: LifeAssuredApplicant[];
 };
@@ -103,12 +103,22 @@ function readCards(value: unknown): CardDetail[] {
   });
 }
 
+/** Finds a section by name inside data.sections array and returns its value. */
+function findSection(sections: unknown, name: string): unknown {
+  if (!Array.isArray(sections)) throw invalidResponse();
+  const entry = sections.find(
+    (s) => isRecord(s) && s.name === name,
+  ) as Record<string, unknown> | undefined;
+  return entry?.value ?? null;
+}
+
 function readBre(value: unknown): BreDecision {
   if (!isRecord(value)) throw invalidResponse();
   const reTriggerCount = value.reTriggerCount;
   if (typeof reTriggerCount !== "number") throw invalidResponse();
   return {
     decision: readText(value.decision),
+    initialDecision: readText(value.initialDecision),
     remarks: readText(value.remarks),
     discrepancy: readText(value.discrepancy),
     action: readText(value.action),
@@ -136,18 +146,71 @@ function readRequirements(value: unknown): RawRequirement[] {
   });
 }
 
-function readLifeAssured(value: unknown): LifeAssuredSource {
-  if (
-    !isRecord(value) ||
-    !Array.isArray(value.summary) ||
-    !isRecord(value.productDetail) ||
-    !Array.isArray(value.riderDetails) ||
-    !isRecord(value.loan) ||
-    !Array.isArray(value.imageRecords)
-  ) {
-    throw invalidResponse();
-  }
-  return value as LifeAssuredSource;
+/**
+ * Reads the product detail from applicationOverview.productDetail (array).
+ * Falls back to empty strings if absent.
+ */
+function readProductDetail(appOverview: unknown): { code: string; productType: string } {
+  if (!isRecord(appOverview)) return { code: "", productType: "" };
+  const products = appOverview.productDetail;
+  if (!Array.isArray(products) || products.length === 0) return { code: "", productType: "" };
+  const first = products[0];
+  if (!isRecord(first)) return { code: "", productType: "" };
+  return {
+    code: readText(first.code),
+    productType: readText(first.productType),
+  };
+}
+
+/**
+ * Reads rider details from applicationOverview.riderDetails (array).
+ */
+function readRiderDetails(appOverview: unknown): { riderName: string; sumAssured: number; riderTerm: number }[] {
+  if (!isRecord(appOverview) || !Array.isArray(appOverview.riderDetails)) return [];
+  return appOverview.riderDetails
+    .filter(isRecord)
+    .map((r) => ({
+      riderName: readText(r.riderName),
+      sumAssured: typeof r.sumAssured === "number" ? r.sumAssured : 0,
+      riderTerm: typeof r.riderTerm === "number" ? r.riderTerm : 0,
+    }));
+}
+
+/**
+ * Reads loan/group details from applicationOverview.groupDetails.
+ */
+function readLoanDetail(appOverview: unknown): Record<string, string> {
+  if (!isRecord(appOverview) || !isRecord(appOverview.groupDetails)) return {};
+  const g = appOverview.groupDetails;
+  return {
+    baseSumAssured: "",
+    loanAmount: g.loanAmount != null ? String(g.loanAmount) : "",
+    loanDisbursementDate: readText(g.dateOfLoanDisbursement),
+    loanShare: g.shareOfLoan != null ? String(g.shareOfLoan) : "",
+    loanTerm: g.loanTerm != null ? String(g.loanTerm) : "",
+    policyTerm: "",
+    masterCode: "",
+    loanAccountNumber: "",
+  };
+}
+
+function readLifeAssured(
+  summaryValue: unknown,
+  appOverview: unknown,
+): LifeAssuredSource {
+  if (!Array.isArray(summaryValue)) throw invalidResponse();
+
+  const productDetail = readProductDetail(appOverview);
+  const riderDetails = readRiderDetails(appOverview);
+  const loan = readLoanDetail(appOverview);
+
+  return {
+    summary: summaryValue,
+    productDetail,
+    riderDetails,
+    loan: loan as LifeAssuredSource["loan"],
+    imageRecords: [],
+  };
 }
 
 export function mapGroupDrsPayload(value: unknown): GroupDrsData {
@@ -157,12 +220,17 @@ export function mapGroupDrsPayload(value: unknown): GroupDrsData {
   const applicationNo = readText(data.applicationNo).trim();
   if (applicationNo.length === 0) throw invalidResponse();
 
+  const sections = data.sections;
+  const breSection = findSection(sections, "breDecision");
+  const summarySection = findSection(sections, "summary");
+  const requirementSection = findSection(sections, "requirementManagement");
+  const appOverviewSection = findSection(sections, "applicationOverview");
+
   return {
     applicationNo,
     cardDetails: readCards(data.cardDetails),
-    breDecision: readBre(data.breDecision),
-    latestBreDecision: readBre(data.latestBreDecision),
-    requirements: mapRequirements(readRequirements(data.requirementManagement)),
-    applicants: mapApplicants(readLifeAssured(data.lifeAssured)),
+    breDecision: readBre(breSection),
+    requirements: mapRequirements(readRequirements(requirementSection)),
+    applicants: mapApplicants(readLifeAssured(summarySection, appOverviewSection)),
   };
 }
