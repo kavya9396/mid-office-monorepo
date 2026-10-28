@@ -1,0 +1,24 @@
+{
+  "accessToken": "mock-jwt-token",
+  "refreshToken": "mock-refresh-token",
+  "users": [
+    {
+      "userId": "UW001",
+      "displayName": "Retail Underwriter",
+      "authorizedBusinessTypes": ["RETAIL"],
+      "roles": ["CVT_TASK", "DVT_TASK"]
+    },
+    {
+      "userId": "UW002",
+      "displayName": "Group Underwriter",
+      "authorizedBusinessTypes": ["GROUP"],
+      "roles": ["CVT_TASK", "DVT_TASK"]
+    },
+    {
+      "userId": "UW003",
+      "displayName": "Composite Underwriter",
+      "authorizedBusinessTypes": ["RETAIL", "GROUP"],
+      "roles": ["CVT_TASK", "DVT_TASK"]
+    }
+  ]
+}

@@ -1,0 +1,1905 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>ICICI Life | View Medical</title>
+    <style>
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            font: 14px Arial, Helvetica, sans-serif;
+            color: #344054;
+            background: #fff
+        }
+
+        button,
+        input,
+        select {
+            font: inherit
+        }
+
+        .header {
+            height: 57px;
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            background: linear-gradient(to bottom, #F58220, #E65318 42%, #C92E27 72%, #98252B);
+            box-shadow: 0 3px 12px rgba(111, 24, 24, .25)
+        }
+
+        .header-back {
+            width: 42px;
+            height: 57px;
+            border: 0;
+            border-right: 1px solid #ffffff55;
+            color: #fff;
+            background: #7e161f6b;
+            font-size: 26px
+        }
+
+        .logo {
+            width: 150px;
+            height: 57px;
+            object-fit: cover
+        }
+
+        .head-right {
+            margin-left: auto;
+            padding: 0 25px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            color: #fff
+        }
+
+        .session {
+            text-align: right;
+            border-right: 1px solid #fff6;
+            padding-right: 14px;
+            font-size: 11px
+        }
+
+        .avatar-head {
+            width: 35px;
+            height: 35px;
+            border: 1px solid #fff8;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            background: #ffffff33
+        }
+
+        .page {
+            padding: 6px 8px 30px
+        }
+
+        .primary {
+            min-width: 140px;
+            padding: 9px 20px;
+            border: 0;
+            border-radius: 18px;
+            color: #fff;
+            background: #9A2529;
+            font-size: 12px;
+            font-weight: 700
+        }
+
+        .view {
+            display: block;
+            margin-top: 8px
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center
+        }
+
+        .back {
+            padding: 5px 11px;
+            border: 1px solid #E45F14;
+            border-radius: 18px;
+            color: #A92129;
+            background: #FFF4EC;
+            font-size: 11px;
+            font-weight: 900
+        }
+
+        .docs {
+            border: 0;
+            color: #9A2529;
+            background: none;
+            text-decoration: underline;
+            font-weight: 600
+        }
+
+        .switcher {
+            margin: 12px auto 4px;
+            display: flex;
+            justify-content: center;
+            gap: 7px
+        }
+
+        .shared-avatar {
+            width: 42px;
+            height: 42px;
+            display: grid;
+            place-items: center;
+            border: 1px solid #E45F14;
+            border-radius: 50%;
+            color: #9A2529;
+            background: #FFF4EC;
+            font-size: 12px;
+            font-weight: 800
+        }
+
+        .tabs {
+            display: flex;
+            gap: 18px
+        }
+
+        .tab {
+            padding: 5px 2px 7px;
+            border: 0;
+            border-bottom: 2px solid transparent;
+            color: #667085;
+            background: none;
+            font-size: 12px;
+            font-weight: 600
+        }
+
+        .tab.active {
+            border-bottom-color: #E45F14;
+            color: #9A2529;
+            font-weight: 800
+        }
+
+        .search {
+            margin-top: 8px;
+            padding: 10px 12px;
+            display: flex;
+            gap: 6px;
+            border: 1px solid #E4E7EC;
+            border-radius: 6px;
+            background: #F8FAFC
+        }
+
+        .search input {
+            width: 280px;
+            height: 34px;
+            padding: 6px 10px;
+            border: 1px solid #CBD0D7;
+            border-radius: 6px
+        }
+
+        .search button {
+            height: 34px;
+            padding: 0 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600
+        }
+
+        .search-go {
+            border: 0;
+            color: #fff;
+            background: #9A2529
+        }
+
+        .search-clear {
+            border: 1px solid #9A2529;
+            color: #9A2529;
+            background: #fff
+        }
+
+        .medical-layout {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-top: 8px
+        }
+
+        .medical-nav {
+            width: 208px;
+            min-width: 208px;
+            position: sticky;
+            top: 8px;
+            max-height: 100vh;
+            overflow: auto;
+            border: 1px solid #D6D8DC;
+            border-radius: 4px;
+            background: #F8F9FB
+        }
+
+        .group {
+            width: 100%;
+            padding: 10px 12px;
+            border: 0;
+            border-bottom: 1px solid #E4E7EC;
+            display: flex;
+            justify-content: space-between;
+            color: #344054;
+            background: #EEF2F6;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 700
+        }
+
+        .nav-item {
+            width: 100%;
+            padding: 9px 12px;
+            border: 0;
+            border-bottom: 1px solid #EAECEF;
+            border-left: 3px solid transparent;
+            display: flex;
+            justify-content: space-between;
+            color: #667085;
+            background: transparent;
+            text-align: left;
+            font-size: 11.5px
+        }
+
+        .nav-item.active {
+            border-left-color: #DE2C3B;
+            color: #B42318;
+            background: #fff;
+            font-weight: 600
+        }
+
+        .medical-content {
+            min-width: 0;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px
+        }
+
+        .card {
+            scroll-margin-top: 70px;
+            overflow: hidden;
+            border: 1px solid #E4E7EC;
+            border-radius: 6px;
+            background: #fff;
+            box-shadow: 0 1px 2px #10182814
+        }
+
+        .card.highlight {
+            border: 2px solid #E45F14;
+            box-shadow: 0 0 0 3px #e45f1420
+        }
+
+        .card-head {
+            padding: 9px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid #E4E7EC;
+            background: #F8FAFC
+        }
+
+        .card-title {
+            border: 0;
+            color: #1F2937;
+            background: transparent;
+            font-size: 12px;
+            font-weight: 700;
+            text-align: left
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 8px
+        }
+
+        .smallbtn {
+            min-width: 72px;
+            padding: 5px 10px;
+            border: 0;
+            border-radius: 4px;
+            color: #fff;
+            background: #9A2529;
+            font-size: 11.5px
+        }
+
+        .reset {
+            border: 1px solid #9A2529;
+            color: #9A2529;
+            background: #fff
+        }
+
+        .card-body {
+            padding: 10px;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px
+        }
+
+        .field label {
+            display: flex;
+            gap: 2px;
+            margin-bottom: 5px;
+            color: #444;
+            font-size: 12px
+        }
+
+        .required {
+            color: #B42318
+        }
+
+        .value {
+            min-height: 36px;
+            padding: 9px 10px;
+            border: 1px solid #E4E7EC;
+            border-radius: 8px;
+            color: #344054;
+            background: #F3F4F6;
+            font-size: 12px
+        }
+
+        .field input,
+        .field select {
+            width: 100%;
+            height: 36px;
+            padding: 7px 10px;
+            border: 1px solid #CBD0D7;
+            border-radius: 8px;
+            background: #fff;
+            font-size: 12px
+        }
+
+        .hidden {
+            display: none
+        }
+
+        .toast {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            z-index: 40;
+            display: none;
+            padding: 12px 16px;
+            border-radius: 6px;
+            color: #fff;
+            background: #027A48
+        }
+
+        .toast.show {
+            display: block
+        }
+
+        @media(max-width:800px) {
+            .medical-layout {
+                flex-direction: column
+            }
+
+            .medical-nav {
+                width: 100%;
+                min-width: 0;
+                max-height: 270px;
+                position: static
+            }
+
+            .card-body {
+                grid-template-columns: 1fr 1fr
+            }
+
+            .head-right .session {
+                display: none
+            }
+        }
+
+        @media(max-width:520px) {
+            .card-body {
+                grid-template-columns: 1fr
+            }
+
+            .search input {
+                width: 100%
+            }
+
+            .search {
+                flex-wrap: wrap
+            }
+
+            .logo {
+                width: 128px
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header app-header">
+        <button class="header-back" aria-label="Go back">‹</button>
+        <img class="logo" src="ICICI Logo.svg" alt="ICICI Life">
+        <div class="head-right header-user">
+            <div class="session"><span id="current-time">--</span><br><b id="session-time">Session: 15:00</b></div>
+            <span id="clock" hidden></span>
+            <button class="profile-trigger" id="profile-trigger" type="button" aria-expanded="false">
+                <span class="profile-circle">♙</span><span class="profile-name">ipru75474</span><span class="chevron"
+                    id="profile-chevron">⌄</span>
+            </button>
+            <div class="user-menu" id="user-menu">
+                <button type="button" class="menu-row">Breaktime</button>
+                <button type="button" class="menu-row">Logout</button>
+            </div>
+        </div>
+    </header>
+    <main class="page">
+        <section class="view" id="view">
+            <div class="topbar"><button class="back" id="back">← Back to DRS</button>
+
+                <div class="switcher">
+                    <div class="shared-avatar" id="person-avatar">LA</div>
+                    <div class="tabs" role="tablist"><button class="tab active" data-tab="life">Life
+                            Assured1</button><button class="tab" data-tab="Proposer">Proposer</button></div>
+                </div>
+                <button class="docs" id="docs">View
+                    Medical Documents</button>
+            </div>
+
+            <div class="search"><input id="medical-search" placeholder="Search medical section..."><button
+                    class="search-go" id="search-go">Search</button><button class="search-clear"
+                    id="search-clear">Clear</button></div>
+            <div class="medical-layout">
+                <nav class="medical-nav" id="medical-nav"></nav>
+                <div class="medical-content" id="medical-content"></div>
+            </div>
+            <div style="display:flex;justify-content:flex-end;padding:14px"><button class="primary"
+                    id="submit-medical">Submit</button></div>
+        </section>
+    </main>
+    <div class="toast" id="toast"></div>
+    <script>
+        const esc = value => String(value).replace(/[&<>'\"]/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
+        function toast(message) { const element = document.getElementById('toast'); element.textContent = message; element.classList.add('show'); setTimeout(() => element.classList.remove('show'), 2500); }
+        const medicalGroups = [{ name: 'MER', items: [['MER', ['Application No.', 'First Name', 'Last Name', 'Is MER name same as proposal name?', 'Place of Examination', 'Gender', 'Name of ME', 'ME Code', 'Examinee DOB', 'Date of Examination']], ['Habit and Addictions', ['Cigarettes/beedis/cigar', 'Cigarettes/beedis/cigar Quant', 'Gutka / snuff / paan etc.', 'Narcotic Consumption', 'Beer/Wine/Hard liquor']], ['Measurement', ['Height (cms)', 'Height (Fts)', 'Inches', 'Weight (Kgs)', 'Waist (cms)', 'Hips (cms)', 'BMI']], ['Family history and health status', ['Relation', 'Age', 'Health Status', 'Dead or Alive']], ['Blood pressure and Pulse details', ['Systolic 1', 'Diastolic 1', 'Systolic 2', 'Diastolic 2', 'Pulse Rate', 'Average Systolic', 'Average Diastolic']], ['Question Table', []]] }, { name: 'SPECIAL MEDICAL', items: [['2DECHO', ['Medical Type', 'Test Date', 'Findings', 'Ejection Fraction', 'Ejection Result', 'Rejection Abnormality', 'Examinee Name', 'Examinee Age', 'Diagnostic Centre Name', 'Doctor Name', 'Doctor Registration No', 'Remarks']], ['BLOOD UREA and NITRO', ['Medical Type', 'Test Date', 'Blood Urea', 'BUN', 'Result', 'Examinee Name', 'Examinee Age', 'Diagnostic Centre Name', 'Doctor Name', 'Doctor Registration No', 'Remark']], ['CXR', ['Medical Type', 'Test Date', 'Findings', 'Examinee Name', 'Examinee Age', 'Diagnostic Centre Name', 'Doctor Name', 'Doctor Registration No', 'Remark']], ['ECG', ['Medical Type', 'Test Date', 'Findings', 'Axis', 'Heart Rate', 'Heart Rate Finding', 'Examinee Name', 'Examinee Age', 'Diagnostic Centre Name', 'Doctor Name', 'Doctor Registration No', 'Remark']], ['PFT', ['Medical Type', 'Date', 'FEV1', 'FVC', 'FEV1/FVC', 'RV', 'VC']], ['TMT', ['Medical Type', 'Test Date', 'Findings', 'METS', 'Heart Rate Finding', 'Heart Rate Result', 'Examinee Name', 'Examinee Age', 'Remarks']], ['USG', ['Medical Type', 'Test Date', 'Findings', 'Examinee Name', 'Examinee Age', 'Diagnostic Centre Name', 'Doctor Name', 'Remarks']], ['Fundoscopy Test', ['Medical Type', 'Test Date', 'Findings', 'Examinee Name', 'Examinee Age', 'Diagnostic Centre Name', 'Doctor Name', 'Remarks']]] }, { name: 'OTHER MEDICALS', items: [['Blood Sugar Random', ['Medical Type', 'Test Date', 'Value', 'Examinee Name', 'Examinee Age', 'Diagnostic Centre Name']], ['CBC Group', ['Medical Type', 'Test Date', 'Haemoglobin', 'RBC Count', 'WBC Count', 'Platelet Count', 'Findings']], ['COT', ['Medical Type', 'Test Date', 'Value', 'Examinee Name', 'Examinee Age']], ['HBA1C', ['Medical Type', 'Test Date', 'Value', 'Examinee Name', 'Examinee Age']], ['HBSAG', ['Medical Type', 'Test Date', 'Value', 'Examinee Name', 'Examinee Age']], ['LFT', ['Medical Type', 'Test Date', 'SGPT/ALT', 'SGOT/AST', 'GGT', 'Serum Bilirubin-Total', 'Findings']], ['LIPIDS', ['Medical Type', 'Test Date', 'Total Cholesterol', 'HDL Cholesterol', 'LDL Cholesterol', 'Triglycerides']], ['OGTT Group', ['Medical Type', 'Test Date', 'Fasting', '1 Hour', '2 Hour', 'Findings']], ['RUA Group', ['Medical Type', 'Test Date', 'Sugar/Glycosuria', 'Albumin/Proteinuria', 'RBC/Haematuria', 'Ketone Bodies', 'Urine Colour', 'Urine Appearance']], ['FBS', ['Medical Type', 'Test Date', 'Value', 'Examinee Name', 'Examinee Age']], ['HCV', ['Medical Type', 'Test Date', 'Value', 'Examinee Name', 'Examinee Age']], ['PSA', ['Medical Type', 'Test Date', 'Value', 'Examinee Name', 'Examinee Age']]] }];
+
+        /* Workbook additions: MCA_Medical data details 08-06-2026.xlsx.
+           Each source comment names the worksheet and rows for its new fields.
+           Existing sections and fields stay in order, preserving demo-value IDs. */
+        const normalizeMedicalSection = value => value.trim().toLowerCase();
+        const medicalFieldAliases = {
+            "narroticconsumption": "narcoticconsumption",
+            "date": "testdate",
+            "remark": "remarks",
+            "avgsystolic": "averagesystolic",
+            "avgdiastolic": "averagediastolic",
+            "hemoglobinhb": "haemoglobin",
+            "rbc": "rbccount",
+            "wbc": "wbccount",
+            "platelets": "plateletcount",
+            "totalcholesteroltc": "totalcholesterol",
+            "triglyceridestg": "triglycerides",
+            "hdl": "hdlcholesterol",
+            "ldl": "ldlcholesterol"
+        };
+        const normalizeMedicalField = value => {
+            const key = value.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+            return medicalFieldAliases[key] || key;
+        };
+        function includeWorkbookMedicalFields(groupName, sectionName, fieldNames) {
+            const group = medicalGroups.find(item => normalizeMedicalSection(item.name) === normalizeMedicalSection(groupName));
+            if (!group) throw new Error('Missing medical group: ' + groupName);
+            let section = group.items.find(item => normalizeMedicalSection(item[0]) === normalizeMedicalSection(sectionName));
+            if (!section) {
+                section = [sectionName, []];
+                group.items.push(section);
+            }
+            const existing = new Set(section[1].map(normalizeMedicalField));
+            fieldNames.forEach(label => {
+                const key = normalizeMedicalField(label);
+                if (!existing.has(key)) {
+                    section[1].push(label);
+                    existing.add(key);
+                }
+            });
+        }
+
+        // Fields added: MER / MER (Other_Medical rows 2-22).
+        includeWorkbookMedicalFields("MER", "MER", [
+            "Is Identity Proof and Application Photo Match",
+            "Examinee Education SD",
+            "Examinee Occupation SD",
+            "Examinee Income SD",
+            "Any previous life Insurance policy decline/Postpone/or issued on revised term SD",
+            "Examinee Photo ID Proof",
+            "Examinee Contact No",
+            "Face match Score",
+            "Diagnostic Centre Name",
+            "Diagnostic Centre Address",
+            "Diagnostic Centre Pincode",
+        ]);
+
+        // Fields added: MER / Habit and Addictions (Other_Medical rows 23-28).
+        includeWorkbookMedicalFields("MER", "Habit and Addictions", [
+            "Cigarettes/beedis/cigar Year",
+            "Gutka / snuff / paan etc. Quant",
+            "Gutka / snuff / paan etc. Year",
+            "Narrotic Consumption Quant",
+            "Narrotic Consumption Year",
+            "Beer/Wine/Hard liquor Quant",
+            "Beer/Wine/Hard liquor Year",
+        ]);
+
+        // Fields added: MER / Family history and health status (Other_Medical rows 37-42).
+        includeWorkbookMedicalFields("MER", "Family history and health status", [
+            "RELATION TYPE",
+        ]);
+
+        // Fields added: MER / Blood pressure and Pulse details (Other_Medical rows 43-54).
+        includeWorkbookMedicalFields("MER", "Blood pressure and Pulse details", [
+            "Systolic3",
+            "Diastolic3",
+            "Pulse Rate and Character",
+        ]);
+
+        // The workbook lists numbered MER questions, not standalone Question/Answer/Remarks controls.
+        // Fields added: MER / Question Table (Other_Medical rows 55-102).
+        includeWorkbookMedicalFields("MER", "Question Table", [
+            "1.a — Are you the examinees medical attendant?",
+            "2.a — Is there any abnormality in general appearance?",
+            "2.b — Describe Build - Normal / thin / muscular / obese / stocky",
+            "2.c — Has there been any significant weight gain or weight loss?",
+            "3.a — Has been hospitalized for accident/Medical treatment/ Surgery(if yes,please give details , Date and Duration of the ailment)",
+            "3.b — Has undergone any path tests(including HIV and HBsAg)/ Radiological Tests/ Cardiovascular tests/ USG/ 2D   Echo/ CT Scan/ MRI/ Mammogram or any other tests. (Please specifydate/reason/findings)",
+            "3.c — Underwent surgery , If yes , Pls Specify?",
+            "4.a — Has the examinee or his/ her spouse been tested positive or is under treatment for HIV/ AIDS/ Sexually     transmitted diseases ( eg , syphilis , gonorrhea , etc.)",
+            "5.a — Is there any evidence of oral cancer or leukoplakia?",
+            "5.b — Any history of error of refraction/ ear discharge/ perforation/ nose bleed or any other eye/ ear/ nose/ throat     abnormality",
+            "5.c — Any history of error of refraction or evidence of eye / retinal abnormality or Cataract",
+            "6.a — Is there any history of seizures (focal or generalized) , peripheral neuritis , fainting , frequent headaches?",
+            "6.b — Is there any evidence of paresis , paralysis , abnormal gait , speech , wasting , involuntary movement , pupillary reflexes?",
+            "7.a — History of exertional dyspnea , arrhythmia , peripheral vascular disease?",
+            "7.b — Any evidence of gallop , carotid bruit , raised JVP , pedal edema , gross pallor , murmur?",
+            "7.c — If murmur is present , give the extent , grade point of maximum intensity and conduction and the probable diagnosis.",
+            "7.d — Any history of Stenting , PTCA , CABG , Open Heart Surgery?",
+            "8.a — Is there any history of breathlessness , wheezing , cough , bronchitis , asthma , TB , rhonchi , rale , emphysema?",
+            "8.b — Any evidence of monchi, rate, emphysema?",
+            "9.a — Is the examinee on treatment for hypertension? If yes, mention medication and duration of Rx? How is the control? Any other risk factors?",
+            "9.b — Is there any evidence of end organ damage?",
+            "10.a — Is the examinee suffering from any kind of Diabetes? If Yes , since how long on what treatment?",
+            "10.b — Is there any evidence of end organ damage?",
+            "11.a — Is there any history of hernia , disease of liver , gall bladder , pancreas , stomach , intestine?",
+            "11.b — Is there any evidence of organomegaly in abdomen , pelvis & or presence of free fluid?",
+            "11.c — Is there any history of piles , fissure , fistula , ulcerative colitis?",
+            "11.d — Is there any history of jaundice? If yes , any viral markers done?",
+            "12.a — GU system: Has the examinee suffered from or is suffering from kidney , ureter , bladder disease , stones , or any other urinary disease?",
+            "13.a — Is there any evidence of endocrine , thyroid dysfunction? if yes , please give details.",
+            "14.a — Any history of arthritis/ fracture/ joint surgery/ hyperuricemia/ gout?",
+            "15.a — Any evidence of psoriasis , eczema , varicose veins or xanthelasma?",
+            "15.b — Any operative/ non operative significants scars - burns , injuries.",
+            "16.a — Are there any abnormalities in the testes relating to location , size and consistency? ( Please do a physical examination only in case suspicion)",
+            "17.a — Is there any history of evidence of cancer , tumour , growth or cyst?",
+            "17.b — Has the examinee suffered from significant enlargement of lymph glands?",
+            "18.a — Is there any history of anxiety/ stress/ depression/ psychosis",
+            "18.b — Was the examinee treated for any psychiatric ailment? If so give details about medication given and     absenteeism from work , if any",
+            "19.a — Is the examinee currently under any kind of medication?",
+            "20.a — Any adverse menstrual history and LMP?",
+            "20.b — Any history of miscarriage , abortion or MTP?",
+            "20.c — Is she now pregnant? If yes , give details of duration in weeks",
+            "20.d — Do you suspect any disease related to breast on history? (Please do a physical examination only in case of suspicion)",
+            "20.e — Any reason to suspect disease of pelvic organs on history? Please mention your suspicion. (No need of internal examination)",
+            "20.f — Has she undergone any of these tests:pap smear , mammogram or ultrasound of pelvis?",
+            "21.a — Was the examinee co-operative",
+            "21.b — In your Opinion , is there anything about the examinees health , lifestyle or character which might unfavorable affect insurability",
+            "21.c — Are there any points on which you suggest further information be obtained",
+        ]);
+
+        // Fields added: SPECIAL MEDICAL / BLOOD UREA and NITRO (MER rows 14-23).
+        includeWorkbookMedicalFields("SPECIAL MEDICAL", "BLOOD UREA and NITRO", [
+            "Findings",
+        ]);
+
+        // New section and fields: SPECIAL MEDICAL / DOBUTAMINE STRESS ECHOCARDIOGRAM (MER rows 33-44).
+        includeWorkbookMedicalFields("SPECIAL MEDICAL", "DOBUTAMINE STRESS ECHOCARDIOGRAM", [
+            "Medical Type",
+            "Test Date",
+            "Findings",
+            "Ejection Fraction",
+            "Ejection Result",
+            "Rejection Abnormality",
+            "Examinee Name",
+            "Examinee Age",
+            "Diagnostic Centre Name",
+            "Doctor Name",
+            "Doctor Registration No",
+            "Remark",
+        ]);
+
+        // New section and fields: SPECIAL MEDICAL / EXERCISE STRESS ECHOCARDIOGRAM (MER rows 45-56).
+        includeWorkbookMedicalFields("SPECIAL MEDICAL", "EXERCISE STRESS ECHOCARDIOGRAM", [
+            "Medical Type",
+            "Test Date",
+            "Findings",
+            "Ejection Fraction",
+            "Ejection Result",
+            "Rejection Abnormality",
+            "Examinee Name",
+            "Examinee Age",
+            "Diagnostic Centre Name",
+            "Doctor Name",
+            "Doctor Registration No",
+            "Remark",
+        ]);
+
+        // New section and fields: SPECIAL MEDICAL / MAMMOGRAM (MER rows 69-77).
+        includeWorkbookMedicalFields("SPECIAL MEDICAL", "MAMMOGRAM", [
+            "Medical Type",
+            "Test Date",
+            "Findings",
+            "Examinee Name",
+            "Examinee Age",
+            "Diagnostic Centre Name",
+            "Doctor Name",
+            "Doctor Registration No",
+            "Remarks",
+        ]);
+
+        // New section and fields: SPECIAL MEDICAL / PAP SMEAR (MER rows 78-86).
+        includeWorkbookMedicalFields("SPECIAL MEDICAL", "PAP SMEAR", [
+            "Medical Type",
+            "Test Date",
+            "Findings",
+            "Examinee Name",
+            "Examinee Age",
+            "Diagnostic Centre Name",
+            "Doctor Name",
+            "Doctor Registration No",
+            "Remarks",
+        ]);
+
+        // Fields added: SPECIAL MEDICAL / PFT (MER rows 87-100).
+        includeWorkbookMedicalFields("SPECIAL MEDICAL", "PFT", [
+            "Examinee Name",
+            "Examinee Age",
+            "Diagnostic Centre Name",
+            "Doctor Name",
+            "Doctor Registration No",
+            "Inspiration",
+            "Expiration",
+        ]);
+
+        // New section and fields: SPECIAL MEDICAL / STOOL TEST (MER rows 101-109).
+        includeWorkbookMedicalFields("SPECIAL MEDICAL", "STOOL TEST", [
+            "Medical Type",
+            "Test Date",
+            "Findings",
+            "Examinee Name",
+            "Examinee Age",
+            "Diagnostic Centre Name",
+            "Doctor Name",
+            "Doctor Registration No",
+            "Remarks",
+        ]);
+
+        // Fields added: SPECIAL MEDICAL / TMT (MER rows 110-121).
+        includeWorkbookMedicalFields("SPECIAL MEDICAL", "TMT", [
+            "Diagnostic Centre Name",
+            "Doctor Name",
+            "Doctor Registration No",
+        ]);
+
+        // Fields added: SPECIAL MEDICAL / USG (MER rows 122-130).
+        includeWorkbookMedicalFields("SPECIAL MEDICAL", "USG", [
+            "Doctor Registration No",
+        ]);
+
+        // Fields added: SPECIAL MEDICAL / Fundoscopy Test (MER rows 131-139).
+        includeWorkbookMedicalFields("SPECIAL MEDICAL", "Fundoscopy Test", [
+            "Doctor Registration No",
+        ]);
+
+        // Fields added: OTHER MEDICALS / Blood Sugar Random (Special_Medical rows 2-16).
+        includeWorkbookMedicalFields("OTHER MEDICALS", "Blood Sugar Random", [
+            "Findings",
+            "Examinee Gender",
+            "Diagnostic Centre Address",
+            "Diagnostic Centre Pincode",
+            "Doctor Name",
+            "Doctor Registration No",
+            "Lab Range Value(Start range)",
+            "Lab Range Value(End range)",
+            "Units Value",
+        ]);
+
+        // Fields added: OTHER MEDICALS / CBC Group (Special_Medical rows 17-52).
+        includeWorkbookMedicalFields("OTHER MEDICALS", "CBC Group", [
+            "Examinee Name",
+            "Examinee Age",
+            "Examinee Gender",
+            "Diagnostic Centre Name",
+            "Diagnostic Centre Address",
+            "Diagnostic Centre Pincode",
+            "Doctor Name",
+            "Doctor Registration No",
+            "PCV",
+            "MCV",
+            "Differential_Neutrophil",
+            "Differential_Lymphocyte",
+            "Differential_Eosinophil",
+            "Differential_Monocyte",
+            "Differential_Basophil",
+            "Esr",
+            "Absolute_Neutrophil",
+            "Absolute_Lymphocyte",
+            "Absolute_Eosinophil",
+            "Absolute_Monocyte",
+            "Absolute_Basophil",
+            "MPV",
+            "PDW",
+            "MCH",
+            "MCHC",
+            "RDW",
+            "RBC_Morphology",
+            "WBC_Morphology",
+            "Platelet_Morphology",
+            "Hemoglobin(Hb) — Findings",
+            "Hemoglobin(Hb) — Lab Start Range",
+            "Hemoglobin(Hb) — Lab End Range",
+            "Hemoglobin(Hb) — Units Value",
+            "RBC — Findings",
+            "RBC — Lab Start Range",
+            "RBC — Lab End Range",
+            "RBC — Units Value",
+            "WBC — Findings",
+            "WBC — Lab Start Range",
+            "WBC — Lab End Range",
+            "WBC — Units Value",
+            "Platelets — Findings",
+            "Platelets — Lab Start Range",
+            "Platelets — Lab End Range",
+            "Platelets — Units Value",
+            "PCV — Findings",
+            "PCV — Lab Start Range",
+            "PCV — Lab End Range",
+            "PCV — Units Value",
+            "MCV — Findings",
+            "MCV — Lab Start Range",
+            "MCV — Lab End Range",
+            "MCV — Units Value",
+            "Differential_Neutrophil — Findings",
+            "Differential_Neutrophil — Lab Start Range",
+            "Differential_Neutrophil — Lab End Range",
+            "Differential_Neutrophil — Units Value",
+            "Differential_Lymphocyte — Findings",
+            "Differential_Lymphocyte — Lab Start Range",
+            "Differential_Lymphocyte — Lab End Range",
+            "Differential_Lymphocyte — Units Value",
+            "Differential_Eosinophil — Findings",
+            "Differential_Eosinophil — Lab Start Range",
+            "Differential_Eosinophil — Lab End Range",
+            "Differential_Eosinophil — Units Value",
+            "Differential_Monocyte — Findings",
+            "Differential_Monocyte — Lab Start Range",
+            "Differential_Monocyte — Lab End Range",
+            "Differential_Monocyte — Units Value",
+            "Differential_Basophil — Findings",
+            "Differential_Basophil — Lab Start Range",
+            "Differential_Basophil — Lab End Range",
+            "Differential_Basophil — Units Value",
+            "Esr — Findings",
+            "Esr — Lab Start Range",
+            "Esr — Lab End Range",
+            "Esr — Units Value",
+            "Absolute_Neutrophil — Findings",
+            "Absolute_Neutrophil — Lab Start Range",
+            "Absolute_Neutrophil — Lab End Range",
+            "Absolute_Neutrophil — Units Value",
+            "Absolute_Lymphocyte — Findings",
+            "Absolute_Lymphocyte — Lab Start Range",
+            "Absolute_Lymphocyte — Lab End Range",
+            "Absolute_Lymphocyte — Units Value",
+            "Absolute_Eosinophil — Findings",
+            "Absolute_Eosinophil — Lab Start Range",
+            "Absolute_Eosinophil — Lab End Range",
+            "Absolute_Eosinophil — Units Value",
+            "Absolute_Monocyte — Findings",
+            "Absolute_Monocyte — Lab Start Range",
+            "Absolute_Monocyte — Lab End Range",
+            "Absolute_Monocyte — Units Value",
+            "Absolute_Basophil — Findings",
+            "Absolute_Basophil — Lab Start Range",
+            "Absolute_Basophil — Lab End Range",
+            "Absolute_Basophil — Units Value",
+            "MPV — Findings",
+            "MPV — Lab Start Range",
+            "MPV — Lab End Range",
+            "MPV — Units Value",
+            "PDW — Findings",
+            "PDW — Lab Start Range",
+            "PDW — Lab End Range",
+            "PDW — Units Value",
+            "MCH — Findings",
+            "MCH — Lab Start Range",
+            "MCH — Lab End Range",
+            "MCH — Units Value",
+            "MCHC — Findings",
+            "MCHC — Lab Start Range",
+            "MCHC — Lab End Range",
+            "MCHC — Units Value",
+            "RDW — Findings",
+            "RDW — Lab Start Range",
+            "RDW — Lab End Range",
+            "RDW — Units Value",
+            "RBC_Morphology — Findings",
+            "RBC_Morphology — Lab Start Range",
+            "RBC_Morphology — Lab End Range",
+            "RBC_Morphology — Units Value",
+            "WBC_Morphology — Findings",
+            "WBC_Morphology — Lab Start Range",
+            "WBC_Morphology — Lab End Range",
+            "WBC_Morphology — Units Value",
+            "Platelet_Morphology — Findings",
+            "Platelet_Morphology — Lab Start Range",
+            "Platelet_Morphology — Lab End Range",
+            "Platelet_Morphology — Units Value",
+        ]);
+
+        // Fields added: OTHER MEDICALS / COT (Special_Medical rows 53-67).
+        includeWorkbookMedicalFields("OTHER MEDICALS", "COT", [
+            "Findings",
+            "Examinee Gender",
+            "Diagnostic Centre Name",
+            "Diagnostic Centre Address",
+            "Diagnostic Centre Pincode",
+            "Doctor Name",
+            "Doctor Registration No",
+            "Lab Range Value(Start range)",
+            "Lab Range Value(End range)",
+            "Units Value",
+        ]);
+
+        // New section and fields: OTHER MEDICALS / GHB (Special_Medical rows 68-82).
+        includeWorkbookMedicalFields("OTHER MEDICALS", "GHB", [
+            "Medical Type",
+            "Date",
+            "Value",
+            "Findings",
+            "Examinee Name",
+            "Examinee Age",
+            "Examinee Gender",
+            "Diagnostic Centre Name",
+            "Diagnostic Centre Address",
+            "Diagnostic Centre Pincode",
+            "Doctor Name",
+            "Doctor Registration No",
+            "Lab Range Value(Start range)",
+            "Lab Range Value(End range)",
+            "Units Value",
+        ]);
+
+        // Fields added: OTHER MEDICALS / HBA1C (Special_Medical rows 83-97).
+        includeWorkbookMedicalFields("OTHER MEDICALS", "HBA1C", [
+            "Findings",
+            "Examinee Gender",
+            "Diagnostic Centre Name",
+            "Diagnostic Centre Address",
+            "Diagnostic Centre Pincode",
+            "Doctor Name",
+            "Doctor Registration No",
+            "Lab Range Value(Start range)",
+            "Lab Range Value(End range)",
+            "Units Value",
+        ]);
+
+        // Fields added: OTHER MEDICALS / HBSAG (Special_Medical rows 98-112).
+        includeWorkbookMedicalFields("OTHER MEDICALS", "HBSAG", [
+            "Findings",
+            "Examinee Gender",
+            "Diagnostic Centre Name",
+            "Diagnostic Centre Address",
+            "Diagnostic Centre Pincode",
+            "Doctor Name",
+            "Doctor Registration No",
+            "Lab Range Value(Start range)",
+            "Lab Range Value(End range)",
+            "Units Value",
+        ]);
+
+        // New section and fields: OTHER MEDICALS / HIV Elisa (Special_Medical rows 113-127).
+        includeWorkbookMedicalFields("OTHER MEDICALS", "HIV Elisa", [
+            "Medical Type",
+            "Date",
+            "Value",
+            "Findings",
+            "Examinee Name",
+            "Examinee Age",
+            "Examinee Gender",
+            "Diagnostic Centre Name",
+            "Diagnostic Centre Address",
+            "Diagnostic Centre Pincode",
+            "Doctor Name",
+            "Doctor Registration No",
+            "Lab Range Value(Start range)",
+            "Lab Range Value(End range)",
+            "Units Value",
+        ]);
+
+        // Fields added: OTHER MEDICALS / LFT (Special_Medical rows 128-149).
+        includeWorkbookMedicalFields("OTHER MEDICALS", "LFT", [
+            "Examinee Name",
+            "Examinee Age",
+            "Examinee Gender",
+            "Diagnostic Centre Name",
+            "Diagnostic Centre Address",
+            "Diagnostic Centre Pincode",
+            "Doctor Name",
+            "Doctor Registration No",
+            "Direct",
+            "Indirect",
+            "Serum Protein- Total",
+            "Albumin",
+            "Globulin=(Total-Albumin)",
+            "Alkaline Phosphate",
+            "Albumin/Globulin_Ratio",
+            "SGPT/ALT — Findings",
+            "SGPT/ALT — Lab Start Range",
+            "SGPT/ALT — Lab End Range",
+            "SGPT/ALT — Units Value",
+            "SGOT/AST — Findings",
+            "SGOT/AST — Lab Start Range",
+            "SGOT/AST — Lab End Range",
+            "SGOT/AST — Units Value",
+            "GGT — Findings",
+            "GGT — Lab Start Range",
+            "GGT — Lab End Range",
+            "GGT — Units Value",
+            "Serum Bilirubin-Total — Findings",
+            "Serum Bilirubin-Total — Lab Start Range",
+            "Serum Bilirubin-Total — Lab End Range",
+            "Serum Bilirubin-Total — Units Value",
+            "Direct — Findings",
+            "Direct — Lab Start Range",
+            "Direct — Lab End Range",
+            "Direct — Units Value",
+            "Indirect — Findings",
+            "Indirect — Lab Start Range",
+            "Indirect — Lab End Range",
+            "Indirect — Units Value",
+            "Serum Protein- Total — Findings",
+            "Serum Protein- Total — Lab Start Range",
+            "Serum Protein- Total — Lab End Range",
+            "Serum Protein- Total — Units Value",
+            "Albumin — Findings",
+            "Albumin — Lab Start Range",
+            "Albumin — Lab End Range",
+            "Albumin — Units Value",
+            "Globulin=(Total-Albumin) — Findings",
+            "Globulin=(Total-Albumin) — Lab Start Range",
+            "Globulin=(Total-Albumin) — Lab End Range",
+            "Globulin=(Total-Albumin) — Units Value",
+            "Alkaline Phosphate — Findings",
+            "Alkaline Phosphate — Lab Start Range",
+            "Alkaline Phosphate — Lab End Range",
+            "Alkaline Phosphate — Units Value",
+            "Albumin/Globulin_Ratio — Findings",
+            "Albumin/Globulin_Ratio — Lab Start Range",
+            "Albumin/Globulin_Ratio — Lab End Range",
+            "Albumin/Globulin_Ratio — Units Value",
+        ]);
+
+        // Fields added: OTHER MEDICALS / LIPIDS (Special_Medical rows 150-166).
+        includeWorkbookMedicalFields("OTHER MEDICALS", "LIPIDS", [
+            "Examinee Name",
+            "Examinee Age",
+            "Examinee Gender",
+            "Diagnostic Centre Name",
+            "Diagnostic Centre Address",
+            "Diagnostic Centre Pincode",
+            "Doctor Name",
+            "Doctor Registration No",
+            "VLDL",
+            "TC/HDL Ratio",
+            "Total Cholesterol: TC — Findings",
+            "Total Cholesterol: TC — Lab Start Range",
+            "Total Cholesterol: TC — Lab End Range",
+            "Total Cholesterol: TC — Units Value",
+            "Triglycerides: TG — Findings",
+            "Triglycerides: TG — Lab Start Range",
+            "Triglycerides: TG — Lab End Range",
+            "Triglycerides: TG — Units Value",
+            "HDL — Findings",
+            "HDL — Lab Start Range",
+            "HDL — Lab End Range",
+            "HDL — Units Value",
+            "LDL — Findings",
+            "LDL — Lab Start Range",
+            "LDL — Lab End Range",
+            "LDL — Units Value",
+            "VLDL — Findings",
+            "VLDL — Lab Start Range",
+            "VLDL — Lab End Range",
+            "VLDL — Units Value",
+            "TC/HDL Ratio — Findings",
+            "TC/HDL Ratio — Lab Start Range",
+            "TC/HDL Ratio — Lab End Range",
+            "TC/HDL Ratio — Units Value",
+        ]);
+
+        // Fields added: OTHER MEDICALS / OGTT Group (Special_Medical rows 167-180).
+        includeWorkbookMedicalFields("OTHER MEDICALS", "OGTT Group", [
+            "Examinee Name",
+            "Examinee Age",
+            "Examinee Gender",
+            "Diagnostic Centre Name",
+            "Diagnostic Centre Address",
+            "Diagnostic Centre Pincode",
+            "Doctor Name",
+            "Doctor Registration No",
+            "OGTT1",
+            "OGTT2",
+            "OGTT3",
+            "OGTT1 — Findings",
+            "OGTT1 — Lab Start Range",
+            "OGTT1 — Lab End Range",
+            "OGTT1 — Units Value",
+            "OGTT2 — Findings",
+            "OGTT2 — Lab Start Range",
+            "OGTT2 — Lab End Range",
+            "OGTT2 — Units Value",
+            "OGTT3 — Findings",
+            "OGTT3 — Lab Start Range",
+            "OGTT3 — Lab End Range",
+            "OGTT3 — Units Value",
+        ]);
+
+        // New section and fields: OTHER MEDICALS / PPBS (Special_Medical rows 181-195).
+        includeWorkbookMedicalFields("OTHER MEDICALS", "PPBS", [
+            "Medical Type",
+            "Date",
+            "Value",
+            "Findings",
+            "Examinee Name",
+            "Examinee Age",
+            "Examinee Gender",
+            "Diagnostic Centre Name",
+            "Diagnostic Centre Address",
+            "Diagnostic Centre Pincode",
+            "Doctor Name",
+            "Doctor Registration No",
+            "Lab Range Value(Start range)",
+            "Lab Range Value(End range)",
+            "Units Value",
+        ]);
+
+        // Fields added: OTHER MEDICALS / RUA Group (Special_Medical rows 196-227).
+        includeWorkbookMedicalFields("OTHER MEDICALS", "RUA Group", [
+            "Examinee Name",
+            "Examinee Age",
+            "Examinee Gender",
+            "Diagnostic Centre Name",
+            "Diagnostic Centre Address",
+            "Diagnostic Centre Pincode",
+            "Doctor Name",
+            "Doctor Registration No",
+            "WBC/PUS/Pyuria",
+            "Epithelial Cells",
+            "Gravity",
+            "Urine_PH",
+            "Urine_Quantity",
+            "Urine_Blood",
+            "Urine_Nitrite",
+            "Urine_Bile_Salts",
+            "Urine_Bile_Pigment",
+            "Urine_Bilirubin",
+            "Urine_Urobilinogen",
+            "Urine_Bacteria",
+            "Urine_Casts",
+            "Urine_Crystal",
+            "Urine_Deposit",
+            "Sugar/Glycosuria — Findings",
+            "Sugar/Glycosuria — Lab Start Range",
+            "Sugar/Glycosuria — Lab End Range",
+            "Sugar/Glycosuria — Units Value",
+            "Albumin/Proteinuria — Findings",
+            "Albumin/Proteinuria — Lab Start Range",
+            "Albumin/Proteinuria — Lab End Range",
+            "Albumin/Proteinuria — Units Value",
+            "RBC/Haematuria — Findings",
+            "RBC/Haematuria — Lab Start Range",
+            "RBC/Haematuria — Lab End Range",
+            "RBC/Haematuria — Units Value",
+            "WBC/PUS/Pyuria — Findings",
+            "WBC/PUS/Pyuria — Lab Start Range",
+            "WBC/PUS/Pyuria — Lab End Range",
+            "WBC/PUS/Pyuria — Units Value",
+            "Epithelial Cells — Findings",
+            "Epithelial Cells — Lab Start Range",
+            "Epithelial Cells — Lab End Range",
+            "Epithelial Cells — Units Value",
+            "Gravity — Findings",
+            "Gravity — Lab Start Range",
+            "Gravity — Lab End Range",
+            "Gravity — Units Value",
+            "Ketone Bodies — Findings",
+            "Ketone Bodies — Lab Start Range",
+            "Ketone Bodies — Lab End Range",
+            "Ketone Bodies — Units Value",
+            "Urine_Colour — Findings",
+            "Urine_Colour — Lab Start Range",
+            "Urine_Colour — Lab End Range",
+            "Urine_Colour — Units Value",
+            "Urine_PH — Findings",
+            "Urine_PH — Lab Start Range",
+            "Urine_PH — Lab End Range",
+            "Urine_PH — Units Value",
+            "Urine_Quantity — Findings",
+            "Urine_Quantity — Lab Start Range",
+            "Urine_Quantity — Lab End Range",
+            "Urine_Quantity — Units Value",
+            "Urine_Appearance — Findings",
+            "Urine_Appearance — Lab Start Range",
+            "Urine_Appearance — Lab End Range",
+            "Urine_Appearance — Units Value",
+            "Urine_Blood — Findings",
+            "Urine_Blood — Lab Start Range",
+            "Urine_Blood — Lab End Range",
+            "Urine_Blood — Units Value",
+            "Urine_Nitrite — Findings",
+            "Urine_Nitrite — Lab Start Range",
+            "Urine_Nitrite — Lab End Range",
+            "Urine_Nitrite — Units Value",
+            "Urine_Bile_Salts — Findings",
+            "Urine_Bile_Salts — Lab Start Range",
+            "Urine_Bile_Salts — Lab End Range",
+            "Urine_Bile_Salts — Units Value",
+            "Urine_Bile_Pigment — Findings",
+            "Urine_Bile_Pigment — Lab Start Range",
+            "Urine_Bile_Pigment — Lab End Range",
+            "Urine_Bile_Pigment — Units Value",
+            "Urine_Bilirubin — Findings",
+            "Urine_Bilirubin — Lab Start Range",
+            "Urine_Bilirubin — Lab End Range",
+            "Urine_Bilirubin — Units Value",
+            "Urine_Urobilinogen — Findings",
+            "Urine_Urobilinogen — Lab Start Range",
+            "Urine_Urobilinogen — Lab End Range",
+            "Urine_Urobilinogen — Units Value",
+            "Urine_Bacteria — Findings",
+            "Urine_Bacteria — Lab Start Range",
+            "Urine_Bacteria — Lab End Range",
+            "Urine_Bacteria — Units Value",
+            "Urine_Casts — Findings",
+            "Urine_Casts — Lab Start Range",
+            "Urine_Casts — Lab End Range",
+            "Urine_Casts — Units Value",
+            "Urine_Crystal — Findings",
+            "Urine_Crystal — Lab Start Range",
+            "Urine_Crystal — Lab End Range",
+            "Urine_Crystal — Units Value",
+            "Urine_Deposit — Findings",
+            "Urine_Deposit — Lab Start Range",
+            "Urine_Deposit — Lab End Range",
+            "Urine_Deposit — Units Value",
+        ]);
+
+        // New section and fields: OTHER MEDICALS / SERUM COTININE (Special_Medical rows 228-242).
+        includeWorkbookMedicalFields("OTHER MEDICALS", "SERUM COTININE", [
+            "Medical Type",
+            "Date",
+            "Value",
+            "Findings",
+            "Examinee Name",
+            "Examinee Age",
+            "Examinee Gender",
+            "Diagnostic Centre Name",
+            "Diagnostic Centre Address",
+            "Diagnostic Centre Pincode",
+            "Doctor Name",
+            "Doctor Registration No",
+            "Lab Range Value(Start range)",
+            "Lab Range Value(End range)",
+            "Units Value",
+        ]);
+
+        // New section and fields: OTHER MEDICALS / SMA12 Group (Special_Medical rows 243-275).
+        includeWorkbookMedicalFields("OTHER MEDICALS", "SMA12 Group", [
+            "Medical Type",
+            "Date",
+            "Examinee Name",
+            "Examinee Age",
+            "Examinee Gender",
+            "Diagnostic Centre Name",
+            "Diagnostic Centre Address",
+            "Diagnostic Centre Pincode",
+            "Doctor Name",
+            "Doctor Registration No",
+            "SGPT/ALT",
+            "SGOT/AST",
+            "GGT",
+            "Serum Bilirubin-Total",
+            "Direct",
+            "Indirect=(Total-Direct)",
+            "Serum Protein-Total",
+            "Albumin",
+            "Globulin=(Total-Albumin)",
+            "Albumin/Globulin_Ratio",
+            "Alkaline Phosphate",
+            "Serum Creatinine",
+            "Serum Calcium",
+            "Serum Uric Acid",
+            "RBS",
+            "FBS",
+            "Total Cholesterol: TC",
+            "Triglycerides: TG",
+            "HDL",
+            "LDL",
+            "VLDL",
+            "TC/HDL Ratio",
+            "SGPT/ALT — Findings",
+            "SGPT/ALT — Lab Start Range",
+            "SGPT/ALT — Lab End Range",
+            "SGPT/ALT — Units Value",
+            "SGOT/AST — Findings",
+            "SGOT/AST — Lab Start Range",
+            "SGOT/AST — Lab End Range",
+            "SGOT/AST — Units Value",
+            "GGT — Findings",
+            "GGT — Lab Start Range",
+            "GGT — Lab End Range",
+            "GGT — Units Value",
+            "Serum Bilirubin-Total — Findings",
+            "Serum Bilirubin-Total — Lab Start Range",
+            "Serum Bilirubin-Total — Lab End Range",
+            "Serum Bilirubin-Total — Units Value",
+            "Direct — Findings",
+            "Direct — Lab Start Range",
+            "Direct — Lab End Range",
+            "Direct — Units Value",
+            "Indirect=(Total-Direct) — Findings",
+            "Indirect=(Total-Direct) — Lab Start Range",
+            "Indirect=(Total-Direct) — Lab End Range",
+            "Indirect=(Total-Direct) — Units Value",
+            "Serum Protein-Total — Findings",
+            "Serum Protein-Total — Lab Start Range",
+            "Serum Protein-Total — Lab End Range",
+            "Serum Protein-Total — Units Value",
+            "Albumin — Findings",
+            "Albumin — Lab Start Range",
+            "Albumin — Lab End Range",
+            "Albumin — Units Value",
+            "Globulin=(Total-Albumin) — Findings",
+            "Globulin=(Total-Albumin) — Lab Start Range",
+            "Globulin=(Total-Albumin) — Lab End Range",
+            "Globulin=(Total-Albumin) — Units Value",
+            "Albumin/Globulin_Ratio — Findings",
+            "Albumin/Globulin_Ratio — Lab Start Range",
+            "Albumin/Globulin_Ratio — Lab End Range",
+            "Albumin/Globulin_Ratio — Units Value",
+            "Alkaline Phosphate — Findings",
+            "Alkaline Phosphate — Lab Start Range",
+            "Alkaline Phosphate — Lab End Range",
+            "Alkaline Phosphate — Units Value",
+            "Serum Creatinine — Findings",
+            "Serum Creatinine — Lab Start Range",
+            "Serum Creatinine — Lab End Range",
+            "Serum Creatinine — Units Value",
+            "Serum Calcium — Findings",
+            "Serum Calcium — Lab Start Range",
+            "Serum Calcium — Lab End Range",
+            "Serum Calcium — Units Value",
+            "Serum Uric Acid — Findings",
+            "Serum Uric Acid — Lab Start Range",
+            "Serum Uric Acid — Lab End Range",
+            "Serum Uric Acid — Units Value",
+            "RBS — Findings",
+            "RBS — Lab Start Range",
+            "RBS — Lab End Range",
+            "RBS — Units Value",
+            "FBS — Findings",
+            "FBS — Lab Start Range",
+            "FBS — Lab End Range",
+            "FBS — Units Value",
+            "Total Cholesterol: TC — Findings",
+            "Total Cholesterol: TC — Lab Start Range",
+            "Total Cholesterol: TC — Lab End Range",
+            "Total Cholesterol: TC — Units Value",
+            "Triglycerides: TG — Findings",
+            "Triglycerides: TG — Lab Start Range",
+            "Triglycerides: TG — Lab End Range",
+            "Triglycerides: TG — Units Value",
+            "HDL — Findings",
+            "HDL — Lab Start Range",
+            "HDL — Lab End Range",
+            "HDL — Units Value",
+            "LDL — Findings",
+            "LDL — Lab Start Range",
+            "LDL — Lab End Range",
+            "LDL — Units Value",
+            "VLDL — Findings",
+            "VLDL — Lab Start Range",
+            "VLDL — Lab End Range",
+            "VLDL — Units Value",
+            "TC/HDL Ratio — Findings",
+            "TC/HDL Ratio — Lab Start Range",
+            "TC/HDL Ratio — Lab End Range",
+            "TC/HDL Ratio — Units Value",
+        ]);
+
+        // New section and fields: OTHER MEDICALS / TFT Group (Special_Medical rows 276-289).
+        includeWorkbookMedicalFields("OTHER MEDICALS", "TFT Group", [
+            "Medical Type",
+            "Date",
+            "Examinee Name",
+            "Examinee Age",
+            "Examinee Gender",
+            "Diagnostic Centre Name",
+            "Diagnostic Centre Address",
+            "Diagnostic Centre Pincode",
+            "Doctor Name",
+            "Doctor Registration No",
+            "Triiodothyronine-T3",
+            "Thyroxin-T4",
+            "Thyroid Stimulating - Tsh Harmones",
+            "Triiodothyronine-T3 — Findings",
+            "Triiodothyronine-T3 — Lab Start Range",
+            "Triiodothyronine-T3 — Lab End Range",
+            "Triiodothyronine-T3 — Units Value",
+            "Thyroxin-T4 — Findings",
+            "Thyroxin-T4 — Lab Start Range",
+            "Thyroxin-T4 — Lab End Range",
+            "Thyroxin-T4 — Units Value",
+            "Thyroid Stimulating - Tsh Harmones — Findings",
+            "Thyroid Stimulating - Tsh Harmones — Lab Start Range",
+            "Thyroid Stimulating - Tsh Harmones — Lab End Range",
+            "Thyroid Stimulating - Tsh Harmones — Units Value",
+        ]);
+
+        // Fields added: OTHER MEDICALS / FBS (Special_Medical rows 290-304).
+        includeWorkbookMedicalFields("OTHER MEDICALS", "FBS", [
+            "Findings",
+            "Examinee Gender",
+            "Diagnostic Centre Name",
+            "Diagnostic Centre Address",
+            "Diagnostic Centre Pincode",
+            "Doctor Name",
+            "Doctor Registration No",
+            "Lab Range Value(Start range)",
+            "Lab Range Value(End range)",
+            "Units Value",
+        ]);
+
+        // New section and fields: OTHER MEDICALS / S13 Group (Special_Medical rows 305-337).
+        includeWorkbookMedicalFields("OTHER MEDICALS", "S13 Group", [
+            "Medical Type",
+            "Date",
+            "Examinee Name",
+            "Examinee Age",
+            "Examinee Gender",
+            "Diagnostic Centre Name",
+            "Diagnostic Centre Address",
+            "Diagnostic Centre Pincode",
+            "Doctor Name",
+            "Doctor Registration No",
+            "SGPT/ALT",
+            "SGOT/AST",
+            "GGT",
+            "Serum Bilirubin-Total",
+            "Direct",
+            "Indirect=(Total-Direct)",
+            "Serum Protein-Total",
+            "Albumin",
+            "Globulin=(Total-Albumin)",
+            "Albumin/Globulin_Ratio",
+            "Alkaline Phosphate",
+            "Serum Creatinine",
+            "Serum Calcium",
+            "Serum Uric Acid",
+            "RBS",
+            "FBS",
+            "Total Cholesterol: TC",
+            "Triglycerides: TG",
+            "HDL",
+            "LDL",
+            "VLDL",
+            "TC/HDL Ratio",
+            "SGPT/ALT — Findings",
+            "SGPT/ALT — Lab Start Range",
+            "SGPT/ALT — Lab End Range",
+            "SGPT/ALT — Units Value",
+            "SGOT/AST — Findings",
+            "SGOT/AST — Lab Start Range",
+            "SGOT/AST — Lab End Range",
+            "SGOT/AST — Units Value",
+            "GGT — Findings",
+            "GGT — Lab Start Range",
+            "GGT — Lab End Range",
+            "GGT — Units Value",
+            "Serum Bilirubin-Total — Findings",
+            "Serum Bilirubin-Total — Lab Start Range",
+            "Serum Bilirubin-Total — Lab End Range",
+            "Serum Bilirubin-Total — Units Value",
+            "Direct — Findings",
+            "Direct — Lab Start Range",
+            "Direct — Lab End Range",
+            "Direct — Units Value",
+            "Indirect=(Total-Direct) — Findings",
+            "Indirect=(Total-Direct) — Lab Start Range",
+            "Indirect=(Total-Direct) — Lab End Range",
+            "Indirect=(Total-Direct) — Units Value",
+            "Serum Protein-Total — Findings",
+            "Serum Protein-Total — Lab Start Range",
+            "Serum Protein-Total — Lab End Range",
+            "Serum Protein-Total — Units Value",
+            "Albumin — Findings",
+            "Albumin — Lab Start Range",
+            "Albumin — Lab End Range",
+            "Albumin — Units Value",
+            "Globulin=(Total-Albumin) — Findings",
+            "Globulin=(Total-Albumin) — Lab Start Range",
+            "Globulin=(Total-Albumin) — Lab End Range",
+            "Globulin=(Total-Albumin) — Units Value",
+            "Albumin/Globulin_Ratio — Findings",
+            "Albumin/Globulin_Ratio — Lab Start Range",
+            "Albumin/Globulin_Ratio — Lab End Range",
+            "Albumin/Globulin_Ratio — Units Value",
+            "Alkaline Phosphate — Findings",
+            "Alkaline Phosphate — Lab Start Range",
+            "Alkaline Phosphate — Lab End Range",
+            "Alkaline Phosphate — Units Value",
+            "Serum Creatinine — Findings",
+            "Serum Creatinine — Lab Start Range",
+            "Serum Creatinine — Lab End Range",
+            "Serum Creatinine — Units Value",
+            "Serum Calcium — Findings",
+            "Serum Calcium — Lab Start Range",
+            "Serum Calcium — Lab End Range",
+            "Serum Calcium — Units Value",
+            "Serum Uric Acid — Findings",
+            "Serum Uric Acid — Lab Start Range",
+            "Serum Uric Acid — Lab End Range",
+            "Serum Uric Acid — Units Value",
+            "RBS — Findings",
+            "RBS — Lab Start Range",
+            "RBS — Lab End Range",
+            "RBS — Units Value",
+            "FBS — Findings",
+            "FBS — Lab Start Range",
+            "FBS — Lab End Range",
+            "FBS — Units Value",
+            "Total Cholesterol: TC — Findings",
+            "Total Cholesterol: TC — Lab Start Range",
+            "Total Cholesterol: TC — Lab End Range",
+            "Total Cholesterol: TC — Units Value",
+            "Triglycerides: TG — Findings",
+            "Triglycerides: TG — Lab Start Range",
+            "Triglycerides: TG — Lab End Range",
+            "Triglycerides: TG — Units Value",
+            "HDL — Findings",
+            "HDL — Lab Start Range",
+            "HDL — Lab End Range",
+            "HDL — Units Value",
+            "LDL — Findings",
+            "LDL — Lab Start Range",
+            "LDL — Lab End Range",
+            "LDL — Units Value",
+            "VLDL — Findings",
+            "VLDL — Lab Start Range",
+            "VLDL — Lab End Range",
+            "VLDL — Units Value",
+            "TC/HDL Ratio — Findings",
+            "TC/HDL Ratio — Lab Start Range",
+            "TC/HDL Ratio — Lab End Range",
+            "TC/HDL Ratio — Units Value",
+        ]);
+
+        // New section and fields: OTHER MEDICALS / HIV Western Blot (Special_Medical rows 338-352).
+        includeWorkbookMedicalFields("OTHER MEDICALS", "HIV Western Blot", [
+            "Medical Type",
+            "Date",
+            "Value",
+            "Findings",
+            "Examinee Name",
+            "Examinee Age",
+            "Examinee Gender",
+            "Diagnostic Centre Name",
+            "Diagnostic Centre Address",
+            "Diagnostic Centre Pincode",
+            "Doctor Name",
+            "Doctor Registration No",
+            "Lab Range Value(Start range)",
+            "Lab Range Value(End range)",
+            "Units Value",
+        ]);
+
+        // Fields added: OTHER MEDICALS / HCV (Special_Medical rows 353-367).
+        includeWorkbookMedicalFields("OTHER MEDICALS", "HCV", [
+            "Findings",
+            "Examinee Gender",
+            "Diagnostic Centre Name",
+            "Diagnostic Centre Address",
+            "Diagnostic Centre Pincode",
+            "Doctor Name",
+            "Doctor Registration No",
+            "Lab Range Value(Start range)",
+            "Lab Range Value(End range)",
+            "Units Value",
+        ]);
+
+        // New section and fields: OTHER MEDICALS / MICROALBUMINURIA (Special_Medical rows 368-382).
+        includeWorkbookMedicalFields("OTHER MEDICALS", "MICROALBUMINURIA", [
+            "Medical Type",
+            "Test Date",
+            "Findings",
+            "Result",
+            "Examinee Name",
+            "Examinee Age",
+            "Examinee Gender",
+            "Diagnostic Centre Name",
+            "Diagnostic Centre Address",
+            "Diagnostic Centre Pincode",
+            "Doctor Name",
+            "Doctor Registration No",
+            "Lab Range Value(Start range)",
+            "Lab Range Value(End range)",
+            "Units Value",
+        ]);
+
+        // Fields added: OTHER MEDICALS / PSA (Special_Medical rows 383-397).
+        includeWorkbookMedicalFields("OTHER MEDICALS", "PSA", [
+            "Findings",
+            "Result",
+            "Examinee Gender",
+            "Diagnostic Centre Name",
+            "Diagnostic Centre Address",
+            "Diagnostic Centre Pincode",
+            "Doctor Name",
+            "Doctor Registration No",
+            "Lab Range Value(Start range)",
+            "Lab Range Value(End range)",
+            "Units Value",
+        ]);
+
+        // Grouped result cards use the workbook's Value, Findings, lab-range and units columns.
+        let active = '', editing = null, snapshots = {}; function fieldHTML(label, id) { let select = /^(Is |Gender|Medical Type|Findings|Axis|METS|Dead or Alive|Answer|Value$)/.test(label) || /^\d+\.[a-z]\s*—/.test(label), ro = /^(Application No.|Height \(Fts\)|Inches|BMI|Ejection Result|Heart Rate Finding|Heart Rate Result|Average)/.test(label), required = /^(First Name|Place of Examination|Gender|Name of ME|Examinee DOB|Date of Examination|Height \(cms\)|Weight \(Kgs\)|Findings|Ejection Fraction|Blood Urea|BUN|Heart Rate|FEV1|FVC|FEV1\/FVC|Value)/.test(label); let control = select ? `<select data-field="${id}" disabled><option>Select</option><option>Yes</option><option>No</option><option>Normal</option></select>` : `<div class="value" data-field="${id}">${ro ? '-' : ''}</div>`; return `<div class="field"><label>${esc(label)}${required ? '<span class="required">*</span>' : ''}</label>${control}</div>` } function renderMedical() { let nav = document.getElementById('medical-nav'), content = document.getElementById('medical-content'); nav.innerHTML = ''; content.innerHTML = ''; medicalGroups.forEach((g, gi) => { let group = document.createElement('div'); group.innerHTML = `<button class="group" data-group="${gi}">${g.name}<span>⌄</span></button><div class="g-items"></div>`; let list = group.querySelector('.g-items'); g.items.forEach((item, ii) => { let id = `g${gi}s${ii}`, b = document.createElement('button'); b.className = 'nav-item'; b.dataset.target = id; b.innerHTML = `<span>${item[0]}</span><span>›</span>`; list.append(b); content.insertAdjacentHTML('beforeend', `<article class="card" id="${id}"><header class="card-head"><button class="card-title" data-toggle="${id}">⌄ &nbsp; ${esc(item[0])}</button><div class="card-actions"><button class="smallbtn reset hidden" data-reset="${id}">Reset</button><button class="smallbtn" data-edit="${id}">Edit</button></div></header><div class="card-body">${item[1].map((f, i) => fieldHTML(f, `${id}-${i}`)).join('')}</div></article>`) }); nav.append(group) }); nav.querySelectorAll('.nav-item').forEach(b => b.onclick = () => { document.getElementById(b.dataset.target).scrollIntoView({ behavior: 'smooth', block: 'start' }); setActive(b.dataset.target) }); nav.querySelectorAll('.group').forEach(b => b.onclick = () => b.parentElement.querySelector('.g-items').classList.toggle('hidden')); content.querySelectorAll('[data-toggle]').forEach(b => b.onclick = () => b.closest('.card').querySelector('.card-body').classList.toggle('hidden')); content.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => editCard(b.dataset.edit, b)); content.querySelectorAll('[data-reset]').forEach(b => b.onclick = () => resetCard(b.dataset.reset)); let ob = new IntersectionObserver(es => { let e = es.filter(x => x.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0]; if (e) setActive(e.target.id) }, { rootMargin: '-90px 0px -60% 0px', threshold: .05 }); content.querySelectorAll('.card').forEach(c => ob.observe(c)) } function setActive(id) { active = id; document.querySelectorAll('.nav-item').forEach(x => x.classList.toggle('active', x.dataset.target === id)) } function editCard(id, b) { let card = document.getElementById(id), isEdit = card.dataset.edit === '1'; if (!isEdit) { snapshots[id] = [...card.querySelectorAll('[data-field]')].map(x => x.outerHTML); card.dataset.edit = '1'; b.textContent = 'Save'; card.querySelector('[data-reset]').classList.remove('hidden'); card.querySelectorAll('.value').forEach(x => { let i = document.createElement('input'); i.dataset.field = x.dataset.field; i.value = x.textContent === '-' ? '' : x.textContent; x.replaceWith(i) }); card.querySelectorAll('select').forEach(x => x.disabled = false) } else { card.dataset.edit = '0'; b.textContent = 'Edit'; card.querySelector('[data-reset]').classList.add('hidden'); card.querySelectorAll('input[data-field]').forEach(x => { let d = document.createElement('div'); d.className = 'value'; d.dataset.field = x.dataset.field; d.textContent = x.value || '-'; x.replaceWith(d) }); card.querySelectorAll('select').forEach(x => x.disabled = true); toast(card.querySelector('.card-title').textContent.trim() + ' saved successfully.') } } function resetCard(id) { let card = document.getElementById(id); if (snapshots[id]) { let fields = [...card.querySelectorAll('[data-field]')]; snapshots[id].forEach((html, i) => fields[i]?.replaceWith(document.createRange().createContextualFragment(html))); card.dataset.edit = '0'; card.querySelector('[data-edit]').textContent = 'Edit'; card.querySelector('[data-reset]').classList.add('hidden') } }
+        renderMedical();
+        document.getElementById('back').onclick = () => { window.location.href = 'drs-screen-prototype.html'; };
+        document.querySelector('.header-back').onclick = () => { window.location.href = 'drs-screen-prototype.html'; };
+        document.getElementById('submit-medical').onclick = () => toast('Medical details submitted successfully.');
+        document.getElementById('docs').onclick = () => toast('Medical documents are available in the source application.');
+        let activeTab = 'life';
+        document.querySelectorAll('[data-tab]').forEach(tab => tab.onclick = () => {
+            activeTab = tab.dataset.tab;
+            document.getElementById('person-avatar').textContent = activeTab === 'life' ? 'LA' : 'P';
+            document.querySelectorAll('[data-tab]').forEach(item => item.classList.toggle('active', item.dataset.tab === activeTab));
+        });
+    </script>
+    <style>
+        /* Shared application chrome, aligned with the Financial prototype. */
+        .app-header {
+            align-items: stretch;
+            overflow: visible;
+        }
+
+        .header-back {
+            height: 57px;
+            background: rgba(126, 22, 31, .42);
+        }
+
+        .logo {
+            width: 150px;
+            object-fit: cover;
+        }
+
+        .header-user {
+            position: relative;
+            padding-right: 14px;
+            gap: 0;
+        }
+
+        .header-user .session {
+            padding-right: 14px;
+            font-size: 11px;
+            line-height: 1.45;
+        }
+
+        .profile-trigger {
+            margin-left: 20px;
+            padding: 4px 8px;
+            border: 0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            color: #fff;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        .profile-trigger:hover {
+            background: rgba(255, 255, 255, .14);
+        }
+
+        .profile-circle {
+            width: 35px;
+            height: 35px;
+            display: grid;
+            place-items: center;
+            border: 1px solid rgba(255, 255, 255, .45);
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .2);
+            font-size: 20px;
+        }
+
+        .profile-name {
+            min-width: 80px;
+            margin: 0 8px 0 10px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .chevron {
+            font-size: 17px;
+            line-height: 1;
+            transition: transform .15s ease;
+        }
+
+        .profile-trigger[aria-expanded="true"] .chevron {
+            transform: rotate(180deg);
+        }
+
+        .user-menu {
+            position: absolute;
+            top: 52px;
+            right: 8px;
+            width: 130px;
+            padding: 4px;
+            display: none;
+            border: 1px solid #e4e7ec;
+            border-radius: 7px;
+            background: #fff;
+            box-shadow: 0 8px 20px rgba(16, 24, 40, .16);
+            z-index: 30;
+        }
+
+        .user-menu.open {
+            display: block;
+        }
+
+        .menu-row {
+            width: 100%;
+            padding: 9px 10px;
+            border: 0;
+            border-radius: 4px;
+            display: block;
+            color: #344054;
+            background: transparent;
+            text-align: left;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .menu-row:hover {
+            background: #fff5ee;
+        }
+    </style>
+    <script>
+        // Medical search intentionally searches section titles only.
+        function clearMedicalSearch() {
+            const searchInput = document.getElementById("medical-search");
+
+            if (searchInput) {
+                searchInput.value = "";
+            }
+
+            document.querySelectorAll(".card.highlight").forEach((card) => {
+                card.classList.remove("highlight");
+            });
+        }
+
+        function searchMedicalSections() {
+            const searchInput = document.getElementById("medical-search");
+
+            if (!searchInput) {
+                return;
+            }
+
+            const query = searchInput.value.trim().toLowerCase();
+
+            document.querySelectorAll(".card.highlight").forEach((card) => {
+                card.classList.remove("highlight");
+            });
+
+            if (!query) {
+                return;
+            }
+
+            const matchingCard = Array.from(
+                document.querySelectorAll(".medical-content .card"),
+            ).find((card) => {
+                const title = card.querySelector(".card-title")?.textContent ?? "";
+                return title.toLowerCase().includes(query);
+            });
+
+            if (!matchingCard) {
+                toast("No medical section found.");
+                return;
+            }
+
+            matchingCard.querySelector(".card-body")?.classList.remove("hidden");
+            matchingCard.classList.add("highlight");
+            matchingCard.scrollIntoView({ behavior: "smooth", block: "start" });
+
+            if (typeof setActive === "function") {
+                setActive(matchingCard.id);
+            }
+        }
+
+        const medicalSearchButton = document.getElementById("search-go");
+        const medicalSearchClearButton = document.getElementById("search-clear");
+        const medicalSearchInput = document.getElementById("medical-search");
+
+        if (medicalSearchButton) {
+            medicalSearchButton.onclick = searchMedicalSections;
+        }
+
+        if (medicalSearchClearButton) {
+            medicalSearchClearButton.onclick = clearMedicalSearch;
+        }
+
+        if (medicalSearchInput) {
+            medicalSearchInput.onkeydown = (event) => {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    searchMedicalSections();
+                }
+            };
+        }
+
+    </script>
+    <script>
+        // Preserve the existing standalone header menu and session clock.
+        const profileTrigger = document.getElementById("profile-trigger");
+        const userMenu = document.getElementById("user-menu");
+        profileTrigger.onclick = () => {
+            const isOpen = userMenu.classList.toggle("open");
+            profileTrigger.setAttribute("aria-expanded", String(isOpen));
+        };
+        document.addEventListener("click", (event) => {
+            if (!event.target.closest(".header-user")) {
+                userMenu.classList.remove("open");
+                profileTrigger.setAttribute("aria-expanded", "false");
+            }
+        });
+
+        const sessionEnd = Date.now() + (15 * 60 * 1000);
+        function updateHeaderClock() {
+            const remaining = Math.max(0, Math.ceil((sessionEnd - Date.now()) / 1000));
+            const minutes = String(Math.floor(remaining / 60)).padStart(2, "0");
+            const seconds = String(remaining % 60).padStart(2, "0");
+            document.getElementById("current-time").textContent = new Date().toLocaleString("en-GB");
+            document.getElementById("session-time").textContent = `Session: ${minutes}:${seconds}`;
+        }
+        updateHeaderClock();
+        setInterval(updateHeaderClock, 1000);
+    </script>
+    <script>
+        // Client-demo values: populated after the existing form is rendered so
+        // the original section structure, edit flow, and reset behavior remain unchanged.
+        (() => {
+            const demoValues = {
+                "g0s0-0": "OB90322247",
+                "g0s0-1": "Rudra Prakash",
+                "g0s0-2": "Sangha",
+                "g0s0-3": "Yes",
+                "g0s0-4": "Mumbai",
+                "g0s0-5": "Male",
+                "g0s0-6": "Dr. Ananya Mehta",
+                "g0s0-7": "ME-10482",
+                "g0s0-8": "15/08/1988",
+                "g0s0-9": "18/09/2026",
+
+                "g0s1-0": "No",
+                "g0s1-1": "0 per day",
+                "g0s1-2": "No",
+                "g0s1-3": "No",
+                "g0s1-4": "Occasional",
+
+                "g0s2-0": "175",
+                "g0s2-1": "5",
+                "g0s2-2": "9",
+                "g0s2-3": "74",
+                "g0s2-4": "86",
+                "g0s2-5": "96",
+                "g0s2-6": "24.2",
+
+                "g0s3-0": "Father",
+                "g0s3-1": "62",
+                "g0s3-2": "Hypertension",
+                "g0s3-3": "Alive",
+
+                "g0s4-0": "122",
+                "g0s4-1": "78",
+                "g0s4-2": "120",
+                "g0s4-3": "76",
+                "g0s4-4": "72",
+                "g0s4-5": "121",
+                "g0s4-6": "77",
+
+                "g1s0-0": "2DECHO",
+                "g1s0-1": "18/09/2026",
+                "g1s0-2": "Normal cardiac chambers",
+                "g1s0-3": "62%",
+                "g1s0-4": "Normal",
+                "g1s0-6": "Rudra Prakash Sangha",
+                "g1s0-7": "38",
+                "g1s0-8": "Wellness Diagnostics",
+                "g1s0-9": "Dr. Ananya Mehta",
+                "g1s0-10": "MH-201845",
+                "g1s0-11": "No abnormality detected",
+
+                "g1s3-0": "ECG",
+                "g1s3-1": "18/09/2026",
+                "g1s3-2": "Normal sinus rhythm",
+                "g1s3-3": "Normal",
+                "g1s3-4": "72 bpm",
+                "g1s3-5": "Normal",
+                "g1s3-6": "Rudra Prakash Sangha",
+                "g1s3-7": "38",
+                "g1s3-8": "Wellness Diagnostics",
+                "g1s3-9": "Dr. Ananya Mehta",
+                "g1s3-10": "MH-201845",
+                "g1s3-11": "Report reviewed",
+
+                "g2s0-0": "Blood Sugar Random",
+                "g2s0-1": "18/09/2026",
+                "g2s0-2": "108 mg/dL",
+                "g2s0-3": "Rudra Prakash Sangha",
+                "g2s0-4": "38",
+                "g2s0-5": "Wellness Diagnostics",
+
+                "g2s1-0": "CBC",
+                "g2s1-1": "18/09/2026",
+                "g2s1-2": "14.2 g/dL",
+                "g2s1-3": "4.8 million/µL",
+                "g2s1-4": "7,200 /µL",
+                "g2s1-5": "2.6 lakh/µL",
+                "g2s1-6": "Normal",
+
+                "g2s3-0": "HbA1c",
+                "g2s3-1": "18/09/2026",
+                "g2s3-2": "5.4%",
+                "g2s3-3": "Rudra Prakash Sangha",
+                "g2s3-4": "38",
+
+                "g2s9-0": "FBS",
+                "g2s9-1": "18/09/2026",
+                "g2s9-2": "92 mg/dL",
+                "g2s9-3": "Rudra Prakash Sangha",
+                "g2s9-4": "38",
+            };
+
+            Object.entries(demoValues).forEach(([fieldId, value]) => {
+                const field = document.querySelector(`[data-field="${fieldId}"]`);
+
+                if (!field) {
+                    return;
+                }
+
+                if (field.tagName === "SELECT") {
+                    const matchingOption = Array.from(field.options).find(
+                        (option) => option.value === value || option.text === value,
+                    );
+
+                    if (matchingOption) {
+                        field.value = matchingOption.value;
+                    }
+                    return;
+                }
+
+                field.textContent = value;
+            });
+        })();
+    </script>
+</body>
+
+</html>

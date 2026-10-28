@@ -1,0 +1,3933 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Application Summary</title>
+  <link href="https://fonts.googleapis.com/css2?family=Mulish:ital,wght@0,200..1000;1,200..1000&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      font-family: Mulish, Arial, sans-serif;
+      color: #302a27;
+      background: #fff8f3;
+      font-synthesis: none;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-size: 12px;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    button:focus-visible,
+    select:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible {
+      outline: 2px solid #e45f14;
+      outline-offset: 2px;
+    }
+
+    .app-header {
+      height: 57px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: stretch;
+      color: #fff;
+      background: linear-gradient(to bottom, #f58220 0%, #e65318 42%, #c92e27 72%, #98252b 100%);
+      box-shadow: 0 3px 12px rgba(111, 24, 24, .25);
+    }
+
+    .back {
+      width: 44px;
+      border: 0;
+      border-right: 1px solid rgba(255, 255, 255, .25);
+      border-radius: 0;
+      background: rgba(126, 22, 31, .42);
+      color: #fff;
+      display: grid;
+      place-items: center;
+    }
+
+    .back:hover {
+      background: rgba(126, 22, 31, .62);
+    }
+
+    .logo {
+      display: block;
+      width: 150px;
+      height: 57px;
+      object-fit: cover;
+    }
+
+    .header-spacer {
+      flex: 1;
+    }
+
+    .header-date {
+      align-self: center;
+      min-width: 175px;
+      padding-right: 12px;
+      text-align: right;
+      border-right: 1px solid rgba(255, 255, 255, .35);
+      line-height: 1.4;
+    }
+
+    .header-date div:first-child {
+      opacity: .9;
+      font-size: 12px;
+    }
+
+    .header-date div:last-child {
+      margin-top: 2px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .user-menu-wrap {
+      position: relative;
+      align-self: stretch;
+      display: flex;
+      align-items: center;
+      margin: 0 16px 0 12px;
+    }
+
+    .user-button {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      background: transparent;
+      border: 0;
+      color: #fff;
+    }
+
+    .user-avatar {
+      display: grid;
+      place-items: center;
+      width: 35px;
+      height: 35px;
+      border: 1px solid rgba(255, 255, 255, .45);
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .2);
+    }
+
+    .user-name {
+      min-width: 80px;
+      max-width: 150px;
+      text-align: left;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      font-weight: 700;
+    }
+
+    .user-popover {
+      position: absolute;
+      top: 65px;
+      right: 0;
+      width: 240px;
+      z-index: 110;
+      background: #fff;
+      color: #323232;
+      border: 1px solid #f1d7d0;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(70, 20, 20, .18);
+    }
+
+    .user-popover button {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      padding: 12px 16px;
+      background: #fff;
+      border: 0;
+      color: #323232;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    .user-popover button:hover {
+      background: #fff3ee;
+    }
+
+    .user-popover button+button {
+      border-top: 1px solid #eee;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    main {
+      height: calc(100dvh - 57px);
+      overflow: auto;
+      background: #fff8f3;
+    }
+
+    .banner-shell {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      padding: 6px 4px 0;
+      background: #fff;
+    }
+
+    .banner {
+      display: grid;
+      grid-template-columns: 150px minmax(0, 1fr);
+      margin-bottom: 6px;
+      overflow: hidden;
+      background: #ffead7;
+      color: #000;
+      border-radius: 12px;
+      box-shadow: 0 3px 10px rgba(169, 33, 41, .16);
+    }
+
+    .banner-avatar {
+      min-height: 138px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(145deg, #e45f14, #c83c2f);
+    }
+
+    .banner-avatar span {
+      width: 76px;
+      height: 76px;
+      display: grid;
+      place-items: center;
+      border: 2px solid rgba(255, 255, 255, .45);
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .18);
+    }
+
+    .banner-avatar svg {
+      width: 44px;
+      height: 44px;
+    }
+
+    .banner-content {
+      padding: 12px 18px;
+      min-width: 0;
+    }
+
+    .banner-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 4px;
+    }
+
+    .banner-title strong {
+      font-size: 16px;
+      font-weight: 900;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .app-pill {
+      padding: 4px 9px;
+      flex: none;
+      border: 1px solid rgba(169, 33, 41, .18);
+      border-radius: 16px;
+      background: #fff;
+      color: #a92129;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .banner-line {
+      font-size: 11.5px;
+      line-height: 1.6;
+      margin: 4px 0;
+    }
+
+    .banner-line.product {
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .banner-actions {
+      display: flex;
+      justify-content: flex-end;
+      padding: 0 10px 6px;
+      background: #fff;
+    }
+
+    .grievance-history-button {
+      min-width: auto;
+      padding: 5px 11px;
+      border: 1px solid #e45f14;
+      border-radius: 18px;
+      background: #fff4ec;
+      color: #a92129;
+      font-size: 11px;
+      font-weight: 900;
+      line-height: 1.2;
+      white-space: nowrap;
+      box-shadow: 0 2px 7px rgba(169, 33, 41, .12);
+      transition: background-color .15s, border-color .15s, box-shadow .15s, transform .15s;
+    }
+
+    .grievance-history-button:hover {
+      border-color: #c83c2f;
+      background: #ffead7;
+      box-shadow: 0 3px 9px rgba(169, 33, 41, .18);
+      transform: translateY(-1px);
+    }
+
+    .content {
+      padding: 6px 4px 0;
+    }
+
+    .summary-wrap {
+      padding: 6px;
+      border: 1px solid #f1d8c8;
+      border-radius: 6px;
+      background: #fff8f3;
+    }
+
+    .top-row {
+      display: grid;
+      grid-template-columns: minmax(0, 3fr) minmax(245px, 1fr);
+      gap: 6px;
+      align-items: stretch;
+    }
+
+    .risk-panel {
+      min-width: 0;
+      padding: 8px;
+      border: 1px solid #ded8d5;
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 2px 7px rgba(60, 42, 35, .07);
+    }
+
+    .risk-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .panel {
+      min-width: 0;
+      padding: 8px;
+      background: #fff;
+      border: 1px solid #ded8d5;
+      border-radius: 12px;
+      box-shadow: 0 2px 7px rgba(60, 42, 35, .07);
+    }
+
+    .risk-card {
+      min-height: 190px;
+      padding: 10px;
+      border: 1px solid #b8dcc0;
+      border-top: 5px solid #28743c;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: transform .15s, box-shadow .15s;
+    }
+
+    .risk-card[data-risk="financial"] {
+      border-color: #e8b8bc;
+      border-top-color: #b3262e;
+    }
+
+    .risk-card[data-risk="other"] {
+      border-color: #e8b8bc;
+      border-top-color: #b3262e;
+    }
+
+    .risk-card:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 8px rgba(50, 40, 35, .1);
+    }
+
+    .risk-heading {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .risk-icon {
+      display: none;
+    }
+
+    .risk-fields {
+      margin-top: 8px;
+      line-height: 1.35;
+      font-size: 10.5px;
+    }
+
+    .risk-fields div {
+      margin-top: 3px;
+    }
+
+    .risk-fields b {
+      color: #b3262e;
+    }
+
+    .risk-card[data-risk="medical"] .risk-fields b {
+      color: #28743c;
+    }
+
+    .risk-footer {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-top: 10px;
+    }
+
+    .round-arrow {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 28px;
+      border: 1px solid #e1d8d2;
+      border-radius: 14px;
+      background: #fff8f3;
+      color: #a92129;
+    }
+
+    .view-tag {
+      font-family: inherit;
+      cursor: pointer;
+      padding: 5px 10px;
+      border: 1px solid #e1d8d2;
+      border-radius: 16px;
+      background: #fff8f3;
+      color: #5b302a;
+      font-size: 9.5px;
+      font-weight: 800;
+    }
+
+    .bre-card {
+      margin-top: 0;
+      background: linear-gradient(180deg, #fff, #fcfaf9);
+    }
+
+    .bre-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .bre-code {
+      color: #237a3b;
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .outline-pill {
+      padding: 4px 9px;
+      border: 1px solid #e45f14;
+      border-radius: 16px;
+      background: #fff8f3;
+      color: #e45f14;
+      font-size: 9px;
+      font-weight: 900;
+    }
+
+    .outline-pill:hover {
+      color: #fff;
+      background: #e45f14;
+    }
+
+    .bre-refresh {
+      padding: 3px 8px;
+      border-color: #a92129;
+      background: #fff;
+      color: #a92129;
+      vertical-align: middle;
+    }
+
+    .bre-refresh:hover {
+      border-color: #a92129;
+      background: #a92129;
+      color: #fff;
+    }
+
+    .discrepancy-box {
+      margin-top: 7px;
+      padding: 6px;
+      border: 1px solid #f0e0d2;
+      border-radius: 7px;
+      background: #fff9f4;
+    }
+
+    .tiny-heading {
+      color: #8b7c73;
+      font-size: 8px;
+      font-weight: 900;
+    }
+
+    .discrepancy-columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5px;
+      margin-top: 5px;
+    }
+
+    .discrepancy-columns div {
+      padding: 5px;
+      border: 1px solid #e8ded7;
+      border-radius: 5px;
+      background: #fff;
+      font-size: 9px;
+    }
+
+    .discrepancy-columns b {
+      display: block;
+      margin-bottom: 3px;
+      color: #80746e;
+      font-size: 8px;
+    }
+
+    .discrepancy-columns em {
+      display: inline-block;
+      margin: 1px;
+      padding: 2px 4px;
+      border-radius: 12px;
+      background: #fff0e0;
+      color: #8b4e1b;
+      font-size: 7px;
+      font-style: normal;
+      font-weight: 900;
+    }
+
+    .discrepancy-columns button {
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: #8b4e1b;
+      font-size: 7.5px;
+      font-weight: 900;
+    }
+
+    .discrepancy-columns .final {
+      border-color: #d9e8dd;
+      background: #f6fbf7;
+    }
+
+    .discrepancy-columns .final b {
+      color: #28743c;
+    }
+
+    .status-card {
+      margin-top: 8px;
+      padding: 6px;
+      border: 1px solid #e8e1de;
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .status-card>.tiny-heading {
+      margin-bottom: 6px;
+    }
+
+    .status-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .status-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      min-height: 24px;
+      padding: 3px 7px;
+      border: 1px solid #d8d1cd;
+      border-radius: 12px;
+      background: #f5f3f2;
+      color: #514a46;
+      font-size: 9px;
+      font-weight: 800;
+    }
+
+    .status-chip:hover,
+    .status-chip.active {
+      border-color: #e45f14;
+      transform: translateY(-1px);
+      box-shadow: 0 3px 8px rgba(55, 42, 35, .12);
+    }
+
+    .status-chip i {
+      min-width: 17px;
+      height: 17px;
+      padding: 2px 3px;
+      border-radius: 9px;
+      background: #697780;
+      color: #fff;
+      font-style: normal;
+      line-height: 13px;
+    }
+
+    .status-chip.pending {
+      background: #fff3e8;
+      border-color: #f3c7a6;
+      color: #b54a00;
+    }
+
+    .status-chip.pending i {
+      background: #e45f14;
+    }
+
+    .status-chip.received {
+      background: #eef6ff;
+      border-color: #bed6ee;
+      color: #2f668f;
+    }
+
+    .status-chip.received i {
+      background: #46799f;
+    }
+
+    .status-chip.accept {
+      background: #eef8f1;
+      border-color: #b8dcc0;
+      color: #28743c;
+    }
+
+    .status-chip.accept i {
+      background: #28743c;
+    }
+
+    .status-chip.reject {
+      background: #fdebec;
+      color: #b3262e;
+    }
+
+    .status-chip.reject i {
+      background: #b3262e;
+    }
+
+    .status-chip.cancelled {
+      background: #f3f1f0;
+      border-color: #d8d1cd;
+      color: #706763;
+    }
+
+    .status-chip.cancelled i {
+      background: #706763;
+    }
+
+    .status-chip.waived {
+      background: #f3eeff;
+      border-color: #d8c8f2;
+      color: #6c4aa0;
+    }
+
+    .status-chip.waived i {
+      background: #6c4aa0;
+    }
+
+    .status-chip.reject {
+      border-color: #f2c4c7;
+    }
+
+    .status-chip.active {
+      border-color: #e45f14 !important;
+    }
+
+    .sdt-row {
+      display: grid;
+      grid-template-columns: minmax(130px, .65fr) minmax(0, 2fr) auto;
+      margin-top: 7px;
+      background: #fcfaf9;
+      border: 1px solid #e4dedb;
+      border-left: 4px solid #e45f14;
+      border-radius: 8px;
+      box-shadow: 0 2px 7px rgba(60, 42, 35, .04);
+      overflow: hidden;
+    }
+
+    .sdt-row>div {
+      padding: 8px 12px;
+    }
+
+    .sdt-row>div+div {
+      border-left: 1px solid #e8e1de;
+    }
+
+    .sdt-row .sdt-action {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 8px 12px;
+    }
+
+    .sdt-row span {
+      display: block;
+      margin-bottom: 3px;
+      color: #8b807b;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .45px;
+    }
+
+    .sdt-row strong {
+      color: #302a27;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .uw-panel {
+      margin: 0;
+      padding: 8px 16px;
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+    }
+
+    .uw-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 8px;
+    }
+
+    .uw-readonly {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: #fcfaf9;
+      border-bottom: 1px solid #e5e0dd;
+    }
+
+    .uw-readonly>div {
+      min-width: 0;
+      padding: 10px 16px;
+    }
+
+    .uw-readonly>div+div {
+      border-left: 1px solid #e5e0dd;
+    }
+
+    .uw-readonly b {
+      display: block;
+      margin-bottom: 7px;
+      color: #938883;
+      font-size: 12px;
+      letter-spacing: .3px;
+    }
+
+    .uw-readonly span {
+      color: #37312e;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .field-label {
+      display: block;
+      margin-bottom: 5px;
+      color: #444;
+      font-size: 11px;
+    }
+
+    .select,
+    .text-input {
+      width: 100%;
+      min-height: 34px;
+      padding: 5px 10px;
+      border: 1px solid #c4c4c4;
+      border-radius: 6px;
+      background: #fff;
+      color: #333;
+      font-size: 11px;
+    }
+
+    .select:hover,
+    .text-input:hover {
+      border-color: #333;
+    }
+
+    .mui-select-trigger {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      height: 34px;
+      padding: 0 10px;
+      border: 1px solid rgba(0, 0, 0, .23);
+      border-radius: 6px;
+      background: #fff;
+      color: #333;
+      font-size: 11px;
+      text-align: left;
+      line-height: 1.2;
+    }
+
+    .mui-select-trigger:hover {
+      border-color: #9a2529;
+    }
+
+    .mui-select-trigger[aria-expanded="true"],
+    .mui-select-trigger:focus-visible {
+      outline: 0;
+      border: 2px solid #9a2529;
+      padding-left: 9px;
+    }
+
+    .mui-select-trigger:disabled {
+      color: rgba(0, 0, 0, .38);
+      background: #f5f5f5;
+      cursor: default;
+    }
+
+    .mui-select-trigger .placeholder {
+      color: #9ca3af;
+    }
+
+    .mui-select-trigger svg {
+      flex: none;
+      width: 18px;
+      height: 18px;
+      color: rgba(0, 0, 0, .54);
+    }
+
+    .mui-select-menu {
+      position: fixed;
+      z-index: 260;
+      max-height: 256px;
+      overflow-y: auto;
+      padding: 8px 0;
+      border-radius: 4px;
+      background: #fff;
+      box-shadow: 0 5px 18px rgba(0, 0, 0, .24);
+    }
+
+    .mui-select-menu button {
+      display: block;
+      width: 100%;
+      min-height: 36px;
+      padding: 7px 16px;
+      border: 0;
+      background: #fff;
+      color: rgba(0, 0, 0, .87);
+      font-size: 12px;
+      text-align: left;
+    }
+
+    .mui-select-menu button:hover,
+    .mui-select-menu button:focus-visible {
+      background: rgba(0, 0, 0, .04);
+      outline: 0;
+    }
+
+    .mui-select-menu button.selected {
+      background: rgba(154, 37, 41, .08);
+    }
+
+    .mui-select-menu button:disabled {
+      color: rgba(0, 0, 0, .38);
+    }
+
+    .req-table .mui-select-trigger {
+      height: 25px;
+      padding: 0 5px;
+      border-color: #cfd8e1;
+      font-size: 10px;
+    }
+
+    .req-table .mui-select-trigger svg {
+      width: 15px;
+      height: 15px;
+    }
+
+    .req-table td:nth-child(2) .mui-select-trigger {
+      width: 70%;
+    }
+
+    input[type="radio"] {
+      appearance: none;
+      width: 17px;
+      height: 17px;
+      margin: 0 4px 0 0;
+      vertical-align: middle;
+      border: 2px solid #777;
+      border-radius: 50%;
+      background: #fff;
+    }
+
+    input[type="radio"]:checked {
+      border-color: #9a2529;
+      background: radial-gradient(circle, #9a2529 0 4px, transparent 4.5px);
+    }
+
+    .contained {
+      min-height: 28px;
+      padding: 4px 14px;
+      border: 0;
+      border-radius: 6px;
+      background: #e45f14;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .contained:hover {
+      background: #c94f0d;
+    }
+
+    .claim-audit-table {
+      width: 100%;
+      min-width: 1050px;
+      border-collapse: separate;
+      border-spacing: 0;
+      border: 1px solid #e1d8d2;
+      border-radius: 10px;
+      overflow: hidden;
+      font-size: 11px;
+    }
+
+    .claim-audit-table th,
+    .claim-audit-table td {
+      padding: 10px 12px;
+      border-right: 1px solid #eee4df;
+      border-bottom: 1px solid #eee4df;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    .claim-audit-table th {
+      background: #ffead7;
+      color: #5b261c;
+      font-size: 10px;
+      font-weight: 900;
+    }
+
+    .claim-audit-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .claim-audit-table th:last-child,
+    .claim-audit-table td:last-child {
+      border-right: 0;
+    }
+
+    .special-remarks-table {
+      width: 100%;
+      min-width: 680px;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 11px;
+    }
+
+    .special-remarks-table th,
+    .special-remarks-table td {
+      padding: 10px 12px;
+      border-right: 1px solid #eee4df;
+      border-bottom: 1px solid #eee4df;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .special-remarks-table th {
+      background: #ffead7;
+      color: #5b261c;
+      font-size: 10px;
+      font-weight: 900;
+    }
+
+    .special-remarks-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .special-remarks-table th:last-child,
+    .special-remarks-table td:last-child {
+      border-right: 0;
+    }
+
+    .table-validate-btn {
+      min-height: 26px;
+      padding: 4px 12px;
+      border: 0;
+      border-radius: 6px;
+      background: #e45f14;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .table-validate-btn:hover {
+      background: #c94f0d;
+    }
+
+    .audit-status {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 12px;
+      background: #eef8f1;
+      color: #28743c;
+      font-weight: 800;
+    }
+
+    .quick-fab {
+      position: fixed;
+      right: 3%;
+      bottom: 10%;
+      z-index: 80;
+      display: grid;
+      place-items: center;
+      width: 50px;
+      height: 50px;
+      border: 0;
+      border-radius: 50%;
+      background: #9a2529;
+      color: #fff;
+      font-size: 26px;
+      box-shadow: 0 3px 7px rgba(0, 0, 0, .15);
+      transition: transform .3s;
+    }
+
+    .quick-fab:hover {
+      background: #822026;
+    }
+
+    .quick-fab.open {
+      transform: rotate(45deg);
+    }
+
+    .quick-panel {
+      position: fixed;
+      right: 3%;
+      bottom: calc(10% + 66px);
+      z-index: 80;
+      width: 276px;
+      overflow: hidden;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, .12);
+    }
+
+    .quick-panel h2 {
+      margin: 0;
+      padding: 12px 16px;
+      background: #f5f5f5;
+      color: #1e1e1e;
+      font-size: 14px;
+    }
+
+    .quick-panel button {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      padding: 12px 16px;
+      border: 0;
+      border-top: 1px solid #e5e5e5;
+      background: #fff;
+      color: #444;
+      font-size: 14px;
+      text-align: left;
+    }
+
+    .quick-panel button:hover {
+      background: #fff;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      background: rgba(28, 22, 19, .48);
+      backdrop-filter: blur(2px);
+    }
+
+    .dialog {
+      position: relative;
+      width: min(1200px, calc(100vw - 48px));
+      max-height: 86vh;
+      display: flex;
+      flex-direction: column;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #fff;
+      box-shadow: 0 18px 54px rgba(45, 35, 30, .24);
+    }
+
+    .dialog.narrow {
+      width: min(700px, 100%);
+    }
+
+    .dialog-title {
+      min-height: 56px;
+      display: flex;
+      align-items: center;
+      padding: 8px 56px 8px 20px;
+      border-bottom: 1px solid #e5dad2;
+      background: #fff;
+      color: #292421;
+      font-size: 17px;
+      font-weight: 700;
+    }
+
+    .dialog-close {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      z-index: 3;
+      display: grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      padding: 8px;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      color: #9a2529;
+      line-height: 1;
+    }
+
+    .dialog-close:hover {
+      background: rgba(154, 37, 41, .04);
+    }
+
+    .dialog-close svg {
+      display: block;
+      width: 24px;
+      height: 24px;
+      flex: none;
+    }
+
+    .dialog-content {
+      padding: 16px;
+      overflow: auto;
+      background: #fff;
+    }
+
+    .counter-offer-layout,
+    .reinsurer-layout {
+      grid-column: 1 / -1;
+      min-width: 0;
+    }
+
+    .counter-offer-wrap {
+      margin-top: 8px;
+      overflow: auto;
+      border: 1px solid #eadfd9;
+      border-radius: 10px;
+    }
+
+    .counter-offer-table {
+      width: 100%;
+      min-width: 1420px;
+      border-collapse: collapse;
+      font-size: 10px;
+    }
+
+    .counter-offer-table th,
+    .counter-offer-table td {
+      padding: 7px 6px;
+      border-right: 1px solid #eadfd9;
+      border-bottom: 1px solid #eadfd9;
+      vertical-align: middle;
+    }
+
+    .counter-offer-table th {
+      background: #ffead7;
+      color: #5b261c;
+      font-size: 10px;
+      font-weight: 800;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    .counter-offer-table th:last-child,
+    .counter-offer-table td:last-child {
+      border-right: 0;
+    }
+
+    .counter-offer-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .counter-offer-table input,
+    .counter-offer-table select {
+      width: 100%;
+      min-width: 70px;
+      min-height: 31px;
+      padding: 5px 7px;
+      border: 1px solid #d9d1cc;
+      border-radius: 7px;
+      background: #fff;
+      color: #302a27;
+      font-size: 10px;
+    }
+
+    .counter-offer-table input[disabled] {
+      background: #f1f1f1;
+      color: #6b7280;
+    }
+
+    .counter-offer-title {
+      margin: 16px 0 8px;
+      color: #5b261c;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .dialog-save {
+      display: block;
+      min-width: 150px;
+      margin: 12px auto 2px;
+    }
+
+    .reinsurer-section {
+      margin-top: 16px;
+      border-top: 1px solid #eadfd9;
+      padding-top: 14px;
+    }
+
+    .reinsurer-section h3 {
+      margin: 0 0 10px;
+      color: #302a27;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .reinsurer-select-panel {
+      padding: 14px 12px 12px;
+      border-radius: 0 0 12px 12px;
+      background: #f5f5f5;
+    }
+
+    .reinsurer-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(150px, 1fr));
+      gap: 24px;
+    }
+
+    .reinsurer-grid label {
+      display: grid;
+      gap: 5px;
+    }
+
+    .reinsurer-grid input,
+    .reinsurer-grid select,
+    .reinsurer-section textarea {
+      width: 100%;
+      min-height: 34px;
+      padding: 7px 9px;
+      border: 1px solid #d9d1cc;
+      border-radius: 8px;
+      background: #fff;
+      color: #302a27;
+    }
+
+    .reinsurer-grid input:disabled {
+      background: #f1f1f1;
+      color: #6b7280;
+    }
+
+    .assignment-card {
+      display: block;
+      width: 100%;
+      margin-top: 24px;
+      overflow: hidden;
+      border: 1px solid #ddd5d0;
+      border-radius: 18px;
+    }
+
+    .assignment-title {
+      margin: 0;
+      padding: 14px 36px;
+      background: #e95d08;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .assignment-table {
+      width: 100%;
+      table-layout: fixed;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    .assignment-table th,
+    .assignment-table td {
+      height: 42px;
+      padding: 7px 10px;
+      border-bottom: 1px solid #ded9d6;
+      text-align: center;
+    }
+
+    .assignment-table th {
+      height: 62px;
+      background: #ffead7;
+      color: #302a27;
+      font-size: 13px;
+      font-weight: 700;
+      vertical-align: middle;
+    }
+
+    .assignment-table th:first-child,
+    .assignment-table td:first-child {
+      text-align: left;
+    }
+
+    .assignment-table th:first-child,
+    .assignment-table td:first-child {
+      width: 26%;
+    }
+
+    .assignment-table th:not(:first-child),
+    .assignment-table td:not(:first-child) {
+      width: 18.5%;
+    }
+
+    .assignment-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .assignment-table input {
+      width: 22px;
+      height: 22px;
+      accent-color: #e95d08;
+      cursor: pointer;
+    }
+
+    .select-all {
+      display: block;
+      margin: 3px auto 0;
+      padding: 0;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: #e95d08;
+      font: inherit;
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 1.2;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .select-all:hover {
+      color: #b7460c;
+      background: transparent;
+    }
+
+    .upload-disabled {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 82px;
+      margin-top: 0;
+      border-radius: 0 0 18px 18px;
+      background: #f0f0f0;
+      color: #6c6c6c;
+      cursor: not-allowed;
+    }
+
+    .upload-disabled b {
+      display: grid;
+      place-items: center;
+      width: 27px;
+      height: 27px;
+      border-radius: 50%;
+      background: #e3e3e3;
+      font-size: 19px;
+      line-height: 1;
+    }
+
+    .reinsurer-section textarea {
+      min-height: 128px;
+      margin-top: 8px;
+      resize: vertical;
+    }
+
+    .reinsurer-actions {
+      display: flex;
+      gap: 22px;
+      margin-top: 18px;
+    }
+
+    .reinsurer-actions button {
+      min-width: 260px;
+      min-height: 48px;
+      border-radius: 28px;
+    }
+
+    .reinsurer-actions .contained {
+      background: #aa262a;
+    }
+
+    .reinsurer-actions .contained:hover {
+      background: #8f1f24;
+    }
+
+    .email-viewer {
+      display: grid;
+      place-items: center;
+      min-height: 430px;
+      border-radius: 10px;
+      background: #d9d9d9;
+      color: #8c8c8c;
+      font-size: 26px;
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 760px) {
+      .reinsurer-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .requirement-dialog .dialog-title {
+      background: #fff3e9;
+      font-weight: 900;
+    }
+
+    .requirement-dialog {
+      height: min(86vh, 820px);
+    }
+
+    .requirement-dialog .dialog-content {
+      background: #f5f6f7;
+    }
+
+    .uw-dialog .dialog-title {
+      min-height: 0;
+      height: 0;
+      padding: 0;
+      border: 0;
+    }
+
+    .uw-dialog .dialog-close {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      z-index: 3;
+    }
+
+    .uw-dialog .dialog-content {
+      padding-top: 24px;
+    }
+
+    .uw-guideline-dialog {
+      width: min(1280px, calc(100vw - 48px));
+    }
+
+    .uw-guideline-dialog .dialog-title {
+      min-height: 48px;
+      background: #e45f14;
+      color: #fff;
+      font-size: 16px;
+    }
+
+    .uw-guideline-dialog .dialog-close {
+      color: #fff;
+    }
+
+    .uw-guideline-intro {
+      margin: 0 0 12px;
+      color: #6d625d;
+      font-size: 12px;
+    }
+
+    .uw-guideline-table-wrap {
+      overflow: auto;
+      border: 1px solid #ded6d1;
+      border-radius: 10px;
+    }
+
+    .uw-guideline-table {
+      width: 100%;
+      min-width: 920px;
+      border-collapse: collapse;
+      background: #fff;
+      font-size: 11px;
+    }
+
+    .uw-guideline-table th,
+    .uw-guideline-table td {
+      padding: 8px 9px;
+      border-right: 1px solid #e3ddd9;
+      border-bottom: 1px solid #e3ddd9;
+      vertical-align: top;
+      text-align: left;
+    }
+
+    .uw-guideline-table th {
+      background: #fff0e5;
+      color: #4a3025;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .uw-guideline-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .uw-guideline-table th:last-child,
+    .uw-guideline-table td:last-child {
+      border-right: 0;
+    }
+
+    .uw-guideline-table td:nth-child(3) {
+      color: #8d232a;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .uw-guideline-table .select,
+    .uw-guideline-table .text-input {
+      min-width: 150px;
+      padding: 6px 8px;
+    }
+
+    .uw-guideline-table .text-input {
+      width: 100%;
+    }
+
+    .uw-guideline-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .bre-table {
+      width: 100%;
+      table-layout: fixed;
+      border-collapse: collapse;
+      overflow: hidden;
+      border: 1px solid #d8d8d8;
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .bre-table th {
+      padding: 4px 8px;
+      border-bottom: 1px solid #d6d6d6;
+      background: #ffead7;
+      color: #000;
+      font-size: 12px;
+      font-weight: 600;
+      text-align: left;
+    }
+
+    .bre-table td {
+      padding: 4px 8px;
+      border-bottom: 1px solid #e1e1e1;
+      color: #4a4a4a;
+      font-size: 11px;
+      text-align: left;
+      vertical-align: top;
+      line-height: 1.2;
+      overflow-wrap: anywhere;
+    }
+
+    .bre-table th:first-child {
+      width: 8%;
+    }
+
+    .bre-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .risk-detail-grid {
+      display: grid;
+      gap: 6px;
+    }
+
+    .risk-detail {
+      padding: 6.4px;
+      min-width: 0;
+    }
+
+    .risk-detail-label {
+      color: #827671;
+      font-size: 11px;
+    }
+
+    .risk-detail-value {
+      margin-top: 2px;
+      color: #332d2a;
+      font-size: 11px;
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
+
+    .risk-remarks {
+      grid-column: 1 / -1;
+      display: grid;
+      gap: 8px;
+      margin-top: 8px;
+      padding: 12px 6px 4px;
+      border-top: 1px solid #eadfda;
+    }
+
+    .risk-remark-line {
+      color: #332d2a;
+      font-size: 11px;
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
+
+    .risk-remark-title {
+      color: #827671;
+      font-weight: 600;
+    }
+
+    .dialog.grievance-dialog {
+      width: min(1536px, calc(100vw - 64px));
+      max-height: calc(100vh - 64px);
+    }
+
+    .dialog.grievance-history-dialog {
+      width: min(1536px, calc(100vw - 64px));
+      max-height: calc(100vh - 64px);
+    }
+
+    .grievance-history-card {
+      overflow: hidden;
+      border: 1px solid #d8d8d8;
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .grievance-history-card-title {
+      padding: 9.6px 24px;
+      background: #e45f14;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .grievance-history-table {
+      width: 100%;
+      table-layout: fixed;
+      border-collapse: collapse;
+    }
+
+    .grievance-history-table th {
+      padding: 4px 8px;
+      border-bottom: 1px solid #d6d6d6;
+      background: #ffead7;
+      color: #000;
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1.2;
+      text-align: left;
+    }
+
+    .grievance-history-table td {
+      padding: 4px 8px;
+      border-bottom: 1px solid #e1e1e1;
+      color: #4a4a4a;
+      font-size: 10px;
+      line-height: 1.2;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .grievance-history-pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 4px;
+      margin-top: 8px;
+    }
+
+    .grievance-history-pagination button {
+      min-width: 28px;
+      height: 28px;
+      padding: 0 6px;
+      border: 0;
+      border-radius: 4px;
+      background: transparent;
+      color: #555;
+      font-size: 13px;
+    }
+
+    .grievance-history-pagination .selected {
+      background: #e45f14;
+      color: #fff;
+    }
+
+    .grievance-history-pagination button:disabled {
+      color: rgba(0, 0, 0, .26);
+      cursor: default;
+    }
+
+    .grievance-wrap {
+      width: 100%;
+      min-width: 0;
+      padding: 6px 4px;
+    }
+
+    .grievance-table-card {
+      margin-top: 10px;
+      overflow: hidden;
+      border: 1px solid #d8d8d8;
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .grievance-table-title {
+      padding: 9.6px 24px;
+      background: #e45f14;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .grievance-table {
+      width: 100%;
+      table-layout: fixed;
+      border-collapse: collapse;
+    }
+
+    .grievance-table th {
+      padding: 4px 8px;
+      border-bottom: 1px solid #d6d6d6;
+      background: #ffead7;
+      color: #000;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+
+    .grievance-table td {
+      padding: 4px 8px;
+      border-bottom: 1px solid #e1e1e1;
+      color: #4a4a4a;
+      font-size: 12px;
+      line-height: 1.2;
+      vertical-align: middle;
+      overflow-wrap: anywhere;
+    }
+
+    .grievance-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .grievance-table input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      margin: 0;
+      accent-color: #9a2529;
+      cursor: pointer;
+    }
+
+    .grievance-remarks {
+      width: 100%;
+      min-height: 40px;
+      padding: 8.5px 12px;
+      border: 1px solid rgba(0, 0, 0, .23);
+      border-radius: 4px;
+      outline: 0;
+      background: #fff;
+      color: #333;
+      font: 12px Arial, Helvetica, sans-serif;
+    }
+
+    .grievance-remarks:hover {
+      border-color: #000;
+    }
+
+    .grievance-remarks:focus {
+      border: 2px solid #9a2529;
+      padding: 7.5px 11px;
+    }
+
+    .grievance-remarks.error {
+      border-color: #d32f2f;
+    }
+
+    .grievance-helper {
+      display: none;
+      margin-top: 3px;
+      color: #d32f2f;
+      font-size: 10px;
+    }
+
+    .grievance-helper.show {
+      display: block;
+    }
+
+    .grievance-error {
+      min-height: 18px;
+      margin: 8px 0 0;
+      color: #d32f2f;
+      text-align: center;
+      font-size: 12px;
+    }
+
+    .grievance-actions {
+      display: flex;
+      justify-content: center;
+      margin-top: 10px;
+    }
+
+    .grievance-actions .contained {
+      min-width: 180px;
+      border-radius: 50px;
+    }
+
+    .grievance-confirm-text {
+      margin: 0;
+      color: rgba(0, 0, 0, .87);
+      font-size: 14px;
+    }
+
+    .grievance-confirm-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding-top: 24px;
+    }
+
+    .grievance-cancel {
+      padding: 5px 10px;
+      border: 1px solid #9a2529;
+      border-radius: 4px;
+      background: #fff;
+      color: #9a2529;
+      font-size: 14px;
+    }
+
+    @media (max-width: 700px) {
+      .dialog.grievance-dialog {
+        width: calc(100vw - 16px);
+      }
+
+      .grievance-table-card {
+        overflow-x: auto;
+      }
+
+      .grievance-table {
+        min-width: 680px;
+      }
+    }
+
+    .req-toolbar {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 8px;
+    }
+
+    .req-add {
+      height: 25px;
+      min-width: 72px;
+      padding: 0 24px;
+      border: 1px solid #a92129;
+      border-radius: 22px;
+      background: #fff;
+      color: #a92129;
+      font-size: 12px;
+      font-weight: 400;
+    }
+
+    .req-add:hover {
+      background: #fff5f5;
+    }
+
+    .req-table-wrap {
+      width: 100%;
+      overflow: hidden;
+      border: 1px solid #d5dbe1;
+      border-radius: 10px;
+    }
+
+    .req-grid-row {
+      display: grid;
+      grid-template-columns: var(--req-columns);
+      column-gap: 4px;
+      align-items: center;
+      min-width: 0;
+      padding: 1.2px 6px;
+      min-height: 36px;
+    }
+
+    .req-grid-header {
+      padding: 3.6px 6px;
+      background: #e45f14;
+      color: #fff;
+    }
+
+    .req-grid-header>div {
+      position: relative;
+      min-width: 0;
+      overflow: hidden;
+      font-size: 10.5px;
+      font-weight: 700;
+      line-height: 1.15;
+    }
+
+    .req-resizer {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 7px;
+      height: 100%;
+      border-right: 1px solid rgba(255, 255, 255, .3);
+      cursor: col-resize;
+    }
+
+    .req-resizer:hover {
+      background: rgba(255, 255, 255, .22);
+    }
+
+    .req-grid-body {
+      background: #fff;
+    }
+
+    .req-grid-body .req-grid-row:nth-child(even) {
+      background: #fafbfc;
+    }
+
+    .req-grid-body .req-grid-row:not(:last-child) {
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .req-grid-body .req-grid-row:hover {
+      background: #f3f7fa;
+    }
+
+    .req-cell {
+      min-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      color: #333;
+      font-size: 10px;
+    }
+
+    .req-cell.center {
+      display: flex;
+      justify-content: center;
+    }
+
+    .req-cell .mui-select-trigger {
+      height: 25px;
+      padding: 0 5px;
+      font-size: 10px;
+    }
+
+    .req-cell.status .mui-select-trigger {
+      width: 70%;
+    }
+
+    .req-cell .mui-select-trigger svg {
+      width: 15px;
+      height: 15px;
+    }
+
+    .req-cell input {
+      width: 100%;
+      height: 25px;
+      min-width: 0;
+      padding: 3px 6px;
+      border: 1px solid #cfd8e1;
+      border-radius: 6px;
+      background: #fff;
+      font-size: 10.5px;
+    }
+
+    .req-eye,
+    .req-remove {
+      display: grid;
+      place-items: center;
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      border: 1px solid transparent;
+      border-radius: 50%;
+      background: transparent;
+      color: #075184;
+    }
+
+    .req-eye:hover {
+      border-color: #b9d1e0;
+      background: #edf5fa;
+    }
+
+    .req-eye:disabled {
+      color: #b8c0c5;
+    }
+
+    .req-remove {
+      border-color: #d9e2ea;
+      color: #78909c;
+      font-size: 17px;
+    }
+
+    .req-remove:hover {
+      border-color: #d32f2f;
+      color: #d32f2f;
+      background: #fff5f5;
+    }
+
+    .req-table-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 5px;
+      min-height: 36px;
+      padding: 3px 6px;
+      border-bottom: 1px solid #e1e5e8;
+      background: #fafbfc;
+    }
+
+    .req-table-toolbar .status-chip {
+      height: 24px;
+      padding: 0 6.4px;
+      border-color: #dde2e6;
+      font-size: 10.5px;
+      font-weight: 600;
+    }
+
+    .req-table-toolbar .status-chip.active {
+      background: #fff1e6;
+      border-color: #e45f14;
+    }
+
+    .req-table-toolbar .status-chip:hover {
+      background: #fff5ee;
+      border-color: #e45f14;
+    }
+
+    .req-toolbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .req-clear {
+      height: 28px;
+      padding: 0 8px;
+      border: 1px solid #c73434;
+      border-radius: 7px;
+      background: #fff;
+      color: #c73434;
+      font-size: 10.5px;
+      font-weight: 600;
+    }
+
+    .req-clear:hover {
+      border-color: #a52227;
+      background: #fff5f5;
+    }
+
+    .filter-icon {
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 28px;
+      border: 1px solid #dfe3e7;
+      border-radius: 7px;
+      background: #fff;
+      color: #555;
+      font-size: 16px;
+    }
+
+    .filter-icon:hover {
+      border-color: #e45f14;
+      background: #fff5ee;
+    }
+
+    .filter-icon svg {
+      width: 24px;
+      height: 20px;
+    }
+
+    .req-empty {
+      padding: 40px 0;
+      text-align: center;
+      color: #757575;
+      font-size: 14px;
+    }
+
+    .req-footer {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      min-height: 30px;
+      gap: 8px;
+      margin: 6px 0 2px;
+    }
+
+    .req-pagination {
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .req-pagination button {
+      width: 27px;
+      height: 27px;
+      border: 0;
+      border-radius: 5px;
+      background: transparent;
+      color: #555;
+    }
+
+    .req-pagination button.active {
+      background: #e45f14;
+      color: #fff;
+    }
+
+    .req-save {
+      justify-self: end;
+      min-width: 82px;
+      height: 28px;
+      border: 0;
+      border-radius: 6px;
+      background: #ad252a;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .req-save:hover {
+      background: #942024;
+    }
+
+    .req-description {
+      color: #404040;
+      font-size: 14px;
+    }
+
+    .toast {
+      position: fixed;
+      top: 72px;
+      right: 18px;
+      z-index: 300;
+      padding: 11px 18px;
+      border-radius: 5px;
+      background: #28743c;
+      color: #fff;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, .2);
+    }
+
+    .dialog.filter-dialog {
+      width: min(620px, calc(100% - 24px));
+      min-height: 430px;
+      border-radius: 18px;
+    }
+
+    .filter-dialog .dialog-title {
+      min-height: 64px;
+      border-bottom: 1px solid #e1e4e7;
+      background: #fff;
+      color: #075184;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .filter-dialog .dialog-close {
+      top: 18px;
+      right: 18px;
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      border: 2px solid #075184;
+      border-radius: 50%;
+      color: #075184;
+    }
+
+    .filter-dialog .dialog-close svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .filter-dialog .dialog-content {
+      padding: 0;
+      background: #fff;
+    }
+
+    .filter-body {
+      display: flex;
+      min-height: 290px;
+    }
+
+    .filter-sidebar {
+      width: 35%;
+      flex: none;
+      border-right: 1px solid #e1e4e7;
+    }
+
+    .filter-sidebar button {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      min-height: 54px;
+      padding: 0 12px;
+      border: 0;
+      border-bottom: 1px solid #e1e4e7;
+      border-left: 4px solid transparent;
+      background: #fff;
+      color: #4f4f4f;
+      font-size: 13px;
+      text-align: left;
+    }
+
+    .filter-sidebar button.active {
+      border-left-color: #e45f14;
+      background: #fff5ee;
+      color: #e45f14;
+      font-weight: 700;
+    }
+
+    .filter-sidebar button b {
+      min-width: 20px;
+      height: 20px;
+      padding: 0 4px;
+      border-radius: 10px;
+      background: #e45f14;
+      color: #fff;
+      font-size: 10px;
+      line-height: 20px;
+      text-align: center;
+    }
+
+    .filter-options {
+      flex: 1;
+      max-height: 290px;
+      padding: 14px;
+      overflow: auto;
+    }
+
+    .filter-options label {
+      display: flex;
+      align-items: center;
+      min-height: 40px;
+      padding: 4px;
+      color: #4f4f4f;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .filter-options label:hover {
+      background: #fafafa;
+    }
+
+    .filter-options input {
+      appearance: none;
+      width: 17px;
+      height: 17px;
+      margin-right: 8px;
+      border: 2px solid #b8b8b8;
+      border-radius: 2px;
+      background: #fff;
+    }
+
+    .filter-options input:checked {
+      border-color: #e45f14;
+      background: #e45f14;
+    }
+
+    .filter-options input:checked::after {
+      content: "✓";
+      display: block;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 900;
+      line-height: 13px;
+      text-align: center;
+    }
+
+    .filter-actions {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      min-height: 78px;
+      padding: 16px;
+      border-top: 1px solid #e1e4e7;
+    }
+
+    .filter-actions button {
+      min-width: 160px;
+      height: 42px;
+      border-radius: 24px;
+      border: 1px solid #bd292f;
+      background: #fff;
+      color: #bd292f;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .filter-actions button:last-child {
+      background: #bd292f;
+      color: #fff;
+    }
+
+    .m0 {
+      margin: 0px;
+    }
+
+    @media (min-width: 1200px) {
+      .risk-detail-grid {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+      }
+    }
+
+    @media (min-width: 900px) {
+      .risk-detail-grid {
+        min-width: 760px;
+      }
+    }
+
+    @media (min-width: 600px) and (max-width: 1199px) {
+      .risk-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 899px) {
+
+      .top-row,
+      .uw-grid,
+      .sdt-row {
+        grid-template-columns: 1fr;
+      }
+
+      .sdt-row>div+div {
+        border-left: 0;
+        border-top: 1px solid #e8e1de;
+      }
+    }
+
+    @media (max-width: 599px) {
+
+      .header-date,
+      .user-name {
+        display: none;
+      }
+
+      .user-menu-wrap {
+        margin-right: 8px;
+      }
+
+      .banner {
+        grid-template-columns: 84px minmax(0, 1fr);
+      }
+
+      .banner-avatar {
+        min-height: 112px;
+      }
+
+      .banner-avatar span {
+        width: 54px;
+        height: 54px;
+      }
+
+      .banner-avatar svg {
+        width: 30px;
+        height: 30px;
+      }
+
+      .banner-content {
+        padding: 8px 10px;
+      }
+
+      .banner-title strong {
+        font-size: 14px;
+      }
+
+      .app-pill {
+        font-size: 11px;
+      }
+
+      .risk-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .dialog {
+        width: calc(100vw - 16px);
+        max-height: calc(100vh - 16px);
+      }
+
+      .requirement-dialog {
+        height: calc(100vh - 16px);
+      }
+
+      .req-table-wrap {
+        overflow-x: auto;
+      }
+
+      .req-table-inner {
+        min-width: 900px;
+      }
+    }
+
+    .applicant-profile-dialog .profile {
+      padding: 0 8px;
+    }
+
+    .applicant-profile-dialog .member-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      width: 100%;
+      margin-bottom: 12px;
+    }
+
+    .applicant-profile-dialog .profile-image {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: none;
+      width: 48px;
+      height: 48px;
+      padding: 0;
+      overflow: hidden;
+      border: 1px solid #d9d9d9;
+      border-radius: 50%;
+      background: #f2f2f2;
+      color: #999;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .applicant-profile-dialog .profile-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .applicant-profile-dialog .tab-rail {
+      display: flex;
+      align-items: center;
+      width: fit-content;
+      max-width: 100%;
+      padding: 2px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      white-space: nowrap;
+    }
+
+    .applicant-profile-dialog .tab-rail::-webkit-scrollbar {
+      display: none;
+    }
+
+    .applicant-profile-dialog .member-tabs {
+      gap: 2px;
+      height: 34px;
+      border: 1px solid #d9d9d9;
+      border-radius: 18px;
+      background: #fff;
+    }
+
+    .applicant-profile-dialog .member-tabs button {
+      flex: none;
+      height: 28px;
+      min-width: 0;
+      padding: 0 12px;
+      border: 0;
+      border-radius: 15px;
+      background: transparent;
+      color: #666;
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1;
+    }
+
+    .applicant-profile-dialog .member-tabs button.active {
+      background: #a92129;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .applicant-profile-dialog .member-tabs button:not(.active):hover {
+      background: #f7f7f7;
+    }
+
+    .applicant-profile-dialog .details-tab-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+    }
+
+    .applicant-profile-dialog .details-tabs {
+      gap: 1px;
+      height: 32px;
+      border: 1px solid #e1e1e1;
+      border-radius: 17px;
+      background: #fafafa;
+    }
+
+    .applicant-profile-dialog .details-tabs button {
+      flex: none;
+      height: 26px;
+      min-width: 0;
+      padding: 0 10px;
+      border: 0;
+      border-radius: 12px;
+      background: transparent;
+      color: #666;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 1;
+    }
+
+    .applicant-profile-dialog .details-tabs button.active {
+      background: #a92129;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .applicant-profile-dialog .details-tabs button:not(.active):hover {
+      background: #f2f2f2;
+    }
+
+    .applicant-profile-dialog .content-card {
+      margin-top: 12px;
+      overflow: hidden;
+      border: 1px solid #e5e0dd;
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .applicant-profile-dialog .content-card>h2 {
+      display: flex;
+      align-items: center;
+      min-height: 42px;
+      margin: 0;
+      padding: 10px 16px;
+      background: #e45f14;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.4;
+    }
+
+    .applicant-profile-dialog .content-card-body {
+      padding: 16px;
+    }
+
+    .applicant-profile-dialog .gray-panel {
+      padding: 16px;
+      border-radius: 8px;
+      background: #f6f6f6;
+    }
+
+    .applicant-profile-dialog .gray-panel.image-details {
+      padding: 0;
+      border-radius: 0;
+      background: transparent;
+    }
+
+    .applicant-profile-dialog .content-card-body:has(.image-details) {
+      padding: 0;
+    }
+
+    .applicant-profile-dialog .image-details .data-table-card {
+      border: 0;
+      border-radius: 0;
+    }
+
+    .applicant-profile-dialog .personal-panel,
+    .applicant-profile-dialog .finance-panel,
+    .applicant-profile-dialog .generic-panel,
+    .applicant-profile-dialog .eia-panel {
+      margin-top: 12px;
+    }
+
+    .applicant-profile-dialog .fields-grid {
+      display: grid;
+      gap: 16px;
+      min-width: 0;
+    }
+
+    .applicant-profile-dialog .fields-grid.cols-4 {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .applicant-profile-dialog .fields-grid.cols-6 {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+
+    .applicant-profile-dialog .fields-grid.cols-8 {
+      grid-template-columns: repeat(8, minmax(0, 1fr));
+    }
+
+    .applicant-profile-dialog .field {
+      min-width: 0;
+    }
+
+    .applicant-profile-dialog .field-label {
+      color: #444;
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 1.35;
+    }
+
+    .applicant-profile-dialog .field-value {
+      color: #161616;
+      font-size: 10px;
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+
+    .applicant-profile-dialog .divider {
+      height: 1px;
+      margin: 16px 0;
+      border: 0;
+      background: #afafaf;
+    }
+
+    .applicant-profile-dialog .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      align-items: stretch;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .applicant-profile-dialog .cards-grid.two {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .applicant-profile-dialog .details-card {
+      min-width: 0;
+      overflow: hidden;
+      border-radius: 8px;
+      background: #f6f6f6;
+    }
+
+    .applicant-profile-dialog .details-card h3 {
+      margin: 0;
+      padding: 10px 16px;
+      background: #e45f14;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .applicant-profile-dialog .details-card-body {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      column-gap: 16px;
+      row-gap: 16px;
+      padding: 16px;
+    }
+
+    .applicant-profile-dialog .details-card .field-label {
+      color: #333;
+    }
+
+    .applicant-profile-dialog .details-card .field-value {
+      display: inline;
+      margin-top: 3px;
+      color: #111;
+      line-height: 1.35;
+    }
+
+    .applicant-profile-dialog .show-more {
+      margin-left: 4px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: #a92129;
+      font-size: 10px;
+      font-weight: 600;
+      text-decoration: underline;
+    }
+
+    .applicant-profile-dialog .data-table-card {
+      overflow: hidden;
+      border: 1px solid #d8d8d8;
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .applicant-profile-dialog .data-table-card h3 {
+      margin: 0;
+      padding: 10px 24px;
+      background: #e45f14;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .applicant-profile-dialog .data-table-card table {
+      width: 100%;
+      table-layout: fixed;
+      border-collapse: collapse;
+    }
+
+    .applicant-profile-dialog .data-table-card th {
+      padding: 4px 8px;
+      border-bottom: 1px solid #d6d6d6;
+      background: #ffead7;
+      color: #000;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+
+    .applicant-profile-dialog .data-table-card td {
+      padding: 4px 8px;
+      border-bottom: 1px solid #e1e1e1;
+      color: #4a4a4a;
+      font-size: 11px;
+      line-height: 1.2;
+      overflow-wrap: anywhere;
+    }
+
+    .applicant-profile-dialog .data-table-card tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .applicant-profile-dialog .table-spacer {
+      margin-top: 16px;
+    }
+
+    .applicant-profile-dialog .empty-nominee {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .applicant-profile-dialog .key-table {
+      overflow: hidden;
+      border: 1px solid #e3e3e3;
+      border-radius: 40px;
+      background: #f6f6f6;
+    }
+
+    .applicant-profile-dialog .key-table h3 {
+      margin: 0;
+      padding: 10px 20px;
+      background: #e45f14;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .applicant-profile-dialog .key-table table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+    }
+
+    .applicant-profile-dialog .key-table td {
+      width: 16.66%;
+      padding: 8.8px 16px;
+      border-bottom: 1px solid #d4d7db;
+      color: #4b5563;
+      font-size: 12px;
+    }
+
+    .applicant-profile-dialog .key-table td.label {
+      border-bottom-color: #c9cdd3;
+      background: #ffead7;
+      font-weight: 700;
+    }
+
+    .applicant-profile-dialog .key-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .applicant-profile-dialog .medical-spacer {
+      margin-top: 16px;
+    }
+
+    .applicant-profile-dialog .medical-content,
+    .applicant-profile-dialog .nominee-content {
+      margin-top: 12px;
+    }
+
+    .applicant-profile-dialog .no-lifestyle {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 48px;
+      background: #f6f6f6;
+      color: #4b5563;
+      font-size: 14px;
+    }
+
+    .applicant-profile-dialog .actions {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #eee;
+    }
+
+    .applicant-profile-dialog .actions button {
+      width: 180px;
+      min-height: 34px;
+      padding: 6px 24px;
+      border: 1px solid #9a2529;
+      border-radius: 50px;
+      background: #fff;
+      color: #9a2529;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .applicant-profile-dialog .actions button:hover {
+      background: rgba(176, 42, 48, .08);
+    }
+
+    /* QuickLinks.tsx opens ApplicantProfile inside a titleless maxWidth="xl" CustomDialog. */
+    .dialog.applicant-profile-dialog {
+      width: min(1536px, calc(100vw - 64px));
+      max-height: calc(100vh - 64px);
+    }
+
+    /* Keep the titleless profile layout while leaving its shared close icon visible. */
+    .applicant-profile-dialog .dialog-title {
+      display: block;
+      min-height: 0;
+      height: 0;
+      padding: 0;
+      border: 0;
+      overflow: visible;
+    }
+
+    .applicant-profile-dialog .dialog-close {
+      top: 8px;
+      right: 8px;
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, .12);
+    }
+
+    .applicant-profile-dialog .dialog-content {
+      padding: 8px;
+      max-height: calc(100vh - 150px);
+      overflow-y: auto;
+    }
+
+    @media (max-width: 1199px) {
+      .applicant-profile-dialog .cards-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 899px) {
+
+      .applicant-profile-dialog .cards-grid,
+      .applicant-profile-dialog .cards-grid.two {
+        grid-template-columns: 1fr;
+      }
+
+    }
+
+    @media (max-width: 599px) {
+      .dialog.applicant-profile-dialog {
+        width: calc(100vw - 32px);
+      }
+
+      .applicant-profile-dialog .content-card-body {
+        padding: 12px;
+      }
+
+      .applicant-profile-dialog .key-table {
+        overflow-x: auto;
+      }
+
+      .applicant-profile-dialog .key-table table {
+        min-width: 700px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="app-header">
+    <button class="back" type="button" aria-label="Back to Inbox" title="Back to Inbox"><svg width="16" height="16"
+        viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path
+          d="M15 20.67C14.81 20.67 14.62 20.6 14.47 20.45L7.95 13.93C6.89 12.87 6.89 11.13 7.95 10.07L14.47 3.55C14.76 3.26 15.24 3.26 15.53 3.55C15.82 3.84 15.82 4.32 15.53 4.61L9.01 11.13C8.53 11.61 8.53 12.39 9.01 12.87L15.53 19.39C15.82 19.68 15.82 20.16 15.53 20.45C15.38 20.59 15.19 20.67 15 20.67Z"
+          fill="currentColor" />
+      </svg></button>
+    <img class="logo" src="ICICI%20Logo.svg" alt="ICICI Life Logo">
+    <div class="header-spacer"></div>
+    <div class="header-date">
+      <div id="current-time"></div>
+      <div>Session: <span id="session-time">15:00</span></div>
+    </div>
+    <div class="user-menu-wrap">
+      <button id="user-button" class="user-button" type="button" aria-label="User menu" aria-expanded="false"><span
+          class="user-avatar"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="M12 12.75C8.83 12.75 6.25 10.17 6.25 7C6.25 3.83 8.83 1.25 12 1.25C15.17 1.25 17.75 3.83 17.75 7C17.75 10.17 15.17 12.75 12 12.75ZM12 2.75C9.66 2.75 7.75 4.66 7.75 7C7.75 9.34 9.66 11.25 12 11.25C14.34 11.25 16.25 9.34 16.25 7C16.25 4.66 14.34 2.75 12 2.75Z"
+              fill="currentColor" />
+            <path
+              d="M20.59 22.75C20.18 22.75 19.84 22.41 19.84 22C19.84 18.55 16.32 15.75 12 15.75C7.68 15.75 4.16 18.55 4.16 22C4.16 22.41 3.82 22.75 3.41 22.75C3 22.75 2.66 22.41 2.66 22C2.66 17.73 6.85 14.25 12 14.25C17.15 14.25 21.34 17.73 21.34 22C21.34 22.41 21 22.75 20.59 22.75Z"
+              fill="currentColor" />
+          </svg></span><span class="user-name" id="header-user-name"></span><span>⌄</span></button>
+      <div id="user-popover" class="user-popover" hidden><button type="button" data-action="break">◷ &nbsp; Breaktime
+          <b>30 mins ›</b></button><button type="button" data-action="logout">⇥ &nbsp; Logout</button></div>
+    </div>
+  </header>
+
+  <main>
+    <div class="banner-shell">
+      <div class="banner">
+        <div class="banner-avatar"><span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none">
+              <path
+                d="M12 12.75C8.83 12.75 6.25 10.17 6.25 7C6.25 3.83 8.83 1.25 12 1.25C15.17 1.25 17.75 3.83 17.75 7C17.75 10.17 15.17 12.75 12 12.75ZM12 2.75C9.66 2.75 7.75 4.66 7.75 7C7.75 9.34 9.66 11.25 12 11.25C14.34 11.25 16.25 9.34 16.25 7C16.25 4.66 14.34 2.75 12 2.75Z"
+                fill="currentColor" />
+              <path
+                d="M20.59 22.75C20.18 22.75 19.84 22.41 19.84 22C19.84 18.55 16.32 15.75 12 15.75C7.68 15.75 4.16 18.55 4.16 22C4.16 22.41 3.82 22.75 3.41 22.75C3 22.75 2.66 22.41 2.66 22C2.66 17.73 6.85 14.25 12 14.25C17.15 14.25 21.34 17.73 21.34 22C21.34 22.41 21 22.75 20.59 22.75Z"
+                fill="currentColor" />
+            </svg></span></div>
+        <div class="banner-content">
+          <div class="banner-title"><strong>Rudra Prakash Sangha</strong><span class="app-pill">App No. -
+              OB90377122</span></div>
+          <p class="banner-line">Life Assured 1 / Married / Male / 40 /
+            Pune,
+            Maharashtra / Indian / India / Emp ID - / Designation - / Annual Income -</p>
+          <p class="banner-line product">
+            <span id="product-line">Call ID - / Policy no. - / Client name - / Re insurer name - / Cover requested - /
+              Cover provided - / Free cover limit - / Cover above FCL -</span>
+          </p>
+          <p class="banner-line"><strong>Riders:</strong> WOP - SA ₹15,00,000 / BTBB - SA ₹25,00,000 /
+            TI Rider - SA ₹25,00,000 / ADBR - SA ₹25,00,000 / CI Rider - SA ₹25,00,000</p>
+          <p class="banner-line">TI Rider - SA ₹25,00,000 / ADBR SA - ₹25,00,000 / CI Rider SA - ₹25,00,000 /
+            Previous sum assured - ₹10,00,000 / Previous UW Decision &amp; Date - Standard, 12 Aug 2024 /
+            Reason for cover enhancement - Income enhancement</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="banner-actions">
+      <button id="grievance-history-button" class="grievance-history-button" type="button"
+        aria-label="Open Grievance History">Grievance History</button>
+    </div>
+
+    <div class="content">
+      <div class="summary-wrap">
+        <div class="top-row">
+          <div class="risk-panel">
+            <div class="risk-grid">
+              <div class="panel risk-card" data-risk="financial" tabindex="0">
+                <div class="risk-heading">Financial</div>
+                <div class="risk-fields">
+                  <div>Financial Decision: <b>NON-FSTP</b></div>
+                  <div>Financial Eligibility: <b>₹4,80,000</b></div>
+                  <div>Derived Income: <b>₹16,00,000</b></div>
+                  <div>Verified Income: <b>₹16,00,000</b></div>
+                  <div>BIU Financial Status: <b>-</b></div>
+                </div>
+                <div class="risk-footer"><button class="round-arrow" type="button" data-risk-detail="financial"
+                    aria-label="View Financial risk details">›</button><button class="view-tag" type="button">View
+                    Financial</button>
+                </div>
+              </div>
+              <div class="panel risk-card" data-risk="medical" tabindex="0">
+                <div class="risk-heading">Medical</div>
+                <div class="risk-fields">
+                  <div>BRE Physical Medical Decision: <b>STP</b></div>
+                  <div>MunichRe Medical Decision: <b>-</b></div>
+                  <div>BIU Medical Status (Match/Mismatch): <b>Match</b></div>
+                </div>
+                <div class="risk-footer"><button class="round-arrow" type="button" data-risk-detail="medical"
+                    aria-label="View Medical risk details">›</button><button class="view-tag" type="button">View
+                    Medical</button></div>
+              </div>
+              <div class="panel risk-card" data-risk="other" tabindex="0">
+                <div class="risk-heading">Risk Parameters</div>
+                <div class="risk-fields">
+                  <div>Health Q/MQ Positive: <b>Yes</b></div>
+                  <div>Avocation Related Disclosure: <b>No</b></div>
+                  <div>Hazardous Occupation: <b>No</b></div>
+                </div>
+                <div class="risk-footer"><button class="round-arrow" type="button" data-risk-detail="other"
+                    aria-label="View Other Risk risk details">›</button>
+                  <!-- <span class="view-tag">View Risk</span> -->
+                </div>
+              </div>
+            </div>
+          </div>
+          <section class="panel bre-card">
+            <div class="bre-top"><strong class="bre-code" id="bre-code">ST</strong>
+              <div><button class="outline-pill" id="bre-detail" type="button">View Detail</button> <button
+                  class="outline-pill bre-refresh" id="bre-refresh" type="button" title="BRE Retrigger"
+                  aria-label="BRE Retrigger"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                    aria-hidden="true">
+                    <path
+                      d="M22 12C22 17.52 17.52 22 12 22C6.48 22 3.11 16.44 3.11 16.44M3.11 16.44H7.63M3.11 16.44V21.44M2 12C2 6.48 6.44 2 12 2C18.67 2 22 7.56 22 7.56M22 7.56V2.56M22 7.56H17.56"
+                      stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg></button></div>
+            </div>
+            <div class="discrepancy-box">
+              <div class="tiny-heading">BRE Discrepancy Change</div>
+              <div class="discrepancy-columns">
+                <div><b>Initial</b><em>ACR</em><em>OCD</em><em>PAN</em><button type="button"
+                    class="open-bre">+4</button></div>
+                <div class="final"><b>Final</b><em>NYC</em></div>
+              </div>
+            </div>
+            <div class="status-card">
+              <div class="tiny-heading">Requirement Management</div>
+              <div id="status-chips" class="status-chips"></div>
+            </div>
+          </section>
+        </div>
+        <div class="sdt-row">
+          <div><span>Financial Decision</span><strong>Standard</strong></div>
+          <div><span>Medical Decision</span><strong>Standard</strong></div>
+          <div class="sdt-action"><button id="claim-audit" class="contained" type="button">Claim Audit
+              (1)</button><button id="uw-guidelines" class="contained" type="button">UW Guidelines (7)</button><button
+              id="special-remarks" class="contained" type="button">Special Remarks</button></div>
+        </div>
+      </div>
+    </div>
+    <section class="uw-panel">
+      <div class="uw-grid">
+        <div class="uw-readonly">
+          <div><b>BRE Overall Decision</b><span id="financial-decision">-</span></div>
+          <div><b>BRE Overall Remarks</b><span id="medical-decision">-</span></div>
+        </div><label><span class="field-label" style="margin-bottom:8px">Case UW Decision</span><select class="select"
+            id="uw-select" required>
+            <option value="" disabled selected>Select</option>
+            <option value="STD">Standard</option>
+            <option value="CO">Counter Offer</option>
+            <option value="DC">Decline</option>
+            <option value="REJ">Reject</option>
+            <option value="POSTP">Postpone</option>
+            <option value="HOLD">Hold</option>
+            <option value="REF_RISK">Refer to Risk</option>
+            <option value="REF_ACU">Refer to Accuity</option>
+            <option value="REF_REINS">Refer to Reinsurer</option>
+            <option value="REF_CMO">Refer to HO CMO</option>
+            <option value="REF_SR_UW">Refer to Sr.UW</option>
+            <option value="REF_HOD">Refer to HoD</option>
+            <option value="REF_CUW_CLM">Refer to CUW Claim Audit</option>
+            <option value="REF_IT">Refer to IT</option>
+            <option value="AMR">Raise Requirements</option>
+            <option value="REF_TELE_MER">Refer to Tele MER</option>
+            <option value="REF_VIDEO_MER">Refer to Video MER</option>
+          </select></label>
+      </div>
+    </section>
+  </main>
+
+  <div id="quick-panel" class="quick-panel" hidden>
+    <h2>Quick Links</h2>
+    <div id="quick-items"></div>
+  </div>
+  <button id="quick-fab" class="quick-fab" type="button" aria-label="Quick Links" title="Quick Links"
+    aria-expanded="false"><svg width="24" height="24" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <path
+        d="M11.9836 28.6681C9.77031 28.6681 7.54365 27.8281 5.85031 26.1348C2.47698 22.7481 2.47698 17.2548 5.85031 13.8815C6.23698 13.4948 6.87698 13.4948 7.26365 13.8815C7.65031 14.2681 7.65031 14.9081 7.26365 15.2948C4.66365 17.8948 4.66365 22.1215 7.26365 24.7215C9.86365 27.3215 14.0903 27.3215 16.6903 24.7215C17.9436 23.4681 18.637 21.7881 18.637 20.0015C18.637 18.2281 17.9436 16.5481 16.6903 15.2815C16.3036 14.8948 16.3036 14.2548 16.6903 13.8681C17.077 13.4815 17.717 13.4815 18.1036 13.8681C19.7436 15.5081 20.637 17.6815 20.637 20.0015C20.637 22.3215 19.7303 24.4948 18.1036 26.1348C16.4236 27.8281 14.2103 28.6681 11.9836 28.6681Z"
+        fill="white" />
+      <path
+        d="M25.4268 18.8777C25.1734 18.8777 24.9201 18.7844 24.7201 18.5844C24.3334 18.1977 24.3334 17.5577 24.7201 17.171C27.4534 14.4377 27.4534 9.99771 24.7201 7.27771C21.9868 4.54438 17.5468 4.54438 14.8268 7.27771C13.5068 8.59771 12.7734 10.3577 12.7734 12.2244C12.7734 14.091 13.5068 15.851 14.8268 17.171C15.2134 17.5577 15.2134 18.1977 14.8268 18.5844C14.4401 18.971 13.8001 18.971 13.4134 18.5844C11.7201 16.891 10.7734 14.6244 10.7734 12.2244C10.7734 9.82438 11.7068 7.55771 13.4134 5.86438C16.9201 2.35771 22.6268 2.35771 26.1468 5.86438C29.6534 9.37104 29.6534 15.091 26.1468 18.5977C25.9468 18.7844 25.6801 18.8777 25.4268 18.8777Z"
+        fill="white" />
+    </svg></button>
+  <div id="modal-root" class="modal-backdrop" hidden>
+    <div id="dialog" class="dialog" role="dialog" aria-modal="true">
+      <div class="dialog-title"><span id="dialog-title"></span><button id="dialog-close" class="dialog-close"
+          type="button" aria-label="Close dialog"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+            aria-hidden="true">
+            <path
+              d="M12 22.75C6.07 22.75 1.25 17.93 1.25 12C1.25 6.07 6.07 1.25 12 1.25C17.93 1.25 22.75 6.07 22.75 12C22.75 17.93 17.93 22.75 12 22.75ZM12 2.75C6.9 2.75 2.75 6.9 2.75 12C2.75 17.1 6.9 21.25 12 21.25C17.1 21.25 21.25 17.1 21.25 12C21.25 6.9 17.1 2.75 12 2.75Z"
+              fill="currentColor" />
+            <path
+              d="M9.17 15.58C8.98 15.58 8.79 15.51 8.64 15.36C8.35 15.07 8.35 14.59 8.64 14.3L14.3 8.64C14.59 8.35 15.07 8.35 15.36 8.64C15.65 8.93 15.65 9.41 15.36 9.7L9.7 15.36C9.56 15.51 9.36 15.58 9.17 15.58Z"
+              fill="currentColor" />
+            <path
+              d="M14.83 15.58C14.64 15.58 14.45 15.51 14.3 15.36L8.64 9.7C8.35 9.41 8.35 8.93 8.64 8.64C8.93 8.35 9.41 8.35 9.7 8.64L15.36 14.3C15.65 14.59 15.65 15.07 15.36 15.36C15.21 15.51 15.02 15.58 14.83 15.58Z"
+              fill="currentColor" />
+          </svg></button></div>
+      <div id="dialog-content" class="dialog-content"></div>
+    </div>
+  </div>
+  <div id="toast" class="toast" role="status" hidden></div>
+
+  <script>
+    // The DRS screen receives these rows from state.drs.data.requirementManagement;
+    // the standalone prototype keeps the complete current mock response locally.
+    const requirements = [
+      { status: "Reject", ocrStatus: "pass", team: "UW", profile: "", category: "Consent", subCategory: "Policy confirmation", document: "OTP", reason: "Document not uplaoded", fupCode: "OTP", extraRemarks: "", description: "OTP-Policy confirmation/ consent code required", requirementId: 11792 },
+      { status: "Accept", ocrStatus: "pass", team: "COPS", profile: "", category: "KYC", subCategory: "Ageproof", document: "PAN Card", reason: "Documents not submitted", fupCode: "AGE", extraRemarks: "", description: "AGE-Age proof of life assured (Passport - front & back or Driving License or Pan Card or Aadhaar - front & back)", requirementId: 11790 },
+      { status: "Cancelled", ocrStatus: "pass", team: "COPS", profile: "", category: "KYC", subCategory: "PAN Card", document: "PAN /Form 60", reason: "Documents not submitted", fupCode: "PAL", extraRemarks: "", description: "PAL- Please submit PAN Card copy linked with your Aadhaar", requirementId: 11791 },
+      { status: "Received", ocrStatus: "pass", team: "COPS", profile: "", category: "KYC", subCategory: "PAN Card", document: "Photo", reason: "Documents not submitted", fupCode: "KYP", extraRemarks: "", description: "KYP- Upload recent photograph of proposer", requirementId: 11795 },
+      { status: "Waived", ocrStatus: "pass", team: "COPS", profile: "", category: "KYC", subCategory: "ID proof", document: "Drving License", reason: "Documents not submitted", fupCode: "IDM", extraRemarks: "", description: "IDM- Upload valid ID proof of proposer (Passport - front & back or Driving License or Pan Card or Aadhaar - front & back)", requirementId: 11793 },
+      { status: "Accept", ocrStatus: "pass", team: "COPS", profile: "", category: "KYC", subCategory: "Address Proof", document: "Driving License", reason: "Documents not submitted", fupCode: "ADP", extraRemarks: "", description: "ADP-Address proof of the proposer matching with application form (Passport - front & back or Aadhaar - front & back or Driving License or Voter id)", requirementId: 11794 },
+      { status: "Pending", ocrStatus: "", team: "COPS", profile: "", category: "Medical", subCategory: "SPAARC call", document: "SPAARC call ID", reason: "Call ID to be raised for details mismatch in Application form", fupCode: "SCI", extraRemarks: "", description: "SPAARC call ID to be raised (related to Name, address, DOB, Pin Code, gender & residential status mismatch as per the IUW form)", requirementId: 12069 }
+    ];
+    // ApplicantSummary maps the current Risk Parameters fields into the details dialog.
+    const otherRisk = {
+      healthQuestionMqPositive: "Yes",
+      avocationRelatedDisclosure: "No",
+      hazardousOccupation: "No",
+      faceMatching: "Match",
+      smokingTobaccoConsumption: "No",
+      previousPolicyDecisionGtlPolicy: "Standard",
+      adverseFamilyHistory: "No"
+    };
+    // ApplicantSummary builds these two dialogs from riskAnalytics in the DRS mock response.
+    const financialRisk = {
+      breFinancialDecision: "NON-FSTP", financialEligibility: "₹4,80,000",
+      derivedIncome: "₹16,00,000", verifiedIncome: "₹16,00,000",
+      counterOfferValue: "₹50,00,000", additionalSA: "0.0",
+      biuFinancialStatus: "", finalBureauIncome: "", reinsurerCase: "", financialRemark: ""
+    };
+    const medicalRisk = {
+      brePhysicalMedicalDecision: "STP", brePhysicalMedicalRemark: "No adverse findings",
+      breTeleVideoMerDecision: "Standard", breTeleVideoMerRemark: "Verification completed",
+      munichReMedicalDecision: "Standard", munichReRating: "Standard",
+      biuMedicalStatus: "Match", operationRemarks: "Medical assessment completed"
+    };
+    const financialRiskFields = [
+      ["breFinancialDecision", "Financial Decision"], ["financialEligibility", "Financial Eligibility"],
+      ["derivedIncome", "Derived Income"], ["verifiedIncome", "Verified Income"],
+      ["counterOfferValue", "Counter Offer Value"], ["additionalSA", "Additional SA"],
+      ["biuFinancialStatus", "BIU Financial Status"], ["finalBureauIncome", "Final Bureau Income"],
+      ["reinsurerCase", "Reinsurer Case"], ["financialRemark", "Financial Remark"]
+    ];
+    const medicalRiskFields = [
+      ["brePhysicalMedicalDecision", "BRE Physical Medical Decision"],
+      ["breTeleVideoMerDecision", "BRE Tele/Video MER Decision"],
+      ["munichReMedicalDecision", "MunichRe Medical decision"],
+      ["munichReRating", "MunichRe Rating"],
+      ["biuMedicalStatus", "BIU Medical status (Match/Mismatch)"],
+      ["brePhysicalMedicalRemark", "BRE Physical Medical Remark"],
+      ["breTeleVideoMerRemark", "BRE Tele/Video MER Remark"],
+      ["operationRemarks", "Operation remarks"]
+    ];
+    const otherRiskFields = [
+      ["healthQuestionMqPositive", "Health Q/MQ Positive"],
+      ["avocationRelatedDisclosure", "Avocation Related Disclosure"],
+      ["hazardousOccupation", "Hazardous Occupation"],
+      ["faceMatching", "Face Matching"],
+      ["smokingTobaccoConsumption", "Smoking/Tobacco Consumption"],
+      ["previousPolicyDecisionGtlPolicy", "Previous Policy Decision - GTL Policy"],
+      ["adverseFamilyHistory", "Adverse Family History"]
+    ];
+    const statuses = ["All", "Pending", "Received", "Accept", "Cancelled", "Reject", "Waived"];
+    const columns = ["Actions", "Status", "OCR Status", "Team", "Profile", "Category", "Sub Category", "Document", "Reason", "FUP Code", "Extra Remarks", "Description"];
+    const columnWidths = [60, 125, 95, 85, 95, 105, 115, 120, 145, 85, 170, 85];
+    const statusPriority = ["Accept", "Reject", "Cancelled", "Waived", "Received", "Pending", "Not Required"];
+    let currentFilter = "All";
+    let tableFilters = { category: [], subCategory: [], profile: [], fupCode: [], status: [] };
+    let draftFilters = { category: [], subCategory: [], profile: [], fupCode: [], status: [] };
+    let selectedFilterField = "category";
+    let page = 1;
+    let returnToRequirements = false;
+    let toastTimer;
+    const $ = (selector) => document.querySelector(selector);
+    const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
+    const displayValue = (value) => value === null || value === undefined || value === "" ? "-" : typeof value === "boolean" ? value ? "Yes" : "No" : String(value);
+    function openOtherRiskDetails() {
+      const fields = otherRiskFields.map(([field, label]) => `<div class="risk-detail"><div class="risk-detail-label">${escapeHtml(label)}</div><div class="risk-detail-value">${escapeHtml(displayValue(otherRisk[field]))}</div></div>`).join("");
+      openDialog("Other Risk Details", `<div class="risk-detail-grid">${fields}</div>`);
+    }
+    function openFinancialOrMedicalRiskDetails(type) {
+      const isFinancial = type === "financial";
+      const risk = isFinancial ? financialRisk : medicalRisk;
+      const fieldConfig = isFinancial ? financialRiskFields : medicalRiskFields;
+      const regularFields = fieldConfig.filter(([, label]) => !/remark/i.test(label));
+      const remarkFields = fieldConfig.filter(([, label]) => /remark/i.test(label));
+      const fields = regularFields.map(([field, label]) => `<div class="risk-detail"><div class="risk-detail-label">${escapeHtml(label)}</div><div class="risk-detail-value">${escapeHtml(displayValue(risk[field]))}</div></div>`).join("");
+      const remarks = remarkFields.map(([field, label]) => `<div class="risk-remark-line"><span class="risk-remark-title">${escapeHtml(label)}:</span> ${escapeHtml(displayValue(risk[field]))}</div>`).join("");
+      openDialog(`${isFinancial ? "Financial" : "Medical"} Details`, `<div class="risk-detail-grid">${fields}<div class="risk-remarks">${remarks}</div></div>`);
+    }
+    const chevronSvg = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    const rightArrowSvg = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8.91 20.67C8.72 20.67 8.53 20.6 8.38 20.45C8.09 20.16 8.09 19.68 8.38 19.39L14.9 12.87C15.38 12.39 15.38 11.61 14.9 11.13L8.38 4.61C8.09 4.32 8.09 3.84 8.38 3.55C8.67 3.26 9.15 3.26 9.44 3.55L15.96 10.07C16.47 10.58 16.76 11.27 16.76 12C16.76 12.73 16.48 13.42 15.96 13.93L9.44 20.45C9.29 20.59 9.1 20.67 8.91 20.67Z" fill="currentColor"/></svg>';
+    document.querySelectorAll(".round-arrow").forEach((button) => { button.innerHTML = rightArrowSvg; });
+    let activeSelectMenu = null;
+    function closeSelectMenu() {
+      if (!activeSelectMenu) return;
+      activeSelectMenu.trigger.setAttribute("aria-expanded", "false");
+      activeSelectMenu.menu.remove();
+      activeSelectMenu = null;
+    }
+    function enhanceSelects(root = document) {
+      root.querySelectorAll("select").forEach((select) => {
+        if (select.dataset.enhanced === "true") return;
+        select.dataset.enhanced = "true";
+        select.hidden = true;
+        const trigger = document.createElement("button");
+        trigger.type = "button";
+        trigger.className = "mui-select-trigger";
+        trigger.setAttribute("aria-haspopup", "listbox");
+        trigger.setAttribute("aria-expanded", "false");
+        select.after(trigger);
+        function updateTrigger() {
+          const selected = select.options[select.selectedIndex];
+          const placeholder = !select.value;
+          trigger.innerHTML = `<span class="${placeholder ? "placeholder" : ""}">${escapeHtml(selected?.textContent || "Select")}</span>${chevronSvg}`;
+          trigger.disabled = select.disabled;
+        }
+        updateTrigger();
+        select.addEventListener("change", updateTrigger);
+        trigger.addEventListener("click", () => {
+          if (activeSelectMenu?.trigger === trigger) { closeSelectMenu(); return; }
+          closeSelectMenu();
+          const menu = document.createElement("div");
+          menu.className = "mui-select-menu";
+          menu.setAttribute("role", "listbox");
+          select.querySelectorAll("option").forEach((option) => {
+            const item = document.createElement("button");
+            item.type = "button";
+            item.textContent = option.textContent;
+            item.disabled = option.disabled;
+            item.classList.toggle("selected", option.value === select.value);
+            item.setAttribute("role", "option");
+            item.setAttribute("aria-selected", String(option.value === select.value));
+            item.addEventListener("click", () => {
+              select.value = option.value;
+              select.dispatchEvent(new Event("change", { bubbles: true }));
+              closeSelectMenu();
+              trigger.focus();
+            });
+            menu.append(item);
+          });
+          const rect = trigger.getBoundingClientRect();
+          menu.style.left = `${Math.max(8, rect.left)}px`;
+          menu.style.width = `${rect.width}px`;
+          menu.style.top = `${Math.min(rect.bottom + 4, window.innerHeight - Math.min(menu.childElementCount * 36 + 16, 256) - 8)}px`;
+          document.body.append(menu);
+          trigger.setAttribute("aria-expanded", "true");
+          activeSelectMenu = { trigger, menu };
+        });
+      });
+    }
+    document.addEventListener("pointerdown", (event) => {
+      if (activeSelectMenu && !activeSelectMenu.menu.contains(event.target) && !activeSelectMenu.trigger.contains(event.target)) closeSelectMenu();
+    });
+    function notify(message) { const toast = $("#toast"); toast.textContent = message; toast.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { toast.hidden = true; }, 3500); }
+    function openDialog(title, html, narrow = false) { closeSelectMenu(); $("#dialog-title").textContent = title; $("#dialog-content").innerHTML = html; $("#dialog").classList.toggle("narrow", narrow); $("#dialog").classList.toggle("filter-dialog", title === "FILTER"); $("#dialog").classList.toggle("requirement-dialog", title === "Requirement Management"); $("#dialog").classList.toggle("uw-dialog", title === ""); $("#dialog").classList.toggle("uw-guideline-dialog", title === "UW Guidelines"); $("#dialog").classList.toggle("grievance-history-dialog", title === "Grievance History"); $("#dialog").classList.remove("applicant-profile-dialog", "grievance-dialog"); $("#modal-root").hidden = false; document.body.style.overflow = "hidden"; enhanceSelects($("#dialog-content")); $("#dialog-close").focus(); }
+    const grievanceHistoryRows = [{
+      userName: "Premanand Sawant",
+      userRole: "UW",
+      fupCode: "ECG",
+      grievanceRaisedRemark: "ECG graph is blurry",
+      grievanceRaisedDate: "7 Sep 2026",
+      tpaRemarks: "Provided new ECG graph"
+    }];
+    function grievanceHistoryHtml() {
+      const columns = [
+        ["userName", "User Name", "16%"],
+        ["userRole", "User Role", "12%"],
+        ["fupCode", "FUP Code", "12%"],
+        ["grievanceRaisedRemark", "Grievance Raised Remark", "24%"],
+        ["grievanceRaisedDate", "Grievance Raised Date", "18%"],
+        ["tpaRemarks", "TPA Remarks", "18%"]
+      ];
+      const header = columns.map(([, label, width]) => `<th style="width:${width}">${escapeHtml(label)}</th>`).join("");
+      const body = grievanceHistoryRows.length
+        ? grievanceHistoryRows.map(row => `<tr>${columns.map(([key]) => `<td>${escapeHtml(row[key])}</td>`).join("")}</tr>`).join("")
+        : `<tr><td colspan="${columns.length}" style="text-align:center;padding:12px">No data available</td></tr>`;
+      return `<div class="grievance-history-card"><div class="grievance-history-card-title">Grievance History</div><div style="overflow:auto"><table class="grievance-history-table"><thead><tr>${header}</tr></thead><tbody>${body}</tbody></table></div></div><div class="grievance-history-pagination" aria-label="Grievance History pagination"><button type="button" disabled aria-label="Go to previous page">‹</button><button type="button" class="selected" disabled aria-current="page">1</button><button type="button" disabled aria-label="Go to next page">›</button></div>`;
+    }
+    $("#grievance-history-button").addEventListener("click", () => openDialog("Grievance History", grievanceHistoryHtml()));
+    function closeDialog() { if (returnToRequirements) { returnToRequirements = false; openRequirements(); return; } closeSelectMenu(); $("#modal-root").hidden = true; document.body.style.overflow = ""; }
+    $("#dialog-close").addEventListener("click", closeDialog);
+    $("#modal-root").addEventListener("click", (event) => { if (event.target.id === "modal-root") closeDialog(); });
+    document.addEventListener("keydown", (event) => { if (event.key === "Escape") { if (activeSelectMenu) { closeSelectMenu(); return; } closeDialog(); $("#quick-panel").hidden = true; $("#quick-fab").classList.remove("open"); } });
+    enhanceSelects(document);
+
+    const grievanceState = { selected: new Set(), remarks: {} };
+    const medicalGrievanceRows = () => requirements.filter((row) => ["medical", "medicals"].includes(String(row.category || "").trim().toLowerCase()));
+
+    function grievanceTableHtml(errorMessage = "") {
+      const rows = medicalGrievanceRows();
+      const allSelected = rows.length > 0 && rows.every((row) => grievanceState.selected.has(String(row.requirementId)));
+      const body = rows.length ? rows.map((row) => {
+        const id = String(row.requirementId);
+        const selected = grievanceState.selected.has(id);
+        const remarks = grievanceState.remarks[id] || "";
+        return `<tr><td><input type="checkbox" data-grievance-row="${escapeHtml(id)}" ${selected ? "checked" : ""} aria-label="Select requirement ${escapeHtml(id)}"></td><td>${escapeHtml(displayValue(row.fupCode))}</td><td>${escapeHtml(displayValue(row.profile))}</td><td><input class="grievance-remarks" data-grievance-remarks="${escapeHtml(id)}" maxlength="1000" value="${escapeHtml(remarks)}" placeholder="Enter remarks..."><span class="grievance-helper">Remarks are mandatory.</span></td></tr>`;
+      }).join("") : '<tr><td colspan="4" style="padding:12px;text-align:center">No data available</td></tr>';
+      return `<div class="grievance-wrap"><section class="grievance-table-card"><div class="grievance-table-title">Medical Requirements</div><table class="grievance-table"><thead><tr><th style="width:5%"><input id="grievance-select-all" type="checkbox" ${allSelected ? "checked" : ""} aria-label="Select all requirements"></th><th style="width:20%">FUP Code</th><th style="width:20%">Profile</th><th style="width:30%">Remarks By User *</th></tr></thead><tbody>${body}</tbody></table></section><p class="grievance-error" id="grievance-error">${escapeHtml(errorMessage)}</p><div class="grievance-actions"><button class="contained" id="raise-grievance-submit" type="button" ${rows.length ? "" : "disabled"}>Raise Grievance</button></div></div>`;
+    }
+
+    function openRaiseGrievance() { openDialog("Raise Grievance", grievanceTableHtml()); $("#dialog").classList.add("grievance-dialog"); }
+    function showRaiseGrievanceConfirmation() {
+      const selectedRows = medicalGrievanceRows().filter((row) => grievanceState.selected.has(String(row.requirementId)));
+      if (!selectedRows.length) { $("#grievance-error").textContent = "Please select at least one requirement."; return; }
+      const missingRemarks = selectedRows.filter((row) => !(grievanceState.remarks[String(row.requirementId)] || "").trim());
+      document.querySelectorAll("[data-grievance-remarks]").forEach((input) => { const hasError = missingRemarks.some((row) => String(row.requirementId) === input.dataset.grievanceRemarks); input.classList.toggle("error", hasError); input.nextElementSibling?.classList.toggle("show", hasError); });
+      if (missingRemarks.length) { $("#grievance-error").textContent = "Remarks By User is mandatory for every selected requirement."; return; }
+      openDialog("Confirm Raise Grievance", '<p class="grievance-confirm-text">Do you want to raise a grievance for the selected requirement(s)?</p><div class="grievance-confirm-actions"><button class="grievance-cancel" id="grievance-cancel" type="button">Cancel</button><button class="contained" id="grievance-confirm" type="button">Yes, Raise Grievance</button></div>', true);
+    }
+    $("#dialog-content").addEventListener("change", (event) => {
+      if (event.target.id === "grievance-select-all") { grievanceState.selected = event.target.checked ? new Set(medicalGrievanceRows().map((row) => String(row.requirementId))) : new Set(); openRaiseGrievance(); return; }
+      if (event.target.dataset.grievanceRow !== undefined) { const id = event.target.dataset.grievanceRow; event.target.checked ? grievanceState.selected.add(id) : grievanceState.selected.delete(id); const selectAll = $("#grievance-select-all"); if (selectAll) selectAll.checked = medicalGrievanceRows().every((row) => grievanceState.selected.has(String(row.requirementId))); }
+    });
+    $("#dialog-content").addEventListener("input", (event) => { if (event.target.dataset.grievanceRemarks === undefined) return; grievanceState.remarks[event.target.dataset.grievanceRemarks] = event.target.value; if (event.target.value.trim()) { event.target.classList.remove("error"); event.target.nextElementSibling?.classList.remove("show"); } });
+    $("#dialog-content").addEventListener("click", (event) => {
+      if (event.target.id === "raise-grievance-submit") showRaiseGrievanceConfirmation();
+      if (event.target.id === "grievance-cancel") openRaiseGrievance();
+      if (event.target.id === "grievance-confirm") { grievanceState.selected.clear(); grievanceState.remarks = {}; closeDialog(); notify("Grievance raised successfully."); }
+    });
+
+    function renderStatusChips() {
+      $("#status-chips").innerHTML = statuses.map((status) => {
+        const count = status === "All" ? requirements.length : requirements.filter((row) => row.status.toLowerCase() === status.toLowerCase()).length;
+        return `<button type="button" class="status-chip ${status.toLowerCase()} ${currentFilter === status ? "active" : ""}" data-filter="${status}" aria-pressed="${currentFilter === status}">${status} <i>${count}</i></button>`;
+      }).join("");
+    }
+    renderStatusChips();
+    $("#status-chips").addEventListener("click", (event) => { const button = event.target.closest("[data-filter]"); if (button) { currentFilter = button.dataset.filter; tableFilters.status = currentFilter === "All" ? [] : [currentFilter]; page = 1; renderStatusChips(); openRequirements(); } });
+
+    const breRows = [
+      ["BRE Status", "Success", "Success"],
+      ["BRE Decision", "DC", "ST"],
+      ["BRE Remarks", "Product Non Eligible", "Product Non Eligible"],
+      ["BRE Discrepancy", "ACR#OCD#PAN#ADP#AGE#IDM#KYP", "ACR#OCD#PAN#ADP#AGE#IDM#KYP#NYC"],
+      ["BRE Timestamp", "14/08/2026, 1108hrs", "14/08/2026, 1108hrs"]
+    ];
+    $("#bre-detail").addEventListener("click", () => {
+      openDialog("BRE Decision", `<table class="bre-table"><thead><tr><th>BRE</th><th>Initial BRE</th><th>Final BRE</th></tr></thead><tbody>${breRows.map((row) => `<tr>${row.map((cell) => `<td>${escapeHtml(cell)}</td>`).join("")}</tr>`).join("")}</tbody></table>`);
+    });
+    document.querySelectorAll(".open-bre").forEach((button) => button.addEventListener("click", () => $("#bre-detail").click()));
+    $("#bre-refresh").addEventListener("click", () => { });
+
+    function filteredRequirements() {
+      return requirements.filter((row) => {
+        return Object.entries(tableFilters).every(([field, values]) => values.length === 0 || values.some((value) => String(value).toLowerCase() === String(row[field] || "").toLowerCase()));
+      }).sort((first, second) => Number(Boolean(second.__new)) - Number(Boolean(first.__new)) || statusPriority.indexOf(first.status) - statusPriority.indexOf(second.status));
+    }
+    function tableStatusChips() {
+      // The table modal exposes the same complete status navigation as the BRE card.
+      return statuses.map((status) => {
+        const count = status === "All" ? requirements.length : requirements.filter((row) => row.status === status).length;
+        const active = status === "All" ? tableFilters.status.length === 0 : tableFilters.status.includes(status);
+        return `<button class="status-chip ${status.toLowerCase()} ${active ? "active" : ""}" data-table-status="${escapeHtml(status)}" aria-pressed="${active}" type="button">${escapeHtml(status)} <i>${count}</i></button>`;
+      }).join("");
+    }
+    const eyeSvg = '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M1.5 10s3.1-5 8.5-5 8.5 5 8.5 5-3.1 5-8.5 5-8.5-5-8.5-5Z" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="10" r="2.4" stroke="currentColor" stroke-width="1.5"/></svg>';
+    const filterSvg = '<svg viewBox="0 0 56 40" fill="none" aria-hidden="true"><path d="M26.94 30.65C26.46 30.65 25.99 30.53 25.55 30.29C24.67 29.8 24.14 28.91 24.14 27.91V22.61C24.14 22.11 23.81 21.36 23.5 20.98L19.76 17.02C19.13 16.39 18.65 15.31 18.65 14.5V12.2C18.65 10.6 19.86 9.35 21.4 9.35H34.6C36.12 9.35 37.35 10.58 37.35 12.1V14.3C37.35 15.35 36.72 16.54 36.13 17.13L31.8 20.96C31.38 21.31 31.05 22.08 31.05 22.7V27C31.05 27.89 30.49 28.92 29.79 29.34L28.41 30.23C27.96 30.51 27.45 30.65 26.94 30.65ZM21.4 10.85C20.7 10.85 20.15 11.44 20.15 12.2V14.5C20.15 14.87 20.45 15.59 20.83 15.97L24.64 19.98C25.15 20.61 25.65 21.66 25.65 22.6V27.9C25.65 28.55 26.1 28.87 26.29 28.97C26.71 29.2 27.22 29.2 27.61 28.96L29 28.07C29.28 27.9 29.56 27.36 29.56 27V22.7C29.56 21.63 30.08 20.45 30.83 19.82L35.11 16.03C35.45 15.69 35.86 14.88 35.86 14.29V12.1C35.86 11.41 35.3 10.85 34.61 10.85H21.4Z" fill="#5D5D5D"/></svg>';
+    function selectHtml(field, row, index) {
+      const options = field === "status" ? ["Pending", "Received", "Accept", "Cancelled", "Reject", "Waived"].filter((status) => status !== "Pending" || row.__new || row.status === "Pending")
+        : field === "team" ? ["COPS", "UW"]
+          : field === "profile" ? ["lifeassured1", "lifeassured2"]
+            : [...new Set(requirements.map((item) => item[field]).filter(Boolean))];
+      if (row[field] && !options.includes(row[field])) options.unshift(row[field]);
+      const sequence = ["team", "category", "subCategory", "document", "reason", "fupCode"];
+      const parent = sequence[sequence.indexOf(field) - 1];
+      const disabled = field === "status" ? row.__new || row.status === "Accept" : field !== "profile" && (options.length === 0 || (parent && !row[parent]));
+      return `<select data-edit="${field}" data-index="${index}" ${disabled ? "disabled" : ""}><option value="" ${!row[field] ? "selected" : ""}>Select</option>${options.map((value) => `<option value="${escapeHtml(value)}" ${row[field] === value ? "selected" : ""}>${escapeHtml(value)}</option>`).join("")}</select>`;
+    }
+    function requirementRowHtml(row, index) {
+      const ordinary = ["ocrStatus", "team", "profile", "category", "subCategory", "document", "reason", "fupCode"]
+        .map((field) => `<div class="req-cell" title="${escapeHtml(row[field] || "")}">${row.__new && field !== "ocrStatus" ? selectHtml(field, row, index) : escapeHtml(displayValue(row[field]))}</div>`).join("");
+      return `<div class="req-grid-row" data-row="${index}">
+        <div class="req-cell center">${row.__new ? `<button class="req-remove" data-delete="${index}" title="Remove requirement" aria-label="Remove requirement" type="button">×</button>` : ""}</div>
+        <div class="req-cell status">${selectHtml("status", row, index)}</div>${ordinary}
+        <div class="req-cell"><input data-edit="extraRemarks" data-index="${index}" placeholder="Optional remarks" aria-label="Extra remarks (optional)" value="${escapeHtml(row.extraRemarks || "")}"></div>
+        <div class="req-cell center"><button class="req-eye" data-description="${index}" title="${escapeHtml(row.description || "No description available")}" aria-label="View Description" type="button" ${!row.description ? "disabled" : ""}>${eyeSvg}</button></div>
+      </div>`;
+    }
+    function requirementTableHtml() {
+      const rows = filteredRequirements();
+      page = Math.min(page, Math.max(1, Math.ceil(rows.length / 5)));
+      const visible = rows.slice((page - 1) * 5, page * 5);
+      const gridStyle = `--req-columns:${columnWidths.map((width) => `${width}fr`).join(" ")}`;
+      const pagination = rows.length > 5 ? `<div class="req-pagination"><button type="button" id="prev-page" ${page === 1 ? "disabled" : ""}>‹</button>${Array.from({ length: Math.ceil(rows.length / 5) }, (_, index) => `<button type="button" class="${page === index + 1 ? "active" : ""}" data-page="${index + 1}">${index + 1}</button>`).join("")}<button type="button" id="next-page" ${page >= Math.ceil(rows.length / 5) ? "disabled" : ""}>›</button></div>` : "<div></div>";
+      return `<div class="req-toolbar"><button class="req-add" id="add-requirement" type="button">Add</button></div>
+        <div class="req-table-wrap"><div class="req-table-inner" style="${gridStyle}">
+          <div class="req-grid-row req-grid-header">${columns.map((name, index) => `<div>${escapeHtml(name)}<span class="req-resizer" data-resize="${index}"></span></div>`).join("")}</div>
+          <div class="req-table-toolbar"><div class="status-chips">${tableStatusChips()}</div><div class="req-toolbar-actions">${Object.values(tableFilters).some((values) => values.length) ? `<button class="req-clear" id="clear-filter" type="button">Clear filters</button>` : ""}<button class="filter-icon" id="table-filter" title="Filter requirements" aria-label="Filter requirements" type="button">${filterSvg}</button></div></div>
+          <div class="req-grid-body">${visible.length ? visible.map((row, index) => requirementRowHtml(row, (page - 1) * 5 + index)).join("") : `<div class="req-empty">No requirements available</div>`}</div>
+        </div></div><div class="req-footer"><div></div>${pagination}<button class="req-save" type="button" id="save-requirements" ${requirements.length ? "" : "disabled"}>Save</button></div>`;
+    }
+    function openRequirements() {
+      returnToRequirements = false;
+      openDialog("Requirement Management", requirementTableHtml());
+    }
+    // Match the source table's draggable adjacent-column resize handles.
+    $("#dialog-content").addEventListener("mousedown", (event) => {
+      const handle = event.target.closest("[data-resize]");
+      if (!handle) return;
+      event.preventDefault();
+      const index = Number(handle.dataset.resize);
+      const adjacent = index === columnWidths.length - 1 ? index - 1 : index + 1;
+      const direction = index === columnWidths.length - 1 ? -1 : 1;
+      const startX = event.clientX;
+      const startWidth = columnWidths[index];
+      const combined = startWidth + columnWidths[adjacent];
+      const move = (moveEvent) => {
+        columnWidths[index] = Math.min(combined - 30, Math.max(30, startWidth + ((moveEvent.clientX - startX) / 6) * direction));
+        columnWidths[adjacent] = combined - columnWidths[index];
+        const inner = $(".req-table-inner");
+        if (inner) inner.style.setProperty("--req-columns", columnWidths.map((width) => `${width}fr`).join(" "));
+      };
+      const stop = () => { document.removeEventListener("mousemove", move); document.removeEventListener("mouseup", stop); };
+      document.addEventListener("mousemove", move);
+      document.addEventListener("mouseup", stop);
+    });
+    const filterLabels = { category: "Category", subCategory: "Sub Category", profile: "Profile", fupCode: "FUP Code", status: "Status" };
+    function filterDialogHtml() {
+      const values = [...new Set(requirements.map((row) => row[selectedFilterField]).filter(Boolean))].sort((first, second) => first.localeCompare(second, undefined, { sensitivity: "base" }));
+      return `<div class="filter-body"><div class="filter-sidebar">${Object.entries(filterLabels).map(([field, label]) => `<button type="button" data-filter-field="${field}" class="${selectedFilterField === field ? "active" : ""}"><span>${label}</span>${draftFilters[field].length ? `<b>${draftFilters[field].length}</b>` : ""}</button>`).join("")}</div><div class="filter-options">${values.length ? values.map((value) => `<label><input type="checkbox" data-filter-value="${escapeHtml(value)}" ${draftFilters[selectedFilterField].includes(value) ? "checked" : ""}>${escapeHtml(value)}</label>`).join("") : `<p style="text-align:center;color:#777;font-size:13px">No filter values available</p>`}</div></div><div class="filter-actions"><button type="button" id="filter-clear-all">Clear All</button><button type="button" id="filter-apply">Apply</button></div>`;
+    }
+    function openFilterDialog() { returnToRequirements = true; openDialog("FILTER", filterDialogHtml(), true); }
+    $("#dialog-content").addEventListener("click", (event) => {
+      const target = event.target.closest("button, input") || event.target;
+      if (target.id === "add-requirement") { requirements.unshift({ __new: true, status: "Pending", ocrStatus: "", team: "UW", profile: "", category: "", subCategory: "", document: "", reason: "", fupCode: "", extraRemarks: "", description: "" }); currentFilter = "All"; tableFilters = { category: [], subCategory: [], profile: [], fupCode: [], status: [] }; page = 1; renderStatusChips(); openRequirements(); }
+      if (target.id === "save-requirements") {
+        const required = [["team", "Team"], ["profile", "Profile"], ["category", "Category"], ["subCategory", "Sub Category"], ["document", "Document"], ["reason", "Reason"], ["fupCode", "FUP Code"]];
+        const missing = requirements.filter((row) => row.__new).flatMap((row) => required.filter(([field]) => !row[field]).map(([, label]) => label));
+        if (missing.length) notify(`Please fill required fields: ${[...new Set(missing)].join(", ")}`);
+        else notify("Requirements saved successfully");
+      }
+      if (target.id === "clear-filter") { tableFilters = { category: [], subCategory: [], profile: [], fupCode: [], status: [] }; currentFilter = "All"; page = 1; renderStatusChips(); openRequirements(); }
+      if (target.id === "table-filter") { draftFilters = Object.fromEntries(Object.entries(tableFilters).map(([field, values]) => [field, [...values]])); selectedFilterField = "category"; openFilterDialog(); }
+      if (target.dataset.filterField) { selectedFilterField = target.dataset.filterField; openFilterDialog(); }
+      if (target.id === "filter-clear-all") { draftFilters = { category: [], subCategory: [], profile: [], fupCode: [], status: [] }; openFilterDialog(); }
+      if (target.id === "filter-apply") { tableFilters = Object.fromEntries(Object.entries(draftFilters).map(([field, values]) => [field, [...values]])); currentFilter = tableFilters.status[0] || "All"; page = 1; renderStatusChips(); openRequirements(); }
+      if (target.dataset.tableStatus) { const status = target.dataset.tableStatus; tableFilters.status = status === "All" || tableFilters.status.includes(status) ? [] : [status]; currentFilter = tableFilters.status[0] || "All"; page = 1; renderStatusChips(); openRequirements(); }
+      if (target.dataset.page) { page = Number(target.dataset.page); openRequirements(); }
+      if (target.id === "prev-page" && page > 1) { page--; openRequirements(); }
+      if (target.id === "next-page" && page < Math.ceil(filteredRequirements().length / 5)) { page++; openRequirements(); }
+      if (target.dataset.delete !== undefined) { const row = filteredRequirements()[Number(target.dataset.delete)]; const index = requirements.indexOf(row); if (index >= 0) requirements.splice(index, 1); renderStatusChips(); openRequirements(); }
+      if (target.dataset.description !== undefined) { const row = filteredRequirements()[Number(target.dataset.description)]; if (row?.description) { returnToRequirements = true; openDialog("Description", `<p class="req-description">${escapeHtml(row.description)}</p>`, true); } }
+    });
+    $("#dialog-content").addEventListener("change", (event) => {
+      const value = event.target.dataset.filterValue;
+      if (value === undefined) return;
+      const selected = draftFilters[selectedFilterField];
+      draftFilters[selectedFilterField] = event.target.checked ? [...selected, value] : selected.filter((entry) => entry !== value);
+      openFilterDialog();
+    });
+    $("#dialog-content").addEventListener("change", (event) => {
+      const field = event.target.dataset.edit;
+      if (!field || field === "extraRemarks") return;
+      const row = filteredRequirements()[Number(event.target.dataset.index)];
+      if (!row) return;
+      row[field] = event.target.value;
+      const sequence = ["team", "category", "subCategory", "document", "reason", "fupCode"];
+      const changedIndex = sequence.indexOf(field);
+      if (row.__new && changedIndex >= 0) sequence.slice(changedIndex + 1).forEach((nextField) => { row[nextField] = ""; });
+      renderStatusChips();
+      openRequirements();
+    });
+    $("#dialog-content").addEventListener("input", (event) => { if (event.target.dataset.edit !== "extraRemarks") return; const row = filteredRequirements()[Number(event.target.dataset.index)]; if (row) row.extraRemarks = event.target.value; });
+
+    function updateClearUwOption() {
+      const select = $("#uw-select");
+      const existing = select.querySelector('option[value="__CLEAR_CASE_UW_DECISION__"]');
+      if (select.value && select.value !== "__CLEAR_CASE_UW_DECISION__" && !existing) select.add(new Option("Clear Case UW Decision", "__CLEAR_CASE_UW_DECISION__"), 1);
+      else if (!select.value && existing) existing.remove();
+    }
+    function counterOfferHtml() {
+      const rows = [
+        ["iProtect Smart", "Life Assured", "₹50,00,000", "20", "15", "—", "₹24,600"],
+        ["Accidental Death Rider", "Life Assured", "₹10,00,000", "20", "15", "—", "₹1,250"]
+      ];
+      const options = (items, placeholder = "Select") => `<option value="">${placeholder}</option>${items.map(item => `<option>${item}</option>`).join("")}`;
+      return `<div class="counter-offer-layout"><h3 class="counter-offer-title">Counter Offer Details</h3><div class="counter-offer-wrap"><table class="counter-offer-table"><thead><tr><th></th><th>Profile</th><th>Applied SA</th><th>Changed SA</th><th>PT</th><th>New PT</th><th>PPT</th><th>New PPT</th><th>EMR Class</th><th>EMR Reasons</th><th>FE Class</th><th>FE Reasons</th><th>Code</th><th>Premium Collected</th><th>Revised Premium</th><th>Reasons</th></tr></thead><tbody>${rows.map(row => `<tr><td><b>${row[0]}</b></td><td><input value="${row[1]}" disabled></td><td><input value="${row[2]}" disabled></td><td><input inputmode="numeric" placeholder="Enter SA"></td><td><input value="${row[3]}" disabled></td><td><input inputmode="numeric" placeholder="Enter PT"></td><td><input value="${row[4]}" disabled></td><td><input inputmode="numeric" placeholder="Enter PPT"></td><td><select>${options(["Standard", "Extra Mortality Rating", "Decline"])}</select></td><td><select>${options(["Medical", "Financial", "Other"], "Select reason")}</select></td><td><select>${options(["Standard", "Financial Extra", "Not Applicable"])}</select></td><td><select>${options(["Medical", "Financial", "Other"], "Select reason")}</select></td><td><select>${options(["CO01", "CO02", "CO03"])}</select></td><td><input value="${row[5]}" disabled></td><td><input value="${row[6]}" disabled></td><td><input placeholder="Enter reasons"></td></tr>`).join("")}</tbody></table></div><button id="counter-offer-save" class="contained dialog-save" type="button">Save</button></div>`;
+    }
+    function reinsurerHtml() {
+      const documents = ["Report 1", "Report 2", "Report 3", "Report 4", "Report 5"];
+      const reinsurers = ["Reinsurer 1", "Reinsurer 2", "Reinsurer 3", "Reinsurer 4"];
+      return `<div class="reinsurer-layout"><div class="reinsurer-section"><div class="reinsurer-select-panel"><h3>Select Reinsurers</h3><div class="reinsurer-grid"><label><span class="field-label">Reinsurer 1</span><input value="Swiss Re" disabled></label><label><span class="field-label">Reinsurer 2</span><input value="Munich Re" disabled></label><label><span class="field-label">Reinsurer 3</span><input value="SCOR Re" disabled></label><label><span class="field-label">Reinsurer 4</span><select id="reinsurer-four"><option value="">Select</option><option>RGA Reinsurance</option><option>Hannover Re</option><option>Gen Re</option></select></label></div></div><div class="assignment-card"><div class="assignment-title">Assign Documents</div><table class="assignment-table"><thead><tr><th>Document name</th>${reinsurers.map((name, index) => `<th>${name}<button class="select-all" type="button" data-select-all="${index}">(Select All)</button></th>`).join("")}</tr></thead><tbody>${documents.map((document, row) => `<tr><td>${document}</td>${reinsurers.map((_, column) => `<td><input type="checkbox" data-doc-column="${column}" ${[[0, 0], [1, 2], [2, 1], [3, 3], [4, 2]].some(([r, c]) => r === row && c === column) ? "checked" : ""}></td>`).join("")}</tr>`).join("")}</tbody></table><div class="upload-disabled" aria-disabled="true"><b>+</b><span>Upload and assign referral sheet</span></div></div><label style="display:block;margin-top:20px"><span class="field-label">Remarks</span><textarea id="reinsurer-remarks" rows="3" placeholder="Add remarks..."></textarea></label><div class="reinsurer-actions"><button id="generate-referral" class="outline-pill" type="button">Generate Referral Sheet</button><button id="email-reinsurers" class="contained" type="button">Email to Reinsurers</button></div></div></div>`;
+    }
+    // State is kept outside the dialog markup because the dependent approver fields
+    // are redrawn whenever the referral purpose, approver role or 1st UW decision changes.
+    const approverDecisionState = { purpose: "counterSign", approver: "", name: "", reason: "", firstDecision: "" };
+    const referralDecisionState = { firstDecision: "", parallelDecision: "" };
+    function renderUwDialogFields() {
+      const decision = $("#dialog-uw-select").value;
+      const selectedApprover = decision === "REF_SR_UW" ? "Sr UW" : decision === "REF_HOD" ? "HOD" : "";
+      if (selectedApprover) approverDecisionState.approver = selectedApprover;
+      const effectiveDecision = selectedApprover ? "__REFER_TO_APPROVER__" : decision;
+      const terminal = new Set(["STD", "BOR_STD", "REJ", "DC", "POSTP", "CO"]);
+      const field = (label, input) => `<div><label class="field-label">${label}</label>${input}</div>`;
+      const textInput = (id, placeholder, disabled = false) => `<input class="text-input" id="${id}" placeholder="${placeholder}" ${disabled ? "disabled" : ""}>`;
+      const selectInput = (id, options, selected = "", placeholder = "Select") => `<select class="select" id="${id}"><option value="">${placeholder}</option>${options.map(option => {
+        const value = Array.isArray(option) ? option[0] : option;
+        const label = Array.isArray(option) ? option[1] : option;
+        return `<option value="${value}" ${selected === value ? "selected" : ""}>${label}</option>`;
+      }).join("")}</select>`;
+      const medicalReasons = [["1404", "High than normal level of sugar as per Hemoglobin A1c test"], ["1621", "Glycosuria(Presence of sugar in Urine)"], ["1906", "Cancer"]];
+      const nonMedicalReasons = [["5007", "High risk occupation"], ["5021", "Not eligible as per Internal evaluation criteria"], ["3001", "Risk Finding"]];
+      const allReasons = [...medicalReasons, ...nonMedicalReasons];
+      const firstDecisionOptions = [["STD", "Standard"], ["BOR_STD", "Borderline Standard"], ["REJ", "Reject"], ["DC", "Decline"], ["POSTP", "Postpone"], ["CO", "Counter Offer"]];
+      const parallelOptions = [["RAISE_AMR", "Raise AMR (Medical/Non-Medical)"], ["REF_CMO", "Refer to HO CMO"], ["REF_RSK", "Refer to Risk"], ["REF_ACU", "Refer to Accuity"], ["TEL_MER", "Tele MER/ Video MER"], ["NONE", "None"]];
+      let fields = "";
+      if (effectiveDecision && effectiveDecision !== "AMR" && effectiveDecision !== "__REFER_TO_APPROVER__") fields += field("Outlier", textInput("uwOutlier", "Enter outlier"));
+      if (terminal.has(effectiveDecision)) fields += field("Decision Code", `<input class="text-input" value="${effectiveDecision}" disabled>`);
+      if (effectiveDecision === "STD") fields += field("Smoker Status", `<input class="text-input" value="Non Smoker" disabled>`);
+      if (effectiveDecision === "REJ") fields += field("Reject Reason", selectInput("uwReason", nonMedicalReasons));
+      if (effectiveDecision === "BOR_STD") fields += field("Borderline Standard Reason", selectInput("uwReason", allReasons));
+      if (effectiveDecision === "DC") fields += field("Decline Reason", selectInput("uwReason", allReasons));
+      if (effectiveDecision === "POSTP") fields += field("Postpone Reason", selectInput("uwReason", allReasons)) + field("Postponement Period", selectInput("uwPostponementPeriod", [["1_MONTH", "1 Month"], ["3_MONTHS", "3 Months"], ["6_MONTHS", "6 Months"], ["9_MONTHS", "9 Months"], ["1_YEAR", "1 Year"], ["2_YEARS", "2 Years"], ["3_YEARS", "3 Years"]]));
+      if (effectiveDecision === "CO") fields += field("Counter Offer Reason", selectInput("uwReason", allReasons)) + counterOfferHtml();
+      if (effectiveDecision === "HOLD") fields += field("Hold Reasons", selectInput("uwReason", [["IT_ISSUE", "IT issue"], ["SR_UW_OPINION", "Sr.UW opinion pending"], ["OTHER", "Other"]]));
+      if (effectiveDecision === "__REFER_TO_APPROVER__") {
+        const isHod = approverDecisionState.approver === "HOD";
+        const isSrUw = approverDecisionState.approver === "Sr UW";
+        const reasonLabel = isSrUw ? "Sr UW Reasons" : "HOD Reasons";
+        const firstDecision = approverDecisionState.firstDecision;
+        const firstDecisionLabels = { STD: "Standard", BOR_STD: "Borderline Standard", REJ: "Reject", DC: "Decline", POSTP: "Postpone", CO: "Counter Offer" };
+        const reasonOptions = approverDecisionState.purpose === "opinion"
+          ? [["MED_OP", "Medical Opinion"]]
+          : isSrUw ? [["ABV_CASE", "Above Limit Case"]] : [["PEP_CASE", "PEP Case"]];
+        const selectedOptions = (options, selected, placeholder = "Select") => `<select class="select" id="${selected.id}"><option value="">${placeholder}</option>${options.map(({ value, label }) => `<option value="${value}" ${selected.value === value ? "selected" : ""}>${label}</option>`).join("")}</select>`;
+        fields += field("Referral purpose", `<label style="font-size:11px"><input type="radio" name="referralPurpose" value="counterSign" ${approverDecisionState.purpose === "counterSign" ? "checked" : ""}> Counter Sign</label> <label style="font-size:11px"><input type="radio" name="referralPurpose" value="opinion" ${approverDecisionState.purpose === "opinion" ? "checked" : ""}> Opinion</label>`);
+        if (isHod || isSrUw) {
+          fields += field(isSrUw ? "Name of Sr.UW" : "Name of HoD", selectInput("uwApproverName", isSrUw ? [["sruw.user1", "Sr UW User 1"], ["sruw.user2", "Sr UW User 2"]] : [["hod.user1", "HoD User 1"], ["hod.user2", "HoD User 2"]], approverDecisionState.name, "Select user"));
+          fields += field("Outlier", textInput("uwOutlier", "Enter outlier"));
+          fields += field(reasonLabel, selectInput("uwApproverReason", reasonOptions, approverDecisionState.reason, `Select ${reasonLabel}`));
+          fields += field("1st UW Decision", selectedOptions(Object.entries(firstDecisionLabels).map(([value, label]) => ({ value, label })), { id: "uwFirstDecision", value: firstDecision }, "Select"));
+          if (firstDecision) fields += field("Decision Code", `<input class="text-input" value="${firstDecision}" disabled>`);
+          if (firstDecision === "STD") fields += field("Smoker Status", `<input class="text-input" value="Non Smoker" disabled>`);
+          if (firstDecision === "REJ") fields += field("Reject Reason", selectInput("uwFirstDecisionReason", nonMedicalReasons));
+          if (firstDecision === "BOR_STD") fields += field("Borderline Standard Reason", selectInput("uwFirstDecisionReason", allReasons));
+          if (firstDecision === "DC") fields += field("Decline Reason", selectInput("uwFirstDecisionReason", allReasons));
+          if (firstDecision === "CO") fields += field("Counter Offer Reason", selectInput("uwFirstDecisionReason", allReasons));
+          if (firstDecision === "POSTP") fields += field("Postpone Reason", selectInput("uwFirstDecisionReason", allReasons)) + field("Postponement Period", selectInput("uwFirstPostponementPeriod", [["1_MONTH", "1 Month"], ["3_MONTHS", "3 Months"], ["6_MONTHS", "6 Months"], ["9_MONTHS", "9 Months"], ["1_YEAR", "1 Year"], ["2_YEARS", "2 Years"], ["3_YEARS", "3 Years"]]));
+          if (firstDecision === "CO") fields += counterOfferHtml();
+        }
+      }
+      if (effectiveDecision === "REF_RISK") fields += field("Risk Referral Reasons", selectInput("uwReferralReason", [["ADV_PROFILE", "Adverse Profile"], ["NEG_PINCODE", "Negative Pincode"], ["ADV_AGENT", "Adverse Agent"], ["ADV_BRANCH", "Adverse Branch"], ["DRC_ADV", "DRC Adverse"], ["IIB_ADV", "IIB Adverse"], ["PTRL_ADV", "PTRL Adverse"], ["BRE_REQ", "BRE Requirement"]]));
+      if (effectiveDecision === "REF_REINS") fields += field("Reinsurer Referral reasons", selectInput("uwReferralReason", [["MED", "Medical"], ["FIN", "Financial"], ["RES", "Residential"], ["EXCEPTION", "Exception"], ["FAC", "Facultative"]]));
+      if (effectiveDecision === "REF_CMO") fields += field("Name of HO CMO", selectInput("uwReferralUser", [["cmo.user1", "HO CMO User 1"], ["cmo.user2", "HO CMO User 2"]], "", "Select user"));
+      if (["REF_CMO", "REF_RISK", "REF_ACU"].includes(effectiveDecision)) {
+        const filteredParallelOptions = parallelOptions.filter(([, label]) => !(effectiveDecision === "REF_CMO" && label === "Refer to HO CMO") && !(effectiveDecision === "REF_RISK" && label === "Refer to Risk") && !(effectiveDecision === "REF_ACU" && label === "Refer to Accuity"));
+        fields += field("Parallel UW Decision", selectInput("uwParallelDecision", filteredParallelOptions, referralDecisionState.parallelDecision));
+        if (referralDecisionState.parallelDecision === "REF_CMO") fields += field("Name of HO CMO", selectInput("uwParallelReferralValue", [["cmo.user1", "HO CMO User 1"], ["cmo.user2", "HO CMO User 2"]], "", "Select value"));
+        if (referralDecisionState.parallelDecision === "REF_RSK") fields += field("Risk Referral Reasons", selectInput("uwParallelReferralValue", [["ADV_PROFILE", "Adverse Profile"], ["NEG_PINCODE", "Negative Pincode"], ["ADV_AGENT", "Adverse Agent"], ["ADV_BRANCH", "Adverse Branch"], ["DRC_ADV", "DRC Adverse"], ["IIB_ADV", "IIB Adverse"], ["PTRL_ADV", "PTRL Adverse"], ["BRE_REQ", "BRE Requirement"]]));
+      }
+      if (["REF_REINS", "REF_CMO", "REF_RISK", "REF_ACU"].includes(effectiveDecision)) {
+        fields += field("1st UW Decision", selectInput("uwReferralFirstDecision", firstDecisionOptions, referralDecisionState.firstDecision));
+        if (referralDecisionState.firstDecision) fields += field("Decision Code", `<input class="text-input" value="${referralDecisionState.firstDecision}" disabled>`);
+        if (referralDecisionState.firstDecision === "STD") fields += field("Smoker Status", `<input class="text-input" value="Non Smoker" disabled>`);
+        if (referralDecisionState.firstDecision === "REJ") fields += field("Reject Reason", selectInput("uwReferralFirstReason", nonMedicalReasons));
+        if (referralDecisionState.firstDecision === "BOR_STD") fields += field("Borderline Standard Reason", selectInput("uwReferralFirstReason", allReasons));
+        if (referralDecisionState.firstDecision === "DC") fields += field("Decline Reason", selectInput("uwReferralFirstReason", allReasons));
+        if (referralDecisionState.firstDecision === "CO") fields += field("Counter Offer Reason", selectInput("uwReferralFirstReason", allReasons));
+        if (referralDecisionState.firstDecision === "POSTP") fields += field("Postpone Reason", selectInput("uwReferralFirstReason", allReasons)) + field("Postponement Period", selectInput("uwReferralPostponementPeriod", [["1_MONTH", "1 Month"], ["3_MONTHS", "3 Months"], ["6_MONTHS", "6 Months"], ["9_MONTHS", "9 Months"], ["1_YEAR", "1 Year"], ["2_YEARS", "2 Years"], ["3_YEARS", "3 Years"]]));
+        if (referralDecisionState.firstDecision === "CO") fields += counterOfferHtml();
+      }
+      if (effectiveDecision === "REF_REINS") fields += reinsurerHtml();
+      $("#uw-dialog-details").innerHTML = fields;
+      enhanceSelects($("#uw-dialog-details"));
+    }
+    let syncingUwDecision = false;
+    $("#uw-select").addEventListener("change", (event) => {
+      if (syncingUwDecision) return;
+      if (event.target.value === "__CLEAR_CASE_UW_DECISION__") { event.target.value = ""; updateClearUwOption(); return; }
+      const decision = event.target.value;
+      if (!decision) return;
+      approverDecisionState.purpose = "counterSign";
+      approverDecisionState.approver = "";
+      approverDecisionState.name = "";
+      approverDecisionState.reason = "";
+      approverDecisionState.firstDecision = "";
+      referralDecisionState.firstDecision = "";
+      updateClearUwOption();
+      openDialog("", `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px"><label><span class="field-label">UW Remarks</span><textarea id="uw-remarks" class="text-input" rows="3" maxlength="10000" placeholder="Enter remarks..."></textarea><small id="remarks-count">0/10000</small></label><label><span class="field-label">Case UW Decision</span><select class="select" id="dialog-uw-select">${event.target.innerHTML}</select></label></div><div id="uw-dialog-details" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:12px"></div><div style="text-align:center;margin-top:16px"><button id="uw-submit" class="contained" type="button">Submit</button></div>`);
+      $("#dialog-uw-select").value = decision;
+      $("#dialog-uw-select").dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    $("#dialog-content").addEventListener("change", (event) => {
+      if (event.target.name === "referralPurpose") {
+        approverDecisionState.purpose = event.target.value;
+        approverDecisionState.reason = "";
+        renderUwDialogFields();
+        return;
+      }
+      if (event.target.id === "uwApprover") {
+        approverDecisionState.approver = event.target.value;
+        approverDecisionState.name = "";
+        approverDecisionState.reason = "";
+        approverDecisionState.firstDecision = "";
+        renderUwDialogFields();
+        return;
+      }
+      if (event.target.id === "uwApproverName") {
+        approverDecisionState.name = event.target.value;
+        return;
+      }
+      if (event.target.id === "uwApproverReason") {
+        approverDecisionState.reason = event.target.value;
+        return;
+      }
+      if (event.target.id === "uwFirstDecision") {
+        approverDecisionState.firstDecision = event.target.value;
+        renderUwDialogFields();
+        return;
+      }
+      if (event.target.id === "uwReferralFirstDecision") {
+        referralDecisionState.firstDecision = event.target.value;
+        renderUwDialogFields();
+        return;
+      }
+      if (event.target.id === "uwParallelDecision") {
+        referralDecisionState.parallelDecision = event.target.value;
+        renderUwDialogFields();
+        return;
+      }
+      if (event.target.id === "uwReferralTarget") { renderUwDialogFields(); return; }
+      if (event.target.id !== "dialog-uw-select") return;
+      const clear = event.target.value === "__CLEAR_CASE_UW_DECISION__";
+      $("#uw-select").value = clear ? "" : event.target.value;
+      updateClearUwOption();
+      if (clear) { closeDialog(); return; }
+      approverDecisionState.approver = "";
+      approverDecisionState.name = "";
+      approverDecisionState.reason = "";
+      approverDecisionState.firstDecision = "";
+      referralDecisionState.firstDecision = "";
+      referralDecisionState.parallelDecision = "";
+      renderUwDialogFields();
+    });
+    $("#dialog-content").addEventListener("click", (event) => {
+      const selectAllColumn = event.target.dataset.selectAll;
+      if (selectAllColumn !== undefined) {
+        const checkboxes = [...document.querySelectorAll(`[data-doc-column="${selectAllColumn}"]`)];
+        const shouldSelect = checkboxes.some((checkbox) => !checkbox.checked);
+        checkboxes.forEach((checkbox) => { checkbox.checked = shouldSelect; });
+        return;
+      }
+      if (event.target.id === "counter-offer-save") { notify("Counter offer details saved successfully"); return; }
+      if (event.target.id === "generate-referral") {
+        const remarks = $("#reinsurer-remarks")?.value.trim();
+        if (!remarks) { notify("Please add remarks before generating the referral sheet"); return; }
+        notify("Referral sheet generated successfully");
+        return;
+      }
+      if (event.target.id === "email-reinsurers") {
+        const remarks = $("#reinsurer-remarks")?.value.trim();
+        if (!remarks) { notify("Please add remarks before emailing reinsurers"); return; }
+        openDialog("Email Preview", `<div class="email-viewer">Email Viewer</div>`, true);
+      }
+    });
+    const claimAuditRows = [
+      ["POL-2026-001845", "IPRU123", "CLM-000783", "CAN-874152", "Rohan Mehta", "Acute Myocardial Infarction", "Death", "Natural", "18/08/2026", "20/08/2026", "22/08/2026", "Approved"],
+      ["POL-2026-002196", "IPRU456", "CLM-000921", "CAN-874338", "Nisha Kapoor", "Chronic Kidney Disease", "Critical Illness", "Medical", "02/09/2026", "04/09/2026", "-", "Under Review"],
+      ["POL-2026-002418", "IPRU789", "CLM-001038", "CAN-874519", "Amit Verma", "Road Traffic Accident", "Accidental", "Hospitalization", "12/09/2026", "12/09/2026", "-", "Approved"]
+    ];
+    const specialRemarksRows = [
+      ["Medical documents require verification before the final decision.", "07/09/2026 11:36:09", "ipru75474"],
+      ["Customer was contacted for additional financial information.", "07/09/2026 10:52:41", "CUW Team"],
+      ["Previous claim history reviewed and no adverse concern identified.", "08/09/2026 09:18:27", "DRS Reviewer"]
+    ];
+    $("#claim-audit").addEventListener("click", () => {
+      const headers = ["Action", "Policy Number", "Product Code", "Claim Key", "Canonical ID", "Patient Name", "Ailment for Communication", "Claim Type", "Subtype", "Intimation Date", "DOA", "DOD", "Decision Status"];
+      const table = `<div style="overflow:auto"><table class="claim-audit-table"><thead><tr>${headers.map((header) => `<th>${escapeHtml(header)}</th>`).join("")}</tr></thead><tbody>${claimAuditRows.map((row) => `<tr><td><button class="table-validate-btn" type="button">Validate</button></td>${row.map((cell, index) => `<td>${index === 11 ? `<span class="audit-status">${escapeHtml(cell)}</span>` : escapeHtml(cell)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+      openDialog("Claim Audit", table);
+    });
+    $("#uw-guidelines").addEventListener("click", () => openDialog("UW Guidelines", uwGuidelinesHtml()));
+    $("#special-remarks").addEventListener("click", () => {
+      const headers = ["Comments", "Updated Date", "Updated By", "Action"];
+      const table = `<div style="overflow:auto"><table class="special-remarks-table"><thead><tr>${headers.map((header) => `<th>${escapeHtml(header)}</th>`).join("")}</tr></thead><tbody>${specialRemarksRows.map((row) => `<tr>${row.map((cell) => `<td>${escapeHtml(cell)}</td>`).join("")}<td><button class="table-validate-btn" type="button">Validate</button></td></tr>`).join("")}</tbody></table></div>`;
+      openDialog("Special Remarks", table);
+    });
+    $("#dialog-content").addEventListener("input", (event) => { if (event.target.id === "uw-remarks") $("#remarks-count").textContent = `${event.target.value.length}/10000`; });
+    function uwGuidelinesHtml() {
+      const rows = [
+        ["Income document waived or not received", "Income document waived or not raised. Please provide justification", ""],
+        ["Medical requirement waived or not received", "Medical document waived or not raised. Please provide justification", ""],
+        ["Financially not viable", "Justification required as financial eligibility is less than TFSA", ""],
+        ["DRC Risk Blank or Null Risk", "DRC Risk value is Blank or Null Risk — kindly take counter signing", "REFER_TO_CS"],
+        ["TSA above your UW limit", "Case above your underwriting limit, please take counter signing", "REFER_TO_CS"],
+        ["Application form validity expired", "Please call for fresh medical questionnaire", "REFER_TO_HOD"],
+        ["BIU model response field is blank", "BIU models predict response is blank — cannot take STD, XRT or COF decision. Kindly get the BIU response", ""]
+      ];
+      const reasons = ["", "Requirement waived", "Document pending", "Financial assessment", "Medical assessment", "Counter signing", "Other"];
+      return `<p class="uw-guideline-intro">Select a justification reason to enable its remarks field. Remarks are mandatory for every selected reason.</p><div class="uw-guideline-table-wrap"><table class="uw-guideline-table"><thead><tr><th>Reason</th><th>Remark</th><th>System Action</th><th>Justification Reason</th><th>Justification Remarks</th></tr></thead><tbody>${rows.map((row, index) => `<tr><td>${escapeHtml(row[0])}</td><td>${escapeHtml(row[1])}</td><td>${escapeHtml(row[2] || "—")}</td><td><select class="select" data-guideline-reason="${index}">${reasons.map(reason => `<option value="${escapeHtml(reason)}">${reason ? escapeHtml(reason) : "Select reason"}</option>`).join("")}</select></td><td><input class="text-input" data-guideline-remark="${index}" placeholder="Select a reason first" disabled></td></tr>`).join("")}</tbody></table></div><div class="uw-guideline-actions"><button id="uw-guideline-back" class="outline-pill" type="button">Back</button><button id="uw-guideline-confirm" class="contained" type="button">Confirm & Submit</button></div>`;
+    }
+    $("#dialog-content").addEventListener("click", (event) => {
+      if (event.target.id !== "uw-submit") return;
+      if (!$("#uw-remarks").value.trim()) { notify("Please enter UW Remarks"); return; }
+      const isApproverReferral = ["REF_SR_UW", "REF_HOD"].includes($("#uw-select").value);
+      if (isApproverReferral && !$("#uwApproverName")?.value) { notify("Please select approver name"); return; }
+      if (isApproverReferral && !approverDecisionState.reason) { notify(`Please select ${approverDecisionState.approver === "Sr UW" ? "Sr UW" : "HOD"} Reasons`); return; }
+      if (isApproverReferral && !approverDecisionState.firstDecision) { notify("Please select 1st UW Decision"); return; }
+      openDialog("UW Guidelines", uwGuidelinesHtml());
+    });
+    $("#dialog-content").addEventListener("click", (event) => {
+      if (event.target.id === "uw-guideline-back") { closeDialog(); return; }
+      if (event.target.id !== "uw-guideline-confirm") return;
+      const incomplete = [...document.querySelectorAll("[data-guideline-reason]")].some((select, index) => Boolean(select.value) !== Boolean(document.querySelector(`[data-guideline-remark="${index}"]`)?.value.trim()));
+      if (incomplete) { notify("Please complete both justification fields for each applicable guideline"); return; }
+      closeDialog();
+      notify("Decision submitted successfully");
+      window.setTimeout(() => { window.location.href = "./landing-prototype.html"; }, 700);
+    });
+    $("#dialog-content").addEventListener("change", (event) => {
+      const index = event.target.dataset.guidelineReason;
+      if (index === undefined) return;
+      const remarks = document.querySelector(`[data-guideline-remark="${index}"]`);
+      if (!remarks) return;
+      remarks.disabled = !event.target.value;
+      remarks.placeholder = event.target.value ? "Add remarks (required)" : "Select a reason first";
+      if (!event.target.value) remarks.value = "";
+    });
+
+    document.querySelectorAll("[data-risk]").forEach((card) => {
+      card.addEventListener("click", (event) => { if (event.target.closest("[data-risk-detail]")) return; if (card.dataset.risk === "medical") window.location.href = "./guw-mr-view-medical.html"; else if (card.dataset.risk === "financial") window.location.href = "./guw-nmr-view-financial.html"; else openOtherRiskDetails(); });
+      card.addEventListener("keydown", (event) => { if (event.key === "Enter" && event.target === card) card.click(); });
+    });
+    document.querySelectorAll("[data-risk-detail]").forEach((button) => button.addEventListener("click", (event) => { event.stopPropagation(); if (button.dataset.riskDetail === "other") openOtherRiskDetails(); else openFinancialOrMedicalRiskDetails(button.dataset.riskDetail); }));
+
+    // ApplicantProfile.tsx is shown inside QuickLinks' titleless CustomDialog.
+    const applicantProfileModal = (() => {
+      const commonMember = {
+        // Image verification can return more than one record for an applicant.
+        faceMatchDetails: [
+          { imageType: "Live photograph", document: "Applicant selfie", faceMatchScore: "98.6%", imageQuality: "Good", remarks: "Face matched successfully" },
+          { imageType: "Identity proof", document: "Aadhaar photograph", faceMatchScore: "96.2%", imageQuality: "Good", remarks: "Image is clear and readable" },
+          { imageType: "Proposal form", document: "Signed proposal image", faceMatchScore: "94.8%", imageQuality: "Acceptable", remarks: "Signature and image verified" }
+        ],
+        proposerSummary: { middleName: "Prakash", lastName: "Sangha", dob: "1988-08-09T00:00", age: { years: 38 }, gender: "Male", maritalStatus: "", nationality: "India", countryOfResidence: "India", education: "Graduate", residentStatus: "IND", designation: "Manager", disabled: "", percentageOfImpairment: "", typeOfImpairment: "", udidNumber: "UDID-98765", udsLink: "" },
+        kycDetails: { pranNo: "123456789012", pranNoVerification: "Verified", panNumber: "", panFlag: "Verified", panAadharSeedingStatus: "Y", identityProofType: "Aadhaar", identityProofExpiryDate: "2099-12-31T00:00", identityProofNumber: "AAAAA1111A", addressProof: "Aadhaar", incomeProof: "Aadhaar", existingCkycNumber: "NA", pep: "No", criminalProceedings: "No" },
+        address: [
+          { type: "communication", addressLine1: "malad", addressLine2: "malad", addressLine3: "", landmark: "prism", city: "mumbai", state: "maharashtra", pinCode: "400064", residingCountry: "" },
+          { type: "permanent", addressLine1: "RFRF", addressLine2: "FGHJK", addressLine3: "FGHJKL", landmark: "", city: "THANE", state: "Maharashtra", pinCode: "400709", residingCountry: "India" }
+        ],
+        contactDetails: { mobileNo: "9878716726", alternateMobileNo: "", std: "", landlineNo: "", emailId: "TRSTR@GMAIL.COM", emailPref: "Y", smsPref: "Y" },
+        applicantFinancialDetails: { occupation: "SPVT", annualIncome: 5000000, gstin: "", industryType: "", organisationType: "PVT", organisationName: "3I INFOTECH" },
+        financialDetails: { annualIncome: 5000000 },
+        healthDetail: { height: "165.1", weight: "67", hazardousOccupation: "", illnessOrImpairment: [], substanceConsumption: [{ substance: "", quantity: { amount: "" } }] },
+        nominee: [{ firstName: "Smit", lastName: "Sangha", dob: "1991-03-12T00:00", gender: "Male", proposerNomineeRelation: "", percentage: 0 }],
+        appointee: [{ firstName: "Shivani", lastName: "Sangha", dob: "1991-03-12T00:00", gender: "Female", relationWithNominee: "" }],
+        genericDetails: { existingPolicyNumber: "NA", clientId: "NA", selfProposed: "Yes", typeOfProposer: "Individual", relationshipWithLifeAssured: "Self", typeOfProposal: "Retail New Business" },
+        productDetails: { topAdvisorFlag: "-", partnerType: "-", benefitOption: "-", policyTerm: "-", premiumPayingTerm: "-", proposerType: "-", annualPremium: "-", sumAssuredToPremiumRatio: "-" },
+        eiaDetails: { openEIA: "No", existingEIANumber: "NA", preferredRepository: "", convertPolicies: "No" },
+        paymentDetails: { isThirdPartyPayment: false },
+        payoutDetails: { accountType: "Savings", bankType: "", branch: "", micrCode: "1234", ifscCode: "ABKV998", accountNumber: "129894543", paymentOptions: "" }
+      };
+      const members = [
+        { ...commonMember, memberType: "lifeassured1", clientId: "NA", proposerSummary: { ...commonMember.proposerSummary, firstName: "Rudra" } },
+        { ...commonMember, memberType: "lifeassured2", clientId: "NA", proposerSummary: { ...commonMember.proposerSummary, firstName: "Akash" } }
+      ];
+      const fullTabs = ["Image Details", "Personal & KYC", "Contact & Address", "Financial & Profession", "Medical & Lifestyle", "Nominee", "Generic", "Product Details", "eIA", "Payment & Payout"];
+      const underwritingTabs = ["Image Details", "Personal & KYC", "Contact & Address", "Nominee", "Generic", "Product Details", "eIA", "Payment & Payout"];
+      const tabsByRole = {
+        CUW_TASK: underwritingTabs,
+        GROUP_CUW_TASK: underwritingTabs,
+        GROUP_CUW_CLAIM_AUDIT_TASK: underwritingTabs,
+        FORMAL_CUW_CLAIM_AUDIT_TASK: underwritingTabs,
+        GROUP_HOD_TASK: underwritingTabs,
+        GROUP_SR_UW_TASK: underwritingTabs,
+        FORMAL_GUW_TASK: underwritingTabs,
+        FORMAL_SR_UW_TASK: underwritingTabs,
+        FORMAL_HOD_TASK: underwritingTabs,
+        CVT_TASK: fullTabs.slice(0, 3).concat("Payment & Payout"),
+        PIVV_TASK: fullTabs.slice(0, 3),
+        DVT_TASK: fullTabs.slice(0, 6),
+        BRE_TASK: fullTabs
+      };
+      const roleFromQuery = new URLSearchParams(location.search).get("role");
+      const roleType = (roleFromQuery || "CUW_TASK").trim().toUpperCase();
+      const tabs = tabsByRole[roleType] || fullTabs;
+      let memberIndex = 0;
+      let detailIndex = 0;
+      const $ = (selector) => document.querySelector(selector);
+      const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
+      const value = (raw) => raw === null || raw === undefined || raw === "" ? "-" : String(raw);
+      const formatDate = (raw) => raw ? new Date(`${String(raw).slice(0, 10)}T00:00:00`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "";
+      const maskLastFour = (raw) => raw ? "X".repeat(Math.max(0, String(raw).length - 4)) + String(raw).slice(-4) : "-";
+      const formatMember = (member) => member.memberType.charAt(0).toUpperCase() + member.memberType.slice(1);
+      const field = (label, raw) => ({ label, value: raw });
+      // GridSection renders empty strings as blank, while null/undefined become a dash.
+      const renderFields = (fields, columns) => `<div class="fields-grid cols-${columns}">${fields.map(({ label, value: raw }) => `<div class="field"><div class="field-label">${escapeHtml(label)}</div><div class="field-value">${escapeHtml(raw === null || raw === undefined ? "-" : raw)}</div></div>`).join("")}</div>`;
+      const card = (title, fields) => `<section class="details-card"><h3>${escapeHtml(title)}</h3><div class="details-card-body">${fields.map(({ label, value: raw }) => { const display = value(raw); const truncate = display !== "-" && display.length > 30; return `<div class="field"><div class="field-label">${escapeHtml(label)}</div><div class="field-value" data-full="${escapeHtml(display)}">${escapeHtml(truncate ? `${display.slice(0, 30)}...` : display)}</div>${truncate ? `<button class="show-more" type="button" data-expanded="false">Show more</button>` : ""}</div>`; }).join("")}</div></section>`;
+      const contentCard = (title, html) => `<section class="content-card"><h2>${escapeHtml(title)}</h2><div class="content-card-body">${html}</div></section>`;
+      function dataTable(title, columns, rows) {
+        return `<section class="data-table-card">${title ? `<h3>${escapeHtml(title)}</h3>` : ""}<table><thead><tr>${columns.map(([label]) => `<th>${escapeHtml(label)}</th>`).join("")}</tr></thead><tbody>${rows.map((row) => `<tr>${columns.map(([, key]) => `<td>${escapeHtml(value(row[key]))}</td>`).join("")}</tr>`).join("")}</tbody></table></section>`;
+      }
+      function keyTable(title, fields) {
+        const triples = [];
+        for (let index = 0; index < fields.length; index += 3) triples.push(fields.slice(index, index + 3));
+        return `<section class="key-table"><h3>${escapeHtml(title)}</h3><table><tbody>${triples.map((triple) => `<tr>${[0, 1, 2].map((index) => `<td class="label">${escapeHtml(triple[index]?.label || "-")}</td><td>${escapeHtml(value(triple[index]?.value))}</td>`).join("")}</tr>`).join("")}</tbody></table></section>`;
+      }
+      function renderContent() {
+        const member = members[memberIndex];
+        const personal = member.proposerSummary;
+        const kyc = member.kycDetails;
+        const tab = tabs[detailIndex];
+        if (tab === "Image Details") {
+          const imageRecords = Array.isArray(member.faceMatchDetails) ? member.faceMatchDetails : [member.faceMatchDetails];
+          return contentCard(tab, `<div class="gray-panel image-details">${dataTable("", [["Image Type", "imageType"], ["Document", "document"], ["Face Match Score", "faceMatchScore"], ["Image Quality", "imageQuality"], ["Remarks", "remarks"]], imageRecords)}</div>`);
+        }
+        if (tab === "Personal & KYC") {
+          const personalFields = [field("Applicant Name", [personal.firstName, personal.middleName, personal.lastName].filter(Boolean).join(" ")), field("Date of Birth", formatDate(personal.dob)), field("Age", `${personal.age.years} Years`), field("Gender", personal.gender), field("Marital Status", personal.maritalStatus), field("Nationality", personal.nationality), field("Country of Residence", personal.countryOfResidence), field("Education", personal.education), field("Resident Status", personal.residentStatus), field("Designation", personal.designation), field("Disabled", personal.disabled), field("Percentage Of Impairment", personal.percentageOfImpairment), field("Type Of Impairment", personal.typeOfImpairment), field("UDID Number", personal.udidNumber), field("UDS Link", personal.udsLink)];
+          const kycFields = [field("PRAN Number", maskLastFour(kyc.pranNo)), field("PRAN Number Verification", kyc.pranNoVerification), field("PAN Number", maskLastFour(kyc.panNumber)), field("PAN Flag", kyc.panFlag), field("PAN Aadhar Seeding Status", kyc.panAadharSeedingStatus), field("Identity Proof Type", kyc.identityProofType), field("Identity Proof Expiry Date", formatDate(kyc.identityProofExpiryDate)), field("Identity Proof Number", maskLastFour(kyc.identityProofNumber)), field("Address Proof", kyc.addressProof), field("Income Proof", kyc.incomeProof), field("CKYC Number", kyc.existingCkycNumber), field("PEP", kyc.pep), field("Criminal Proceedings", kyc.criminalProceedings)];
+          return contentCard(tab, `<div class="gray-panel personal-panel">${renderFields(personalFields, 8)}<hr class="divider">${renderFields(kycFields, 8)}</div>`);
+        }
+        if (tab === "Contact & Address") {
+          const addressFields = (address = {}) => [field("Address Line 1", address.addressLine1), field("Address Line 2", address.addressLine2), field("Address Line 3", address.addressLine3), field("Landmark", address.landmark), field("City", address.city), field("State", address.state), field("Country", address.residingCountry), field("Pincode", address.pinCode)];
+          const communication = member.address.find((address) => address.type === "communication");
+          const permanent = member.address.find((address) => address.type === "permanent");
+          const contact = member.contactDetails;
+          const contactFields = [field("Mobile No.", contact.mobileNo), field("Email ID", contact.emailId), field("Alternate Mobile", contact.alternateMobileNo), field("STD/ISD Code", contact.std || contact.isdCode), field("Landline Number", contact.landlineNo), field("Email Pref", contact.emailPref), field("SMS Pref", contact.smsPref)];
+          return `<div class="cards-grid">${card("Communication Address", addressFields(communication))}${card("Permanent Address", addressFields(permanent))}${card("Contact Details", contactFields)}</div>`;
+        }
+        if (tab === "Financial & Profession") {
+          const financial = member.applicantFinancialDetails;
+          const fields = [field("Occupation", financial.occupation || personal.designation), field("Annual Income", financial.annualIncome === "" ? "-" : `₹ ${Number(financial.annualIncome).toLocaleString("en-IN")}`), field("GSTIN", financial.gstin), field("Industry Type", financial.industryType), field("Organisation Type", financial.organisationType), field("Organisation Name", financial.organisationName)];
+          return contentCard(tab, `<div class="gray-panel finance-panel">${renderFields(fields, 6)}</div>`);
+        }
+        if (tab === "Medical & Lifestyle") {
+          const health = member.healthDetail;
+          const illness = (health.illnessOrImpairment || []).filter(Boolean).join(", ");
+          const healthFields = [field("Height", health.height ? `${health.height} Cms` : "-"), field("Weight", health.weight ? `${health.weight} Kgs` : "-"), field("Other Medical History", illness || "No")];
+          return `<div class="medical-content">${keyTable("Health Information", healthFields)}<div class="medical-spacer"><section class="key-table"><h3>Lifestyle Habits</h3><div class="no-lifestyle">No Lifestyle Habits</div></section></div></div>`;
+        }
+        if (tab === "Nominee") {
+          const nominees = member.nominee.map((item) => ({ nomineeName: [item.firstName, item.lastName].filter(Boolean).join(" "), nomineeDOB: formatDate(item.dob), gender: item.gender, relationship: item.proposerNomineeRelation, sharePercentage: Number(item.percentage || 0) }));
+          const appointees = member.appointee.map((item) => ({ appointeeName: [item.firstName, item.lastName].filter(Boolean).join(" "), appointeeGender: item.gender, appointeeDOB: formatDate(item.dob), appointeeRelationship: item.relationWithNominee }));
+          if (!nominees.length && !appointees.length) return `<span class="empty-nominee">No nominees have been selected</span>`;
+          return `<div class="nominee-content">${nominees.length ? dataTable("Nominee Details", [["Nominee Name", "nomineeName"], ["Nominee DOB", "nomineeDOB"], ["Gender", "gender"], ["Relationship", "relationship"], ["Share %", "sharePercentage"]], nominees) : `<span class="empty-nominee">No nominees have been selected</span>`}<div class="table-spacer">${appointees.length ? dataTable("Appointee Details", [["Appointee Name", "appointeeName"], ["Appointee Gender", "appointeeGender"], ["Appointee DOB", "appointeeDOB"], ["Appointee Relationship", "appointeeRelationship"]], appointees) : `<span class="empty-nominee">No appointees have been selected</span>`}</div></div>`;
+        }
+        if (tab === "Generic") {
+          const generic = member.genericDetails;
+          const fields = [field("Existing Policy Number", generic.existingPolicyNumber), field("Client ID", member.clientId || generic.clientId), field("Self Proposed", generic.selfProposed), field("Type of Proposer", generic.typeOfProposer), field("Relationship with Life Assured", generic.relationshipWithLifeAssured), field("Type of Proposal", generic.typeOfProposal), field("OID App form", ""), field("OID IIB", ""), field("Previous policy", "")];
+          return contentCard(tab, `<div class="gray-panel generic-panel">${renderFields(fields, 6)}</div>`);
+        }
+        if (tab === "Product Details") {
+          const product = member.productDetails || {};
+          const productFields = [field("Top Advisor Flag", product.topAdvisorFlag), field("Partner Type", product.partnerType), field("Benefit Option", product.benefitOption), field("Policy Term", product.policyTerm), field("Premium Paying Term", product.premiumPayingTerm), field("Proposer Type", product.proposerType), field("Annual Premium", product.annualPremium), field("Sum Assured to Premium Ratio", product.sumAssuredToPremiumRatio)];
+          return contentCard(tab, `<div class="gray-panel product-details-panel">${renderFields(productFields, 4)}</div>`);
+        }
+        if (tab === "eIA") {
+          const eia = member.eiaDetails;
+          return contentCard(tab, `<div class="gray-panel eia-panel">${renderFields([field("Open eIA", eia.openEIA), field("Existing eIA Number", eia.existingEIANumber), field("Preferred Repository", eia.preferredRepository), field("Convert Policies", eia.convertPolicies)], 4)}</div>`);
+        }
+        if (tab === "Payment & Payout") {
+          const payment = member.paymentDetails;
+          const payout = member.payoutDetails;
+          return `<div class="cards-grid two">${card("Payment Details", [field("Is it a Third Party payment", payment.isThirdPartyPayment), field("Payment Options", payout.paymentOptions)])}${card("Payout Details", [field("Account Type", payout.accountType), field("Bank Type", payout.bankType), field("Branch", payout.branch), field("MICR Code", payout.micrCode), field("IFSC code", payout.ifscCode), field("Account Number", payout.accountNumber)])}</div>`;
+        }
+        return "";
+      }
+      function render() {
+        const member = members[memberIndex];
+        const image = member.profileImage || member.proposerSummary.profileImage;
+        $("#profile-image").innerHTML = image ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(formatMember(member))}">` : escapeHtml(member.memberType.charAt(0).toUpperCase());
+        $("#profile-image").style.cursor = image ? "pointer" : "default";
+        $("#member-tabs").innerHTML = members.map((item, index) => `<button type="button" role="tab" aria-selected="${memberIndex === index}" class="${memberIndex === index ? "active" : ""}" data-member="${index}">${escapeHtml(formatMember(item))}</button>`).join("");
+        $("#details-tabs").innerHTML = tabs.map((tab, index) => `<button type="button" role="tab" aria-selected="${detailIndex === index}" class="${detailIndex === index ? "active" : ""}" data-detail="${index}">${escapeHtml(tab)}</button>`).join("");
+        $("#profile-content").innerHTML = renderContent();
+        const showActions = !["CUW_TASK", "CVT_TASK", "DVT_TASK", "PIVV_TASK", "GROUP_CUW_TASK", "GROUP_HOD_TASK", "GROUP_SR_UW_TASK", "FORMAL_GUW_TASK"].includes(roleType);
+        $("#profile-actions").hidden = !showActions;
+        if (showActions) $("#profile-actions").innerHTML = '<button type="button" data-view="medical">View Medicals</button><button type="button" data-view="financial">View Financials</button>';
+      }
+
+      function open() {
+        memberIndex = 0;
+        detailIndex = 0;
+        openDialog("", '<div class="profile"><div class="member-row"><button id="profile-image" class="profile-image" type="button" aria-label="View applicant profile photo"></button><div id="member-tabs" class="tab-rail member-tabs" role="tablist" aria-label="Select applicant"></div></div><div class="details-tab-wrap"><div id="details-tabs" class="tab-rail details-tabs" role="tablist" aria-label="Applicant details"></div></div><div id="profile-content"></div><div id="profile-actions" class="actions" hidden></div></div>');
+        $("#dialog").classList.remove("uw-dialog");
+        $("#dialog").classList.add("applicant-profile-dialog");
+        $("#quick-panel").hidden = true;
+        $("#quick-fab").classList.remove("open");
+        $("#quick-fab").setAttribute("aria-expanded", "false");
+        render();
+      }
+      $("#dialog-content").addEventListener("click", (event) => {
+        if (!$("#dialog").classList.contains("applicant-profile-dialog")) return;
+        const memberButton = event.target.closest("[data-member]");
+        if (memberButton) { memberIndex = Number(memberButton.dataset.member); detailIndex = 0; render(); return; }
+        const detailButton = event.target.closest("[data-detail]");
+        if (detailButton) { detailIndex = Number(detailButton.dataset.detail); render(); return; }
+        const expandButton = event.target.closest(".show-more");
+        if (expandButton) {
+          const textElement = expandButton.previousElementSibling;
+          const full = textElement.dataset.full;
+          const expanded = expandButton.dataset.expanded === "true";
+          textElement.textContent = expanded ? `${full.slice(0, 30)}...` : full;
+          expandButton.textContent = expanded ? "Show more" : "Show less";
+          expandButton.dataset.expanded = String(!expanded);
+          return;
+        }
+        const viewButton = event.target.closest("[data-view]");
+        if (viewButton) window.location.href = viewButton.dataset.view === "medical" ? "./guw-mr-view-medical.html" : "./guw-nmr-view-financial.html";
+      });
+      return { open };
+    })();
+    // QuickLinks.tsx conditionally lists links per role; the CUW list is kept here.
+    const quickItems = ["Applicant Profile", "Proposal Form & Documents", "Previous Policies", "Open Tasks", "Risk Details", "Audit Trail", "Raise Grievance"];
+    $("#quick-items").innerHTML = quickItems.map((label) => `<button type="button" data-quick="${escapeHtml(label)}">${escapeHtml(label)} ${rightArrowSvg}</button>`).join("");
+    const quickLinkIcon = $("#quick-fab").innerHTML;
+    const quickCloseIcon = '<svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M16.66 9.52C16.66 9.85 16.39 10.12 16.07 10.12H10.12V16.07C10.12 16.39 9.85 16.66 9.52 16.66C9.19 16.66 8.92 16.39 8.92 16.07V10.12H2.97C2.64 10.12 2.38 9.85 2.38 9.52C2.38 9.19 2.64 8.92 2.97 8.92H8.92V2.97C8.92 2.64 9.19 2.38 9.52 2.38C9.85 2.38 10.12 2.64 10.12 2.97V8.92H16.07C16.39 8.92 16.66 9.19 16.66 9.52Z"/></svg>';
+    $("#quick-fab").addEventListener("click", () => { const panel = $("#quick-panel"); panel.hidden = !panel.hidden; $("#quick-fab").classList.toggle("open", !panel.hidden); $("#quick-fab").innerHTML = panel.hidden ? quickLinkIcon : quickCloseIcon; $("#quick-fab").setAttribute("aria-expanded", String(!panel.hidden)); });
+    $("#quick-items").addEventListener("click", (event) => {
+      const item = event.target.closest("[data-quick]");
+      if (!item) return;
+      const label = item.dataset.quick;
+      if (label === "Applicant Profile") {
+        applicantProfileModal.open();
+        $("#quick-fab").innerHTML = quickLinkIcon;
+      } else if (label === "Previous Policies") {
+        window.location.href = "./previous-policy.html?role=CUW_TASK";
+      } else if (label === "Raise Grievance") {
+        openRaiseGrievance();
+        $("#quick-panel").hidden = true;
+      } else if (label === "Open Tasks") {
+        window.location.href = "./open-tasks.html?role=CUW_TASK";
+      } else if (label === "Risk Details") {
+        window.location.href = "./risk-details.html?role=CUW_TASK";
+      } else if (label === "Audit Trail") {
+        window.location.href = "./audit-trail.html";
+      }
+      // Remaining destinations intentionally stay as prototype-only items until their screens exist.
+    });
+
+    $("#user-button").addEventListener("click", () => { const menu = $("#user-popover"); menu.hidden = !menu.hidden; $("#user-button").setAttribute("aria-expanded", String(!menu.hidden)); });
+    $("#user-popover").addEventListener("click", (event) => {
+      const action = event.target.closest("[data-action]")?.dataset.action;
+      if (action === "logout") {
+        window.location.href = "./login.html";
+        return;
+      }
+      if (action === "break") {
+        openDialog("Set Break Time", `<label><span class="field-label">Break Duration</span><select class="select"><option value="">Select</option><option value="15">15 minutes</option><option value="30">30 minutes</option><option value="45">45 minutes</option><option value="60">60 minutes</option><option value="90">90 minutes</option><option value="120">120 minutes</option></select></label><label style="display:block;margin-top:10px"><span class="field-label">Break Reason</span><select class="select"><option value="">Select</option><option>Tea / Coffee Break</option><option>Lunch Break</option><option>Personal Work</option><option>Meeting</option><option>System Issue</option></select></label><div style="text-align:center;margin-top:16px"><button class="contained" id="break-confirm" type="button">Confirm</button></div>`, true);
+      }
+      // Authentication is not part of this local HTML screen.
+      $("#user-popover").hidden = true;
+    });
+    $("#dialog-content").addEventListener("click", (event) => { if (event.target.id === "break-confirm") closeDialog(); });
+    $(".back").addEventListener("click", () => { window.location.href = "./landing-prototype.html"; });
+    try { $("#header-user-name").textContent = localStorage.getItem("username") || "ipru75474"; } catch { $("#header-user-name").textContent = "ipru75474"; }
+    function updateClock() {
+      const parts = Object.fromEntries(new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kolkata", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true }).formatToParts(new Date()).map((part) => [part.type, part.value]));
+      $("#current-time").textContent = `${Number(parts.day)} ${parts.month} ${parts.year}, ${parts.hour}:${parts.minute}:${parts.second} ${String(parts.dayPeriod).toLowerCase()}`;
+    }
+    updateClock(); setInterval(updateClock, 1000);
+    let sessionSeconds = 15 * 60;
+    setInterval(() => { sessionSeconds = Math.max(0, sessionSeconds - 1); $("#session-time").textContent = `${String(Math.floor(sessionSeconds / 60)).padStart(2, "0")}:${String(sessionSeconds % 60).padStart(2, "0")}`; }, 1000);
+  </script>
+</body>
+
+</html>

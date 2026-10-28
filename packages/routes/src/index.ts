@@ -9,10 +9,6 @@ import devConfig from "./dev-config.json";
  * Separate production origins need SSO or a parent-domain session instead.
  */
 
-export const devGatewayOrigin = `http://${devConfig.host}:${devConfig.ports.common}`;
-
-export const devPorts = devConfig.ports;
-
 export const viteBase = devConfig.viteBase;
 
 export const previewPort = devConfig.previewPort;
@@ -34,12 +30,14 @@ export const retailPaths = {
   root: retailBase,
   inbox: `${retailBase}/inbox`,
   drs: `${retailBase}/drs`,
+  previousPolicy: `${retailBase}/previous-policy`,
 } as const;
 
 export const groupPaths = {
   root: groupBase,
   inbox: `${groupBase}/inbox`,
   drs: `${groupBase}/drs`,
+  previousPolicy: `${groupBase}/previous-policy`,
 } as const;
 
 export function businessInboxUrl(businessType: string): string | null {
@@ -56,6 +54,18 @@ export function drsUrl(
 
   if (businessType === "RETAIL") return `${retailPaths.drs}?${query}`;
   if (businessType === "GROUP") return `${groupPaths.drs}?${query}`;
+
+  return null;
+}
+
+export function previousPolicyUrl(
+  businessType: string,
+  applicationNo: string,
+): string | null {
+  const query = new URLSearchParams({ applicationNo }).toString();
+
+  if (businessType === "RETAIL") return `${retailPaths.previousPolicy}?${query}`;
+  if (businessType === "GROUP") return `${groupPaths.previousPolicy}?${query}`;
 
   return null;
 }

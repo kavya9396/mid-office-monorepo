@@ -1,7 +1,10 @@
 node_modules
+.env
 dist
 .turbo
 .DS_Store
 *.local
 *.tsbuildinfo
 .pnpm-store
+
+.bob

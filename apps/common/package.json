@@ -4,10 +4,90 @@
   "version": "0.0.0",
   "type": "module",
   "exports": {
+    "./applicant-profile": {
+      "types": "./src/components/Quick Links/ApplicantProfile.tsx",
+      "import": "./src/components/Quick Links/ApplicantProfile.tsx",
+      "default": "./src/components/Quick Links/ApplicantProfile.tsx"
+    },
+    "./profile-fields": {
+      "types": "./src/components/ProfileFields.tsx",
+      "import": "./src/components/ProfileFields.tsx",
+      "default": "./src/components/ProfileFields.tsx"
+    },
     "./auth": {
       "types": "./src/services/loginService.ts",
       "import": "./src/services/loginService.ts",
       "default": "./src/services/loginService.ts"
+    },
+    "./decision-bar": {
+      "types": "./src/components/DecisionBar.tsx",
+      "import": "./src/components/DecisionBar.tsx",
+      "default": "./src/components/DecisionBar.tsx"
+    },
+    "./detail-card": {
+      "types": "./src/components/DetailCard.tsx",
+      "import": "./src/components/DetailCard.tsx",
+      "default": "./src/components/DetailCard.tsx"
+    },
+    "./requirement-mgmt": {
+      "types": "./src/components/Requirement Mgmt/RequirementMgmt.tsx",
+      "import": "./src/components/Requirement Mgmt/RequirementMgmt.tsx",
+      "default": "./src/components/Requirement Mgmt/RequirementMgmt.tsx"
+    },
+    "./quick-links": {
+      "types": "./src/modules/quick-links/QuickLinksModule.tsx",
+      "import": "./src/modules/quick-links/QuickLinksModule.tsx",
+      "default": "./src/modules/quick-links/QuickLinksModule.tsx"
+    },
+    "./previous-policy": {
+      "types": "./src/components/Quick Links/PreviousPolicy.tsx",
+      "import": "./src/components/Quick Links/PreviousPolicy.tsx",
+      "default": "./src/components/Quick Links/PreviousPolicy.tsx"
+    },
+    "./open-tasks": {
+      "types": "./src/components/Quick Links/OpenTasks.tsx",
+      "import": "./src/components/Quick Links/OpenTasks.tsx",
+      "default": "./src/components/Quick Links/OpenTasks.tsx"
+    },
+    "./risk-details": {
+      "types": "./src/components/Quick Links/RiskDetails.tsx",
+      "import": "./src/components/Quick Links/RiskDetails.tsx",
+      "default": "./src/components/Quick Links/RiskDetails.tsx"
+    },
+    "./audit-trail": {
+      "types": "./src/components/Quick Links/AuditTrail.tsx",
+      "import": "./src/components/Quick Links/AuditTrail.tsx",
+      "default": "./src/components/Quick Links/AuditTrail.tsx"
+    },
+    "./life-assured": {
+      "types": "./src/components/LifeAssured/LifeAssured.tsx",
+      "import": "./src/components/LifeAssured/LifeAssured.tsx",
+      "default": "./src/components/LifeAssured/LifeAssured.tsx"
+    },
+    "./decision-section": {
+      "types": "./src/components/DecisionSection.tsx",
+      "import": "./src/components/DecisionSection.tsx",
+      "default": "./src/components/DecisionSection.tsx"
+    },
+    "./applicant-banner": {
+      "types": "./src/components/Header/ApplicantBanner.tsx",
+      "import": "./src/components/Header/ApplicantBanner.tsx",
+      "default": "./src/components/Header/ApplicantBanner.tsx"
+    },
+    "./header": {
+      "types": "./src/components/layout/Header.tsx",
+      "import": "./src/components/layout/Header.tsx",
+      "default": "./src/components/layout/Header.tsx"
+    },
+    "./inbox": {
+      "types": "./src/modules/inbox/inboxApi.ts",
+      "import": "./src/modules/inbox/inboxApi.ts",
+      "default": "./src/modules/inbox/inboxApi.ts"
+    },
+    "./inbox-screen": {
+      "types": "./src/modules/inbox/InboxScreen.tsx",
+      "import": "./src/modules/inbox/InboxScreen.tsx",
+      "default": "./src/modules/inbox/InboxScreen.tsx"
     }
   },
   "scripts": {
@@ -23,9 +103,12 @@
     "@insurance-poc/ui": "workspace:*",
     "@insurance-poc/utils": "workspace:*",
     "@mui/material": "^6.4.12",
+    "@reduxjs/toolkit": "^2.13.0",
+    "dayjs": "^1.11.13",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.90.0",
+    "react-redux": "^9.3.0",
     "react-router-dom": "^7.6.2",
     "zod": "^4.6.7"
   },
