@@ -40,7 +40,11 @@ type MiscMaster = {
 
 export type HeaderProps = {
   inboxPath?: string;
+  drsPath?: string;
   onBackToInbox?: () => void;
+  onBackToDrs?: () => void;
+  onBack?: () => void;
+  backPath?: string;
   role?: string;
   applicationNo?: string;
 };
@@ -507,7 +511,11 @@ function UserMenu({ username }: Readonly<{ username: string }>) {
 
 export function Header({
   inboxPath = "/inbox",
+  drsPath = "/drs",
   onBackToInbox,
+  onBackToDrs,
+  onBack,
+  backPath,
   role,
   applicationNo,
 }: Readonly<HeaderProps>) {
@@ -516,20 +524,57 @@ export function Header({
   const currentTime = useCurrentTime();
   const remainingMs = useSessionCountdown();
   const normalizedPathname = normalizePath(location.pathname).toLowerCase();
-  const showBackToInbox = !HIDDEN_TASK_PATHS.has(normalizedPathname);
-  const showTaskIdentity = showBackToInbox;
+  const showBack = !HIDDEN_TASK_PATHS.has(normalizedPathname);
+  const showTaskIdentity = showBack;
   const visibleRole = showTaskIdentity ? presentText(role) : undefined;
   const visibleApplicationNo = showTaskIdentity ? presentText(applicationNo) : undefined;
   const sessionUser = getSessionUser();
   const username = sessionUser?.displayName ?? sessionUser?.userId ?? "";
 
-  const handleBackToInbox = () => {
+  const isDrsSubPage =
+    normalizedPathname === "/previous-policy" ||
+    normalizedPathname === "/open-tasks" ||
+    normalizedPathname === "/audit-trail" ||
+    normalizedPathname.startsWith("/previous-policy/") ||
+    normalizedPathname.startsWith("/open-tasks/") ||
+    normalizedPathname.startsWith("/audit-trail/");
+
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+      return;
+    }
+
+    if (backPath) {
+      navigate(backPath);
+      return;
+    }
+
+    if (isDrsSubPage) {
+      if (onBackToDrs) {
+        onBackToDrs();
+        return;
+      }
+      const searchParams = new URLSearchParams(location.search);
+      if (applicationNo && !searchParams.has("applicationNo")) {
+        searchParams.set("applicationNo", applicationNo);
+      }
+      if (role && !searchParams.has("role")) {
+        searchParams.set("role", role);
+      }
+      const queryString = searchParams.toString() ? `?${searchParams.toString()}` : "";
+      navigate(`${drsPath}${queryString}`);
+      return;
+    }
+
     if (onBackToInbox) {
       onBackToInbox();
       return;
     }
     navigate(inboxPath);
   };
+
+  const backAriaLabel = isDrsSubPage ? "Back to DRS" : "Back to Inbox";
 
   return (
     <Box
@@ -548,10 +593,11 @@ export function Header({
         overflow: "hidden",
       }}
     >
-      {showBackToInbox ? (
+      {showBack ? (
         <Button
-          onClick={handleBackToInbox}
-          aria-label="Back to Inbox"
+          onClick={handleBack}
+          aria-label={backAriaLabel}
+          title={backAriaLabel}
           disableRipple
           startIcon={<KeyLeftArrowIcon />}
           sx={{

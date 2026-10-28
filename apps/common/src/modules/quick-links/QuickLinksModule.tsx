@@ -1,11 +1,14 @@
 import { useState, useCallback } from "react";
 import { QuickLinks, type QuickLinkItem, type QuickLinksProps } from "../../components/QuickLinks";
 import { PreviousPolicyDialog } from "../../components/PreviousPolicy";
+import { OpenTasksDialog, type OpenTaskItem } from "../../components/OpenTasks";
 
 export interface QuickLinksModuleProps extends Partial<QuickLinksProps> {
   items: QuickLinkItem[];
   applicationNo?: string;
   previousPolicyMode?: "page" | "modal";
+  openTasksMode?: "page" | "modal";
+  openTasks?: OpenTaskItem[];
   roleType?: string;
   onNavigate?: (path: string) => void;
   onNotify?: (message: string) => void;
@@ -14,13 +17,16 @@ export interface QuickLinksModuleProps extends Partial<QuickLinksProps> {
 export const QuickLinksModule = ({
   items,
   applicationNo,
-  previousPolicyMode = "modal",
+  previousPolicyMode = "page",
+  openTasksMode = "page",
+  openTasks,
   roleType,
   onNavigate,
   onNotify,
   ...quickLinksProps
 }: Readonly<QuickLinksModuleProps>) => {
   const [previousPolicyOpen, setPreviousPolicyOpen] = useState(false);
+  const [openTasksOpen, setOpenTasksOpen] = useState(false);
 
   const handleItemClick = useCallback(
     (item: QuickLinkItem, index: number) => {
@@ -30,18 +36,36 @@ export const QuickLinksModule = ({
         return;
       }
 
+      const searchParams = new URLSearchParams(window.location.search);
+      if (applicationNo) {
+        searchParams.set("applicationNo", applicationNo);
+      }
+      if (roleType && !searchParams.has("role")) {
+        searchParams.set("role", roleType);
+      }
+      const queryString = searchParams.toString() ? `?${searchParams.toString()}` : "";
+
       if (item.id === "previous-policies" || item.id === "previous-policy") {
         if (previousPolicyMode === "modal") {
           setPreviousPolicyOpen(true);
         } else if (onNavigate) {
-          const appParam = applicationNo ? `?applicationNo=${encodeURIComponent(applicationNo)}` : "";
-          onNavigate(`/previous-policy${appParam}`);
+          onNavigate(`/previous-policy${queryString}`);
+        }
+      } else if (item.id === "open-tasks" || item.id === "open-task") {
+        if (openTasksMode === "modal") {
+          setOpenTasksOpen(true);
+        } else if (onNavigate) {
+          onNavigate(`/open-tasks${queryString}`);
+        }
+      } else if (item.id === "audit-trail" || item.id === "audit") {
+        if (onNavigate) {
+          onNavigate(`/audit-trail${queryString}`);
         }
       } else if (onNotify) {
         onNotify(`Navigating to ${item.label}`);
       }
     },
-    [applicationNo, onNavigate, onNotify, previousPolicyMode, quickLinksProps]
+    [applicationNo, onNavigate, onNotify, openTasksMode, previousPolicyMode, quickLinksProps, roleType]
   );
 
   return (
@@ -56,6 +80,12 @@ export const QuickLinksModule = ({
         open={previousPolicyOpen}
         onClose={() => setPreviousPolicyOpen(false)}
         roleType={roleType}
+      />
+
+      <OpenTasksDialog
+        open={openTasksOpen}
+        onClose={() => setOpenTasksOpen(false)}
+        tasks={openTasks}
       />
     </>
   );

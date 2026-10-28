@@ -10,6 +10,8 @@ import { GroupAppLayout } from "./GroupAppLayout";
 import { RequireSession } from "./RequireSession";
 import DvtUser from "../modules/drs/DvtUser";
 import { GroupPreviousPolicyPage } from "../modules/previousPolicy/GroupPreviousPolicyPage";
+import { GroupOpenTasksPage } from "../modules/openTasks/GroupOpenTasksPage";
+import { GroupAuditTrailPage } from "../modules/auditTrail/GroupAuditTrailPage";
 
 export function AppRoutes() {
   return (
@@ -26,6 +28,8 @@ export function AppRoutes() {
           <Route path="/inbox" element={<GroupInboxPage />} />
           <Route path="/drs" element={<DvtUser />} />
           <Route path="/previous-policy" element={<GroupPreviousPolicyPage />} />
+          <Route path="/open-tasks" element={<GroupOpenTasksPage />} />
+          <Route path="/audit-trail" element={<GroupAuditTrailPage />} />
           <Route path="*" element={<Navigate to="/inbox" replace />} />
         </Route>
       </Routes>

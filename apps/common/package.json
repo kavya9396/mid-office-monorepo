@@ -39,6 +39,16 @@
       "import": "./src/components/PreviousPolicy.tsx",
       "default": "./src/components/PreviousPolicy.tsx"
     },
+    "./open-tasks": {
+      "types": "./src/components/OpenTasks.tsx",
+      "import": "./src/components/OpenTasks.tsx",
+      "default": "./src/components/OpenTasks.tsx"
+    },
+    "./audit-trail": {
+      "types": "./src/components/AuditTrail.tsx",
+      "import": "./src/components/AuditTrail.tsx",
+      "default": "./src/components/AuditTrail.tsx"
+    },
     "./life-assured": {
       "types": "./src/components/LifeAssured/LifeAssured.tsx",
       "import": "./src/components/LifeAssured/LifeAssured.tsx",

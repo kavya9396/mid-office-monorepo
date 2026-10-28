@@ -8,6 +8,8 @@ import { appBasename, viteBase } from "@insurance-poc/routes";
 import { RetailDrsPage } from "../modules/drs/RetailDrsPage";
 import { RetailInboxPage } from "../modules/inbox/RetailInboxPage";
 import { RetailPreviousPolicyPage } from "../modules/previousPolicy/RetailPreviousPolicyPage";
+import { RetailOpenTasksPage } from "../modules/openTasks/RetailOpenTasksPage";
+import { RetailAuditTrailPage } from "../modules/auditTrail/RetailAuditTrailPage";
 import { RequireSession } from "./RequireSession";
 import { RetailAppLayout } from "./RetailAppLayout";
 
@@ -26,6 +28,8 @@ export function AppRoutes() {
           <Route path="/inbox" element={<RetailInboxPage />} />
           <Route path="/drs" element={<RetailDrsPage />} />
           <Route path="/previous-policy" element={<RetailPreviousPolicyPage />} />
+          <Route path="/open-tasks" element={<RetailOpenTasksPage />} />
+          <Route path="/audit-trail" element={<RetailAuditTrailPage />} />
           <Route path="*" element={<Navigate to="/inbox" replace />} />
         </Route>
       </Routes>

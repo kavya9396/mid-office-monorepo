@@ -13,7 +13,7 @@ import {
   type Theme,
   Typography,
 } from "@mui/material";
-import { KeyRightArrowIcon, LinkIcon } from "@insurance-poc/ui";
+import { CloseIcon, KeyRightArrowIcon, LinkIcon, colors } from "@insurance-poc/ui";
 
 export interface QuickLinkItem {
   id?: string;
@@ -234,11 +234,11 @@ export const QuickLinks = ({
                       "&:hover": item.disabled
                         ? {}
                         : {
-                            bgcolor: "#fff8f3",
-                            color: (theme) => theme.palette.primary.main,
+                            bgcolor: colors.background,
+                            color: colors.primary,
                           },
                       "&:focus-visible": {
-                        outline: "2px solid #e45f14",
+                        outline: `2px solid ${colors.primary}`,
                         outlineOffset: -2,
                       },
                       ...itemSx,
@@ -299,8 +299,8 @@ export const QuickLinks = ({
                             borderRadius: "10px",
                             fontSize: "11px",
                             fontWeight: 700,
-                            bgcolor: item.badgeColor || "#ffead7",
-                            color: (theme) => theme.palette.primary.main,
+                            bgcolor: item.badgeColor || colors.highlight,
+                            color: colors.primary,
                           }}
                         >
                           {item.badge}
@@ -326,8 +326,8 @@ export const QuickLinks = ({
 
         <IconButton
           type="button"
-          aria-label={ariaLabel}
-          title={ariaLabel}
+          aria-label={isOpen ? "Close Quick Links" : ariaLabel}
+          title={isOpen ? "Close Quick Links" : ariaLabel}
           aria-expanded={isOpen}
           data-testid="quick-links-fab"
           onClick={handleFabClick}
@@ -336,22 +336,25 @@ export const QuickLinks = ({
             height: 50,
             minWidth: 50,
             borderRadius: "50%",
-            bgcolor: "#9a2529",
-            color: "#ffffff",
-            boxShadow: "0 3px 7px rgba(0, 0, 0, 0.15)",
-            transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s",
-            transform: isOpen ? "rotate(45deg)" : "none",
+            bgcolor: colors.primary,
+            color: colors.white,
+            boxShadow: "0 3px 8px rgba(228, 95, 20, 0.35)",
+            transition: "transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s",
             "&:hover": {
-              bgcolor: "#822026",
+              bgcolor: "#CE530F",
             },
             "&:focus-visible": {
-              outline: "2px solid #e45f14",
+              outline: `2px solid ${colors.primary}`,
               outlineOffset: 2,
             },
             ...fabSx,
           }}
         >
-          <LinkIcon width={24} height={24} />
+          {isOpen ? (
+            <CloseIcon width={24} height={24} />
+          ) : (
+            <LinkIcon width={24} height={24} />
+          )}
         </IconButton>
       </Box>
     </ClickAwayListener>

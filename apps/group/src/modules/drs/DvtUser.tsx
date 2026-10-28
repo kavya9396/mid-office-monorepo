@@ -15,10 +15,9 @@ import {
 } from "@insurance-poc/common/detail-card";
 import { LifeAssured } from "@insurance-poc/common/life-assured";
 import {
-  QuickLinks,
+  QuickLinksModule,
   type QuickLinkItem,
 } from "@insurance-poc/common/quick-links";
-import { PreviousPolicyDialog } from "@insurance-poc/common/previous-policy";
 import { mockApplicants } from "./lifeAssuredData";
 
 type CardType = "APPLICATION" | "SOURCE" | "GROUP" | "RISK";
@@ -171,6 +170,7 @@ const DEFAULT_QUICK_LINKS: QuickLinkItem[] = [
 export interface DvtUserProps {
   quickLinks?: QuickLinkItem[];
   previousPolicyMode?: "page" | "modal";
+  openTasksMode?: "page" | "modal";
 }
 
 type BreDecision = {
@@ -217,6 +217,7 @@ const formatBreTimestamp = (value?: string) => {
 const DvtUser = ({
   quickLinks,
   previousPolicyMode = "page",
+  openTasksMode = "page",
 }: Readonly<DvtUserProps>) => {
   const navigate = useNavigate();
   const [params] = useSearchParams();
@@ -224,26 +225,6 @@ const DvtUser = ({
     params.get("applicationNo")?.trim() || mockResponse.data.applicationNo;
 
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
-  const [previousPolicyOpen, setPreviousPolicyOpen] = useState(false);
-
-  const linkItems =
-    quickLinks ??
-    DEFAULT_QUICK_LINKS.map((link) => ({
-      ...link,
-      onClick: () => {
-        if (link.id === "previous-policies") {
-          if (previousPolicyMode === "modal") {
-            setPreviousPolicyOpen(true);
-          } else {
-            navigate(
-              `/previous-policy?applicationNo=${encodeURIComponent(applicationNo)}`,
-            );
-          }
-        } else {
-          setSnackbarMessage(`Navigating to ${link.label}`);
-        }
-      },
-    }));
 
   const { cardDetails } = mockResponse.data;
   const { breDecision, latestBreDecision } = mockBre;
@@ -304,11 +285,15 @@ const DvtUser = ({
         ))}
       </Box>
 
-      <QuickLinks items={linkItems} title="Quick Links" />
-
-      <PreviousPolicyDialog
-        open={previousPolicyOpen}
-        onClose={() => setPreviousPolicyOpen(false)}
+      <QuickLinksModule
+        items={quickLinks ?? DEFAULT_QUICK_LINKS}
+        applicationNo={applicationNo}
+        roleType={params.get("role")?.trim() || "DVT User"}
+        previousPolicyMode={previousPolicyMode}
+        openTasksMode={openTasksMode}
+        onNavigate={(path) => navigate(path)}
+        onNotify={(message) => setSnackbarMessage(message)}
+        title="Quick Links"
       />
 
       <CustomSnackbar

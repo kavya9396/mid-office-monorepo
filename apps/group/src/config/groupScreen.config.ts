@@ -2,8 +2,9 @@ import type { ComponentProps } from "react";
 import { DecisionBar } from "@insurance-poc/common/decision-bar";
 import { DetailCard } from "@insurance-poc/common/detail-card";
 import { LifeAssured } from "@insurance-poc/common/life-assured";
+import { OpenTasksDialog } from "@insurance-poc/common/open-tasks";
 import { PreviousPolicyDialog } from "@insurance-poc/common/previous-policy";
-import { QuickLinks } from "@insurance-poc/common/quick-links";
+import { QuickLinksModule } from "@insurance-poc/common/quick-links";
 
 /* ------------------------------------------------------------------ */
 /* GROUP SCREEN CONFIG — single source of truth for every Group user.  */
@@ -16,10 +17,11 @@ import { QuickLinks } from "@insurance-poc/common/quick-links";
 
 export const COMPONENT_REGISTRY = {
   DETAIL_CARD: DetailCard,
-  QUICK_LINKS: QuickLinks,
+  QUICK_LINKS: QuickLinksModule,
   DECISION_BAR: DecisionBar,
   LIFE_ASSURED: LifeAssured,
   PREVIOUS_POLICY_DIALOG: PreviousPolicyDialog,
+  OPEN_TASKS_DIALOG: OpenTasksDialog,
 } as const;
 
 export type ComponentKey = keyof typeof COMPONENT_REGISTRY;
@@ -35,12 +37,13 @@ type ActionsByComponent = {
   DECISION_BAR: "refresh" | "viewDetail";
   LIFE_ASSURED: "edit" | "viewMedical" | "viewFinancial";
   PREVIOUS_POLICY_DIALOG: never;
+  OPEN_TASKS_DIALOG: never;
 };
 
 /** Declarative replacement for onClick handlers (config cannot hold functions). */
 export type ConfigAction =
-  | { type: "NAVIGATE"; to: "PREVIOUS_POLICY_PAGE" }
-  | { type: "OPEN_DIALOG"; target: "PREVIOUS_POLICY_DIALOG" }
+  | { type: "NAVIGATE"; to: "PREVIOUS_POLICY_PAGE" | "OPEN_TASKS_PAGE" | "AUDIT_TRAIL_PAGE" }
+  | { type: "OPEN_DIALOG"; target: "PREVIOUS_POLICY_DIALOG" | "OPEN_TASKS_DIALOG" }
   | { type: "NOTIFY" };
 
 /* ---------- 3. Where data comes from (keys of the DRS response) ---------- */
@@ -92,6 +95,7 @@ export type SectionConfig =
   | SectionBase<"DECISION_BAR">
   | SectionBase<"LIFE_ASSURED">
   | SectionBase<"PREVIOUS_POLICY_DIALOG">
+  | SectionBase<"OPEN_TASKS_DIALOG">
   | (SectionBase<"QUICK_LINKS"> & { links: QuickLinkConfig[] });
 
 export type GroupScreenConfig = {
@@ -102,6 +106,8 @@ export type GroupScreenConfig = {
   cardsGrid: { columns: number; gap: number };
   /** What the "Previous Policies" quick link does for this user. */
   previousPolicyMode: "page" | "modal";
+  /** What the "Open Tasks" quick link does for this user. */
+  openTasksMode?: "page" | "modal";
   sections: SectionConfig[];
 };
 
@@ -114,6 +120,7 @@ export const GROUP_SCREENS = {
     screenType: "DVT_INFORMAL",
     cardsGrid: { columns: 4, gap: 2 },
     previousPolicyMode: "page",
+    openTasksMode: "page",
     sections: [
       /* ---- detail cards ---- */
       {
@@ -168,8 +175,8 @@ export const GROUP_SCREENS = {
         links: [
           { id: "proposal-documents", label: "Proposal Form & Documents", access: "write", action: { type: "NOTIFY" } },
           { id: "previous-policies", label: "Previous Policy", access: "write", action: { type: "NAVIGATE", to: "PREVIOUS_POLICY_PAGE" } },
-          { id: "open-tasks", label: "Open Task", access: "write", action: { type: "NOTIFY" } },
-          { id: "audit-trail", label: "Audit Trail", access: "write", action: { type: "NOTIFY" } },
+          { id: "open-tasks", label: "Open Task", access: "write", action: { type: "NAVIGATE", to: "OPEN_TASKS_PAGE" } },
+          { id: "audit-trail", label: "Audit Trail", access: "write", action: { type: "NAVIGATE", to: "AUDIT_TRAIL_PAGE" } },
         ],
       },
 
@@ -178,6 +185,15 @@ export const GROUP_SCREENS = {
         id: "previous-policy-dialog",
         component: "PREVIOUS_POLICY_DIALOG",
         order: 2,
+        slot: "floating",
+        access: "read",
+      },
+
+      /* ---- open tasks (used when openTasksMode = "modal") ---- */
+      {
+        id: "open-tasks-dialog",
+        component: "OPEN_TASKS_DIALOG",
+        order: 3,
         slot: "floating",
         access: "read",
       },
