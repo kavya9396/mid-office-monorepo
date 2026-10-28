@@ -1,10 +1,4 @@
 export { appTheme, colors } from "./theme";
-export {
-  CloseIcon,
-  KeyRightArrowIcon,
-  LinkIcon,
-  RefreshIcon,
-} from "./icons/Icons";
 
 export { default as CustomAccordion } from "./Accordion/Accordion";
 export {
@@ -41,5 +35,26 @@ export { default as CustomSnackbar } from "./SnackBar/Snackbar";
 export { default as CustomTable, type Column } from "./Table/Table";
 export { default as CustomTabs, type TabItem } from "./Tabs/Tabs";
 export { default as CustomTextField } from "./TextField/TextField";
-export { DeleteIcon, EditIcon, EyeIcon, EyeSlashIcon, FilterIcon, TickIcon } from "./icons/Icons";
 export { default as CustomTooltip } from "./Tooltip/Tooltip";
+export {
+  CloseIcon,
+  DangerIcon,
+  DeleteIcon,
+  EditIcon,
+  EyeIcon,
+  EyeSlashIcon,
+  FilterIcon,
+  KeyDownArrowIcon,
+  KeyLeftArrowIcon,
+  KeyRightArrowIcon,
+  KeyUpArrowIcon,
+  LinkIcon,
+  LogoutIcon,
+  RefreshIcon,
+  SearchIcon,
+  SettingsIcon,
+  TickIcon,
+  TimeIcon,
+  TimerPauseIcon,
+  UserProfileIcon,
+} from "./icons/Icons";

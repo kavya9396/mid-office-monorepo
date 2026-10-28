@@ -5,6 +5,7 @@ import {
   Routes,
 } from "react-router-dom";
 import { appBasename, viteBase } from "@insurance-poc/routes";
+import { AuthNavigation } from "../app/AuthNavigation";
 import { GroupInboxPage } from "../modules/inbox/GroupInboxPage";
 import { GroupAppLayout } from "./GroupAppLayout";
 import { RequireSession } from "./RequireSession";
@@ -14,6 +15,7 @@ import { GroupPreviousPolicyPage } from "../modules/previousPolicy/GroupPrevious
 export function AppRoutes() {
   return (
     <BrowserRouter basename={appBasename(viteBase.group)}>
+      <AuthNavigation />
       <Routes>
         <Route
           element={

@@ -1,50 +1,63 @@
-import inboxMock from "../../../../mock/inbox/inbox.json";
-import { getSessionUser } from "@insurance-poc/utils";
+import type {
+  InboxCase,
+  InboxData,
+  InboxFieldValue,
+} from "@insurance-poc/common/inbox";
 
-export interface InboxTask {
-  applicationNo: string;
-  taskId: string;
-  customerName: string;
-  productName: string;
-  businessType?: string;
-  appliedSa?: number | string | null;
-  annualPremium?: number | string | null;
-  status?: string;
+export const GROUP_INBOX_PATH = "/inbox";
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-export interface InboxData {
-  userId: string;
-  poolData: Record<string, InboxTask[]>;
+function readField(value: unknown): InboxFieldValue | undefined {
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    return value;
+  }
+  return value === null ? null : undefined;
 }
 
-function wait(ms: number): Promise<void> {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
+function readText(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
 }
 
-export async function fetchGroupInbox(): Promise<InboxData> {
-  await wait(300);
+function mapGroupCase(value: unknown, poolName: string, index: number): InboxCase | null {
+  if (!isRecord(value)) return null;
 
-  const poolData: Record<string, InboxTask[]> = {};
+  const fields: Record<string, InboxFieldValue> = {};
+  for (const [key, field] of Object.entries(value)) {
+    const parsed = readField(field);
+    if (parsed !== undefined) fields[key] = parsed;
+  }
 
-  for (const [category, tasks] of Object.entries(inboxMock.poolData)) {
-    poolData[category] = tasks
-      .filter((task) => task.businessType === "GROUP")
-      .map((task) => ({
-        applicationNo: task.applicationNo,
-        taskId: task.taskId,
-        customerName: task.customerName,
-        productName: task.productName,
-        businessType: task.businessType,
-        appliedSa: task.appliedSa,
-        annualPremium: task.annualPremium,
-        status: task.status,
-      }));
+  const applicationNo = readText(fields.applicationNo);
+  const taskId = readText(fields.taskId);
+  const id = fields.id === undefined || fields.id === null ? "" : String(fields.id);
+  return {
+    rowId: `${poolName}-${id}-${taskId}-${index}`,
+    poolName,
+    applicationNo,
+    fields,
+  };
+}
+
+export function mapGroupInboxPayload(value: unknown): InboxData {
+  if (!isRecord(value) || !isRecord(value.poolData)) {
+    throw new Error("Group inbox response is not in the expected format.");
+  }
+
+  const poolData: Record<string, InboxCase[]> = {};
+  for (const [poolName, cases] of Object.entries(value.poolData)) {
+    if (!Array.isArray(cases)) continue;
+    poolData[poolName] = cases.flatMap((item, index) => {
+      const inboxCase = mapGroupCase(item, poolName, index);
+      return inboxCase ? [inboxCase] : [];
+    });
   }
 
   return {
-    userId: getSessionUser()?.userId ?? "Unknown",
+    userId: readText(value.userId),
     poolData,
   };
 }
+
