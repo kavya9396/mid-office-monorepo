@@ -53,6 +53,20 @@
       "types": "./src/components/DecisionSection.tsx",
       "import": "./src/components/DecisionSection.tsx",
       "default": "./src/components/DecisionSection.tsx"
+    "./header": {
+      "types": "./src/components/layout/Header.tsx",
+      "import": "./src/components/layout/Header.tsx",
+      "default": "./src/components/layout/Header.tsx"
+    },
+    "./inbox": {
+      "types": "./src/modules/inbox/inboxApi.ts",
+      "import": "./src/modules/inbox/inboxApi.ts",
+      "default": "./src/modules/inbox/inboxApi.ts"
+    },
+    "./inbox-screen": {
+      "types": "./src/modules/inbox/InboxScreen.tsx",
+      "import": "./src/modules/inbox/InboxScreen.tsx",
+      "default": "./src/modules/inbox/InboxScreen.tsx"
     }
   },
   "scripts": {
@@ -68,10 +82,15 @@
     "@insurance-poc/ui": "workspace:*",
     "@insurance-poc/utils": "workspace:*",
     "@mui/material": "^6.4.12",
+
     "dayjs": "^1.11.13",
+
+    "@reduxjs/toolkit": "^2.13.0",
+
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.90.0",
+    "react-redux": "^9.3.0",
     "react-router-dom": "^7.6.2",
     "zod": "^4.6.7"
   },
