@@ -29,6 +29,11 @@
       "import": "./src/components/DetailCard.tsx",
       "default": "./src/components/DetailCard.tsx"
     },
+    "./requirement-mgmt": {
+      "types": "./src/components/Requirement Mgmt/RequirementMgmt.tsx",
+      "import": "./src/components/Requirement Mgmt/RequirementMgmt.tsx",
+      "default": "./src/components/Requirement Mgmt/RequirementMgmt.tsx"
+    },
     "./quick-links": {
       "types": "./src/components/QuickLinks.tsx",
       "import": "./src/components/QuickLinks.tsx",
@@ -43,6 +48,11 @@
       "types": "./src/components/LifeAssured/LifeAssured.tsx",
       "import": "./src/components/LifeAssured/LifeAssured.tsx",
       "default": "./src/components/LifeAssured/LifeAssured.tsx"
+    },
+    "./decision-section": {
+      "types": "./src/components/DecisionSection.tsx",
+      "import": "./src/components/DecisionSection.tsx",
+      "default": "./src/components/DecisionSection.tsx"
     }
   },
   "scripts": {
@@ -58,6 +68,7 @@
     "@insurance-poc/ui": "workspace:*",
     "@insurance-poc/utils": "workspace:*",
     "@mui/material": "^6.4.12",
+    "dayjs": "^1.11.13",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.90.0",
