@@ -11,7 +11,7 @@ export {
   type BusinessRequest,
 } from "./businessBaseQuery";
 export { formatIndianCurrency, default } from "./formatIndianCurrency";
-export { decryptPayload, encryptPayload } from "./payloadCrypto";
+export { decryptPayload, encodeBase64, encryptPayload } from "./payloadCrypto";
 export { RegexPatterns } from "./regexPatterns";
 export {
   clearToken,
@@ -22,6 +22,10 @@ export {
   setRefreshToken,
   setSessionBusinessType,
   setSessionUser,
+  setMustChangePassword,
+  mustChangePassword,
+  markPasswordChanged,
+  hasChangedPassword,
   setToken,
   type SessionBusinessType,
   type SessionUser,

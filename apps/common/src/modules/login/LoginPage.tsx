@@ -6,7 +6,7 @@ import InputAdornment from "@mui/material/InputAdornment";
 import Link from "@mui/material/Link";
 import Typography from "@mui/material/Typography";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { assignUrl, businessInboxUrl } from "@insurance-poc/routes";
+import { assignUrl, businessInboxUrl, commonPaths } from "@insurance-poc/routes";
 import {
   CustomButton,
   CustomSnackbar,
@@ -18,17 +18,20 @@ import {
 } from "@insurance-poc/ui";
 import {
   clearToken,
+  setMustChangePassword,
   setRefreshToken,
   setSessionBusinessType,
   setSessionUser,
   setToken,
 } from "@insurance-poc/utils";
 import { Controller, useForm, type Control } from "react-hook-form";
+import { useLocation, useNavigate } from "react-router-dom";
 import IBMLogo from "../../assets/IBM Logo.svg";
 import IPRULogo from "../../assets/ICICI_Logo_BG.svg";
 import LoginImage from "../../assets/Login-Image.svg";
 import { useLoginMutation } from "../../services/authApi";
 import type { BusinessType } from "../../services/loginService";
+import { ForgotPasswordDialog } from "./ForgotPasswordDialog";
 import { loginSchema, type LoginForm } from "./loginSchema";
 
 type SnackbarState = {
@@ -49,6 +52,7 @@ type CredentialsFormProps = {
   onTogglePassword: () => void;
   submission: SubmissionState;
   onSubmit: FormEventHandler<HTMLFormElement>;
+  onForgotPassword: () => void;
 };
 
 const businessTabs: TabItem<BusinessType>[] = [
@@ -143,6 +147,7 @@ function CredentialsForm({
   onTogglePassword,
   submission,
   onSubmit,
+  onForgotPassword,
 }: Readonly<CredentialsFormProps>) {
   const passwordLabel = passwordVisible ? "Hide password" : "Show password";
   const submitLabel = submission.submitting ? "Signing in..." : "Log In";
@@ -236,45 +241,26 @@ function CredentialsForm({
           )}
         />
 
-        <Box
+        <Link
+          component="button"
+          type="button"
+          underline="hover"
+          onClick={onForgotPassword}
           sx={{
+            alignSelf: "flex-start",
             mt: 1,
-            [compactLaptop]: { mt: 0.5 },
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "stretch",
-            gap: 0.5,
+            border: 0,
+            p: 0,
+            bgcolor: "transparent",
+            color: "#E45F14",
+            font: "inherit",
+            fontSize: "12px",
+            fontWeight: 600,
+            cursor: "pointer",
           }}
         >
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            sx={{ fontSize: "10px" }}
-          >
-            It must be at least 8 characters long and include letters and
-            numbers.
-          </Typography>
-
-          <Link
-            component="button"
-            type="button"
-            underline="hover"
-            sx={{
-              alignSelf: "flex-start",
-              flexShrink: 0,
-              border: 0,
-              p: 0,
-              bgcolor: "transparent",
-              color: "#E45F14",
-              font: "inherit",
-              fontSize: "12px",
-              fontWeight: 600,
-              cursor: "pointer",
-            }}
-          >
-            Forgot password?
-          </Link>
-        </Box>
+          Forgot password?
+        </Link>
       </Box>
 
       <CustomButton
@@ -357,9 +343,17 @@ export function LoginPage() {
   const [businessType, setBusinessType] = useState<BusinessType>("RETAIL");
   const [showPassword, setShowPassword] = useState(false);
   const [snackbar, setSnackbar] = useState<SnackbarState>(initialSnackbar);
+  const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
+  const [forgotUserId, setForgotUserId] = useState("");
+  const location = useLocation();
+  const navigate = useNavigate();
+  const resetMessage =
+    isRecord(location.state) && typeof location.state.resetMessage === "string"
+      ? location.state.resetMessage.trim()
+      : "";
 
   const [login] = useLoginMutation();
-  const { control, handleSubmit, formState } = useForm<LoginForm>({
+  const { control, handleSubmit, formState, getValues } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
     mode: "onChange",
     defaultValues: {
@@ -375,14 +369,19 @@ export function LoginPage() {
         password: credentials.password,
         businessType,
       }).unwrap();
-      const destination = businessInboxUrl(businessType);
-      if (!destination) {
-        throw new Error("Business Inbox is not configured.");
-      }
       setToken(loginResult.accessToken);
       setRefreshToken(loginResult.refreshToken);
       setSessionUser(loginResult.user);
       setSessionBusinessType(businessType);
+      setMustChangePassword(loginResult.mustChangePassword);
+      if (loginResult.mustChangePassword) {
+        navigate(commonPaths.changePassword);
+        return;
+      }
+      const destination = businessInboxUrl(businessType);
+      if (!destination) {
+        throw new Error("Business Inbox is not configured.");
+      }
       assignUrl(destination);
     } catch (reason: unknown) {
       clearToken();
@@ -439,6 +438,11 @@ export function LoginPage() {
           }}
         >
           <LoginIntro />
+          {resetMessage ? (
+            <Typography role="alert" sx={{ fontSize: "13px", color: "#1B7F3A" }}>
+              {resetMessage}
+            </Typography>
+          ) : null}
           <CredentialsForm
             businessType={businessType}
             onBusinessTypeChange={setBusinessType}
@@ -447,11 +451,21 @@ export function LoginPage() {
             onTogglePassword={() => setShowPassword((visible) => !visible)}
             submission={submission}
             onSubmit={handleSubmit(onSubmit)}
+            onForgotPassword={() => {
+              setForgotUserId(getValues("username"));
+              setForgotPasswordOpen(true);
+            }}
           />
           <LegalFooter />
         </Box>
         <PoweredBy />
       </Box>
+
+      <ForgotPasswordDialog
+        open={forgotPasswordOpen}
+        initialUserId={forgotUserId}
+        onClose={() => setForgotPasswordOpen(false)}
+      />
 
       <CustomSnackbar
         open={snackbar.open}

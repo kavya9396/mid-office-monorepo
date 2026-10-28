@@ -3,6 +3,8 @@ const REFRESH_TOKEN_KEY = "refreshToken";
 const USER_ID_KEY = "userId";
 const DISPLAY_NAME_KEY = "displayName";
 const BUSINESS_TYPE_KEY = "businessType";
+const MUST_CHANGE_PASSWORD_KEY = "mustChangePassword";
+const PASSWORD_CHANGED_KEY = "passwordChangedUserIds";
 
 export type SessionBusinessType = "RETAIL" | "GROUP";
 
@@ -25,7 +27,13 @@ export function setToken(token: string): void {
 }
 
 export function setRefreshToken(token: string): void {
-  readStorage()?.setItem(REFRESH_TOKEN_KEY, token);
+  const storage = readStorage();
+  if (!storage) return;
+  if (token.trim().length === 0) {
+    storage.removeItem(REFRESH_TOKEN_KEY);
+    return;
+  }
+  storage.setItem(REFRESH_TOKEN_KEY, token);
 }
 
 export function clearToken(): void {
@@ -35,6 +43,29 @@ export function clearToken(): void {
   storage?.removeItem(USER_ID_KEY);
   storage?.removeItem(DISPLAY_NAME_KEY);
   storage?.removeItem(BUSINESS_TYPE_KEY);
+  storage?.removeItem(MUST_CHANGE_PASSWORD_KEY);
+}
+
+export function setMustChangePassword(required: boolean): void {
+  readStorage()?.setItem(MUST_CHANGE_PASSWORD_KEY, required ? "true" : "false");
+}
+
+export function mustChangePassword(): boolean {
+  return readStorage()?.getItem(MUST_CHANGE_PASSWORD_KEY) === "true";
+}
+
+export function markPasswordChanged(userId: string): void {
+  const storage = readStorage();
+  const normalized = userId.trim();
+  if (!storage || normalized.length === 0) return;
+  const current = storage.getItem(PASSWORD_CHANGED_KEY)?.split(",").filter(Boolean) ?? [];
+  if (!current.includes(normalized)) current.push(normalized);
+  storage.setItem(PASSWORD_CHANGED_KEY, current.join(","));
+}
+
+export function hasChangedPassword(userId: string): boolean {
+  const current = readStorage()?.getItem(PASSWORD_CHANGED_KEY)?.split(",") ?? [];
+  return current.includes(userId.trim());
 }
 
 export function setSessionUser(user: SessionUser): void {

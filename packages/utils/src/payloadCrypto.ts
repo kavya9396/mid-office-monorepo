@@ -7,6 +7,14 @@ function bufferFrom(bytes: Uint8Array): ArrayBuffer {
   return copy;
 }
 
+function bytesToBinary(bytes: Uint8Array): string {
+  let binary = "";
+  for (let index = 0; index < bytes.length; index += 0x8000) {
+    binary += String.fromCodePoint(...bytes.subarray(index, index + 0x8000));
+  }
+  return binary;
+}
+
 async function getCryptoConfig(): Promise<{
   subtle: SubtleCrypto;
   key: CryptoKey;
@@ -40,6 +48,10 @@ async function getCryptoConfig(): Promise<{
   return { subtle, key: await keyPromise, iv };
 }
 
+export function encodeBase64(value: string): string {
+  return btoa(bytesToBinary(encoder.encode(value)));
+}
+
 export async function encryptPayload(payload: unknown): Promise<string> {
   const json = JSON.stringify(payload);
   if (json === undefined) {
@@ -53,12 +65,7 @@ export async function encryptPayload(payload: unknown): Promise<string> {
     bufferFrom(encoder.encode(json)),
   );
 
-  const bytes = new Uint8Array(encrypted);
-  let binary = "";
-  for (let index = 0; index < bytes.length; index += 0x8000) {
-    binary += String.fromCharCode(...bytes.subarray(index, index + 0x8000));
-  }
-  return btoa(binary);
+  return btoa(bytesToBinary(new Uint8Array(encrypted)));
 }
 
 export async function decryptPayload<T = unknown>(encryptedPayload: string): Promise<T> {
@@ -83,7 +90,11 @@ export async function decryptPayload<T = unknown>(encryptedPayload: string): Pro
   const cipher = new ArrayBuffer(binary.length);
   const bytes = new Uint8Array(cipher);
   for (let index = 0; index < binary.length; index += 1) {
-    bytes[index] = binary.charCodeAt(index);
+    const codePoint = binary.codePointAt(index);
+    if (codePoint === undefined) {
+      throw new Error("Encrypted payload contains invalid Base64.");
+    }
+    bytes[index] = codePoint;
   }
 
   const { subtle, key, iv } = await getCryptoConfig();

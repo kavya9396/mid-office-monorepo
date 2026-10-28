@@ -9,13 +9,7 @@ export const loginSchema = z.object({
       RegexPatterns.alphanumeric,
       "User ID can only contain letters and numbers",
     ),
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters long")
-    .regex(
-      RegexPatterns.alphanumeric,
-      "Password must contain letters and numbers only",
-    ),
+  password: z.string().min(1, "Password is required"),
 });
 
 export type LoginForm = z.infer<typeof loginSchema>;
