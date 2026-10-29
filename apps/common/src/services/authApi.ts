@@ -4,14 +4,12 @@ import {
   fetchForgotPassword,
   fetchLogin,
   fetchResetPassword,
+  type AuthActionResponse,
   type ChangePasswordRequest,
-  type ChangePasswordResponse,
   type ForgotPasswordRequest,
-  type ForgotPasswordResponse,
   type LoginRequest,
   type LoginSuccess,
   type ResetPasswordRequest,
-  type ResetPasswordResponse,
 } from "./loginService";
 
 export const authApi = createApi({
@@ -23,7 +21,8 @@ export const authApi = createApi({
         try {
           const result = await fetchLogin(request);
           if (result.status !== "SUCCESS") {
-            return { error: result.message };
+            // Pass through API `message` so the login UI can show it.
+            return { error: result.message || "Unable to sign in." };
           }
           return { data: result };
         } catch (reason: unknown) {
@@ -32,7 +31,7 @@ export const authApi = createApi({
         }
       },
     }),
-    forgotPassword: build.mutation<ForgotPasswordResponse, ForgotPasswordRequest>({
+    forgotPassword: build.mutation<AuthActionResponse, ForgotPasswordRequest>({
       async queryFn(request) {
         try {
           const result = await fetchForgotPassword(request);
@@ -47,7 +46,7 @@ export const authApi = createApi({
         }
       },
     }),
-    resetPassword: build.mutation<ResetPasswordResponse, ResetPasswordRequest>({
+    resetPassword: build.mutation<AuthActionResponse, ResetPasswordRequest>({
       async queryFn(request) {
         try {
           const result = await fetchResetPassword(request);
@@ -62,7 +61,7 @@ export const authApi = createApi({
         }
       },
     }),
-    changePassword: build.mutation<ChangePasswordResponse, ChangePasswordRequest>({
+    changePassword: build.mutation<AuthActionResponse, ChangePasswordRequest>({
       async queryFn(request) {
         try {
           const result = await fetchChangePassword(request);

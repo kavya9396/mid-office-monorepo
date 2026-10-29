@@ -1,13 +1,18 @@
 {
-  "accessToken": "mock-jwt-token",
-  "refreshToken": "mock-refresh-token",
-  "restrictedToken": "mock-restricted-token",
+  "token": {
+    "access": "mock-jwt-token",
+    "refresh": "mock-refresh-token",
+    "restricted": "mock-restricted-token"
+  },
   "users": [
     {
       "userId": "12343",
       "displayName": "12343",
       "authorizedBusinessTypes": ["RETAIL", "GROUP"],
       "roles": [],
+      "firstLogin": true,
+      "firstLoginAt": "2026-10-06T14:10:00",
+      "lastLoginAt": null,
       "mustChangePassword": true
     },
     {
@@ -15,6 +20,9 @@
       "displayName": "Retail Underwriter",
       "authorizedBusinessTypes": ["RETAIL"],
       "roles": ["CVT_TASK", "DVT_TASK"],
+      "firstLogin": false,
+      "firstLoginAt": "2026-10-06T14:10:00",
+      "lastLoginAt": "2026-10-06T14:10:20",
       "mustChangePassword": false
     },
     {
@@ -22,6 +30,9 @@
       "displayName": "Group Underwriter",
       "authorizedBusinessTypes": ["GROUP"],
       "roles": ["CVT_TASK", "DVT_TASK"],
+      "firstLogin": false,
+      "firstLoginAt": "2026-10-06T14:10:00",
+      "lastLoginAt": "2026-10-06T14:10:20",
       "mustChangePassword": false
     },
     {
@@ -29,6 +40,9 @@
       "displayName": "Composite Underwriter",
       "authorizedBusinessTypes": ["RETAIL", "GROUP"],
       "roles": ["CVT_TASK", "DVT_TASK"],
+      "firstLogin": false,
+      "firstLoginAt": "2026-10-06T14:10:00",
+      "lastLoginAt": "2026-10-06T14:10:20",
       "mustChangePassword": false
     }
   ]

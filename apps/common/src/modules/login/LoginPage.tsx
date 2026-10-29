@@ -51,6 +51,7 @@ type CredentialsFormProps = {
   passwordVisible: boolean;
   onTogglePassword: () => void;
   submission: SubmissionState;
+  apiError: string;
   onSubmit: FormEventHandler<HTMLFormElement>;
   onForgotPassword: () => void;
 };
@@ -81,14 +82,78 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
+function readTrimmedString(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function messageFromData(data: unknown): string {
+  if (typeof data === "string") return data.trim();
+  if (!isRecord(data)) return "";
+  return readTrimmedString(data.message) || readTrimmedString(data.errorMessage);
+}
+
 function toErrorMessage(reason: unknown, fallback: string): string {
-  if (typeof reason === "string" && reason.trim().length > 0) return reason.trim();
-  if (reason instanceof Error && reason.message.length > 0) return reason.message;
-  if (isRecord(reason)) {
-    if (typeof reason.error === "string" && reason.error.length > 0) return reason.error;
-    if (typeof reason.message === "string" && reason.message.length > 0) return reason.message;
+  if (typeof reason === "string") {
+    const text = reason.trim();
+    return text.length > 0 ? text : fallback;
   }
-  return fallback;
+  if (reason instanceof Error) {
+    const text = reason.message.trim();
+    return text.length > 0 ? text : fallback;
+  }
+  if (!isRecord(reason)) return fallback;
+
+  return (
+    readTrimmedString(reason.error) ||
+    readTrimmedString(reason.message) ||
+    messageFromData(reason.data) ||
+    fallback
+  );
+}
+
+function readResetMessage(state: unknown): string {
+  if (!isRecord(state)) return "";
+  return readTrimmedString(state.resetMessage);
+}
+
+type LoginSuccessHandlerArgs = {
+  accessToken: string;
+  refreshToken: string;
+  user: Parameters<typeof setSessionUser>[0];
+  firstLogin: boolean;
+  mustChangePassword: boolean;
+  businessType: BusinessType;
+  navigateToChangePassword: () => void;
+};
+
+function handleLoginSuccess({
+  accessToken,
+  refreshToken,
+  user,
+  firstLogin,
+  mustChangePassword,
+  businessType,
+  navigateToChangePassword,
+}: LoginSuccessHandlerArgs): void {
+  setToken(accessToken);
+  setRefreshToken(refreshToken);
+  setSessionUser(user);
+  setSessionBusinessType(businessType);
+
+  // Server is source of truth: force change-password only when firstLogin / mustChangePassword is true.
+  // Never persist mustChangePassword=false in sessionStorage.
+  if (firstLogin || mustChangePassword) {
+    setMustChangePassword(true);
+    navigateToChangePassword();
+    return;
+  }
+
+  setMustChangePassword(false);
+  const destination = businessInboxUrl(businessType);
+  if (!destination) {
+    throw new Error("Business Inbox is not configured.");
+  }
+  assignUrl(destination);
 }
 
 function LoginArtwork() {
@@ -146,6 +211,7 @@ function CredentialsForm({
   passwordVisible,
   onTogglePassword,
   submission,
+  apiError,
   onSubmit,
   onForgotPassword,
 }: Readonly<CredentialsFormProps>) {
@@ -263,6 +329,12 @@ function CredentialsForm({
         </Link>
       </Box>
 
+      {apiError ? (
+        <Typography role="alert" sx={{ fontSize: "12px", color: "#9A2529" }}>
+          {apiError}
+        </Typography>
+      ) : null}
+
       <CustomButton
         fullWidth
         variant="contained"
@@ -343,14 +415,12 @@ export function LoginPage() {
   const [businessType, setBusinessType] = useState<BusinessType>("RETAIL");
   const [showPassword, setShowPassword] = useState(false);
   const [snackbar, setSnackbar] = useState<SnackbarState>(initialSnackbar);
+  const [apiError, setApiError] = useState("");
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
   const [forgotUserId, setForgotUserId] = useState("");
   const location = useLocation();
   const navigate = useNavigate();
-  const resetMessage =
-    isRecord(location.state) && typeof location.state.resetMessage === "string"
-      ? location.state.resetMessage.trim()
-      : "";
+  const resetMessage = readResetMessage(location.state);
 
   const [login] = useLoginMutation();
   const { control, handleSubmit, formState, getValues } = useForm<LoginForm>({
@@ -363,32 +433,27 @@ export function LoginPage() {
   });
 
   const onSubmit = async (credentials: LoginForm) => {
+    setApiError("");
     try {
       const loginResult = await login({
         userId: credentials.username,
         password: credentials.password,
         businessType,
       }).unwrap();
-      setToken(loginResult.accessToken);
-      setRefreshToken(loginResult.refreshToken);
-      setSessionUser(loginResult.user);
-      setSessionBusinessType(businessType);
-      setMustChangePassword(loginResult.mustChangePassword);
-      if (loginResult.mustChangePassword) {
-        navigate(commonPaths.changePassword);
-        return;
-      }
-      const destination = businessInboxUrl(businessType);
-      if (!destination) {
-        throw new Error("Business Inbox is not configured.");
-      }
-      assignUrl(destination);
+      handleLoginSuccess({
+        accessToken: loginResult.accessToken,
+        refreshToken: loginResult.refreshToken,
+        user: loginResult.user,
+        firstLogin: loginResult.firstLogin,
+        mustChangePassword: loginResult.mustChangePassword,
+        businessType,
+        navigateToChangePassword: () => navigate(commonPaths.changePassword),
+      });
     } catch (reason: unknown) {
       clearToken();
-      setSnackbar({
-        open: true,
-        message: toErrorMessage(reason, "Login failed."),
-      });
+      const message = toErrorMessage(reason, "Login failed.");
+      setApiError(message);
+      setSnackbar({ open: true, message });
     }
   };
 
@@ -450,6 +515,7 @@ export function LoginPage() {
             passwordVisible={showPassword}
             onTogglePassword={() => setShowPassword((visible) => !visible)}
             submission={submission}
+            apiError={apiError}
             onSubmit={handleSubmit(onSubmit)}
             onForgotPassword={() => {
               setForgotUserId(getValues("username"));

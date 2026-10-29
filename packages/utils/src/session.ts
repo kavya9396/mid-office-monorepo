@@ -46,8 +46,18 @@ export function clearToken(): void {
   storage?.removeItem(MUST_CHANGE_PASSWORD_KEY);
 }
 
+/**
+ * Only persist when the server requires a password change (first login).
+ * Never write "false" — absence of the key means the server did not require it.
+ */
 export function setMustChangePassword(required: boolean): void {
-  readStorage()?.setItem(MUST_CHANGE_PASSWORD_KEY, required ? "true" : "false");
+  const storage = readStorage();
+  if (!storage) return;
+  if (required) {
+    storage.setItem(MUST_CHANGE_PASSWORD_KEY, "true");
+    return;
+  }
+  storage.removeItem(MUST_CHANGE_PASSWORD_KEY);
 }
 
 export function mustChangePassword(): boolean {

@@ -6,9 +6,16 @@ import InputAdornment from "@mui/material/InputAdornment";
 import Link from "@mui/material/Link";
 import Typography from "@mui/material/Typography";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { assignUrl, businessInboxUrl, commonPaths } from "@insurance-poc/routes";
-import { CustomButton, CustomTextField, EyeIcon, EyeSlashIcon } from "@insurance-poc/ui";
-import { getSessionBusinessType, getToken, clearToken, setMustChangePassword } from "@insurance-poc/utils";
+import { commonPaths } from "@insurance-poc/routes";
+import {
+  CustomButton,
+  CustomDialog,
+  CustomSnackbar,
+  CustomTextField,
+  EyeIcon,
+  EyeSlashIcon,
+} from "@insurance-poc/ui";
+import { getToken, clearToken } from "@insurance-poc/utils";
 import { Controller, useForm, type Control } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import IBMLogo from "../../assets/IBM Logo.svg";
@@ -24,6 +31,16 @@ type PasswordFieldProps = {
   control: Control<ChangePasswordForm>;
   label: string;
   placeholder: string;
+};
+
+type SnackbarState = {
+  open: boolean;
+  message: string;
+};
+
+const initialSnackbar: SnackbarState = {
+  open: false,
+  message: "",
 };
 
 function readApiMessage(reason: unknown): string {
@@ -84,7 +101,9 @@ function PasswordField({ name, control, label, placeholder }: Readonly<PasswordF
 export function ChangePasswordPage() {
   const navigate = useNavigate();
   const [changePassword] = useChangePasswordMutation();
-  const [apiMessage, setApiMessage] = useState("");
+  const [snackbar, setSnackbar] = useState<SnackbarState>(initialSnackbar);
+  const [successOpen, setSuccessOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
   const hasToken = (getToken()?.trim().length ?? 0) > 0;
   const { control, handleSubmit, formState } = useForm<ChangePasswordForm>({
     resolver: zodResolver(changePasswordSchema),
@@ -96,23 +115,30 @@ export function ChangePasswordPage() {
     },
   });
 
+  const goToLogin = () => {
+    setSuccessOpen(false);
+    navigate(commonPaths.login, { replace: true });
+  };
+
   const onSubmit = async (values: ChangePasswordForm) => {
-    setApiMessage("");
+    setSnackbar(initialSnackbar);
     try {
-      await changePassword({
+      const result = await changePassword({
         oldPassword: values.oldPassword,
         newPassword: values.newPassword,
       }).unwrap();
-      setMustChangePassword(false);
-      const destination = businessInboxUrl(getSessionBusinessType() ?? "");
-      if (!destination) {
-        setApiMessage("Business type was not selected.");
-        return;
-      }
-      assignUrl(destination);
+      // Clear restricted session; stay on this screen until the user confirms success.
+      clearToken();
+      setSuccessMessage(
+        result.message.trim().length > 0 ? result.message : "Password changed",
+      );
+      setSuccessOpen(true);
     } catch (reason: unknown) {
       const message = readApiMessage(reason);
-      if (message.length > 0) setApiMessage(message);
+      setSnackbar({
+        open: true,
+        message: message.length > 0 ? message : "Unable to change the password.",
+      });
     }
   };
 
@@ -180,7 +206,7 @@ export function ChangePasswordPage() {
             </Typography>
           </Box>
 
-          {hasToken ? (
+          {hasToken || successOpen ? (
             <Box
               component="form"
               onSubmit={handleSubmit(onSubmit)}
@@ -205,17 +231,11 @@ export function ChangePasswordPage() {
                 placeholder="Re-enter your new password"
               />
 
-              {apiMessage ? (
-                <Typography role="alert" sx={{ fontSize: "12px", color: "#9A2529" }}>
-                  {apiMessage}
-                </Typography>
-              ) : null}
-
               <CustomButton
                 fullWidth
                 variant="contained"
                 type="submit"
-                disabled={!formState.isValid || formState.isSubmitting}
+                disabled={!formState.isValid || formState.isSubmitting || successOpen}
                 sx={{ py: 1.25, borderRadius: "50px" }}
               >
                 {formState.isSubmitting ? "Saving..." : "Change password"}
@@ -271,6 +291,36 @@ export function ChangePasswordPage() {
           <Box component="img" src={IBMLogo} alt="IBM Logo" sx={{ height: 28, width: "auto" }} />
         </Box>
       </Box>
+
+      <CustomDialog
+        open={successOpen}
+        onClose={goToLogin}
+        title="Password changed"
+        showCloseIcon
+        maxWidth="xs"
+        actions={
+          <CustomButton
+            fullWidth
+            variant="contained"
+            type="button"
+            onClick={goToLogin}
+            sx={{ borderRadius: "50px", py: 1.25 }}
+          >
+            OK
+          </CustomButton>
+        }
+      >
+        <Typography sx={{ fontSize: "14px", color: "text.secondary", pt: 1 }}>
+          {successMessage}
+        </Typography>
+      </CustomDialog>
+
+      <CustomSnackbar
+        open={snackbar.open}
+        message={snackbar.message}
+        severity="error"
+        onClose={() => setSnackbar(initialSnackbar)}
+      />
     </Box>
   );
 }
