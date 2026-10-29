@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 import { Box, Typography } from "@mui/material";
 import { CustomSnackbar, CustomDialog, DeleteIcon, EditIcon } from "@insurance-poc/ui";
@@ -11,6 +11,7 @@ import {
 import { DetailCard } from "@insurance-poc/common/detail-card";
 import { DecisionSection, type DecisionSubmitPayload } from "@insurance-poc/common/decision-section";
 import { LifeAssured } from "@insurance-poc/common/life-assured";
+import { Financial } from "@insurance-poc/common/financial";
 import { RequirementMgmt } from "@insurance-poc/common/requirement-mgmt";
 import { QuickLinksModule } from "@insurance-poc/common/quick-links";
 import { ApplicantProfile } from "@insurance-poc/common/applicant-profile";
@@ -32,6 +33,10 @@ const CARD_TITLES: Record<CardType, string> = {
 
 
 const quickLinksConfig = GROUP_QUICK_LINKS_CONFIG.dvt;
+
+const DRS_PATH = "/drs";
+const FINANCIAL_PATH = "/drs/financial";
+const APPLICANT_ID_PARAM = "applicantId";
 
 export interface DvtUserProps {
   previousPolicyMode?: "page" | "modal";
@@ -64,7 +69,10 @@ const formatBreTimestamp = (value?: string) => {
 
 const DvtUser = () => {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [params] = useSearchParams();
+  const lowerPath = pathname.toLowerCase();
+  const isFinancialRoute = lowerPath.endsWith(FINANCIAL_PATH) || lowerPath.endsWith(`${FINANCIAL_PATH}/`);
   const requestedApplicationNo = params.get("applicationNo")?.trim() ?? "";
   const drs = useGetGroupDrsQuery(requestedApplicationNo);
   const applicationNo = requestedApplicationNo || drs.data?.applicationNo || "";
@@ -72,6 +80,17 @@ const DvtUser = () => {
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
   const [applicantProfileOpen, setApplicantProfileOpen] = useState(false);
   const [breDetailOpen, setBreDetailOpen] = useState(false);
+  const openFinancial = (applicantId: string) => {
+    const next = new URLSearchParams(params);
+    next.set(APPLICANT_ID_PARAM, applicantId);
+    navigate({ pathname: FINANCIAL_PATH, search: `?${next.toString()}` });
+  };
+  const closeFinancial = () => {
+    const next = new URLSearchParams(params);
+    next.delete(APPLICANT_ID_PARAM);
+    const query = next.toString();
+    navigate({ pathname: DRS_PATH, search: query ? `?${query}` : "" });
+  };
 
   const handleBreRetrigger = () => console.log("BRE Retrigger clicked");
   const handleApplicantAction = (action: string) => (applicantId: string) =>
@@ -96,6 +115,39 @@ const DvtUser = () => {
   }
 
   const { cardDetails, breDecision, requirements, applicants } = drs.data;
+
+  const detailCards = (
+    <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+        gap: 2,
+      }}
+    >
+      {cardDetails.map((card) => (
+        <DetailCard
+          key={card.type}
+          title={CARD_TITLES[card.type]}
+          attributes={card.attributes}
+          expandedAttributes={card.expandedAttributes}
+          tables={card.tables}
+        />
+      ))}
+    </Box>
+  );
+
+  if (isFinancialRoute) {
+    const financialApplicants = applicants.map((applicant) => ({ key: applicant.id, label: applicant.label }));
+    return (
+      <Financial
+        summary={detailCards}
+        applicants={financialApplicants.length > 0 ? financialApplicants : undefined}
+        initialApplicantKey={params.get(APPLICANT_ID_PARAM)?.trim() || undefined}
+        onBack={closeFinancial}
+        onSubmit={(payload) => console.log("Submit financial", payload)}
+      />
+    );
+  }
 
   const breRows: ComparisonRow[] = [
     {
@@ -129,23 +181,7 @@ const DvtUser = () => {
 
   return (
     <Box sx={{ position: "relative", minHeight: "100%", p:2, display: "flex", gap:2, flexDirection: "column" }}>
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-          gap: 2,
-        }}
-      >
-        {cardDetails.map((card) => (
-          <DetailCard
-            key={card.type}
-            title={CARD_TITLES[card.type]}
-            attributes={card.attributes}
-            expandedAttributes={card.expandedAttributes}
-            tables={card.tables}
-          />
-        ))}
-      </Box>
+      {detailCards}
 
       <QuickLinksModule
         items={quickLinksConfig.items}
@@ -214,7 +250,7 @@ const DvtUser = () => {
         applicants={applicants}
         onEdit={handleApplicantAction("Edit")}
         onViewMedical={handleApplicantAction("View Medical")}
-        onViewFinancial={handleApplicantAction("View Financial")}
+        onViewFinancial={openFinancial}
       />
 
       <DecisionSection
@@ -227,7 +263,7 @@ const DvtUser = () => {
         title={
           <Typography
             component="span"
-            sx={{ fontSize: 12, fontWeight: 800 }}
+            sx={{ fontSize: 16, fontWeight: 700 }}
           >
             BRE Decision
           </Typography>

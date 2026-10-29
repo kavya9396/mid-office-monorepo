@@ -17,6 +17,7 @@ export {
   default as KeyValueTable,
   type KeyValueRow,
 } from "./KeyValueTable/KeyValueTable";
+export { default as ScrollToTop, type ScrollToTopProps } from "./layouts/ScrollToTop";
 export { default as CustomRadioGroup } from "./Radio/Radio";
 export { default as SearchBar } from "./SearchBar/SearchBar";
 export {

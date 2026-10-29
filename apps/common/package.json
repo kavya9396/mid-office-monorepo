@@ -24,6 +24,11 @@
       "import": "./src/components/DecisionBar.tsx",
       "default": "./src/components/DecisionBar.tsx"
     },
+    "./route-scroll-reset": {
+      "types": "./src/components/RouteScrollReset.tsx",
+      "import": "./src/components/RouteScrollReset.tsx",
+      "default": "./src/components/RouteScrollReset.tsx"
+    },
     "./detail-card": {
       "types": "./src/components/DetailCard.tsx",
       "import": "./src/components/DetailCard.tsx",
@@ -58,6 +63,11 @@
       "types": "./src/components/Quick Links/AuditTrail.tsx",
       "import": "./src/components/Quick Links/AuditTrail.tsx",
       "default": "./src/components/Quick Links/AuditTrail.tsx"
+    },
+    "./financial": {
+      "types": "./src/modules/Financial/Financial.tsx",
+      "import": "./src/modules/Financial/Financial.tsx",
+      "default": "./src/modules/Financial/Financial.tsx"
     },
     "./life-assured": {
       "types": "./src/components/LifeAssured/LifeAssured.tsx",
