@@ -80,9 +80,37 @@ const DvtUser = () => {
     );
   }
 
-  const { cardDetails, breDecision, latestBreDecision, requirements, applicants } = drs.data;
+  const { cardDetails, breDecision, requirements, applicants } = drs.data;
 
-  const breRows = buildBreRows(breDecision, latestBreDecision);
+  const breRows: ComparisonRow[] = [
+    {
+      label: "BRE Status",
+      initial: breDecision.initialDecision ? "Success" : "-",
+      final: breDecision.decision ? "Success" : "-",
+    },
+    {
+      label: "BRE Decision",
+      initial: breDecision.initialDecision,
+      final: breDecision.decision,
+      diff: "value",
+    },
+    {
+      label: "BRE Remarks",
+      initial: breDecision.remarks,
+      final: breDecision.remarks,
+    },
+    {
+      label: "BRE Discrepancy",
+      initial: breDecision.discrepancy,
+      final: breDecision.discrepancy,
+      diff: "tokens",
+    },
+    {
+      label: "BRE Timestamp",
+      initial: formatBreTimestamp(breDecision.timestamp),
+      final: formatBreTimestamp(breDecision.timestamp),
+    },
+  ];
 
   return (
     <Box sx={{ position: "relative", minHeight: "100%", p:2, display: "flex", gap:2, flexDirection: "column" }}>
@@ -129,8 +157,8 @@ const DvtUser = () => {
       <DecisionBar
         title="BRE Decision"
         items={[
-          { label: "Initial", value: breDecision.decision },
-          { label: "Final", value: latestBreDecision.decision, tone: "success" },
+          { label: "Initial", value: breDecision.initialDecision },
+          { label: "Final", value: breDecision.decision, tone: "success" },
         ]}
         onRefresh={handleBreRetrigger}
         refreshLabel="BRE Retrigger"

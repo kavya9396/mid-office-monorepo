@@ -34,9 +34,21 @@
             "name": "Rider Details",
             "columns": ["Rider", "Rider Code", "Sum Assured"],
             "rows": [
-              { "Rider": "Rider 1", "Rider Code": "TI", "Sum Assured": "1000000" },
-              { "Rider": "Rider 2", "Rider Code": "ADBR", "Sum Assured": "500000" },
-              { "Rider": "Rider 3", "Rider Code": "CI", "Sum Assured": "250000" }
+              {
+                "Rider": "Rider 1",
+                "Rider Code": "TI",
+                "Sum Assured": "1000000"
+              },
+              {
+                "Rider": "Rider 2",
+                "Rider Code": "ADBR",
+                "Sum Assured": "500000"
+              },
+              {
+                "Rider": "Rider 3",
+                "Rider Code": "CI",
+                "Sum Assured": "250000"
+              }
             ]
           }
         ]
@@ -46,7 +58,7 @@
         "attributes": [
           { "name": "Call ID", "value": "" },
           { "name": "Policy No.", "value": "" },
-          { "name": "Agent Name", "value": "Vinayaka-0112000" },
+          { "name": "Agent Name", "value": "Ram / AG123" },
           { "name": "Customer Type", "value": "New" }
         ],
         "expandedAttributes": [
@@ -109,430 +121,976 @@
         "tables": []
       }
     ],
-    "riskCards": [
+    "sections": [
       {
-        "id": "financial",
-        "title": "Financial",
-        "tone": "danger",
-        "viewLabel": "View Financial",
-        "fields": [
-          { "name": "Financial Decision", "value": "NON-FSTP" },
-          { "name": "Financial Eligibility", "value": "₹4,80,000" },
-          { "name": "Derived Income", "value": "₹16,00,000" },
-          { "name": "Verified Income", "value": "₹16,00,000" },
-          { "name": "BIU Financial Status", "value": "" }
-        ],
-        "details": {
-          "title": "Financial Details",
-          "fields": [
-            { "name": "Financial Decision", "value": "NON-FSTP" },
-            { "name": "Financial Eligibility", "value": "₹4,80,000" },
-            { "name": "Derived Income", "value": "₹16,00,000" },
-            { "name": "Verified Income", "value": "₹16,00,000" },
-            { "name": "Counter Offer Value", "value": "₹50,00,000" },
-            { "name": "Additional SA", "value": "0.0" },
-            { "name": "BIU Financial Status", "value": "" },
-            { "name": "Final Bureau Income", "value": "" },
-            { "name": "Reinsurer Case", "value": "" }
-          ],
-          "remarks": [{ "name": "Financial Remark", "value": "" }]
+        "name": "breDecision",
+        "value": {
+          "decision": "Non-STP",
+          "initialDecision": "Non-STP",
+          "isInitial": "N",
+          "isLatest": "N",
+          "remarks": "ACR#OCD#PAN#KYP#AGE#IDM#ADP",
+          "discrepancy": "-",
+          "timestamp": "09/07/2026, 0108hrs",
+          "action": "CASE_INTIATION",
+          "reTriggerCount": 1
         }
       },
       {
-        "id": "medical",
-        "title": "Medical",
-        "tone": "success",
-        "viewLabel": "View Medical",
-        "fields": [
-          { "name": "Physical Medical Decision", "value": "STP" },
-          { "name": "MunichRe Medical Decision", "value": "" },
-          { "name": "BIU Medical Status", "value": "" }
-        ],
-        "details": {
-          "title": "Medical Details",
-          "fields": [
-            { "name": "Physical Medical Decision", "value": "STP" },
-            { "name": "Tele/Video MER Decision", "value": "" },
-            { "name": "MunichRe Medical Decision", "value": "" },
-            { "name": "MunichRe Rating", "value": "" },
-            { "name": "BIU Medical Status", "value": "" }
+        "name": "summary",
+        "value": [
+          {
+            "memberType": "proposer",
+            "lifeType": "PR",
+            "customerType": "SHNI",
+            "partyId": "b02e8405-d81f-4f84-915e-5bdc9ca34deb",
+            "jontFlag": false,
+            "lifeNumber": "",
+            "clientId": "NA",
+            "proposerLaRelation": "Self",
+            "jointLARelation": "",
+            "jointPRRelation": "",
+            "nriFlag": false,
+            "fatfFlag": false,
+            "riskAnalytics": [
+              {
+                "medicalRisk": {
+                  "isMedical": true,
+                  "brePhysicalMedicalDecision": "",
+                  "brePhysicalMedicalRemark": "",
+                  "breTeleVideoMerDecision": "",
+                  "breTeleVideoMerRemark": "",
+                  "munichReMedicalDecision": "",
+                  "munichReRating": "",
+                  "biuMedicalStatus": "N"
+                },
+                "financialRisk": {
+                  "isFinancial": true,
+                  "breFinancialDecision": "",
+                  "breRemark": "",
+                  "financialEligibility": "",
+                  "derivedIncome": "",
+                  "counterOfferValue": "",
+                  "additionalSA": "",
+                  "biuFinancialStatus": ""
+                },
+                "otherRisk": {
+                  "isOthers": true,
+                  "ptlrResponse": "",
+                  "drcResponse": "Y",
+                  "adverseIIB": "",
+                  "criminalQuestionResponseLA": "No",
+                  "pepQuestionResponseLA": "No",
+                  "criminalQuestionResponsePR": "No",
+                  "pepQuestionResponsePR": "No",
+                  "previousPolicySubstandard": "",
+                  "avocationRelatedDisclosure": "",
+                  "healthQuestionPositive": "Yes",
+                  "employmentInRiskyIndustry": "",
+                  "fatfOfacCountryLogin": "",
+                  "hazardousOccupation": "",
+                  "eddFlag": "",
+                  "claimRiskIndicator": "",
+                  "faceMatchScore": "",
+                  "tobacco": "",
+                  "narcotics": ""
+                }
+              }
+            ],
+            "faceMatchDetails": {
+              "document": "",
+              "faceMatchScore": null,
+              "imageQuality": null,
+              "remarks": ""
+            },
+            "proposerSummary": {
+              "title": "",
+              "firstName": "TSTR",
+              "middleName": "",
+              "lastName": "HDSVGH",
+              "gender": "Male",
+              "maritalStatus": "Married",
+              "dob": "1991-05-04T00:00",
+              "age": {
+                "years": 35,
+                "days": 177
+              },
+              "profileImage": "",
+              "caseStatus": "DRAFT",
+              "nationality": "India",
+              "countryOfResidence": "India",
+              "residentStatus": "IND",
+              "education": "Graduate",
+              "pioStatus": "0",
+              "highestQualification": "Graduate",
+              "graduationFlag": "",
+              "orgName": "3I INFOTECH",
+              "yearsInServiceOrBusiness": null,
+              "industryType": "",
+              "birthCountry": "",
+              "occupationType": "SPVT",
+              "netIncomeAmt": null,
+              "immigrationStatus": "Indian Resident",
+              "orgType": "PVT",
+              "latestIncYear": 2026,
+              "isPEP": false,
+              "panNo": "HBJPD6578Q",
+              "remarks": "",
+              "ckycNumber": "",
+              "criminalProceeding": "No",
+              "incomeProof": "Aadhaar",
+              "designation": "",
+              "disabled": "",
+              "percentageOfImpairment": "",
+              "typeOfImpairment": "",
+              "udidNumber": ""
+            },
+            "applicantDetails": {
+              "dateOfBirth": "1991-05-04",
+              "gender": "Male",
+              "maritalStatus": "Married",
+              "nationality": "India",
+              "countryOfResidence": "India",
+              "education": "Graduate",
+              "designation": "",
+              "disabled": "",
+              "percentageOfImpairment": "",
+              "typeOfImpairment": ""
+            },
+            "financialDetails": {
+              "annualIncome": 5000000,
+              "appliedSumAssured": 5000000,
+              "trsa": null,
+              "tfsa": null
+            },
+            "policyDetails": {
+              "proposerName": "TSTR HDSVGH",
+              "lifeAssuredName": "TSTR HDSVGH",
+              "productName": "ICICI Pru iProtect Smart Plus",
+              "modalPremium": 0,
+              "paymentMode": "",
+              "channelCode": "Agency",
+              "channel": "Agency channel"
+            },
+            "underwriting": {
+              "remarks": "ACR#OCD#PAN#KYP#AGE#IDM#ADP",
+              "breDecision": {
+                "status": "Non-STP",
+                "category": "CASE_INTIATION",
+                "coverage": "ACR#OCD#PAN#KYP#AGE#IDM#ADP"
+              }
+            },
+            "kycDetails": {
+              "panNumber": "HBJPD6578Q",
+              "identityProofType": "Aadhaar",
+              "identityProofNumber": "AAAAA1111A",
+              "addressProof": "Aadhaar",
+              "incomeProof": "Aadhaar",
+              "ageProof": "Aadhaar",
+              "existingCkycNumber": "NA",
+              "pep": "No",
+              "criminalProceedings": "No",
+              "panFlag": "Y",
+              "panAadharSeedingStatus": "",
+              "identityProofExpiryDate": "",
+              "pranNo": "",
+              "pranNoVerification": "",
+              "udsLink": "https://udsviewer-uat.icicilife.com/App/UdsViewer/document-listing/split?roleid=bk8vQVBlanM1WVhjekE4a0d6emJnZz09&_uidtype=M1ZLSVhSY09scmVPQ1R2Nk9lSFM5UT09&_uidvalue=VlZjQ2NpcUExMi9CbjFtV0JLNStzUT09&ntid=UDSMIDOFFICE&token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJVMDRMRHBkTlk3QVpMR2FRTlNvQW4zTTN0bFpOcUlaZXp5TUdvYkJxVzVLbkVOSHQiLCJhdWQiOiJ1cm46Ly9jNjA1MTFjMC0xMmEyLTQ3M2MtODBmZC00MjUyOGViNjVhNmEiLCJudElkIjoiVURTTUlET0ZGSUNFIiwiYXV0aCI6IktWRU5oZHRwVnNmMzFiVXNsQVBGa3RKTWxBNFIiLCJpc3MiOiJ1cm46Ly9hcGlnZWUtZWRnZS1KV1QtcG9saWN5LXRlc3QiLCJleHAiOjE3OTMxNzA0MTcsImlhdCI6MTc5MzE2ODYxNywianRpIjoiNjJjN2Y0ZDYtOTBhYi00ODUzLWE3OWYtMjg5YWU4NDkxZDc1In0.IAgg5qlDaKLppXl9fK9LDEHYn7Y3NcFsFjp4uT--vrgEJFJzzlKyiqKw6OAq5CyWI_ZExmEJioS7MZoVni2yDtQuA6vQwNJgYZ0EmRw3jAEVrxIotRpvSwJwLT_1kzbhtgQuc6Srl2egOzRVNXd9DkyueCp8EvZVEsd2_JlVTTh16M9WKjFKsBo_opc2CfYa3AQuoymosKYvWXlxW9zmq4Jx6pMmyNfoDXDOvcslO_OOYSWu3rCsWP1HleX6uhSV2ysSSRWnnJMpyRx9voVh3h4cPTeWsJyqkh6NYVLRnySzlM2wGBFIDtajKVf6dgoqMcnIo28JWQpe3gd4gnuyyJD30i3nO2m-hEsTctso5FnSUnGLhtUfdByQcYF-dAkv9ilcBn4eLTa1823utuDXqdeQYazIlTGhVbtXVk5tipd3NuZ3lpfnKDdX-Ot44nmKQntVmGhgrPBVUn96Jo3yv-km8AQECjZfD7KRV9f4KaKeFY7sHHlGxGriCdniunDd0k9FtWNExG8sm4C9k-70scnIGtRBqnp0RR4b3AEx75C3WeN7O05gN5V8dsxvc7FVv6Fi5mB7HjKSHErdnfQuT9X2ZKYiI8EZSaOq2ShpRNqgthNHK6Ac8eKT0X1ePalt5_2rSqXySe-hYzFGHbVMFpPRyCz0HXPqf4_mF0NB464"
+            },
+            "address": [
+              {
+                "type": "communication",
+                "addressLine1": "",
+                "addressLine2": "",
+                "addressLine3": "",
+                "landmark": "",
+                "city": "",
+                "state": "",
+                "pinCode": "",
+                "residingCountry": "",
+                "topCity": "",
+                "negativePinCode": ""
+              },
+              {
+                "type": "permanent",
+                "addressLine1": "MUMBAI",
+                "addressLine2": "",
+                "addressLine3": "",
+                "landmark": "",
+                "city": "MUMBAI",
+                "state": "Maharashtra",
+                "pinCode": "400006",
+                "residingCountry": "India",
+                "topCity": "N",
+                "negativePinCode": "N"
+              }
+            ],
+            "communicationAddressDetails": {
+              "addressLine1": "",
+              "addressLine2": "",
+              "addressLine3": "",
+              "landmark": "",
+              "city": "",
+              "state": "",
+              "country": "",
+              "pincode": "",
+              "topCity": "",
+              "negativePinCode": ""
+            },
+            "permanentAddressDetails": {
+              "addressLine1": "MUMBAI",
+              "addressLine2": "",
+              "addressLine3": "",
+              "landmark": "",
+              "city": "MUMBAI",
+              "state": "Maharashtra",
+              "country": "India",
+              "pincode": "400006",
+              "topCity": "N",
+              "negativePinCode": "N"
+            },
+            "contactDetails": {
+              "mobileNo": "9878761726",
+              "alternateMobileNo": "",
+              "alternateMobile": "",
+              "std": "",
+              "landlineNo": "",
+              "landlineNumber": "",
+              "emailId": "",
+              "emailPref": "Y",
+              "smsPref": "Y"
+            },
+            "applicantFinancialDetails": {
+              "occupation": "SPVT",
+              "annualIncome": 5000000,
+              "gstin": "",
+              "lastIncomeYear": 2026,
+              "organisationType": "PVT",
+              "organisationName": "3I INFOTECH"
+            },
+            "healthDetail": {
+              "height": "165.1",
+              "weight": "",
+              "bmi": "",
+              "avgSystolic": "",
+              "avgDiastolic": "",
+              "heightFeet": "",
+              "heightInches": "0",
+              "hazardousOccupation": "",
+              "isDisabled": "",
+              "percentageOfImpairment": "",
+              "typeOfImpairment": "",
+              "illnessOrImpairment": [],
+              "substanceConsumption": [
+                {
+                  "substance": "",
+                  "consumedAs": "",
+                  "quantity": {
+                    "amount": "",
+                    "unit": "day/week"
+                  },
+                  "noOfYears": null,
+                  "advisedByDoctorForAbstinence": ""
+                }
+              ],
+              "medicalQuestionnaire": [
+                {
+                  "qtid": "ILLIMPAIRMENT",
+                  "value": "yes",
+                  "remar": "",
+                  "subQts": []
+                }
+              ]
+            },
+            "nominee": [
+              {
+                "relationWithLA": "",
+                "relationship": "",
+                "firstName": "TRSTR",
+                "lastName": "HDSVGH",
+                "dob": "1999-03-03T00:00",
+                "gender": "Female",
+                "percentage": 0,
+                "proposerNomineeRelation": "",
+                "accountNumber": "",
+                "ifsc": ""
+              }
+            ],
+            "appointee": [],
+            "genericDetails": {
+              "existingPolicyNumber": "NA",
+              "clientId": "NA",
+              "selfProposed": "Yes",
+              "typeOfProposer": "Individual",
+              "relationshipWithLifeAssured": "Self",
+              "typeOfProposal": "Retail New Business"
+            },
+            "eiaDetails": {
+              "openEIA": "No",
+              "existingEIANumber": "NA",
+              "preferredRepository": "",
+              "convertPolicies": "No"
+            },
+            "fundDetails": {
+              "allocationStrategy": "",
+              "totalAllocation": "",
+              "atpOpted": "",
+              "fundDetail": []
+            },
+            "paymentDetails": {},
+            "payoutDetails": {},
+            "advisorDetails": {
+              "relationWithAdvisor": "others",
+              "acquaintanceDuration": 0,
+              "fileSentToCopsDate": "",
+              "branchUWDate": "",
+              "decalarationDate": "",
+              "declarationPlace": ""
+            },
+            "questions": [
+              {
+                "quesCode": "ILLIMPAIRMENT",
+                "quesFor": "LA",
+                "quesType": "HEALTH",
+                "quesAns": "yes"
+              }
+            ],
+            "producerDetails": {
+              "perfiosBank": "No",
+              "premiumPaymentOption": "RP0",
+              "isecExperianCategory": "",
+              "gstInNumber": "",
+              "pasaSegmentCitiesFlag": "",
+              "productSource": "standalone",
+              "imputedMarker": "",
+              "imputedIncome": "0",
+              "prePopulatedValueEdited": "NA",
+              "fnaSumAssured": "0",
+              "componentCode": "PSPL",
+              "cdfWaiverFlag": "No",
+              "youthExpressFlag": "N",
+              "atsSource": "",
+              "ipsDiscountFlag": "FALSE",
+              "lumpSumPercentage": "0",
+              "accuityRiskIndicator": "",
+              "primaryLASumAssured": ""
+            },
+            "documentDetails": [
+              {
+                "documentType": "AGE_PROOF",
+                "documentName": "Aadhaar",
+                "documentId": "AAAAA1111A",
+                "validityDate": ""
+              }
+            ],
+            "bureauDetails": {
+              "cibilScore": "",
+              "cibilIncomeSegment": "",
+              "cibilEligibilityStatus": "N",
+              "cibilServiceStatus": "N",
+              "experianScore": "",
+              "experianIncomeSegment": "",
+              "experianEligibilityStatus": "N",
+              "experianServiceStatus": "N",
+              "payuScore": "",
+              "payuIncomeSegment": "",
+              "payuEligibilityStatus": "N",
+              "payuServiceStatus": "N"
+            }
+          },
+          {
+            "memberType": "lifeassured1",
+            "lifeType": "LA",
+            "customerType": "SHNI",
+            "partyId": "4181d2ce-868b-4338-96f1-07289474d0fc",
+            "jontFlag": false,
+            "lifeNumber": "",
+            "clientId": "NA",
+            "proposerLaRelation": "Self",
+            "jointLARelation": "",
+            "jointPRRelation": "",
+            "nriFlag": false,
+            "fatfFlag": false,
+            "faceMatchDetails": {
+              "document": "",
+              "faceMatchScore": null,
+              "imageQuality": null,
+              "remarks": ""
+            },
+            "proposerSummary": {
+              "title": "",
+              "firstName": "TSTR",
+              "middleName": "",
+              "lastName": "HDSVGH",
+              "gender": "Male",
+              "maritalStatus": "",
+              "dob": "1991-05-04T00:00",
+              "age": {
+                "years": 35,
+                "days": 177
+              },
+              "profileImage": "",
+              "caseStatus": "DRAFT",
+              "nationality": "India",
+              "countryOfResidence": "India",
+              "residentStatus": "IND",
+              "education": "Graduate",
+              "pioStatus": "0",
+              "highestQualification": "Graduate",
+              "graduationFlag": "",
+              "orgName": "3I INFOTECH",
+              "yearsInServiceOrBusiness": null,
+              "industryType": "",
+              "birthCountry": "",
+              "occupationType": "SPVT",
+              "netIncomeAmt": null,
+              "immigrationStatus": "Indian Resident",
+              "orgType": "PVT",
+              "latestIncYear": 2026,
+              "isPEP": false,
+              "panNo": "",
+              "remarks": "",
+              "ckycNumber": "",
+              "criminalProceeding": "No",
+              "incomeProof": "Aadhaar",
+              "designation": "",
+              "disabled": "",
+              "percentageOfImpairment": "",
+              "typeOfImpairment": "",
+              "udidNumber": ""
+            },
+            "applicantDetails": {
+              "dateOfBirth": "1991-05-04",
+              "gender": "Male",
+              "maritalStatus": "",
+              "nationality": "India",
+              "countryOfResidence": "India",
+              "education": "Graduate",
+              "designation": "",
+              "disabled": "",
+              "percentageOfImpairment": "",
+              "typeOfImpairment": ""
+            },
+            "financialDetails": {
+              "annualIncome": 5000000,
+              "appliedSumAssured": 5000000,
+              "trsa": null,
+              "tfsa": null
+            },
+            "policyDetails": {
+              "proposerName": "TSTR HDSVGH",
+              "lifeAssuredName": "TSTR HDSVGH",
+              "productName": "ICICI Pru iProtect Smart Plus",
+              "modalPremium": 0,
+              "paymentMode": "",
+              "channelCode": "Agency",
+              "channel": "Agency channel"
+            },
+            "underwriting": {
+              "remarks": "ACR#OCD#PAN#KYP#AGE#IDM#ADP",
+              "breDecision": {
+                "status": "Non-STP",
+                "category": "CASE_INTIATION",
+                "coverage": "ACR#OCD#PAN#KYP#AGE#IDM#ADP"
+              }
+            },
+            "kycDetails": {
+              "panNumber": "",
+              "identityProofType": "Aadhaar",
+              "identityProofNumber": "AAAAA1111A",
+              "addressProof": "Aadhaar",
+              "incomeProof": "Aadhaar",
+              "ageProof": "Aadhaar",
+              "existingCkycNumber": "NA",
+              "pep": "No",
+              "criminalProceedings": "No",
+              "panFlag": "",
+              "panAadharSeedingStatus": "",
+              "identityProofExpiryDate": "",
+              "pranNo": "",
+              "pranNoVerification": "",
+              "udsLink": "https://udsviewer-uat.icicilife.com/App/UdsViewer/document-listing/split?roleid=bk8vQVBlanM1WVhjekE4a0d6emJnZz09&_uidtype=M1ZLSVhSY09scmVPQ1R2Nk9lSFM5UT09&_uidvalue=VlZjQ2NpcUExMi9CbjFtV0JLNStzUT09&ntid=UDSMIDOFFICE&token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJVMDRMRHBkTlk3QVpMR2FRTlNvQW4zTTN0bFpOcUlaZXp5TUdvYkJxVzVLbkVOSHQiLCJhdWQiOiJ1cm46Ly9jNjA1MTFjMC0xMmEyLTQ3M2MtODBmZC00MjUyOGViNjVhNmEiLCJudElkIjoiVURTTUlET0ZGSUNFIiwiYXV0aCI6IktWRU5oZHRwVnNmMzFiVXNsQVBGa3RKTWxBNFIiLCJpc3MiOiJ1cm46Ly9hcGlnZWUtZWRnZS1KV1QtcG9saWN5LXRlc3QiLCJleHAiOjE3OTMxNzA0MTcsImlhdCI6MTc5MzE2ODYxNywianRpIjoiNjJjN2Y0ZDYtOTBhYi00ODUzLWE3OWYtMjg5YWU4NDkxZDc1In0.IAgg5qlDaKLppXl9fK9LDEHYn7Y3NcFsFjp4uT--vrgEJFJzzlKyiqKw6OAq5CyWI_ZExmEJioS7MZoVni2yDtQuA6vQwNJgYZ0EmRw3jAEVrxIotRpvSwJwLT_1kzbhtgQuc6Srl2egOzRVNXd9DkyueCp8EvZVEsd2_JlVTTh16M9WKjFKsBo_opc2CfYa3AQuoymosKYvWXlxW9zmq4Jx6pMmyNfoDXDOvcslO_OOYSWu3rCsWP1HleX6uhSV2ysSSRWnnJMpyRx9voVh3h4cPTeWsJyqkh6NYVLRnySzlM2wGBFIDtajKVf6dgoqMcnIo28JWQpe3gd4gnuyyJD30i3nO2m-hEsTctso5FnSUnGLhtUfdByQcYF-dAkv9ilcBn4eLTa1823utuDXqdeQYazIlTGhVbtXVk5tipd3NuZ3lpfnKDdX-Ot44nmKQntVmGhgrPBVUn96Jo3yv-km8AQECjZfD7KRV9f4KaKeFY7sHHlGxGriCdniunDd0k9FtWNExG8sm4C9k-70scnIGtRBqnp0RR4b3AEx75C3WeN7O05gN5V8dsxvc7FVv6Fi5mB7HjKSHErdnfQuT9X2ZKYiI8EZSaOq2ShpRNqgthNHK6Ac8eKT0X1ePalt5_2rSqXySe-hYzFGHbVMFpPRyCz0HXPqf4_mF0NB464"
+            },
+            "address": [
+              {
+                "type": "communication",
+                "addressLine1": "",
+                "addressLine2": "",
+                "addressLine3": "",
+                "landmark": "",
+                "city": "",
+                "state": "",
+                "pinCode": "",
+                "residingCountry": "",
+                "topCity": "",
+                "negativePinCode": ""
+              },
+              {
+                "type": "permanent",
+                "addressLine1": "MUMBAI",
+                "addressLine2": "",
+                "addressLine3": "",
+                "landmark": "",
+                "city": "MUMBAI",
+                "state": "Maharashtra",
+                "pinCode": "400006",
+                "residingCountry": "India",
+                "topCity": "N",
+                "negativePinCode": "N"
+              }
+            ],
+            "communicationAddressDetails": {
+              "addressLine1": "",
+              "addressLine2": "",
+              "addressLine3": "",
+              "landmark": "",
+              "city": "",
+              "state": "",
+              "country": "",
+              "pincode": "",
+              "topCity": "",
+              "negativePinCode": ""
+            },
+            "permanentAddressDetails": {
+              "addressLine1": "MUMBAI",
+              "addressLine2": "",
+              "addressLine3": "",
+              "landmark": "",
+              "city": "MUMBAI",
+              "state": "Maharashtra",
+              "country": "India",
+              "pincode": "400006",
+              "topCity": "N",
+              "negativePinCode": "N"
+            },
+            "contactDetails": {
+              "mobileNo": "9878761726",
+              "alternateMobileNo": "",
+              "alternateMobile": "",
+              "std": "",
+              "landlineNo": "",
+              "landlineNumber": "",
+              "emailId": "",
+              "emailPref": "Y",
+              "smsPref": "Y"
+            },
+            "applicantFinancialDetails": {
+              "occupation": "SPVT",
+              "annualIncome": 5000000,
+              "gstin": "",
+              "lastIncomeYear": 2026,
+              "organisationType": "PVT",
+              "organisationName": "3I INFOTECH"
+            },
+            "healthDetail": {
+              "height": "165.1",
+              "weight": "",
+              "bmi": "",
+              "avgSystolic": "",
+              "avgDiastolic": "",
+              "heightFeet": "",
+              "heightInches": "0",
+              "hazardousOccupation": "",
+              "isDisabled": "",
+              "percentageOfImpairment": "",
+              "typeOfImpairment": "",
+              "illnessOrImpairment": [],
+              "substanceConsumption": [
+                {
+                  "substance": "",
+                  "consumedAs": "",
+                  "quantity": {
+                    "amount": "",
+                    "unit": "day/week"
+                  },
+                  "noOfYears": null,
+                  "advisedByDoctorForAbstinence": ""
+                }
+              ],
+              "medicalQuestionnaire": [
+                {
+                  "qtid": "ILLIMPAIRMENT",
+                  "value": "yes",
+                  "remar": "",
+                  "subQts": []
+                }
+              ]
+            },
+            "nominee": [
+              {
+                "relationWithLA": "",
+                "relationship": "",
+                "firstName": "TRSTR",
+                "lastName": "HDSVGH",
+                "dob": "1999-03-03T00:00",
+                "gender": "Female",
+                "percentage": 0,
+                "proposerNomineeRelation": "",
+                "accountNumber": "",
+                "ifsc": ""
+              }
+            ],
+            "appointee": [],
+            "genericDetails": {
+              "existingPolicyNumber": "NA",
+              "clientId": "NA",
+              "selfProposed": "Yes",
+              "typeOfProposer": "Individual",
+              "relationshipWithLifeAssured": "Self",
+              "typeOfProposal": "Retail New Business"
+            },
+            "eiaDetails": {
+              "openEIA": "No",
+              "existingEIANumber": "NA",
+              "preferredRepository": "",
+              "convertPolicies": "No"
+            },
+            "fundDetails": {
+              "allocationStrategy": "",
+              "totalAllocation": "",
+              "atpOpted": "",
+              "fundDetail": []
+            },
+            "paymentDetails": {},
+            "payoutDetails": {},
+            "advisorDetails": {
+              "relationWithAdvisor": "others",
+              "acquaintanceDuration": 0,
+              "fileSentToCopsDate": "",
+              "branchUWDate": "",
+              "decalarationDate": "",
+              "declarationPlace": ""
+            },
+            "questions": [
+              {
+                "quesCode": "ILLIMPAIRMENT",
+                "quesFor": "LA",
+                "quesType": "HEALTH",
+                "quesAns": "yes"
+              }
+            ],
+            "producerDetails": {
+              "perfiosBank": "No",
+              "premiumPaymentOption": "RP0",
+              "isecExperianCategory": "",
+              "gstInNumber": "",
+              "pasaSegmentCitiesFlag": "",
+              "productSource": "standalone",
+              "imputedMarker": "",
+              "imputedIncome": "0",
+              "prePopulatedValueEdited": "NA",
+              "fnaSumAssured": "0",
+              "componentCode": "PSPL",
+              "cdfWaiverFlag": "No",
+              "youthExpressFlag": "N",
+              "atsSource": "",
+              "ipsDiscountFlag": "FALSE",
+              "lumpSumPercentage": "0",
+              "accuityRiskIndicator": "",
+              "primaryLASumAssured": ""
+            },
+            "documentDetails": [
+              {
+                "documentType": "AGE_PROOF",
+                "documentName": "Aadhaar",
+                "documentId": "AAAAA1111A",
+                "validityDate": ""
+              }
+            ],
+            "bureauDetails": {
+              "cibilScore": "",
+              "cibilIncomeSegment": "",
+              "cibilEligibilityStatus": "N",
+              "cibilServiceStatus": "N",
+              "experianScore": "",
+              "experianIncomeSegment": "",
+              "experianEligibilityStatus": "N",
+              "experianServiceStatus": "N",
+              "payuScore": "",
+              "payuIncomeSegment": "",
+              "payuEligibilityStatus": "N",
+              "payuServiceStatus": "N"
+            }
+          }
+        ]
+      },
+      {
+        "name": "requirementManagement",
+        "value": [
+          {
+            "requirementId": 11792,
+            "status": "pending",
+            "ocrStatus": "pass",
+            "team": "UW",
+            "category": "Consent",
+            "subCategory": "Policy confirmation",
+            "document": "OTP",
+            "reason": "Document not uplaoded",
+            "fupCode": "OTP",
+            "description": "OTP-Policy confirmation/ consent code required"
+          },
+          {
+            "requirementId": 11790,
+            "status": "Accept",
+            "ocrStatus": "pass",
+            "team": "COPS",
+            "category": "KYC",
+            "subCategory": "Ageproof",
+            "document": "PAN Card",
+            "reason": "Documents not submitted",
+            "fupCode": "AGE",
+            "description": "AGE-Age proof of life assured (Passport - front & back or Driving License or Pan Card or Aadhaar - front & back)"
+          },
+          {
+            "requirementId": 11791,
+            "status": "pending",
+            "ocrStatus": "pass",
+            "team": "COPS",
+            "category": "KYC",
+            "subCategory": "PAN Card",
+            "document": "PAN /Form 60",
+            "reason": "Documents not submitted",
+            "fupCode": "PAL",
+            "description": "PAL- Please submit PAN Card copy linked with your Aadhaar"
+          },
+          {
+            "requirementId": 11795,
+            "status": "pending",
+            "ocrStatus": "pass",
+            "team": "COPS",
+            "category": "KYC",
+            "subCategory": "PAN Card",
+            "document": "Photo",
+            "reason": "Documents not submitted",
+            "fupCode": "KYP",
+            "description": "KYP- Upload recent photograph of proposer"
+          },
+          {
+            "requirementId": 11793,
+            "status": "waived",
+            "ocrStatus": "pass",
+            "team": "COPS",
+            "category": "KYC",
+            "subCategory": "ID proof",
+            "document": "Drving License",
+            "reason": "Documents not submitted",
+            "fupCode": "IDM",
+            "description": "IDM- Upload valid ID proof of proposer (Passport - front & back or Driving License or Pan Card or Aadhaar - front & back)"
+          },
+          {
+            "requirementId": 11794,
+            "status": "Accept",
+            "ocrStatus": "pass",
+            "team": "COPS",
+            "category": "KYC",
+            "subCategory": "Address Proof",
+            "document": "Driving License",
+            "reason": "Documents not submitted",
+            "fupCode": "ADP",
+            "description": "ADP-Address proof of the proposer matching with application form (Passport - front & back or Aadhaar - front & back or Driving License or Voter id)"
+          },
+          {
+            "requirementId": 12069,
+            "status": "pending",
+            "ocrStatus": "",
+            "team": "COPS",
+            "category": "Medical",
+            "subCategory": "SPAARC call",
+            "document": "SPAARC call ID",
+            "reason": "Call ID to be raised for details mismatch in Application form",
+            "fupCode": "SCI",
+            "description": "SPAARC call ID to be raised (related to Name, address, DOB, Pin Code, gender & residential status mismatch as per the IUW form)"
+          }
+        ]
+      },
+      {
+        "name": "applicationOverview",
+        "value": {
+          "sourcingDetail": {
+            "agentCode": "00004004",
+            "bankCode": "0FB",
+            "corporateAgent": "",
+            "negativeAdvisor": "",
+            "agencyType": "AG",
+            "areaCode": "",
+            "partnerType": "",
+            "lanNumber": "",
+            "partnerBank": "",
+            "salesChannel": "Agency channel",
+            "fscfsm": "",
+            "cafosCode": "",
+            "companyCode": "NCOMBO",
+            "spCode": "",
+            "csrlim": "",
+            "bank": "",
+            "branch": "",
+            "channelCode": "Agency",
+            "drcChannelCode": "Agency",
+            "subChannelCode": "",
+            "agentName": "Santosh, Nayak",
+            "trsa": null,
+            "tfsa": null,
+            "salesChannelName": "Agency channel",
+            "salesChannelValue": "AGENCY",
+            "salesChannelType": "DISTRIBUTION"
+          },
+          "groupDetails": {
+            "coverageOption": "Decreasing",
+            "coverageStatus": "Active",
+            "moratorium": "Y",
+            "loanType": "Home Loan",
+            "bankType": "Private",
+            "loanTerm": "240",
+            "loanAmount": "5000000",
+            "typeOfLoan": "Secured",
+            "dateOfLoanDisbursement": "2026-03-01",
+            "shareOfLoan": "100",
+            "applicantStatus": "",
+            "shareOfLoanJl": "100",
+            "applicantStatusJl": "",
+            "masterPolicyHolder": ""
+          },
+          "productDetail": [
+            {
+              "type": "base",
+              "code": "T74",
+              "name": "ICICI Pru iProtect Smart Plus",
+              "faceValue": "5000000",
+              "coverageOption": "ICICI Pru iProtect Smart Plus",
+              "term": "",
+              "premiumMode": "",
+              "renewalPremiumMode": "",
+              "premiumFrequency": "",
+              "annualPremium": 11036,
+              "installmentPremium": "0",
+              "installmentPremiumWithTax": null,
+              "ratingFactor": "",
+              "isEligible": "",
+              "riskCessationTerm": 40,
+              "premiumCessationTerm": 40,
+              "paymentAmount": null,
+              "premiumModeFpd": "",
+              "baseAnnualPremium": null,
+              "premium": 0,
+              "sumAssured": 5000000,
+              "loanLimit": null,
+              "deathBenefitPayoutOption": "",
+              "benefitOption": "",
+              "statCode": "",
+              "incomeBenefitFlag": "",
+              "lifeStageBenefitFlag": "",
+              "statCodeD": "",
+              "statCodeE": "",
+              "initialSumAssured": "",
+              "modalPremium": 0,
+              "productType": "",
+              "customerType": "SHNI",
+              "policyType": "Retail New Business",
+              "policyTerm": null,
+              "premiumPaymentTerm": 40
+            }
           ],
-          "remarks": [
-            { "name": "Tele/Video MER Remark", "value": "" },
-            { "name": "Physical Medical Remark", "value": "" }
-          ]
+          "riderDetails": [],
+          "customer": {
+            "customerType": "SHNI",
+            "policyType": "Retail New Business"
+          },
+          "policyDetails": {
+            "proposerName": "TSTR HDSVGH",
+            "lifeAssuredName": "TSTR HDSVGH",
+            "modalPremium": 0,
+            "policyTerm": null,
+            "premiumPaymentTerm": 40,
+            "paymentMode": ""
+          }
         }
       },
       {
-        "id": "other",
-        "title": "Risk Parameters",
-        "tone": "danger",
-        "fields": [
-          { "name": "DRC Response", "value": "Y" },
-          { "name": "Criminal Question Response LA", "value": "No" },
-          { "name": "PEP Question Response LA", "value": "No" },
-          { "name": "Tele prompting", "value": "Yes" }
-        ],
-        "details": {
-          "title": "Other Risk Details",
-          "fields": [
-            { "name": "PTLR Response", "value": "" },
-            { "name": "DRC Response", "value": "Y" },
-            { "name": "Adverse IIB", "value": "" },
-            { "name": "Criminal Question Response LA", "value": "No" },
-            { "name": "PEP Question Response LA", "value": "No" },
-            { "name": "Criminal Question Response PR", "value": "No" },
-            { "name": "PEP Question Response PR", "value": "No" },
-            { "name": "Previous Policy Substandard", "value": "No" },
-            { "name": "Avocation Related Disclosure", "value": "" },
-            { "name": "Health Question Positive", "value": "Yes" },
-            { "name": "Employment In Risky Industry", "value": "LowRiskPremium" },
-            { "name": "FATF/OFAC Country Login", "value": "No" },
-            { "name": "Hazardous Occupation", "value": "" },
-            { "name": "EDD Flag", "value": "Yes" },
-            { "name": "Claim Risk Indicator", "value": "" },
-            { "name": "Face Match Score", "value": "" },
-            { "name": "Tobacco", "value": "" },
-            { "name": "Narcotics", "value": "" },
-            { "name": "Third Party Payment", "value": "" },
-            { "name": "Policy Bazar Risk Response", "value": "" },
-            { "name": "Adverse ACR", "value": "" },
-            { "name": "Distance < acceptable range", "value": "" },
-            { "name": "Adverse App OID", "value": "" },
-            { "name": "Negative Pincode", "value": "" },
-            { "name": "Nominee Other than Blood relative", "value": "" }
-          ]
+        "name": "decision",
+        "value": null
+      },
+      {
+        "name": "applicationInfo",
+        "value": {
+          "applicationDate": "2026-06-24T00:00:00.0",
+          "comboFlag": "no",
+          "storyCode": "",
+          "pbRiskScore": "",
+          "comboNumber": "OS90378398",
+          "lifeCount": null,
+          "proposerType": "Individual",
+          "umCode": "",
+          "source": "Agency",
+          "simultaneousPolicies": false,
+          "simultaneousLifeSA": 0,
+          "isLAPropSame": true,
+          "otherPolicySA": 0,
+          "lifeType": "Main Life",
+          "coApplicationFlag": "no",
+          "gaVisitorId": "",
+          "isTagged": "",
+          "taggedAppNo": "NA",
+          "taggedRelation": "NA",
+          "spousePolicyNo": "NA",
+          "trsa": null,
+          "tfsa": null,
+          "tsa": "",
+          "case_category": ""
         }
       }
     ],
-    "breDecision": {
-      "decision": "DC",
-      "remarks": "Product Non Eligible",
-      "discrepancy": "ACR#OCD#PAN#ADP#AGE#IDM#KYP",
-      "action": "Decline",
-      "timestamp": "14/08/2026, 1108hrs",
-      "reTriggerCount": 2
-    },
-    "latestBreDecision": {
-      "decision": "ST",
-      "remarks": "Product Non Eligible",
-      "discrepancy": "ACR#OCD#PAN#ADP#AGE#IDM#KYP#NYC",
-      "action": "Decline",
-      "timestamp": "14/08/2026, 1108hrs",
-      "reTriggerCount": 2
-    },
-    "requirementManagement": [
+    "subSections": [
       {
-        "requirementId": 11792,
-        "status": "pending",
-        "ocrStatus": "pass",
-        "team": "UW",
-        "category": "Consent",
-        "subCategory": "Policy confirmation",
-        "document": "OTP",
-        "reason": "Document not uplaoded",
-        "fupCode": "OTP",
-        "description": "OTP-Policy confirmation/ consent code required"
+        "name": "proposerForm",
+        "value": {
+          "link": "https://udsviewer-uat.icicilife.com/App/UdsViewer/document-listing/split?roleid=bk8vQVBlanM1WVhjekE4a0d6emJnZz09&_uidtype=M1ZLSVhSY09scmVPQ1R2Nk9lSFM5UT09&_uidvalue=VlZjQ2NpcUExMi9CbjFtV0JLNStzUT09&ntid=UDSMIDOFFICE&token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJVMDRMRHBkTlk3QVpMR2FRTlNvQW4zTTN0bFpOcUlaZXp5TUdvYkJxVzVLbkVOSHQiLCJhdWQiOiJ1cm46Ly9jNjA1MTFjMC0xMmEyLTQ3M2MtODBmZC00MjUyOGViNjVhNmEiLCJudElkIjoiVURTTUlET0ZGSUNFIiwiYXV0aCI6IktWRU5oZHRwVnNmMzFiVXNsQVBGa3RKTWxBNFIiLCJpc3MiOiJ1cm46Ly9hcGlnZWUtZWRnZS1KV1QtcG9saWN5LXRlc3QiLCJleHAiOjE3OTMxNzA0MTcsImlhdCI6MTc5MzE2ODYxNywianRpIjoiNjJjN2Y0ZDYtOTBhYi00ODUzLWE3OWYtMjg5YWU4NDkxZDc1In0.IAgg5qlDaKLppXl9fK9LDEHYn7Y3NcFsFjp4uT--vrgEJFJzzlKyiqKw6OAq5CyWI_ZExmEJioS7MZoVni2yDtQuA6vQwNJgYZ0EmRw3jAEVrxIotRpvSwJwLT_1kzbhtgQuc6Srl2egOzRVNXd9DkyueCp8EvZVEsd2_JlVTTh16M9WKjFKsBo_opc2CfYa3AQuoymosKYvWXlxW9zmq4Jx6pMmyNfoDXDOvcslO_OOYSWu3rCsWP1HleX6uhSV2ysSSRWnnJMpyRx9voVh3h4cPTeWsJyqkh6NYVLRnySzlM2wGBFIDtajKVf6dgoqMcnIo28JWQpe3gd4gnuyyJD30i3nO2m-hEsTctso5FnSUnGLhtUfdByQcYF-dAkv9ilcBn4eLTa1823utuDXqdeQYazIlTGhVbtXVk5tipd3NuZ3lpfnKDdX-Ot44nmKQntVmGhgrPBVUn96Jo3yv-km8AQECjZfD7KRV9f4KaKeFY7sHHlGxGriCdniunDd0k9FtWNExG8sm4C9k-70scnIGtRBqnp0RR4b3AEx75C3WeN7O05gN5V8dsxvc7FVv6Fi5mB7HjKSHErdnfQuT9X2ZKYiI8EZSaOq2ShpRNqgthNHK6Ac8eKT0X1ePalt5_2rSqXySe-hYzFGHbVMFpPRyCz0HXPqf4_mF0NB464",
+          "errorMessage": "successful"
+        }
       },
       {
-        "requirementId": 11790,
-        "status": "Accept",
-        "ocrStatus": "pass",
-        "team": "COPS",
-        "category": "KYC",
-        "subCategory": "Ageproof",
-        "document": "PAN Card",
-        "reason": "Documents not submitted",
-        "fupCode": "AGE",
-        "description": "AGE-Age proof of life assured (Passport - front & back or Driving License or Pan Card or Aadhaar - front & back)"
+        "name": "previousPolicies",
+        "value": []
       },
       {
-        "requirementId": 11791,
-        "status": "pending",
-        "ocrStatus": "pass",
-        "team": "COPS",
-        "category": "KYC",
-        "subCategory": "PAN Card",
-        "document": "PAN /Form 60",
-        "reason": "Documents not submitted",
-        "fupCode": "PAL",
-        "description": "PAL- Please submit PAN Card copy linked with your Aadhaar"
+        "name": "openTask",
+        "value": null
       },
       {
-        "requirementId": 11795,
-        "status": "pending",
-        "ocrStatus": "pass",
-        "team": "COPS",
-        "category": "KYC",
-        "subCategory": "PAN Card",
-        "document": "Photo",
-        "reason": "Documents not submitted",
-        "fupCode": "KYP",
-        "description": "KYP- Upload recent photograph of proposer"
-      },
-      {
-        "requirementId": 11793,
-        "status": "waived",
-        "ocrStatus": "pass",
-        "team": "COPS",
-        "category": "KYC",
-        "subCategory": "ID proof",
-        "document": "Drving License",
-        "reason": "Documents not submitted",
-        "fupCode": "IDM",
-        "description": "IDM- Upload valid ID proof of proposer (Passport - front & back or Driving License or Pan Card or Aadhaar - front & back)"
-      },
-      {
-        "requirementId": 11794,
-        "status": "Accept",
-        "ocrStatus": "pass",
-        "team": "COPS",
-        "category": "KYC",
-        "subCategory": "Address Proof",
-        "document": "Driving License",
-        "reason": "Documents not submitted",
-        "fupCode": "ADP",
-        "description": "ADP-Address proof of the proposer matching with application form (Passport - front & back or Aadhaar - front & back or Driving License or Voter id)"
-      },
-      {
-        "requirementId": 12069,
-        "status": "pending",
-        "ocrStatus": "",
-        "team": "COPS",
-        "category": "Medical",
-        "subCategory": "SPAARC call",
-        "document": "SPAARC call ID",
-        "reason": "Call ID to be raised for details mismatch in Application form",
-        "fupCode": "SCI",
-        "description": "SPAARC call ID to be raised (related to Name, address, DOB, Pin Code, gender & residential status mismatch as per the IUW form)"
+        "name": "auditTrail",
+        "value": [
+          {
+            "taskId": "36054",
+            "taskName": "ATS",
+            "instanceId": "8468",
+            "applicationNumber": "OS90378398",
+            "status": "Completed",
+            "statusCode": "",
+            "statusValue": "",
+            "assignedTo": "",
+            "claimedDate": "",
+            "completionDate": "2026-10-28T11:40:51",
+            "createdOn": "2026-10-26T21:34:33",
+            "updatedBy": "SYSTEM",
+            "updatedOn": "2026-10-28T11:40:52"
+          },
+          {
+            "taskId": "36100",
+            "taskName": "Reconsideration Task",
+            "instanceId": "8468",
+            "applicationNumber": "OS90378398",
+            "status": "Assigned",
+            "statusCode": "",
+            "statusValue": "",
+            "assignedTo": "",
+            "claimedDate": "",
+            "completionDate": "",
+            "createdOn": "2026-10-28T11:40:52",
+            "updatedBy": "",
+            "updatedOn": "2026-10-28T11:40:52"
+          }
+        ]
       }
     ],
-    "lifeAssured": {
-      "summary": [
-        {
-          "memberType": "lifeassured1",
-          "proposerSummary": {
-            "firstName": "Rudra",
-            "middleName": "Prakash",
-            "lastName": "Sangha",
-            "gender": "Male",
-            "maritalStatus": "",
-            "dob": "1988-08-09T00:00",
-            "age": { "years": 38 },
-            "profileImage": "",
-            "nationality": "India",
-            "countryOfResidence": "India",
-            "residentStatus": "IND",
-            "education": "Graduate",
-            "designation": "Manager",
-            "disabled": "",
-            "udidNumber": "UDID-98765"
-          },
-          "kycDetails": {
-            "panNumber": "",
-            "identityProofType": "Aadhaar",
-            "identityProofNumber": "AAAAA1111A",
-            "addressProof": "Aadhaar",
-            "incomeProof": "Aadhaar",
-            "existingCkycNumber": "NA",
-            "pep": "No",
-            "criminalProceedings": "No",
-            "panFlag": "Verified",
-            "panAadharSeedingStatus": "Y",
-            "identityProofExpiryDate": "2099-12-31T00:00",
-            "pranNo": "123456789012",
-            "pranNoVerification": "Verified"
-          },
-          "address": [
-            {
-              "type": "communication",
-              "addressLine1": "malad",
-              "addressLine2": "malad",
-              "addressLine3": "",
-              "landmark": "prism",
-              "city": "mumbai",
-              "state": "maharashtra",
-              "pinCode": "400064",
-              "residingCountry": ""
-            },
-            {
-              "type": "permanent",
-              "addressLine1": "RFRF",
-              "addressLine2": "FGHJK",
-              "addressLine3": "FGHJKL",
-              "landmark": "",
-              "city": "THANE",
-              "state": "Maharashtra",
-              "pinCode": "400709",
-              "residingCountry": "India"
-            }
-          ],
-          "contactDetails": {
-            "mobileNo": "9878716726",
-            "alternateMobileNo": "",
-            "std": "",
-            "landlineNo": "",
-            "emailId": "TRSTR@GMAIL.COM",
-            "emailPref": "Y",
-            "smsPref": "Y"
-          },
-          "healthDetail": { "height": "165.1", "weight": "67", "bmi": "25.0" },
-          "nominee": [
-            {
-              "firstName": "Smit",
-              "lastName": "Sangha",
-              "dob": "1991-03-12T00:00",
-              "gender": "Male",
-              "percentage": 0
-            }
-          ],
-          "appointee": [
-            {
-              "firstName": "Shivani",
-              "lastName": "Sangha",
-              "dob": "1991-03-12T00:00",
-              "gender": "Female"
-            }
-          ]
-        },
-        {
-          "memberType": "lifeassured2",
-          "proposerSummary": {
-            "firstName": "Rudra",
-            "middleName": "Prakash",
-            "lastName": "Sangha",
-            "gender": "Male",
-            "maritalStatus": "",
-            "dob": "1988-08-09T00:00",
-            "age": { "years": 38 },
-            "profileImage": "",
-            "nationality": "India",
-            "countryOfResidence": "India",
-            "residentStatus": "IND",
-            "education": "Graduate",
-            "designation": "Manager",
-            "disabled": "",
-            "udidNumber": "UDID-98765"
-          },
-          "kycDetails": {
-            "panNumber": "",
-            "identityProofType": "Aadhaar",
-            "identityProofNumber": "AAAAA1111A",
-            "addressProof": "Aadhaar",
-            "incomeProof": "Aadhaar",
-            "existingCkycNumber": "NA",
-            "pep": "No",
-            "criminalProceedings": "No",
-            "panFlag": "Verified",
-            "panAadharSeedingStatus": "Y",
-            "identityProofExpiryDate": "2099-12-31T00:00",
-            "pranNo": "123456789012",
-            "pranNoVerification": "Verified"
-          },
-          "address": [
-            {
-              "type": "communication",
-              "addressLine1": "malad",
-              "addressLine2": "malad",
-              "addressLine3": "",
-              "landmark": "prism",
-              "city": "mumbai",
-              "state": "maharashtra",
-              "pinCode": "400064",
-              "residingCountry": ""
-            },
-            {
-              "type": "permanent",
-              "addressLine1": "RFRF",
-              "addressLine2": "FGHJK",
-              "addressLine3": "FGHJKL",
-              "landmark": "",
-              "city": "THANE",
-              "state": "Maharashtra",
-              "pinCode": "400709",
-              "residingCountry": "India"
-            }
-          ],
-          "contactDetails": {
-            "mobileNo": "9878716726",
-            "alternateMobileNo": "",
-            "std": "",
-            "landlineNo": "",
-            "emailId": "TRSTR@GMAIL.COM",
-            "emailPref": "Y",
-            "smsPref": "Y"
-          },
-          "healthDetail": { "height": "165.1", "weight": "67", "bmi": "25.0" },
-          "nominee": [
-            {
-              "firstName": "Smit",
-              "lastName": "Sangha",
-              "dob": "1991-03-12T00:00",
-              "gender": "Male",
-              "percentage": 0
-            }
-          ],
-          "appointee": [
-            {
-              "firstName": "Shivani",
-              "lastName": "Sangha",
-              "dob": "1991-03-12T00:00",
-              "gender": "Female"
-            }
-          ]
-        }
-      ],
-      "productDetail": { "code": "E36", "productType": "" },
-      "riderDetails": [
-        {
-          "riderName": "ICICI Pru Non-Linked Accidental Death and Disability Rider",
-          "sumAssured": 5000000,
-          "riderTerm": 36
-        },
-        {
-          "riderName": "ICICI Pru Non-Linked Accidental Death and Disability Rider",
-          "sumAssured": 5000000,
-          "riderTerm": 36
-        },
-        {
-          "riderName": "ICICI Pru Non-Linked Health Protect Rider",
-          "sumAssured": 5000000,
-          "riderTerm": 36
-        }
-      ],
-      "loan": {
-        "baseSumAssured": "",
-        "loanAmount": "",
-        "loanDisbursementDate": "",
-        "loanShare": "",
-        "loanTerm": "",
-        "policyTerm": "",
-        "masterCode": "",
-        "loanAccountNumber": ""
-      },
-      "imageRecords": [
-        {
-          "imageType": "Live photograph",
-          "document": "Applicant selfie",
-          "faceMatchScore": "98.6%",
-          "imageQuality": "Good",
-          "remarks": "Face matched successfully"
-        },
-        {
-          "imageType": "Identity proof",
-          "document": "Aadhaar photograph",
-          "faceMatchScore": "96.2%",
-          "imageQuality": "Good",
-          "remarks": "Image is clear and readable"
-        },
-        {
-          "imageType": "Proposal form",
-          "document": "Signed proposal image",
-          "faceMatchScore": "94.8%",
-          "imageQuality": "Acceptable",
-          "remarks": "Signature and image verified"
-        }
-      ]
-    }
+    "sectionType": ["Header", "Card", "Section", "quickLinks"]
   }
 }
