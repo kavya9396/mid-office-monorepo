@@ -72,7 +72,8 @@ const GuwUser = () => {
   const [breDetailOpen, setBreDetailOpen] = useState(false);
 
   const breDecision = drs.data?.breDecision;
-  const latestBreDecision = drs.data?.latestBreDecision;
+  // The API may not send a separate latest BRE; fall back to the initial one (same as DvtUser).
+  const latestBreDecision = drs.data?.latestBreDecision ?? breDecision;
   const requirements = drs.data?.requirements ?? [];
 
   const initialCodes = splitDiscrepancies(breDecision?.discrepancy ?? "");

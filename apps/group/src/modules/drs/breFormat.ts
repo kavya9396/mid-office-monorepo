@@ -34,9 +34,9 @@ export const buildBreRows = (initial: BreDecision, final: BreDecision): Comparis
   },
 ];
 
-// "ACR#OCD#PAN" -> ["ACR", "OCD", "PAN"]
+// "ACR#OCD#PAN" -> ["ACR", "OCD", "PAN"]; a lone "-" means no discrepancy.
 export const splitDiscrepancies = (value: string) =>
   value
     .split("#")
     .map((token) => token.trim())
-    .filter(Boolean);
+    .filter((token) => token !== "" && token !== "-");

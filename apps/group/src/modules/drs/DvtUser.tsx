@@ -10,6 +10,7 @@ import { LifeAssured } from "@insurance-poc/common/life-assured";
 import { RequirementMgmt } from "@insurance-poc/common/requirement-mgmt";
 import { QuickLinksModule } from "@insurance-poc/common/quick-links";
 import { ApplicantProfile } from "@insurance-poc/common/applicant-profile";
+import { RiskCards } from "@insurance-poc/common/risk-cards";
 import {
   requirementStatusOptions,
   requirementStatusOrder,
@@ -80,40 +81,14 @@ const DvtUser = () => {
     );
   }
 
-  const { cardDetails, breDecision, requirements, applicants } = drs.data;
+  const { cardDetails, breDecision, requirements, applicants, riskCards } = drs.data;
 
-  const breRows: ComparisonRow[] = [
-    {
-      label: "BRE Status",
-      initial: breDecision.initialDecision ? "Success" : "-",
-      final: breDecision.decision ? "Success" : "-",
-    },
-    {
-      label: "BRE Decision",
-      initial: breDecision.initialDecision,
-      final: breDecision.decision,
-      diff: "value",
-    },
-    {
-      label: "BRE Remarks",
-      initial: breDecision.remarks,
-      final: breDecision.remarks,
-    },
-    {
-      label: "BRE Discrepancy",
-      initial: breDecision.discrepancy,
-      final: breDecision.discrepancy,
-      diff: "tokens",
-    },
-    {
-      label: "BRE Timestamp",
-      initial: formatBreTimestamp(breDecision.timestamp),
-      final: formatBreTimestamp(breDecision.timestamp),
-    },
-  ];
+  const breRows = buildBreRows(breDecision, breDecision);
 
   return (
-    <Box sx={{ position: "relative", minHeight: "100%", p:2, display: "flex", gap:2, flexDirection: "column" }}>
+    <Box sx={{ position: "relative", minHeight: "100%", p: 2, display: "flex", gap: 2, flexDirection: "column" }}>
+      <RiskCards cards={riskCards} />
+
       <Box
         sx={{
           display: "grid",

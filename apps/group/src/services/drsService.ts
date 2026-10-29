@@ -1,9 +1,10 @@
 import type { DetailAttribute, DetailTable } from "@insurance-poc/common/detail-card";
 import type { LifeAssuredApplicant } from "@insurance-poc/common/life-assured";
 import type { RequirementItem } from "@insurance-poc/common/requirement-mgmt";
-import type { RiskCardData, RiskCardDetails } from "@insurance-poc/common/risk-cards";
+import type { RiskCardData } from "@insurance-poc/common/risk-cards";
 import { mapApplicants, type LifeAssuredSource } from "../modules/drs/lifeAssuredData";
 import { mapRequirements, type RawRequirement } from "../modules/drs/requirementData";
+import { mapRiskCards } from "../modules/drs/riskCardsData";
 
 export const GROUP_DRS_PATH = "/drs";
 
@@ -30,6 +31,7 @@ export type GroupDrsData = {
   applicationNo: string;
   cardDetails: CardDetail[];
   breDecision: BreDecision;
+  latestBreDecision?: BreDecision;
   requirements: RequirementItem[];
   applicants: LifeAssuredApplicant[];
   riskCards: RiskCardData[];
@@ -105,37 +107,6 @@ function readCards(value: unknown): CardDetail[] {
   });
 }
 
-function readRiskDetails(value: unknown): RiskCardDetails | undefined {
-  if (value === undefined) return undefined;
-  if (!isRecord(value) || typeof value.title !== "string") throw invalidResponse();
-  return {
-    title: value.title,
-    fields: readAttributes(value.fields),
-    remarks: value.remarks === undefined ? undefined : readAttributes(value.remarks),
-  };
-}
-
-function readRiskCards(value: unknown): RiskCardData[] {
-  if (value === undefined) return [];
-  if (!Array.isArray(value)) throw invalidResponse();
-  return value.map((item) => {
-    if (
-      !isRecord(item) ||
-      typeof item.id !== "string" ||
-      typeof item.title !== "string" ||
-      (item.tone !== "success" && item.tone !== "danger")
-    ) {
-      throw invalidResponse();
-    }
-    return {
-      id: item.id,
-      title: item.title,
-      tone: item.tone,
-      fields: readAttributes(item.fields),
-      viewLabel: typeof item.viewLabel === "string" ? item.viewLabel : undefined,
-      details: readRiskDetails(item.details),
-    };
-  });
 /** Finds a section by name inside data.sections array and returns its value. */
 function findSection(sections: unknown, name: string): unknown {
   if (!Array.isArray(sections)) throw invalidResponse();
@@ -255,6 +226,7 @@ export function mapGroupDrsPayload(value: unknown): GroupDrsData {
 
   const sections = data.sections;
   const breSection = findSection(sections, "breDecision");
+  const latestBreSection = findSection(sections, "latestBreDecision");
   const summarySection = findSection(sections, "summary");
   const requirementSection = findSection(sections, "requirementManagement");
   const appOverviewSection = findSection(sections, "applicationOverview");
@@ -262,13 +234,10 @@ export function mapGroupDrsPayload(value: unknown): GroupDrsData {
   return {
     applicationNo,
     cardDetails: readCards(data.cardDetails),
-    breDecision: readBre(data.breDecision),
-    latestBreDecision: readBre(data.latestBreDecision),
-    requirements: mapRequirements(readRequirements(data.requirementManagement)),
-    applicants: mapApplicants(readLifeAssured(data.lifeAssured)),
-    riskCards: readRiskCards(data.riskCards),
     breDecision: readBre(breSection),
+    latestBreDecision: latestBreSection != null ? readBre(latestBreSection) : undefined,
     requirements: mapRequirements(readRequirements(requirementSection)),
     applicants: mapApplicants(readLifeAssured(summarySection, appOverviewSection)),
+    riskCards: mapRiskCards(summarySection),
   };
 }
