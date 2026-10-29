@@ -4,7 +4,8 @@ const USER_ID_KEY = "userId";
 const DISPLAY_NAME_KEY = "displayName";
 const BUSINESS_TYPE_KEY = "businessType";
 const MUST_CHANGE_PASSWORD_KEY = "mustChangePassword";
-const PASSWORD_CHANGED_KEY = "passwordChangedUserIds";
+/** Legacy mock-only key — removed on clear so real API sessions stay clean. */
+const LEGACY_PASSWORD_CHANGED_KEY = "passwordChangedUserIds";
 
 export type SessionBusinessType = "RETAIL" | "GROUP";
 
@@ -44,6 +45,7 @@ export function clearToken(): void {
   storage?.removeItem(DISPLAY_NAME_KEY);
   storage?.removeItem(BUSINESS_TYPE_KEY);
   storage?.removeItem(MUST_CHANGE_PASSWORD_KEY);
+  storage?.removeItem(LEGACY_PASSWORD_CHANGED_KEY);
 }
 
 /**
@@ -62,20 +64,6 @@ export function setMustChangePassword(required: boolean): void {
 
 export function mustChangePassword(): boolean {
   return readStorage()?.getItem(MUST_CHANGE_PASSWORD_KEY) === "true";
-}
-
-export function markPasswordChanged(userId: string): void {
-  const storage = readStorage();
-  const normalized = userId.trim();
-  if (!storage || normalized.length === 0) return;
-  const current = storage.getItem(PASSWORD_CHANGED_KEY)?.split(",").filter(Boolean) ?? [];
-  if (!current.includes(normalized)) current.push(normalized);
-  storage.setItem(PASSWORD_CHANGED_KEY, current.join(","));
-}
-
-export function hasChangedPassword(userId: string): boolean {
-  const current = readStorage()?.getItem(PASSWORD_CHANGED_KEY)?.split(",") ?? [];
-  return current.includes(userId.trim());
 }
 
 export function setSessionUser(user: SessionUser): void {

@@ -2,8 +2,6 @@ import {
   encodeBase64,
   getSessionUser,
   getToken,
-  hasChangedPassword,
-  markPasswordChanged,
   useMock,
 } from "@insurance-poc/utils";
 import changePasswordMock from "../modules/login/mock/changePassword.json";
@@ -12,6 +10,21 @@ import loginMock from "../modules/login/mock/login.json";
 import resetPasswordMock from "../modules/login/mock/resetPassword.json";
 
 export type BusinessType = "RETAIL" | "GROUP";
+
+/**
+ * Mock-only in-memory flag so first-login → change-password → second-login works
+ * without a server. Never written to sessionStorage; real API uses server flags.
+ */
+const mockPasswordChangedUserIds = new Set<string>();
+
+function markMockPasswordChanged(userId: string): void {
+  const normalized = userId.trim();
+  if (normalized.length > 0) mockPasswordChangedUserIds.add(normalized);
+}
+
+function hasMockPasswordChanged(userId: string): boolean {
+  return mockPasswordChangedUserIds.has(userId.trim());
+}
 
 export interface AuthenticatedUser {
   userId: string;
@@ -309,7 +322,7 @@ function buildMockLoginEnvelope(userId: string): LoginApiEnvelope {
     };
   }
 
-  const passwordAlreadyChanged = hasChangedPassword(userId);
+  const passwordAlreadyChanged = hasMockPasswordChanged(userId);
   const firstLogin = mockUser.firstLogin === true && !passwordAlreadyChanged;
   const mustChangePassword =
     (mockUser.mustChangePassword === true || firstLogin) && !passwordAlreadyChanged;
@@ -528,7 +541,7 @@ export async function fetchChangePassword(
     const result = mockChangePassword(request);
     if (!result.error) {
       const userId = getSessionUser()?.userId;
-      if (userId) markPasswordChanged(userId);
+      if (userId) markMockPasswordChanged(userId);
     }
     return result;
   }

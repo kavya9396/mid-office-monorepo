@@ -1,6 +1,5 @@
-import { useState, type FormEventHandler } from "react";
+import { useEffect, useState, type FormEventHandler } from "react";
 import Box from "@mui/material/Box";
-import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
 import InputAdornment from "@mui/material/InputAdornment";
 import Link from "@mui/material/Link";
@@ -26,18 +25,17 @@ import {
 } from "@insurance-poc/utils";
 import { Controller, useForm, type Control } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
-import IBMLogo from "../../assets/IBM Logo.svg";
-import IPRULogo from "../../assets/ICICI_Logo_BG.svg";
-import LoginImage from "../../assets/Login-Image.svg";
 import { useLoginMutation } from "../../services/authApi";
 import type { BusinessType } from "../../services/loginService";
+import { AuthShell, authCompactLaptop, authShortLaptop } from "./AuthShell";
+import {
+  authSnackbar,
+  closedAuthSnackbar,
+  type AuthSnackbarState,
+  type SnackbarSeverity,
+} from "./authFeedback";
 import { ForgotPasswordDialog } from "./ForgotPasswordDialog";
 import { loginSchema, type LoginForm } from "./loginSchema";
-
-type SnackbarState = {
-  open: boolean;
-  message: string;
-};
 
 type SubmissionState = {
   canSubmit: boolean;
@@ -51,7 +49,6 @@ type CredentialsFormProps = {
   passwordVisible: boolean;
   onTogglePassword: () => void;
   submission: SubmissionState;
-  apiError: string;
   onSubmit: FormEventHandler<HTMLFormElement>;
   onForgotPassword: () => void;
 };
@@ -60,23 +57,6 @@ const businessTabs: TabItem<BusinessType>[] = [
   { key: "RETAIL", label: "Retail" },
   { key: "GROUP", label: "Group" },
 ];
-
-const initialSnackbar: SnackbarState = {
-  open: false,
-  message: "",
-};
-
-const inlineLinkSx = {
-  border: 0,
-  p: 0,
-  bgcolor: "transparent",
-  font: "inherit",
-  verticalAlign: "baseline",
-  cursor: "pointer",
-};
-
-const compactLaptop = "@media (max-height: 800px)";
-const shortLaptop = "@media (max-height: 680px)";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -89,7 +69,9 @@ function readTrimmedString(value: unknown): string {
 function messageFromData(data: unknown): string {
   if (typeof data === "string") return data.trim();
   if (!isRecord(data)) return "";
-  return readTrimmedString(data.message) || readTrimmedString(data.errorMessage);
+  const message = readTrimmedString(data.message);
+  if (message.length > 0) return message;
+  return readTrimmedString(data.errorMessage);
 }
 
 function toErrorMessage(reason: unknown, fallback: string): string {
@@ -103,12 +85,16 @@ function toErrorMessage(reason: unknown, fallback: string): string {
   }
   if (!isRecord(reason)) return fallback;
 
-  return (
-    readTrimmedString(reason.error) ||
-    readTrimmedString(reason.message) ||
-    messageFromData(reason.data) ||
-    fallback
-  );
+  const fromError = readTrimmedString(reason.error);
+  if (fromError.length > 0) return fromError;
+
+  const fromMessage = readTrimmedString(reason.message);
+  if (fromMessage.length > 0) return fromMessage;
+
+  const fromData = messageFromData(reason.data);
+  if (fromData.length > 0) return fromData;
+
+  return fallback;
 }
 
 function readResetMessage(state: unknown): string {
@@ -156,54 +142,6 @@ function handleLoginSuccess({
   assignUrl(destination);
 }
 
-function LoginArtwork() {
-  return (
-    <Box
-      sx={{
-        width: { xs: "0%", md: "50%" },
-        minHeight: 0,
-        display: { xs: "none", md: "block" },
-        overflow: "hidden",
-        position: "relative",
-      }}
-    >
-      <Box
-        component="img"
-        src={LoginImage}
-        alt="Underwriter reviewing an insurance form"
-        sx={{
-          width: "100%",
-          height: "100%",
-          display: "block",
-          objectFit: "cover",
-        }}
-      />
-    </Box>
-  );
-}
-
-function LoginIntro() {
-  return (
-    <Box>
-      <Box
-        component="img"
-        src={IPRULogo}
-        alt="ICICI Prudential Life Insurance"
-        sx={{
-          height: 72,
-          width: "auto",
-          mb: 1.5,
-          [compactLaptop]: { height: 52, mb: 1 },
-          [shortLaptop]: { height: 40, mb: 0.5 },
-        }}
-      />
-      <Typography variant="body1" color="text.secondary">
-        Log in to access your account
-      </Typography>
-    </Box>
-  );
-}
-
 function CredentialsForm({
   businessType,
   onBusinessTypeChange,
@@ -211,7 +149,6 @@ function CredentialsForm({
   passwordVisible,
   onTogglePassword,
   submission,
-  apiError,
   onSubmit,
   onForgotPassword,
 }: Readonly<CredentialsFormProps>) {
@@ -226,8 +163,8 @@ function CredentialsForm({
         display: "flex",
         flexDirection: "column",
         gap: 2,
-        [compactLaptop]: { gap: 1.25 },
-        [shortLaptop]: { gap: 1 },
+        [authCompactLaptop]: { gap: 1.25 },
+        [authShortLaptop]: { gap: 1 },
       }}
     >
       <Box>
@@ -239,10 +176,10 @@ function CredentialsForm({
           value={businessType}
           onChange={onBusinessTypeChange}
           sx={{
-            [compactLaptop]: { p: 0.5, gap: 0.5 },
+            [authCompactLaptop]: { p: 0.5, gap: 0.5 },
             "& button": {
-              [compactLaptop]: { py: 0.75 },
-              [shortLaptop]: { py: 0.5 },
+              [authCompactLaptop]: { py: 0.75 },
+              [authShortLaptop]: { py: 0.5 },
             },
           }}
         />
@@ -329,12 +266,6 @@ function CredentialsForm({
         </Link>
       </Box>
 
-      {apiError ? (
-        <Typography role="alert" sx={{ fontSize: "12px", color: "#9A2529" }}>
-          {apiError}
-        </Typography>
-      ) : null}
-
       <CustomButton
         fullWidth
         variant="contained"
@@ -344,8 +275,8 @@ function CredentialsForm({
           mt: 1,
           py: 1.25,
           borderRadius: "50px",
-          [compactLaptop]: { mt: 0.5, py: 1 },
-          [shortLaptop]: { mt: 0, py: 0.75 },
+          [authCompactLaptop]: { mt: 0.5, py: 1 },
+          [authShortLaptop]: { mt: 0, py: 0.75 },
         }}
       >
         {submitLabel}
@@ -354,73 +285,14 @@ function CredentialsForm({
   );
 }
 
-function LegalFooter() {
-  return (
-    <Box sx={{ textAlign: "center" }}>
-      <Divider sx={{ mb: 1, [compactLaptop]: { mb: 0.5 } }} />
-      <Typography
-        variant="caption"
-        color="text.secondary"
-        sx={{ fontSize: "11px" }}
-      >
-        © 2026 ICICI Prudential Insurance,&nbsp;
-        <Link
-          component="button"
-          type="button"
-          underline="hover"
-          sx={inlineLinkSx}
-        >
-          Privacy Policy
-        </Link>
-        &nbsp; | &nbsp;
-        <Link
-          component="button"
-          type="button"
-          underline="hover"
-          sx={inlineLinkSx}
-        >
-          Terms and Conditions
-        </Link>
-      </Typography>
-    </Box>
-  );
-}
-
-function PoweredBy() {
-  return (
-    <Box
-      sx={{
-        flexShrink: 0,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 1,
-        py: 2,
-        [compactLaptop]: { py: 1 },
-        [shortLaptop]: { py: 0.75 },
-      }}
-    >
-      <Typography variant="body2">Powered by</Typography>
-      <Box
-        component="img"
-        src={IBMLogo}
-        alt="IBM Logo"
-        sx={{ height: 28, width: "auto" }}
-      />
-    </Box>
-  );
-}
-
 export function LoginPage() {
   const [businessType, setBusinessType] = useState<BusinessType>("RETAIL");
   const [showPassword, setShowPassword] = useState(false);
-  const [snackbar, setSnackbar] = useState<SnackbarState>(initialSnackbar);
-  const [apiError, setApiError] = useState("");
+  const [snackbar, setSnackbar] = useState<AuthSnackbarState>(closedAuthSnackbar);
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
   const [forgotUserId, setForgotUserId] = useState("");
   const location = useLocation();
   const navigate = useNavigate();
-  const resetMessage = readResetMessage(location.state);
 
   const [login] = useLoginMutation();
   const { control, handleSubmit, formState, getValues } = useForm<LoginForm>({
@@ -432,8 +304,19 @@ export function LoginPage() {
     },
   });
 
+  useEffect(() => {
+    const resetMessage = readResetMessage(location.state);
+    if (resetMessage.length === 0) return;
+    setSnackbar(authSnackbar(resetMessage, "success"));
+    navigate(commonPaths.login, { replace: true, state: null });
+  }, [location.state, navigate]);
+
+  const showNotify = (message: string, severity: SnackbarSeverity) => {
+    setSnackbar(authSnackbar(message, severity));
+  };
+
   const onSubmit = async (credentials: LoginForm) => {
-    setApiError("");
+    setSnackbar(closedAuthSnackbar);
     try {
       const loginResult = await login({
         userId: credentials.username,
@@ -451,9 +334,7 @@ export function LoginPage() {
       });
     } catch (reason: unknown) {
       clearToken();
-      const message = toErrorMessage(reason, "Login failed.");
-      setApiError(message);
-      setSnackbar({ open: true, message });
+      showNotify(toErrorMessage(reason, "Login failed."), "error");
     }
   };
 
@@ -463,82 +344,36 @@ export function LoginPage() {
   };
 
   return (
-    <Box
-      sx={{
-        position: "fixed",
-        inset: 0,
-        display: "flex",
-        height: "100dvh",
-        maxHeight: "100dvh",
-        overflow: "hidden",
-        bgcolor: "#FFFFFF",
-      }}
-    >
-      <LoginArtwork />
-
-      <Box
-        sx={{
-          width: { xs: "100%", md: "50%" },
-          minHeight: 0,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
-      >
-        <Box
-          sx={{
-            width: "100%",
-            maxWidth: 400,
-            flex: 1,
-            minHeight: 0,
-            overflow: "hidden",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            px: 4,
-            py: 3,
-            gap: 2.5,
-            [compactLaptop]: { py: 1.5, gap: 1.5 },
-            [shortLaptop]: { py: 1, gap: 1 },
+    <>
+      <AuthShell subtitle="Log in to access your account" showLegalLinks contentOverflow="hidden">
+        <CredentialsForm
+          businessType={businessType}
+          onBusinessTypeChange={setBusinessType}
+          control={control}
+          passwordVisible={showPassword}
+          onTogglePassword={() => setShowPassword((visible) => !visible)}
+          submission={submission}
+          onSubmit={handleSubmit(onSubmit)}
+          onForgotPassword={() => {
+            setForgotUserId(getValues("username"));
+            setForgotPasswordOpen(true);
           }}
-        >
-          <LoginIntro />
-          {resetMessage ? (
-            <Typography role="alert" sx={{ fontSize: "13px", color: "#1B7F3A" }}>
-              {resetMessage}
-            </Typography>
-          ) : null}
-          <CredentialsForm
-            businessType={businessType}
-            onBusinessTypeChange={setBusinessType}
-            control={control}
-            passwordVisible={showPassword}
-            onTogglePassword={() => setShowPassword((visible) => !visible)}
-            submission={submission}
-            apiError={apiError}
-            onSubmit={handleSubmit(onSubmit)}
-            onForgotPassword={() => {
-              setForgotUserId(getValues("username"));
-              setForgotPasswordOpen(true);
-            }}
-          />
-          <LegalFooter />
-        </Box>
-        <PoweredBy />
-      </Box>
+        />
+      </AuthShell>
 
       <ForgotPasswordDialog
         open={forgotPasswordOpen}
         initialUserId={forgotUserId}
         onClose={() => setForgotPasswordOpen(false)}
+        onNotify={showNotify}
       />
 
       <CustomSnackbar
         open={snackbar.open}
         message={snackbar.message}
-        severity="error"
-        onClose={() => setSnackbar(initialSnackbar)}
+        severity={snackbar.severity}
+        onClose={() => setSnackbar(closedAuthSnackbar)}
       />
-    </Box>
+    </>
   );
 }

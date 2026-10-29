@@ -1,109 +1,30 @@
 import { useState } from "react";
 import Box from "@mui/material/Box";
-import Divider from "@mui/material/Divider";
-import IconButton from "@mui/material/IconButton";
-import InputAdornment from "@mui/material/InputAdornment";
-import Link from "@mui/material/Link";
 import Typography from "@mui/material/Typography";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { commonPaths } from "@insurance-poc/routes";
-import {
-  CustomButton,
-  CustomDialog,
-  CustomSnackbar,
-  CustomTextField,
-  EyeIcon,
-  EyeSlashIcon,
-} from "@insurance-poc/ui";
+import { CustomButton, CustomSnackbar } from "@insurance-poc/ui";
 import { getToken, clearToken } from "@insurance-poc/utils";
-import { Controller, useForm, type Control } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import IBMLogo from "../../assets/IBM Logo.svg";
-import IPRULogo from "../../assets/ICICI_Logo_BG.svg";
-import LoginImage from "../../assets/Login-Image.svg";
 import { useChangePasswordMutation } from "../../services/authApi";
+import { AuthPasswordField } from "./AuthPasswordField";
+import { AuthShell } from "./AuthShell";
+import {
+  authSnackbar,
+  closedAuthSnackbar,
+  readApiMessage,
+  type AuthSnackbarState,
+} from "./authFeedback";
 import { changePasswordSchema, type ChangePasswordForm } from "./changePasswordSchema";
 
-type PasswordName = "oldPassword" | "newPassword" | "confirmPassword";
-
-type PasswordFieldProps = {
-  name: PasswordName;
-  control: Control<ChangePasswordForm>;
-  label: string;
-  placeholder: string;
-};
-
-type SnackbarState = {
-  open: boolean;
-  message: string;
-};
-
-const initialSnackbar: SnackbarState = {
-  open: false,
-  message: "",
-};
-
-function readApiMessage(reason: unknown): string {
-  if (typeof reason === "string" && reason.trim().length > 0) return reason.trim();
-  if (reason instanceof Error && reason.message.length > 0) return reason.message;
-  if (typeof reason === "object" && reason !== null) {
-    const record = reason as Record<string, unknown>;
-    if (typeof record.error === "string" && record.error.length > 0) return record.error;
-    if (typeof record.message === "string" && record.message.length > 0) return record.message;
-  }
-  return "";
-}
-
-function PasswordField({ name, control, label, placeholder }: Readonly<PasswordFieldProps>) {
-  const [visible, setVisible] = useState(false);
-
-  return (
-    <Controller
-      name={name}
-      control={control}
-      render={({ field, fieldState }) => (
-        <CustomTextField
-          fullWidth
-          name={field.name}
-          value={field.value}
-          onChange={field.onChange}
-          onBlur={field.onBlur}
-          type={visible ? "text" : "password"}
-          labelText={label}
-          mandatory
-          placeholder={placeholder}
-          autoComplete={name === "oldPassword" ? "current-password" : "new-password"}
-          error={Boolean(fieldState.error)}
-          helperText={fieldState.error?.message}
-          slotProps={{
-            input: {
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    type="button"
-                    aria-label={visible ? `Hide ${label}` : `Show ${label}`}
-                    aria-pressed={visible}
-                    edge="end"
-                    onClick={() => setVisible((current) => !current)}
-                  >
-                    {visible ? <EyeSlashIcon /> : <EyeIcon />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            },
-          }}
-        />
-      )}
-    />
-  );
-}
+const SUCCESS_REDIRECT_MS = 1800;
 
 export function ChangePasswordPage() {
   const navigate = useNavigate();
   const [changePassword] = useChangePasswordMutation();
-  const [snackbar, setSnackbar] = useState<SnackbarState>(initialSnackbar);
-  const [successOpen, setSuccessOpen] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
+  const [snackbar, setSnackbar] = useState<AuthSnackbarState>(closedAuthSnackbar);
+  const [redirecting, setRedirecting] = useState(false);
   const hasToken = (getToken()?.trim().length ?? 0) > 0;
   const { control, handleSubmit, formState } = useForm<ChangePasswordForm>({
     resolver: zodResolver(changePasswordSchema),
@@ -115,212 +36,81 @@ export function ChangePasswordPage() {
     },
   });
 
-  const goToLogin = () => {
-    setSuccessOpen(false);
-    navigate(commonPaths.login, { replace: true });
-  };
-
   const onSubmit = async (values: ChangePasswordForm) => {
-    setSnackbar(initialSnackbar);
+    setSnackbar(closedAuthSnackbar);
     try {
       const result = await changePassword({
         oldPassword: values.oldPassword,
         newPassword: values.newPassword,
       }).unwrap();
-      // Clear restricted session; stay on this screen until the user confirms success.
       clearToken();
-      setSuccessMessage(
-        result.message.trim().length > 0 ? result.message : "Password changed",
-      );
-      setSuccessOpen(true);
+      const message =
+        result.message.trim().length > 0 ? result.message : "Password changed";
+      setSnackbar(authSnackbar(message, "success"));
+      setRedirecting(true);
+      window.setTimeout(() => {
+        navigate(commonPaths.login, { replace: true });
+      }, SUCCESS_REDIRECT_MS);
     } catch (reason: unknown) {
-      const message = readApiMessage(reason);
-      setSnackbar({
-        open: true,
-        message: message.length > 0 ? message : "Unable to change the password.",
-      });
+      const message = readApiMessage(reason, "Unable to change the password.");
+      setSnackbar(authSnackbar(message, "error"));
     }
   };
 
   return (
-    <Box
-      sx={{
-        position: "fixed",
-        inset: 0,
-        display: "flex",
-        height: "100dvh",
-        maxHeight: "100dvh",
-        overflow: "hidden",
-        bgcolor: "#FFFFFF",
-      }}
-    >
-      <Box
-        sx={{
-          width: { xs: "0%", md: "50%" },
-          minHeight: 0,
-          display: { xs: "none", md: "block" },
-          overflow: "hidden",
-        }}
-      >
-        <Box
-          component="img"
-          src={LoginImage}
-          alt="Underwriter reviewing an insurance form"
-          sx={{ width: "100%", height: "100%", display: "block", objectFit: "cover" }}
-        />
-      </Box>
-
-      <Box
-        sx={{
-          width: { xs: "100%", md: "50%" },
-          minHeight: 0,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
-      >
-        <Box
-          sx={{
-            width: "100%",
-            maxWidth: 400,
-            flex: 1,
-            minHeight: 0,
-            overflow: "auto",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            px: 4,
-            py: 3,
-            gap: 2.5,
-          }}
-        >
-          <Box>
-            <Box
-              component="img"
-              src={IPRULogo}
-              alt="ICICI Prudential Life Insurance"
-              sx={{ height: 72, width: "auto", mb: 1.5 }}
+    <>
+      <AuthShell subtitle="Change your password">
+        {hasToken || redirecting ? (
+          <Box
+            component="form"
+            onSubmit={handleSubmit(onSubmit)}
+            sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+          >
+            <AuthPasswordField
+              name="oldPassword"
+              control={control}
+              label="Current password"
+              placeholder="Enter your current password"
+              autoComplete="current-password"
             />
-            <Typography variant="body1" color="text.secondary">
-              Change your password
-            </Typography>
-          </Box>
+            <AuthPasswordField
+              name="newPassword"
+              control={control}
+              label="New password"
+              placeholder="Enter your new password"
+              autoComplete="new-password"
+            />
+            <AuthPasswordField
+              name="confirmPassword"
+              control={control}
+              label="Confirm password"
+              placeholder="Re-enter your new password"
+              autoComplete="new-password"
+            />
 
-          {hasToken || successOpen ? (
-            <Box
-              component="form"
-              onSubmit={handleSubmit(onSubmit)}
-              sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+            <CustomButton
+              fullWidth
+              variant="contained"
+              type="submit"
+              disabled={!formState.isValid || formState.isSubmitting || redirecting}
+              sx={{ py: 1.25, borderRadius: "50px" }}
             >
-              <PasswordField
-                name="oldPassword"
-                control={control}
-                label="Current password"
-                placeholder="Enter your current password"
-              />
-              <PasswordField
-                name="newPassword"
-                control={control}
-                label="New password"
-                placeholder="Enter your new password"
-              />
-              <PasswordField
-                name="confirmPassword"
-                control={control}
-                label="Confirm password"
-                placeholder="Re-enter your new password"
-              />
-
-              <CustomButton
-                fullWidth
-                variant="contained"
-                type="submit"
-                disabled={!formState.isValid || formState.isSubmitting || successOpen}
-                sx={{ py: 1.25, borderRadius: "50px" }}
-              >
-                {formState.isSubmitting ? "Saving..." : "Change password"}
-              </CustomButton>
-            </Box>
-          ) : (
-            <Typography role="alert" sx={{ fontSize: "13px", color: "#9A2529" }}>
-              Sign in before changing your password.
-            </Typography>
-          )}
-
-          <Link
-            component="button"
-            type="button"
-            underline="hover"
-            onClick={() => {
-              clearToken();
-              navigate(commonPaths.login);
-            }}
-            sx={{
-              alignSelf: "flex-start",
-              border: 0,
-              p: 0,
-              bgcolor: "transparent",
-              color: "#E45F14",
-              fontSize: "12px",
-              fontWeight: 600,
-              cursor: "pointer",
-            }}
-          >
-            Back to login
-          </Link>
-
-          <Box sx={{ textAlign: "center" }}>
-            <Divider sx={{ mb: 1 }} />
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: "11px" }}>
-              © 2026 ICICI Prudential Insurance
-            </Typography>
+              {formState.isSubmitting ? "Saving..." : "Change password"}
+            </CustomButton>
           </Box>
-        </Box>
-
-        <Box
-          sx={{
-            flexShrink: 0,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 1,
-            py: 2,
-          }}
-        >
-          <Typography variant="body2">Powered by</Typography>
-          <Box component="img" src={IBMLogo} alt="IBM Logo" sx={{ height: 28, width: "auto" }} />
-        </Box>
-      </Box>
-
-      <CustomDialog
-        open={successOpen}
-        onClose={goToLogin}
-        title="Password changed"
-        showCloseIcon
-        maxWidth="xs"
-        actions={
-          <CustomButton
-            fullWidth
-            variant="contained"
-            type="button"
-            onClick={goToLogin}
-            sx={{ borderRadius: "50px", py: 1.25 }}
-          >
-            OK
-          </CustomButton>
-        }
-      >
-        <Typography sx={{ fontSize: "14px", color: "text.secondary", pt: 1 }}>
-          {successMessage}
-        </Typography>
-      </CustomDialog>
+        ) : (
+          <Typography role="alert" sx={{ fontSize: "13px", color: "#9A2529" }}>
+            Sign in before changing your password.
+          </Typography>
+        )}
+      </AuthShell>
 
       <CustomSnackbar
         open={snackbar.open}
         message={snackbar.message}
-        severity="error"
-        onClose={() => setSnackbar(initialSnackbar)}
+        severity={snackbar.severity}
+        onClose={() => setSnackbar(closedAuthSnackbar)}
       />
-    </Box>
+    </>
   );
 }

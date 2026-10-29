@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CustomButton, CustomDialog, CustomTextField } from "@insurance-poc/ui";
 import { Controller, useForm } from "react-hook-form";
 import { useForgotPasswordMutation } from "../../services/authApi";
+import { readApiMessage, type SnackbarSeverity } from "./authFeedback";
 import {
   forgotPasswordSchema,
   type ForgotPasswordForm,
@@ -14,31 +15,16 @@ type ForgotPasswordDialogProps = {
   open: boolean;
   initialUserId: string;
   onClose: () => void;
+  onNotify: (message: string, severity: SnackbarSeverity) => void;
 };
-
-type ApiFeedback = {
-  error: boolean;
-  message: string;
-};
-
-function readApiMessage(reason: unknown): string {
-  if (typeof reason === "string" && reason.trim().length > 0) return reason.trim();
-  if (reason instanceof Error && reason.message.length > 0) return reason.message;
-  if (typeof reason === "object" && reason !== null) {
-    const record = reason as Record<string, unknown>;
-    if (typeof record.error === "string" && record.error.length > 0) return record.error;
-    if (typeof record.message === "string" && record.message.length > 0) return record.message;
-  }
-  return "";
-}
 
 export function ForgotPasswordDialog({
   open,
   initialUserId,
   onClose,
+  onNotify,
 }: Readonly<ForgotPasswordDialogProps>) {
   const [forgotPassword] = useForgotPasswordMutation();
-  const [feedback, setFeedback] = useState<ApiFeedback | null>(null);
   const { control, handleSubmit, reset, formState } = useForm<ForgotPasswordForm>({
     resolver: zodResolver(forgotPasswordSchema),
     mode: "onChange",
@@ -48,36 +34,50 @@ export function ForgotPasswordDialog({
   useEffect(() => {
     if (!open) return;
     reset({ userId: initialUserId });
-    setFeedback(null);
   }, [open, initialUserId, reset]);
 
   const onSubmit = async (values: ForgotPasswordForm) => {
-    setFeedback(null);
     try {
       const result = await forgotPassword({ userId: values.userId }).unwrap();
-      setFeedback({ error: false, message: result.message });
+      const message =
+        result.message.trim().length > 0
+          ? result.message
+          : "Reset password link sent successfully.";
+      onNotify(message, "success");
+      onClose();
     } catch (reason: unknown) {
-      const message = readApiMessage(reason);
-      if (message.length > 0) {
-        setFeedback({ error: true, message });
-      }
+      const message = readApiMessage(reason, "Unable to send the reset link.");
+      onNotify(message, "error");
     }
   };
-
-  const succeeded = feedback?.error === false;
 
   return (
     <CustomDialog
       open={open}
       onClose={onClose}
       title="Forgot password"
+      maxWidth="xs"
+      paperSx={{ maxWidth: 400 }}
+      actionsSx={{ justifyContent: "center" }}
       actions={
         <CustomButton
-          fullWidth
           type="submit"
           form="forgot-password-form"
-          disabled={!formState.isValid || formState.isSubmitting || succeeded}
-          sx={{ borderRadius: "50px", py: 1.25 }}
+          variant="contained"
+          disabled={!formState.isValid || formState.isSubmitting}
+          sx={{
+            borderRadius: "28px",
+            px: 2,
+            bgcolor: "#E45F14",
+            color: "#FFFFFF",
+            "&:hover": {
+              bgcolor: "#CC5412",
+            },
+            "&.Mui-disabled": {
+              bgcolor: "#F0B48A",
+              color: "#FFFFFF",
+            },
+          }}
         >
           {formState.isSubmitting ? "Sending..." : "Send reset link"}
         </CustomButton>
@@ -102,10 +102,7 @@ export function ForgotPasswordDialog({
               name={field.name}
               value={field.value}
               onBlur={field.onBlur}
-              onChange={(event) => {
-                field.onChange(event);
-                setFeedback(null);
-              }}
+              onChange={field.onChange}
               labelText="User ID"
               mandatory
               placeholder="Enter your user ID or email"
@@ -115,15 +112,6 @@ export function ForgotPasswordDialog({
             />
           )}
         />
-
-        {feedback ? (
-          <Typography
-            role="alert"
-            sx={{ fontSize: "12px", color: feedback.error ? "#9A2529" : "#1B7F3A" }}
-          >
-            {feedback.message}
-          </Typography>
-        ) : null}
       </Box>
     </CustomDialog>
   );
