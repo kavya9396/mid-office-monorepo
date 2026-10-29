@@ -1,17 +1,33 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-import { Box } from "@mui/material";
-import { CustomSnackbar } from "@insurance-poc/ui";
+import { Box, Typography } from "@mui/material";
+import { CustomDialog, CustomSnackbar } from "@insurance-poc/ui";
+import { BreCard, type BreStatusChip, type BreStatusTone } from "@insurance-poc/common/bre-card";
+import { DecisionComparisonTable } from "@insurance-poc/common/decision-bar";
 import { QuickLinksModule } from "@insurance-poc/common/quick-links";
 import { ApplicantProfile } from "@insurance-poc/common/applicant-profile";
 import {
   ApplicantBanner,
   type BannerRow,
 } from "@insurance-poc/common/applicant-banner";
+import { RiskCards } from "@insurance-poc/common/risk-cards";
+import { useGetGroupDrsQuery } from "../../services/drsApi";
 import { GROUP_QUICK_LINKS_CONFIG } from "../config/quickLinks.config";
+import { buildBreRows, splitDiscrepancies } from "./breFormat";
 
 const quickLinksConfig = GROUP_QUICK_LINKS_CONFIG.guw;
+
+// Same status list / order as the prototype's Requirement Management chips.
+const REQUIREMENT_STATUSES: ReadonlyArray<{ label: string; tone: BreStatusTone }> = [
+  { label: "All", tone: "default" },
+  { label: "Pending", tone: "pending" },
+  { label: "Received", tone: "received" },
+  { label: "Accept", tone: "accept" },
+  { label: "Cancelled", tone: "cancelled" },
+  { label: "Reject", tone: "reject" },
+  { label: "Waived", tone: "waived" },
+];
 
 // Placeholder profile image (inline SVG). Replace with the applicant's real photo URL once available.
 const PROFILE_IMAGE_URL = `data:image/svg+xml;utf8,${encodeURIComponent(
@@ -49,9 +65,31 @@ const GuwUser = () => {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const applicationNo = params.get("applicationNo")?.trim() ?? "";
+  const drs = useGetGroupDrsQuery(applicationNo);
 
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
   const [applicantProfileOpen, setApplicantProfileOpen] = useState(false);
+  const [breDetailOpen, setBreDetailOpen] = useState(false);
+
+  const breDecision = drs.data?.breDecision;
+  const latestBreDecision = drs.data?.latestBreDecision;
+  const requirements = drs.data?.requirements ?? [];
+
+  const initialCodes = splitDiscrepancies(breDecision?.discrepancy ?? "");
+  const initialCodeSet = new Set(initialCodes.map((code) => code.toUpperCase()));
+  const finalOnlyCodes = splitDiscrepancies(latestBreDecision?.discrepancy ?? "").filter(
+    (code) => !initialCodeSet.has(code.toUpperCase()),
+  );
+
+  const statusChips: BreStatusChip[] = REQUIREMENT_STATUSES.map(({ label, tone }) => ({
+    key: label,
+    label,
+    tone,
+    count:
+      label === "All"
+        ? requirements.length
+        : requirements.filter((row) => row.status.toLowerCase() === label.toLowerCase()).length,
+  }));
 
   return (
     <Box sx={{ position: "relative", minHeight: "100%", pb: 8 }}>
@@ -61,6 +99,29 @@ const GuwUser = () => {
         applicationNo={applicationNo || "OB90377122"}
         rows={BANNER_ROWS}
       />
+
+      {drs.data && (
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", lg: "minmax(0, 3fr) minmax(245px, 1fr)" },
+            gap: 1,
+            alignItems: "stretch",
+            px: 2,
+            pt: 1,
+          }}
+        >
+          <RiskCards cards={drs.data.riskCards} />
+          <BreCard
+            decision={latestBreDecision?.decision ?? ""}
+            initialDiscrepancies={initialCodes}
+            finalDiscrepancies={finalOnlyCodes}
+            statusChips={statusChips}
+            onViewDetail={() => setBreDetailOpen(true)}
+            onRefresh={() => console.log("BRE Retrigger clicked")}
+          />
+        </Box>
+      )}
 
       <QuickLinksModule
         items={quickLinksConfig.items}
@@ -83,6 +144,25 @@ const GuwUser = () => {
         message={snackbarMessage ?? ""}
         onClose={() => setSnackbarMessage(null)}
       />
+
+      {breDecision && latestBreDecision && (
+        <CustomDialog
+          open={breDetailOpen}
+          onClose={() => setBreDetailOpen(false)}
+          title={
+            <Typography component="span" sx={{ fontSize: 12, fontWeight: 800 }}>
+              BRE Decision
+            </Typography>
+          }
+          maxWidth="lg"
+          contentSx={{ p: { xs: 1, sm: 1.5 } }}
+        >
+          <DecisionComparisonTable
+            headers={{ label: "BRE", initial: "Initial BRE", final: "Final BRE" }}
+            rows={buildBreRows(breDecision, latestBreDecision)}
+          />
+        </CustomDialog>
+      )}
     </Box>
   );
 };

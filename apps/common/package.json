@@ -29,6 +29,16 @@
       "import": "./src/components/DetailCard.tsx",
       "default": "./src/components/DetailCard.tsx"
     },
+    "./bre-card": {
+      "types": "./src/components/BreCard.tsx",
+      "import": "./src/components/BreCard.tsx",
+      "default": "./src/components/BreCard.tsx"
+    },
+    "./risk-cards": {
+      "types": "./src/components/RiskCards.tsx",
+      "import": "./src/components/RiskCards.tsx",
+      "default": "./src/components/RiskCards.tsx"
+    },
     "./requirement-mgmt": {
       "types": "./src/components/Requirement Mgmt/RequirementMgmt.tsx",
       "import": "./src/components/Requirement Mgmt/RequirementMgmt.tsx",

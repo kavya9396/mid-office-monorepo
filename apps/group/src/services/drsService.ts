@@ -1,6 +1,7 @@
 import type { DetailAttribute, DetailTable } from "@insurance-poc/common/detail-card";
 import type { LifeAssuredApplicant } from "@insurance-poc/common/life-assured";
 import type { RequirementItem } from "@insurance-poc/common/requirement-mgmt";
+import type { RiskCardData, RiskCardDetails } from "@insurance-poc/common/risk-cards";
 import { mapApplicants, type LifeAssuredSource } from "../modules/drs/lifeAssuredData";
 import { mapRequirements, type RawRequirement } from "../modules/drs/requirementData";
 
@@ -31,6 +32,7 @@ export type GroupDrsData = {
   latestBreDecision: BreDecision;
   requirements: RequirementItem[];
   applicants: LifeAssuredApplicant[];
+  riskCards: RiskCardData[];
 };
 
 const CARD_TYPES: readonly CardType[] = ["APPLICATION", "SOURCE", "GROUP", "RISK"];
@@ -103,6 +105,39 @@ function readCards(value: unknown): CardDetail[] {
   });
 }
 
+function readRiskDetails(value: unknown): RiskCardDetails | undefined {
+  if (value === undefined) return undefined;
+  if (!isRecord(value) || typeof value.title !== "string") throw invalidResponse();
+  return {
+    title: value.title,
+    fields: readAttributes(value.fields),
+    remarks: value.remarks === undefined ? undefined : readAttributes(value.remarks),
+  };
+}
+
+function readRiskCards(value: unknown): RiskCardData[] {
+  if (value === undefined) return [];
+  if (!Array.isArray(value)) throw invalidResponse();
+  return value.map((item) => {
+    if (
+      !isRecord(item) ||
+      typeof item.id !== "string" ||
+      typeof item.title !== "string" ||
+      (item.tone !== "success" && item.tone !== "danger")
+    ) {
+      throw invalidResponse();
+    }
+    return {
+      id: item.id,
+      title: item.title,
+      tone: item.tone,
+      fields: readAttributes(item.fields),
+      viewLabel: typeof item.viewLabel === "string" ? item.viewLabel : undefined,
+      details: readRiskDetails(item.details),
+    };
+  });
+}
+
 function readBre(value: unknown): BreDecision {
   if (!isRecord(value)) throw invalidResponse();
   const reTriggerCount = value.reTriggerCount;
@@ -164,5 +199,6 @@ export function mapGroupDrsPayload(value: unknown): GroupDrsData {
     latestBreDecision: readBre(data.latestBreDecision),
     requirements: mapRequirements(readRequirements(data.requirementManagement)),
     applicants: mapApplicants(readLifeAssured(data.lifeAssured)),
+    riskCards: readRiskCards(data.riskCards),
   };
 }

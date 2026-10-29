@@ -3,11 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { Box, Typography } from "@mui/material";
 import { CustomSnackbar, CustomDialog, DeleteIcon, EditIcon } from "@insurance-poc/ui";
-import {
-  DecisionBar,
-  DecisionComparisonTable,
-  type ComparisonRow,
-} from "@insurance-poc/common/decision-bar";
+import { DecisionBar, DecisionComparisonTable } from "@insurance-poc/common/decision-bar";
 import { DetailCard } from "@insurance-poc/common/detail-card";
 import { DecisionSection, type DecisionSubmitPayload } from "@insurance-poc/common/decision-section";
 import { LifeAssured } from "@insurance-poc/common/life-assured";
@@ -22,6 +18,7 @@ import {
 import { useGetGroupDrsQuery } from "../../services/drsApi";
 import type { CardType } from "../../services/drsService";
 import { GROUP_QUICK_LINKS_CONFIG } from "../config/quickLinks.config";
+import { buildBreRows } from "./breFormat";
 
 const CARD_TITLES: Record<CardType, string> = {
   APPLICATION: "Application Detail",
@@ -49,18 +46,6 @@ function readQueryError(error: unknown): string {
   }
   return "Unable to load the Group DRS.";
 }
-
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-// "14/08/2026, 1108hrs" -> "14 Aug 2026, 11:08:00 am" (same output as the prototype)
-const formatBreTimestamp = (value?: string) => {
-  const match = value?.trim().match(/^(\d{2})\/(\d{2})\/(\d{4}),?\s+(\d{2})(\d{2})hrs$/i);
-  if (!match) return "";
-  const [, day, month, year, hours, minutes] = match;
-  const hour12 = Number(hours) % 12 || 12;
-  const meridiem = Number(hours) < 12 ? "am" : "pm";
-  return `${Number(day)} ${MONTHS[Number(month) - 1]} ${year}, ${String(hour12).padStart(2, "0")}:${minutes}:00 ${meridiem}`;
-};
 
 const DvtUser = () => {
   const navigate = useNavigate();
@@ -97,35 +82,7 @@ const DvtUser = () => {
 
   const { cardDetails, breDecision, latestBreDecision, requirements, applicants } = drs.data;
 
-  const breRows: ComparisonRow[] = [
-    {
-      label: "BRE Status",
-      initial: breDecision.decision ? "Success" : "-",
-      final: latestBreDecision.decision ? "Success" : "-",
-    },
-    {
-      label: "BRE Decision",
-      initial: breDecision.decision,
-      final: latestBreDecision.decision,
-      diff: "value",
-    },
-    {
-      label: "BRE Remarks",
-      initial: breDecision.remarks,
-      final: latestBreDecision.remarks,
-    },
-    {
-      label: "BRE Discrepancy",
-      initial: breDecision.discrepancy,
-      final: latestBreDecision.discrepancy,
-      diff: "tokens",
-    },
-    {
-      label: "BRE Timestamp",
-      initial: formatBreTimestamp(breDecision.timestamp),
-      final: formatBreTimestamp(latestBreDecision.timestamp),
-    },
-  ];
+  const breRows = buildBreRows(breDecision, latestBreDecision);
 
   return (
     <Box sx={{ position: "relative", minHeight: "100%", p:2, display: "flex", gap:2, flexDirection: "column" }}>

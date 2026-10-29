@@ -109,6 +109,102 @@
         "tables": []
       }
     ],
+    "riskCards": [
+      {
+        "id": "financial",
+        "title": "Financial",
+        "tone": "danger",
+        "viewLabel": "View Financial",
+        "fields": [
+          { "name": "Financial Decision", "value": "NON-FSTP" },
+          { "name": "Financial Eligibility", "value": "₹4,80,000" },
+          { "name": "Derived Income", "value": "₹16,00,000" },
+          { "name": "Verified Income", "value": "₹16,00,000" },
+          { "name": "BIU Financial Status", "value": "" }
+        ],
+        "details": {
+          "title": "Financial Details",
+          "fields": [
+            { "name": "Financial Decision", "value": "NON-FSTP" },
+            { "name": "Financial Eligibility", "value": "₹4,80,000" },
+            { "name": "Derived Income", "value": "₹16,00,000" },
+            { "name": "Verified Income", "value": "₹16,00,000" },
+            { "name": "Counter Offer Value", "value": "₹50,00,000" },
+            { "name": "Additional SA", "value": "0.0" },
+            { "name": "BIU Financial Status", "value": "" },
+            { "name": "Final Bureau Income", "value": "" },
+            { "name": "Reinsurer Case", "value": "" }
+          ],
+          "remarks": [{ "name": "Financial Remark", "value": "" }]
+        }
+      },
+      {
+        "id": "medical",
+        "title": "Medical",
+        "tone": "success",
+        "viewLabel": "View Medical",
+        "fields": [
+          { "name": "Physical Medical Decision", "value": "STP" },
+          { "name": "MunichRe Medical Decision", "value": "" },
+          { "name": "BIU Medical Status", "value": "" }
+        ],
+        "details": {
+          "title": "Medical Details",
+          "fields": [
+            { "name": "Physical Medical Decision", "value": "STP" },
+            { "name": "Tele/Video MER Decision", "value": "" },
+            { "name": "MunichRe Medical Decision", "value": "" },
+            { "name": "MunichRe Rating", "value": "" },
+            { "name": "BIU Medical Status", "value": "" }
+          ],
+          "remarks": [
+            { "name": "Tele/Video MER Remark", "value": "" },
+            { "name": "Physical Medical Remark", "value": "" }
+          ]
+        }
+      },
+      {
+        "id": "other",
+        "title": "Risk Parameters",
+        "tone": "danger",
+        "fields": [
+          { "name": "DRC Response", "value": "Y" },
+          { "name": "Criminal Question Response LA", "value": "No" },
+          { "name": "PEP Question Response LA", "value": "No" },
+          { "name": "Tele prompting", "value": "Yes" }
+        ],
+        "details": {
+          "title": "Other Risk Details",
+          "fields": [
+            { "name": "PTLR Response", "value": "" },
+            { "name": "DRC Response", "value": "Y" },
+            { "name": "Adverse IIB", "value": "" },
+            { "name": "Criminal Question Response LA", "value": "No" },
+            { "name": "PEP Question Response LA", "value": "No" },
+            { "name": "Criminal Question Response PR", "value": "No" },
+            { "name": "PEP Question Response PR", "value": "No" },
+            { "name": "Previous Policy Substandard", "value": "No" },
+            { "name": "Avocation Related Disclosure", "value": "" },
+            { "name": "Health Question Positive", "value": "Yes" },
+            { "name": "Employment In Risky Industry", "value": "LowRiskPremium" },
+            { "name": "FATF/OFAC Country Login", "value": "No" },
+            { "name": "Hazardous Occupation", "value": "" },
+            { "name": "EDD Flag", "value": "Yes" },
+            { "name": "Claim Risk Indicator", "value": "" },
+            { "name": "Face Match Score", "value": "" },
+            { "name": "Tobacco", "value": "" },
+            { "name": "Narcotics", "value": "" },
+            { "name": "Third Party Payment", "value": "" },
+            { "name": "Policy Bazar Risk Response", "value": "" },
+            { "name": "Adverse ACR", "value": "" },
+            { "name": "Distance < acceptable range", "value": "" },
+            { "name": "Adverse App OID", "value": "" },
+            { "name": "Negative Pincode", "value": "" },
+            { "name": "Nominee Other than Blood relative", "value": "" }
+          ]
+        }
+      }
+    ],
     "breDecision": {
       "decision": "DC",
       "remarks": "Product Non Eligible",
