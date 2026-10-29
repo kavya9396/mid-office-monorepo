@@ -1074,13 +1074,21 @@ const SectionCard = memo(function SectionCard({
           {hasReviewActions && (
             <Box sx={CARD_HEAD_ACTIONS_SX}>
               {editing ? (
-                <CustomButton
-                  variant="outlined"
-                  onClick={() => onReset(section.key)}
-                  sx={HEAD_BUTTON_SX}
-                >
-                  Reset
-                </CustomButton>
+                <>
+                  <CustomButton
+                    variant="outlined"
+                    onClick={() => onReset(section.key)}
+                    sx={HEAD_BUTTON_SX}
+                  >
+                    Reset
+                  </CustomButton>
+                  <CustomButton
+                    onClick={() => onSave(section.key)}
+                    sx={HEAD_BUTTON_SX}
+                  >
+                    Save
+                  </CustomButton>
+                </>
               ) : (
                 <CustomButton
                   variant="outlined"
@@ -1090,13 +1098,6 @@ const SectionCard = memo(function SectionCard({
                   Edit
                 </CustomButton>
               )}
-              <CustomButton
-                disabled={!editing}
-                onClick={() => onSave(section.key)}
-                sx={HEAD_BUTTON_SX}
-              >
-                Save
-              </CustomButton>
             </Box>
           )}
         </Box>
