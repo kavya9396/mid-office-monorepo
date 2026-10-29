@@ -4,6 +4,16 @@
   "version": "0.0.0",
   "type": "module",
   "exports": {
+    "./app-header": {
+      "types": "./src/components/AppHeader.tsx",
+      "import": "./src/components/AppHeader.tsx",
+      "default": "./src/components/AppHeader.tsx"
+    },
+    "./applicant-banner": {
+      "types": "./src/components/ApplicantBanner.tsx",
+      "import": "./src/components/ApplicantBanner.tsx",
+      "default": "./src/components/ApplicantBanner.tsx"
+    },
     "./applicant-profile": {
       "types": "./src/components/ApplicantProfile.tsx",
       "import": "./src/components/ApplicantProfile.tsx",

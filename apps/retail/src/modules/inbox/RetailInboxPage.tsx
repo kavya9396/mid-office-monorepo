@@ -229,7 +229,7 @@ export function RetailInboxPage() {
     };
   }, [reloadKey]);
 
-  function openTask(task: InboxTask) {
+  function openTask(task: InboxTask, category: string | null) {
     const applicationNo = task.applicationNo.trim();
 
     if (!applicationNo) {
@@ -244,7 +244,13 @@ export function RetailInboxPage() {
 
     setNavError(null);
     const query = new URLSearchParams({ applicationNo }).toString();
-    navigate(`/drs?${query}`);
+    const drsPath =
+      category === "MAS_TASK"
+        ? "/mas/drs"
+        : category === "PIVV_TASK"
+          ? "/pivv/drs"
+          : "/drs";
+    navigate(`${drsPath}?${query}`);
   }
 
   const categories = data ? Object.keys(data.poolData) : [];
@@ -299,7 +305,10 @@ export function RetailInboxPage() {
                 {navError}
               </Alert>
             ) : null}
-            <TaskTable tasks={tasks} onOpen={openTask} />
+            <TaskTable
+              tasks={tasks}
+              onOpen={(task) => openTask(task, selectedCategory)}
+            />
           </Box>
         </Box>
       ) : null}

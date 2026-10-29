@@ -1,4 +1,4 @@
-# Monorepo Folder Structure
+﻿# Monorepo Folder Structure
 
 > Part of the [React Frontend Architecture & Engineering Specification](./README.md).
 
@@ -63,6 +63,9 @@ mid-office-monorepo/
 │   │   │   │   │   ├── MASAuditTrailPage.tsx
 │   │   │   │   │   ├── MASMedicalReportPage.tsx  # thin wrapper → DvtReportPage type="medical"
 │   │   │   │   │   └── MASFinancialReportPage.tsx # thin wrapper → DvtReportPage type="financial"
+│   │   │   │   ├── pivv/
+│   │   │   │   │   ├── PivvDrsPage.tsx            # PIVV DRS: AppHeader + ApplicantBanner + PivvDecisionForm (route /pivv/drs; opened from Inbox PIVV_TASK)
+│   │   │   │   │   └── PivvDecisionForm.tsx       # "PIVV Details" table, Submit, Confirm Submit dialog
 │   │   │   │   └── previousPolicy/
 │   │   │   │       └── RetailPreviousPolicyPage.tsx
 │   │   │   ├── routes/
@@ -72,7 +75,8 @@ mid-office-monorepo/
 │   │   │   └── services/
 │   │   │       ├── drsService.ts
 │   │   │       ├── inboxService.ts
-│   │   │       └── masAuditTrailService.ts
+│   │   │       ├── masAuditTrailService.ts
+│   │   │       └── pivvService.ts
 │   │   ├── Dockerfile
 │   │   ├── index.html
 │   │   ├── package.json
@@ -115,6 +119,8 @@ mid-office-monorepo/
 │   │   │   ├── Badge/
 │   │   │   │   ├── Badge.tsx          # Badge, BadgeVariant, LegacyBadgeVariant, RequirementBadgeVariant
 │   │   │   │   └── BadgeWithCount.tsx
+│   │   │   ├── Box/
+│   │   │   │   └── Box.tsx            # CustomBox
 │   │   │   ├── Button/
 │   │   │   │   └── Button.tsx         # CustomButton
 │   │   │   ├── Calendar/
@@ -144,8 +150,10 @@ mid-office-monorepo/
 │   │   │   │   └── Tabs.tsx           # CustomTabs, TabItem
 │   │   │   ├── TextField/
 │   │   │   │   └── TextField.tsx      # CustomTextField
-│   │   │   └── Tooltip/
-│   │   │       └── Tooltip.tsx        # CustomTooltip
+│   │   │   ├── Tooltip/
+│   │   │   │   └── Tooltip.tsx        # CustomTooltip
+│   │   │   └── Typography/
+│   │   │       └── Typography.tsx     # CustomTypography
 │   │   ├── package.json               # exports: "." → src/index.ts (no build step)
 │   │   └── tsconfig.json
 │   │
@@ -308,15 +316,25 @@ Vite in each consuming app transpiles them at build time.
 
 Wraps MUI v6 + Emotion. All components are exported from `packages/ui/src/index.ts`.
 
+> **`packages/ui/src` is the single source of UI components.** Screens in `apps/*` must compose
+> these exports (and `apps/common` components) and must **not** import table, select, text-field,
+> dialog or button primitives (`Table*`, `Select`, `MenuItem`, `TextField`, `Dialog`, `Button`,
+> `Paper`) from `@mui/material`. Use `CustomBox` / `CustomTypography` for layout and text. For a dropdown pass `options` to `CustomSelect`; for a data grid pass `columns` / `data` to
+> `CustomTable`. Before writing any markup, open `packages/ui/src/index.ts` and pick the matching
+> export below. If none renders the prototype acceptably, record it under "Open questions" — do not
+> fall back to bare MUI.
+
 | Export name | Source file | Description |
 |---|---|---|
 | `appTheme` | `theme.ts` | MUI theme: primary `#E45F14`, font `Mulish`, bg `#fff8f3` |
+| `CustomBox` | `Box/Box.tsx` | MUI Box wrapper (layout) |
+| `CustomTypography` | `Typography/Typography.tsx` | MUI Typography wrapper |
 | `CustomButton` | `Button/Button.tsx` | MUI Button wrapper |
 | `CustomDialog` | `Dialog/Dialog.tsx` | MUI Dialog wrapper |
-| `CustomTable`, `Column` | `Table/Table.tsx` | Generic data table |
+| `CustomTable`, `Column` | `Table/Table.tsx` | Generic data table: orange title bar (`title`), optional `headerAction`, per-column `width` / `render` / `headerRender` / `sticky`. Use `render` to put inputs inside cells. Used by `PivvDecisionForm` ("PIVV Details") |
 | `CustomTabs`, `TabItem` | `Tabs/Tabs.tsx` | MUI Tabs wrapper |
 | `CustomTextField` | `TextField/TextField.tsx` | MUI TextField wrapper |
-| `CustomSelect` | `Select/Select.tsx` | MUI Select wrapper |
+| `CustomSelect` | `Select/Select.tsx` | Single/multiple select. Props: `options: {label,value,disabled?}[]`, `value`, `onChange(value)` (receives the value, not an event), `placeholder`, `label`, `error`, `helperText`, `disabled`. Used by `PivvDecisionForm` (PIVV Decision) |
 | `CustomMultiSelect` | `Select/MultiSelect.tsx` | Multi-select dropdown |
 | `CustomSearchSelect`, `SearchSelectOption` | `Select/CustomSearchSelect.tsx` | Search-enabled select |
 | `CustomApiAutocomplete`, `ApiAutocompleteOption` | `Select/CustomApiAutocomplete.tsx` | API-driven autocomplete |
@@ -330,7 +348,7 @@ Wraps MUI v6 + Emotion. All components are exported from `packages/ui/src/index.
 | `BadgeWithCount` | `Badge/BadgeWithCount.tsx` | Badge with numeric counter |
 | `SearchBar` | `SearchBar/SearchBar.tsx` | Search input |
 | `Calendar`, `CalendarProps` | `Calendar/Calendar.tsx` | Date picker (MUI x-date-pickers + dayjs) |
-| `CloseIcon`, `KeyDownArrowIcon`, `KeyLeftArrowIcon`, `KeyRightArrowIcon`, `LinkIcon`, `LogoutIcon`, `RefreshIcon`, `UserProfileIcon`, `EyeIcon`, `EyeSlashIcon` | `icons/Icons.tsx` | SVG icons |
+| `CloseIcon`, `KeyDownArrowIcon`, `KeyLeftArrowIcon`, `KeyRightArrowIcon`, `LinkIcon`, `LogoutIcon`, `RefreshIcon`, `UserProfileIcon`, `DeleteIcon`, `EditIcon`, `EyeIcon`, `EyeSlashIcon`, `FilterIcon`, `TickIcon` | `icons/Icons.tsx` | SVG icons |
 | `colors` | `theme.ts` | Shared colour token map |
 
 ### `@insurance-poc/routes` — Route Constants & URL Helpers
