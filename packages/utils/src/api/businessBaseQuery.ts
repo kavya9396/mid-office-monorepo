@@ -4,9 +4,9 @@ import {
   type FetchArgs,
   type FetchBaseQueryError,
 } from "@reduxjs/toolkit/query";
-import { sessionExpired } from "./authSlice";
+import { sessionExpired } from "../auth/authSlice";
+import { clearToken, getToken } from "../auth/session";
 import { decryptPayload, encryptPayload } from "./payloadCrypto";
-import { clearToken, getToken } from "./session";
 
 export type BusinessRequest = FetchArgs & {
   encryptRequest?: boolean;
