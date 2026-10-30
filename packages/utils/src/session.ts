@@ -1,4 +1,5 @@
 const TOKEN_KEY = "token";
+const REFRESH_TOKEN_KEY = "refreshToken";
 const USER_ID_KEY = "userId";
 const DISPLAY_NAME_KEY = "displayName";
 const BUSINESS_TYPE_KEY = "businessType";
@@ -23,9 +24,14 @@ export function setToken(token: string): void {
   readStorage()?.setItem(TOKEN_KEY, token);
 }
 
+export function setRefreshToken(token: string): void {
+  readStorage()?.setItem(REFRESH_TOKEN_KEY, token);
+}
+
 export function clearToken(): void {
   const storage = readStorage();
   storage?.removeItem(TOKEN_KEY);
+  storage?.removeItem(REFRESH_TOKEN_KEY);
   storage?.removeItem(USER_ID_KEY);
   storage?.removeItem(DISPLAY_NAME_KEY);
   storage?.removeItem(BUSINESS_TYPE_KEY);

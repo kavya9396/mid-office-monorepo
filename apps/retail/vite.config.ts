@@ -2,8 +2,8 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import {
   devConfig,
-  gatewayOrigin,
   monorepoRoot,
+  serveInboxMock,
 } from "../../scripts/dev-config.mjs";
 
 const sharedPackages = [
@@ -16,7 +16,8 @@ const sharedPackages = [
 export default defineConfig({
   base: devConfig.viteBase.retail,
   clearScreen: false,
-  plugins: [react()],
+  envDir: monorepoRoot,
+  plugins: [serveInboxMock("/api/inbox/retail", "apps/retail/src/modules/inbox/mock/retailInbox.json"), react()],
   optimizeDeps: {
     exclude: sharedPackages,
   },
@@ -24,7 +25,6 @@ export default defineConfig({
     host: devConfig.host,
     port: devConfig.ports.retail,
     strictPort: true,
-    origin: gatewayOrigin(),
     fs: {
       allow: [monorepoRoot],
     },

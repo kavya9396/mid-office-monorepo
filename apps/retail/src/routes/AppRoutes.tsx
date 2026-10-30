@@ -5,18 +5,24 @@ import {
   Routes,
 } from "react-router-dom";
 import { appBasename, viteBase } from "@insurance-poc/routes";
+import { AuthNavigation } from "../app/AuthNavigation";
 import { RetailDrsPage } from "../modules/drs/RetailDrsPage";
 import { RetailInboxPage } from "../modules/inbox/RetailInboxPage";
 import { MasDrsPage } from "../modules/mas/MasDrsPage";
 import { MmtGrievanceDrsPage } from "../modules/mmt-grievance/MmtGrievanceDrsPage";
 import { PivvDrsPage } from "../modules/pivv/PivvDrsPage";
 import { RetailPreviousPolicyPage } from "../modules/previousPolicy/RetailPreviousPolicyPage";
+import { RetailOpenTasksPage } from "../modules/openTasks/RetailOpenTasksPage";
+import { RetailAuditTrailPage } from "../modules/auditTrail/RetailAuditTrailPage";
+import { RetailRiskDetailsPage } from "../modules/riskDetails/RetailRiskDetailsPage";
+import { RetailApplicantProfilePage } from "../modules/applicantProfile/RetailApplicantProfilePage";
 import { RequireSession } from "./RequireSession";
 import { RetailAppLayout } from "./RetailAppLayout";
 
 export function AppRoutes() {
   return (
     <BrowserRouter basename={appBasename(viteBase.retail)}>
+      <AuthNavigation />
       <Routes>
         <Route
           element={
@@ -32,6 +38,10 @@ export function AppRoutes() {
           <Route path="/mmt-grievance/drs" element={<MmtGrievanceDrsPage />} />
           <Route path="/pivv/drs" element={<PivvDrsPage />} />
           <Route path="/previous-policy" element={<RetailPreviousPolicyPage />} />
+          <Route path="/open-tasks" element={<RetailOpenTasksPage />} />
+          <Route path="/risk-details" element={<RetailRiskDetailsPage />} />
+          <Route path="/applicant-profile" element={<RetailApplicantProfilePage />} />
+          <Route path="/audit-trail" element={<RetailAuditTrailPage />} />
           <Route path="*" element={<Navigate to="/inbox" replace />} />
         </Route>
       </Routes>

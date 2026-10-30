@@ -64,6 +64,18 @@
         "annualPremium": 500,
         "status": "Blocked"
       }
+    ],
+    "GUW_TASK": [
+      {
+        "applicationNo": "GRP3001",
+        "taskId": "TSK-GUW-001",
+        "customerName": "Summit Employees Welfare Trust",
+        "productName": "Group Term Life",
+        "businessType": "GROUP",
+        "appliedSa": 7500000,
+        "annualPremium": 185000,
+        "status": "Pending"
+      }
     ]
   }
 }

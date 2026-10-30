@@ -18,6 +18,7 @@ import {
 } from "@insurance-poc/ui";
 import {
   clearToken,
+  setRefreshToken,
   setSessionBusinessType,
   setSessionUser,
   setToken,
@@ -26,8 +27,8 @@ import { Controller, useForm, type Control } from "react-hook-form";
 import IBMLogo from "../../assets/IBM Logo.svg";
 import IPRULogo from "../../assets/ICICI_Logo_BG.svg";
 import LoginImage from "../../assets/Login-Image.svg";
-import { fetchJwt } from "../../services/jwtService";
-import { fetchLogin, type BusinessType } from "../../services/loginService";
+import { useLoginMutation } from "../../services/authApi";
+import type { BusinessType } from "../../services/loginService";
 import { loginSchema, type LoginForm } from "./loginSchema";
 
 type SnackbarState = {
@@ -69,39 +70,21 @@ const inlineLinkSx = {
   cursor: "pointer",
 };
 
-function toErrorMessage(reason: unknown, fallback: string): string {
-  if (reason instanceof Error) {
-    return reason.message;
-  }
-  return fallback;
+const compactLaptop = "@media (max-height: 800px)";
+const shortLaptop = "@media (max-height: 680px)";
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
 }
 
-async function establishSession(
-  username: string,
-  businessType: BusinessType,
-): Promise<void> {
-  const jwt = await fetchJwt();
-  const token = typeof jwt.token === "string" ? jwt.token.trim() : "";
-
-  if (!token) {
-    throw new Error("Authentication token was not returned.");
+function toErrorMessage(reason: unknown, fallback: string): string {
+  if (typeof reason === "string" && reason.trim().length > 0) return reason.trim();
+  if (reason instanceof Error && reason.message.length > 0) return reason.message;
+  if (isRecord(reason)) {
+    if (typeof reason.error === "string" && reason.error.length > 0) return reason.error;
+    if (typeof reason.message === "string" && reason.message.length > 0) return reason.message;
   }
-
-  setToken(token);
-
-  const loginResult = await fetchLogin(username, businessType);
-  if (loginResult.status !== "SUCCESS") {
-    throw new Error(loginResult.message);
-  }
-
-  const destination = businessInboxUrl(businessType);
-  if (!destination) {
-    throw new Error("Business Inbox is not configured.");
-  }
-
-  setSessionUser(loginResult.user);
-  setSessionBusinessType(businessType);
-  assignUrl(destination);
+  return fallback;
 }
 
 function LoginArtwork() {
@@ -109,7 +92,9 @@ function LoginArtwork() {
     <Box
       sx={{
         width: { xs: "0%", md: "50%" },
+        minHeight: 0,
         display: { xs: "none", md: "block" },
+        overflow: "hidden",
         position: "relative",
       }}
     >
@@ -120,6 +105,7 @@ function LoginArtwork() {
         sx={{
           width: "100%",
           height: "100%",
+          display: "block",
           objectFit: "cover",
         }}
       />
@@ -134,7 +120,13 @@ function LoginIntro() {
         component="img"
         src={IPRULogo}
         alt="ICICI Prudential Life Insurance"
-        sx={{ height: 72, width: "auto", mb: 1.5 }}
+        sx={{
+          height: 72,
+          width: "auto",
+          mb: 1.5,
+          [compactLaptop]: { height: 52, mb: 1 },
+          [shortLaptop]: { height: 40, mb: 0.5 },
+        }}
       />
       <Typography variant="body1" color="text.secondary">
         Log in to access your account
@@ -163,6 +155,8 @@ function CredentialsForm({
         display: "flex",
         flexDirection: "column",
         gap: 2,
+        [compactLaptop]: { gap: 1.25 },
+        [shortLaptop]: { gap: 1 },
       }}
     >
       <Box>
@@ -173,6 +167,13 @@ function CredentialsForm({
           tabs={businessTabs}
           value={businessType}
           onChange={onBusinessTypeChange}
+          sx={{
+            [compactLaptop]: { p: 0.5, gap: 0.5 },
+            "& button": {
+              [compactLaptop]: { py: 0.75 },
+              [shortLaptop]: { py: 0.5 },
+            },
+          }}
         />
       </Box>
 
@@ -238,6 +239,7 @@ function CredentialsForm({
         <Box
           sx={{
             mt: 1,
+            [compactLaptop]: { mt: 0.5 },
             display: "flex",
             flexDirection: "column",
             alignItems: "stretch",
@@ -280,7 +282,13 @@ function CredentialsForm({
         variant="contained"
         type="submit"
         disabled={!submission.canSubmit}
-        sx={{ mt: 1, py: 1.25, borderRadius: "50px" }}
+        sx={{
+          mt: 1,
+          py: 1.25,
+          borderRadius: "50px",
+          [compactLaptop]: { mt: 0.5, py: 1 },
+          [shortLaptop]: { mt: 0, py: 0.75 },
+        }}
       >
         {submitLabel}
       </CustomButton>
@@ -291,7 +299,7 @@ function CredentialsForm({
 function LegalFooter() {
   return (
     <Box sx={{ textAlign: "center" }}>
-      <Divider sx={{ mb: 1 }} />
+      <Divider sx={{ mb: 1, [compactLaptop]: { mb: 0.5 } }} />
       <Typography
         variant="caption"
         color="text.secondary"
@@ -330,6 +338,8 @@ function PoweredBy() {
         justifyContent: "center",
         gap: 1,
         py: 2,
+        [compactLaptop]: { py: 1 },
+        [shortLaptop]: { py: 0.75 },
       }}
     >
       <Typography variant="body2">Powered by</Typography>
@@ -348,6 +358,7 @@ export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [snackbar, setSnackbar] = useState<SnackbarState>(initialSnackbar);
 
+  const [login] = useLoginMutation();
   const { control, handleSubmit, formState } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
     mode: "onChange",
@@ -359,7 +370,20 @@ export function LoginPage() {
 
   const onSubmit = async (credentials: LoginForm) => {
     try {
-      await establishSession(credentials.username, businessType);
+      const loginResult = await login({
+        userId: credentials.username,
+        password: credentials.password,
+        businessType,
+      }).unwrap();
+      const destination = businessInboxUrl(businessType);
+      if (!destination) {
+        throw new Error("Business Inbox is not configured.");
+      }
+      setToken(loginResult.accessToken);
+      setRefreshToken(loginResult.refreshToken);
+      setSessionUser(loginResult.user);
+      setSessionBusinessType(businessType);
+      assignUrl(destination);
     } catch (reason: unknown) {
       clearToken();
       setSnackbar({
@@ -377,8 +401,11 @@ export function LoginPage() {
   return (
     <Box
       sx={{
+        position: "fixed",
+        inset: 0,
         display: "flex",
-        height: "100vh",
+        height: "100dvh",
+        maxHeight: "100dvh",
         overflow: "hidden",
         bgcolor: "#FFFFFF",
       }}
@@ -400,13 +427,15 @@ export function LoginPage() {
             maxWidth: 400,
             flex: 1,
             minHeight: 0,
-            overflow: "auto",
+            overflow: "hidden",
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
             px: 4,
             py: 3,
             gap: 2.5,
+            [compactLaptop]: { py: 1.5, gap: 1.5 },
+            [shortLaptop]: { py: 1, gap: 1 },
           }}
         >
           <LoginIntro />

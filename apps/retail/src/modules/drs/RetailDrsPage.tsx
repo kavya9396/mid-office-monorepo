@@ -7,8 +7,12 @@ import Container from "@mui/material/Container";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import { CustomButton } from "@insurance-poc/ui";
+import { CustomButton, CustomSnackbar } from "@insurance-poc/ui";
 import { formatIndianCurrency } from "@insurance-poc/utils";
+import {
+  QuickLinksModule,
+  type QuickLinkItem,
+} from "@insurance-poc/common/quick-links";
 import {
   fetchRetailDrsRecord,
   type DrsRecord,
@@ -130,11 +134,20 @@ function DrsBody({
   }
 }
 
+const RETAIL_QUICK_LINKS: QuickLinkItem[] = [
+  { id: "applicant-profile", label: "Applicant Profile" },
+  { id: "previous-policies", label: "Previous Policies" },
+  { id: "open-tasks", label: "Open Tasks" },
+  { id: "risk-details", label: "Risk Details" },
+  { id: "audit-trail", label: "Audit Trail" },
+];
+
 export function RetailDrsPage() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const applicationNo = params.get("applicationNo")?.trim() ?? "";
   const [reloadKey, setReloadKey] = useState(0);
+  const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
   const [status, setStatus] = useState<Status>(
     applicationNo ? { kind: "loading" } : { kind: "missing-id" },
   );
@@ -176,7 +189,7 @@ export function RetailDrsPage() {
   const retry = () => setReloadKey((value) => value + 1);
 
   return (
-    <Container maxWidth="sm" sx={{ py: 3 }}>
+    <Container maxWidth="sm" sx={{ py: 3, position: "relative" }}>
       <Typography variant="h4" component="h1" sx={{ mb: 2 }}>
         Retail DRS
       </Typography>
@@ -192,6 +205,24 @@ export function RetailDrsPage() {
           </CustomButton>
         </Stack>
       </Stack>
+
+      {/* QuickLinks Module in Retail */}
+      <QuickLinksModule
+        items={RETAIL_QUICK_LINKS}
+        applicationNo={applicationNo}
+        roleType="Retail Underwriter"
+        onNavigate={(path) => navigate(path)}
+        onNotify={(message) => setSnackbarMessage(message)}
+        title="Quick Links"
+      />
+
+      <CustomSnackbar
+        open={Boolean(snackbarMessage)}
+        message={snackbarMessage ?? ""}
+        onClose={() => setSnackbarMessage(null)}
+      />
     </Container>
   );
 }
+
+export default RetailDrsPage;
