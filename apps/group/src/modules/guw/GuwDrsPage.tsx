@@ -19,7 +19,7 @@ import {
 } from "@insurance-poc/ui";
 import { clearToken, getSessionUser } from "@insurance-poc/utils";
 import { fetchGuwDrs, type GuwDrsRecord } from "../../services/guwService";
-import { QuickLinks } from "@insurance-poc/common/quick-links";
+import { QuickLinksModule } from "@insurance-poc/common/quick-links";
 
 type PageState =
   | { kind: "loading" }
@@ -297,7 +297,7 @@ export function GuwDrsPage() {
             />
 
             {/* Quick Links Floating Action Button */}
-            <QuickLinks items={linkItems} title="Quick Links" />
+            <QuickLinksModule items={linkItems} title="Quick Links" />
           </>
         ) : null}
 

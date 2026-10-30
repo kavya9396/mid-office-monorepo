@@ -16,6 +16,7 @@ import { GroupOpenTasksPage } from "../modules/openTasks/GroupOpenTasksPage";
 import { GroupPreviousPolicyPage } from "../modules/previousPolicy/GroupPreviousPolicyPage";
 import { GuwDrsPage } from "../modules/guw/GuwDrsPage";
 import { GroupRiskDetailsPage } from "../modules/riskDetails/GroupRiskDetailsPage";
+import DvtUser from "../modules/drs/DvtUser";
 
 export function AppRoutes() {
   return (
