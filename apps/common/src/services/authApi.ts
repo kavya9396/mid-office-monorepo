@@ -12,6 +12,28 @@ import {
   type ResetPasswordRequest,
 } from "./loginService";
 
+type QueryResult<T> = { data: T } | { error: string };
+
+function queryError(reason: unknown, fallback: string): { error: string } {
+  const message = reason instanceof Error ? reason.message : fallback;
+  return { error: message };
+}
+
+function authActionQuery<TRequest>(
+  run: (request: TRequest) => Promise<AuthActionResponse>,
+  fallback: string,
+): (request: TRequest) => Promise<QueryResult<AuthActionResponse>> {
+  return async (request) => {
+    try {
+      const result = await run(request);
+      if (result.error) return { error: result.message };
+      return { data: result };
+    } catch (reason: unknown) {
+      return queryError(reason, fallback);
+    }
+  };
+}
+
 export const authApi = createApi({
   reducerPath: "authApi",
   baseQuery: fakeBaseQuery<string>(),
@@ -26,55 +48,18 @@ export const authApi = createApi({
           }
           return { data: result };
         } catch (reason: unknown) {
-          const message = reason instanceof Error ? reason.message : "Unable to sign in.";
-          return { error: message };
+          return queryError(reason, "Unable to sign in.");
         }
       },
     }),
     forgotPassword: build.mutation<AuthActionResponse, ForgotPasswordRequest>({
-      async queryFn(request) {
-        try {
-          const result = await fetchForgotPassword(request);
-          if (result.error) {
-            return { error: result.message };
-          }
-          return { data: result };
-        } catch (reason: unknown) {
-          const message =
-            reason instanceof Error ? reason.message : "Unable to send the reset link.";
-          return { error: message };
-        }
-      },
+      queryFn: authActionQuery(fetchForgotPassword, "Unable to send the reset link."),
     }),
     resetPassword: build.mutation<AuthActionResponse, ResetPasswordRequest>({
-      async queryFn(request) {
-        try {
-          const result = await fetchResetPassword(request);
-          if (result.error) {
-            return { error: result.message };
-          }
-          return { data: result };
-        } catch (reason: unknown) {
-          const message =
-            reason instanceof Error ? reason.message : "Unable to reset the password.";
-          return { error: message };
-        }
-      },
+      queryFn: authActionQuery(fetchResetPassword, "Unable to reset the password."),
     }),
     changePassword: build.mutation<AuthActionResponse, ChangePasswordRequest>({
-      async queryFn(request) {
-        try {
-          const result = await fetchChangePassword(request);
-          if (result.error) {
-            return { error: result.message };
-          }
-          return { data: result };
-        } catch (reason: unknown) {
-          const message =
-            reason instanceof Error ? reason.message : "Unable to change the password.";
-          return { error: message };
-        }
-      },
+      queryFn: authActionQuery(fetchChangePassword, "Unable to change the password."),
     }),
   }),
 });

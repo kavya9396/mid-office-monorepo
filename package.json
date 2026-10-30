@@ -7,6 +7,7 @@
     "dev": "turbo run dev --filter=@insurance-poc/common --filter=@insurance-poc/retail --filter=@insurance-poc/group",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
     "dev:common": "pnpm --filter @insurance-poc/common dev",
     "dev:retail": "pnpm --filter @insurance-poc/retail dev",
     "dev:group": "pnpm --filter @insurance-poc/group dev",

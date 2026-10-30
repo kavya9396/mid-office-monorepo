@@ -12,21 +12,46 @@ export const closedAuthSnackbar: AuthSnackbarState = {
   severity: "info",
 };
 
+function readTrimmed(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function messageFromData(data: unknown): string {
+  if (typeof data === "string") return data.trim();
+  if (typeof data !== "object" || data === null) return "";
+
+  const record = data as Record<string, unknown>;
+  const message = readTrimmed(record.message);
+  if (message.length > 0) return message;
+  return readTrimmed(record.errorMessage);
+}
+
+/** Message from an auth API failure: string, Error, or `{ error | message | data }`. */
 export function readApiMessage(reason: unknown, fallback = ""): string {
-  if (typeof reason === "string" && reason.trim().length > 0) return reason.trim();
-  if (reason instanceof Error && reason.message.trim().length > 0) {
-    return reason.message.trim();
+  if (typeof reason === "string") {
+    const text = reason.trim();
+    return text.length > 0 ? text : fallback;
+  }
+  if (reason instanceof Error) {
+    const text = reason.message.trim();
+    return text.length > 0 ? text : fallback;
   }
   if (typeof reason === "object" && reason !== null) {
     const record = reason as Record<string, unknown>;
-    if (typeof record.error === "string" && record.error.trim().length > 0) {
-      return record.error.trim();
-    }
-    if (typeof record.message === "string" && record.message.trim().length > 0) {
-      return record.message.trim();
-    }
+    const fromError = readTrimmed(record.error);
+    if (fromError.length > 0) return fromError;
+    const fromMessage = readTrimmed(record.message);
+    if (fromMessage.length > 0) return fromMessage;
+    const fromData = messageFromData(record.data);
+    if (fromData.length > 0) return fromData;
   }
   return fallback;
+}
+
+/** Prefer the API `message`; use fallback only when it is blank. */
+export function apiResultMessage(message: string, fallback: string): string {
+  const text = message.trim();
+  return text.length > 0 ? text : fallback;
 }
 
 export function authSnackbar(

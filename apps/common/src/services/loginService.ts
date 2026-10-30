@@ -1,4 +1,5 @@
 import {
+  authUrls,
   encodeBase64,
   getSessionUser,
   getToken,
@@ -79,11 +80,6 @@ export type LoginApiEnvelope = {
   } | null;
 };
 
-const LOGIN_PATH = "/v1/auth/login";
-const CHANGE_PASSWORD_PATH = "/v1/auth/change-password";
-const FORGOT_PASSWORD_PATH = "/v1/auth/forgot-password";
-const RESET_PASSWORD_PATH = "/v1/auth/reset-password";
-
 export type AuthActionResponse = {
   response_code: number;
   error: boolean;
@@ -123,10 +119,6 @@ function readText(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
-function readEnv(value: unknown): string {
-  return typeof value === "string" ? value.trim() : "";
-}
-
 function failure(message: string): LoginResult {
   return { status: "FAILURE", message, user: null };
 }
@@ -135,27 +127,10 @@ function unauthorized(message: string): LoginResult {
   return { status: "UNAUTHORIZED", message, user: null };
 }
 
-function stripTrailingSlashes(value: string): string {
-  let end = value.length;
-  while (end > 0 && value.charAt(end - 1) === "/") {
-    end -= 1;
-  }
-  return value.slice(0, end);
-}
-
-/** Uses VITE_BASE_URL as-is (same host/path you set in .env / Postman). */
-function authUrl(path: string): string {
-  const baseUrl = stripTrailingSlashes(readEnv(import.meta.env.VITE_BASE_URL));
-  if (baseUrl.length === 0) {
-    throw new Error("VITE_BASE_URL is not configured.");
-  }
-  return `${baseUrl}${path}`;
-}
-
 /** Builds `Basic base64(username:password)` from env for Apigee. */
 function basicAuthorization(): string {
-  const username = readEnv(import.meta.env.VITE_AUTH_BASIC_USERNAME);
-  const password = readEnv(import.meta.env.VITE_AUTH_BASIC_PASSWORD);
+  const username = readText(import.meta.env.VITE_AUTH_BASIC_USERNAME);
+  const password = readText(import.meta.env.VITE_AUTH_BASIC_PASSWORD);
   if (username.length === 0 || password.length === 0) {
     throw new Error("Auth credentials are not configured.");
   }
@@ -363,17 +338,65 @@ function mockLogin(userId: string, businessType: BusinessType): LoginResult {
   return readLoginResponse(buildMockLoginEnvelope(userId), businessType);
 }
 
+type AuthActionPayload = {
+  response_code: number;
+  error: boolean;
+  message: string;
+};
+
+function asAuthAction(payload: AuthActionPayload): AuthActionResponse {
+  return {
+    response_code: payload.response_code,
+    error: payload.error,
+    message: payload.message,
+    data: null,
+  };
+}
+
+function postAuth(
+  url: string,
+  body: unknown,
+  authorization: string,
+): Promise<Response> {
+  return fetch(url, {
+    method: "POST",
+    headers: authRequestHeaders(authorization),
+    body: JSON.stringify(body),
+  });
+}
+
+type ParsedBody =
+  | { kind: "empty" }
+  | { kind: "text"; text: string }
+  | { kind: "json"; payload: unknown };
+
+async function parseResponseBody(response: Response): Promise<ParsedBody> {
+  const text = (await response.text()).trim();
+  if (text.length === 0) return { kind: "empty" };
+  try {
+    return { kind: "json", payload: JSON.parse(text) as unknown };
+  } catch {
+    return { kind: "text", text };
+  }
+}
+
+async function resolveAuth<T>(mock: () => T, real: () => Promise<T>): Promise<T> {
+  if (!useMock) return real();
+  await wait(200);
+  return mock();
+}
+
 async function realLogin(request: LoginRequest): Promise<LoginResult> {
   let response: Response;
   try {
-    response = await fetch(authUrl(LOGIN_PATH), {
-      method: "POST",
-      headers: authRequestHeaders(basicAuthorization()),
-      body: JSON.stringify({
+    response = await postAuth(
+      authUrls.login,
+      {
         username: encodeBase64(request.userId),
         password: encodeBase64(request.password),
-      }),
-    });
+      },
+      basicAuthorization(),
+    );
   } catch (reason: unknown) {
     const detail = reason instanceof Error ? reason.message : "Network error";
     return failure(
@@ -381,17 +404,10 @@ async function realLogin(request: LoginRequest): Promise<LoginResult> {
     );
   }
 
-  const text = (await response.text()).trim();
-  if (text.length === 0) return failure("Unable to sign in.");
-
-  let payload: unknown;
-  try {
-    payload = JSON.parse(text);
-  } catch {
-    return failure(text);
-  }
-
-  return parseLoginPayload(payload, request.businessType, response.ok);
+  const body = await parseResponseBody(response);
+  if (body.kind === "empty") return failure("Unable to sign in.");
+  if (body.kind === "text") return failure(body.text);
+  return parseLoginPayload(body.payload, request.businessType, response.ok);
 }
 
 function mockForgotPassword(userId: string): AuthActionResponse {
@@ -399,12 +415,7 @@ function mockForgotPassword(userId: string): AuthActionResponse {
     (id) => id.toLowerCase() === userId.toLowerCase(),
   );
   const payload = known ? forgotPasswordMock.success : forgotPasswordMock.failure;
-  return {
-    response_code: payload.response_code,
-    error: payload.error,
-    message: payload.message,
-    data: null,
-  };
+  return asAuthAction(payload);
 }
 
 function readAuthActionResponse(value: unknown, action: string): AuthActionResponse {
@@ -421,48 +432,31 @@ function readAuthActionResponse(value: unknown, action: string): AuthActionRespo
     throw new Error(`${action} response did not include a message.`);
   }
 
-  const failed = value.error === true || isFailedAuthEnvelope(false, value.response_code);
-  return {
+  return asAuthAction({
     response_code: value.response_code,
-    error: failed,
+    error: isFailedAuthEnvelope(value.error, value.response_code),
     message,
-    data: null,
-  };
+  });
 }
 
 function toAuthActionError(status: number, message: string): AuthActionResponse {
-  return {
-    response_code: status,
-    error: true,
-    message,
-    data: null,
-  };
+  return asAuthAction({ response_code: status, error: true, message });
 }
 
 async function postAuthAction(
-  path: string,
+  url: string,
   body: unknown,
   action: string,
   authorization = basicAuthorization(),
 ): Promise<AuthActionResponse> {
-  const response = await fetch(authUrl(path), {
-    method: "POST",
-    headers: authRequestHeaders(authorization),
-    body: JSON.stringify(body),
-  });
-
-  const text = (await response.text()).trim();
-  if (text.length === 0) {
+  const response = await postAuth(url, body, authorization);
+  const parsed = await parseResponseBody(response);
+  if (parsed.kind === "empty") {
     throw new Error(`${action} response did not include a message.`);
   }
+  if (parsed.kind === "text") return toAuthActionError(response.status, parsed.text);
 
-  let payload: unknown;
-  try {
-    payload = JSON.parse(text);
-  } catch {
-    return toAuthActionError(response.status, text);
-  }
-
+  const payload = parsed.payload;
   if (
     isRecord(payload) &&
     typeof payload.response_code === "number" &&
@@ -482,89 +476,73 @@ export async function fetchForgotPassword(
   request: ForgotPasswordRequest,
 ): Promise<AuthActionResponse> {
   const userId = request.userId.trim();
-  if (useMock) {
-    await wait(200);
-    return mockForgotPassword(userId);
-  }
-  return postAuthAction(FORGOT_PASSWORD_PATH, { userId }, "Forgot password");
+  return resolveAuth(
+    () => mockForgotPassword(userId),
+    () => postAuthAction(authUrls.forgotPassword, { userId }, "Forgot password"),
+  );
 }
 
 function mockResetPassword(token: string): AuthActionResponse {
   const known = resetPasswordMock.knownTokens.includes(token);
   const payload = known ? resetPasswordMock.success : resetPasswordMock.failure;
-  return {
-    response_code: payload.response_code,
-    error: payload.error,
-    message: payload.message,
-    data: null,
-  };
+  return asAuthAction(payload);
 }
 
 export async function fetchResetPassword(
   request: ResetPasswordRequest,
 ): Promise<AuthActionResponse> {
   const token = request.token.trim();
-  if (useMock) {
-    await wait(200);
-    return mockResetPassword(token);
-  }
-  return postAuthAction(
-    RESET_PASSWORD_PATH,
-    { token, newPassword: request.newPassword },
-    "Reset password",
+  return resolveAuth(
+    () => mockResetPassword(token),
+    () =>
+      postAuthAction(
+        authUrls.resetPassword,
+        { token, newPassword: request.newPassword },
+        "Reset password",
+      ),
   );
 }
 
 function mockChangePassword(request: ChangePasswordRequest): AuthActionResponse {
-  if (request.newPassword.trim().length < 8) {
-    return {
-      response_code: changePasswordMock.policyFailure.response_code,
-      error: changePasswordMock.policyFailure.error,
-      message: changePasswordMock.policyFailure.message,
-      data: null,
-    };
-  }
-
-  return {
-    response_code: changePasswordMock.success.response_code,
-    error: changePasswordMock.success.error,
-    message: changePasswordMock.success.message,
-    data: null,
-  };
+  const payload =
+    request.newPassword.trim().length < 8
+      ? changePasswordMock.policyFailure
+      : changePasswordMock.success;
+  return asAuthAction(payload);
 }
 
 export async function fetchChangePassword(
   request: ChangePasswordRequest,
 ): Promise<AuthActionResponse> {
-  if (useMock) {
-    await wait(200);
-    const result = mockChangePassword(request);
-    if (!result.error) {
-      const userId = getSessionUser()?.userId;
-      if (userId) markMockPasswordChanged(userId);
-    }
-    return result;
-  }
-
-  const token = getToken()?.trim() ?? "";
-  if (token.length === 0) {
-    throw new Error("Sign in before changing your password.");
-  }
-
-  return postAuthAction(
-    CHANGE_PASSWORD_PATH,
-    { oldPassword: request.oldPassword, newPassword: request.newPassword },
-    "Change password",
-    `Bearer ${token}`,
+  return resolveAuth(
+    () => {
+      const result = mockChangePassword(request);
+      if (!result.error) {
+        const userId = getSessionUser()?.userId;
+        if (userId) markMockPasswordChanged(userId);
+      }
+      return result;
+    },
+    () => {
+      const token = getToken()?.trim() ?? "";
+      if (token.length === 0) {
+        throw new Error("Sign in before changing your password.");
+      }
+      return postAuthAction(
+        authUrls.changePassword,
+        { oldPassword: request.oldPassword, newPassword: request.newPassword },
+        "Change password",
+        `Bearer ${token}`,
+      );
+    },
   );
 }
 
 export async function fetchLogin(request: LoginRequest): Promise<LoginResult> {
-  if (useMock) {
-    await wait(200);
-    return mockLogin(request.userId, request.businessType);
-  }
-  return realLogin(request);
+  return resolveAuth(
+    () => mockLogin(request.userId, request.businessType),
+    () => realLogin(request),
+  );
 }
 
 /**
