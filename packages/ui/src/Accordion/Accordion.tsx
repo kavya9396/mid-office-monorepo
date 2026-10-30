@@ -6,7 +6,7 @@ import {
   Typography,
   Box,
 } from "@mui/material";
-import { KeyDownArrowIcon, KeyUpArrowIcon } from "../Icons/Icons";
+import { KeyDownArrowIcon, KeyUpArrowIcon } from "../icons/Icons";
 
 type CustomAccordionProps = {
   title: string;
