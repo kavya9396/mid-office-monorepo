@@ -1,4 +1,4 @@
-export { useMock } from "./config";
+export { authUrls, useMock } from "./config";
 export {
   authReducer,
   clearToken,

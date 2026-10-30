@@ -31,6 +31,7 @@ import { AuthShell, authCompactLaptop, authShortLaptop } from "./AuthShell";
 import {
   authSnackbar,
   closedAuthSnackbar,
+  readApiMessage,
   type AuthSnackbarState,
   type SnackbarSeverity,
 } from "./authFeedback";
@@ -58,48 +59,10 @@ const businessTabs: TabItem<BusinessType>[] = [
   { key: "GROUP", label: "Group" },
 ];
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
-
-function readTrimmedString(value: unknown): string {
-  return typeof value === "string" ? value.trim() : "";
-}
-
-function messageFromData(data: unknown): string {
-  if (typeof data === "string") return data.trim();
-  if (!isRecord(data)) return "";
-  const message = readTrimmedString(data.message);
-  if (message.length > 0) return message;
-  return readTrimmedString(data.errorMessage);
-}
-
-function toErrorMessage(reason: unknown, fallback: string): string {
-  if (typeof reason === "string") {
-    const text = reason.trim();
-    return text.length > 0 ? text : fallback;
-  }
-  if (reason instanceof Error) {
-    const text = reason.message.trim();
-    return text.length > 0 ? text : fallback;
-  }
-  if (!isRecord(reason)) return fallback;
-
-  const fromError = readTrimmedString(reason.error);
-  if (fromError.length > 0) return fromError;
-
-  const fromMessage = readTrimmedString(reason.message);
-  if (fromMessage.length > 0) return fromMessage;
-
-  const fromData = messageFromData(reason.data);
-  if (fromData.length > 0) return fromData;
-
-  return fallback;
-}
-
 function readResetMessage(state: unknown): string {
-  if (!isRecord(state)) return "";
-  return readTrimmedString(state.resetMessage);
+  if (typeof state !== "object" || state === null) return "";
+  const message = (state as Record<string, unknown>).resetMessage;
+  return typeof message === "string" ? message.trim() : "";
 }
 
 type LoginSuccessHandlerArgs = {
@@ -334,7 +297,7 @@ export function LoginPage() {
       });
     } catch (reason: unknown) {
       clearToken();
-      showNotify(toErrorMessage(reason, "Login failed."), "error");
+      showNotify(readApiMessage(reason, "Login failed."), "error");
     }
   };
 

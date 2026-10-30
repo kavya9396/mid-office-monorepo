@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { CustomButton, CustomDialog, CustomTextField } from "@insurance-poc/ui";
 import { Controller, useForm } from "react-hook-form";
 import { useForgotPasswordMutation } from "../../services/authApi";
-import { readApiMessage, type SnackbarSeverity } from "./authFeedback";
+import { apiResultMessage, readApiMessage, type SnackbarSeverity } from "./authFeedback";
 import {
   forgotPasswordSchema,
   type ForgotPasswordForm,
@@ -39,10 +39,10 @@ export function ForgotPasswordDialog({
   const onSubmit = async (values: ForgotPasswordForm) => {
     try {
       const result = await forgotPassword({ userId: values.userId }).unwrap();
-      const message =
-        result.message.trim().length > 0
-          ? result.message
-          : "Reset password link sent successfully.";
+      const message = apiResultMessage(
+        result.message,
+        "Reset password link sent successfully.",
+      );
       onNotify(message, "success");
       onClose();
     } catch (reason: unknown) {

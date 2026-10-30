@@ -11,6 +11,7 @@ import { useChangePasswordMutation } from "../../services/authApi";
 import { AuthPasswordField } from "./AuthPasswordField";
 import { AuthShell } from "./AuthShell";
 import {
+  apiResultMessage,
   authSnackbar,
   closedAuthSnackbar,
   readApiMessage,
@@ -44,8 +45,7 @@ export function ChangePasswordPage() {
         newPassword: values.newPassword,
       }).unwrap();
       clearToken();
-      const message =
-        result.message.trim().length > 0 ? result.message : "Password changed";
+      const message = apiResultMessage(result.message, "Password changed");
       setSnackbar(authSnackbar(message, "success"));
       setRedirecting(true);
       window.setTimeout(() => {

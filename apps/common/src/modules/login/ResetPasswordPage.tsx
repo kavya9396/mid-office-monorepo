@@ -11,6 +11,7 @@ import { useResetPasswordMutation } from "../../services/authApi";
 import { AuthPasswordField } from "./AuthPasswordField";
 import { AuthShell } from "./AuthShell";
 import {
+  apiResultMessage,
   authSnackbar,
   closedAuthSnackbar,
   readApiMessage,
@@ -44,8 +45,7 @@ export function ResetPasswordPage() {
         token,
         newPassword: values.newPassword,
       }).unwrap();
-      const message =
-        result.message.trim().length > 0 ? result.message : "Password reset";
+      const message = apiResultMessage(result.message, "Password reset");
       setSnackbar(authSnackbar(message, "success"));
       window.setTimeout(() => {
         navigate(commonPaths.login, { replace: true });

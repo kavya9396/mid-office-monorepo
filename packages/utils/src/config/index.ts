@@ -1,1 +1,1 @@
-export { useMock } from "./appConfig";
+export { authUrls, useMock } from "./appConfig";
