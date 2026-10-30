@@ -1,4 +1,4 @@
-# AGENTS.md — Agent (Code) Mode
+﻿# AGENTS.md — Agent (Code) Mode
 
 This file provides guidance to agents when working with code in this repository.
 
@@ -22,9 +22,12 @@ This file provides guidance to agents when working with code in this repository.
   is substituted. Do not approximate or swap for other theme tokens.
 - **Prototypes are large bundled files.** Use `grep` to find the target section, then `read_file` with
   a small line range (±150 lines). Never dump the whole file into context.
-- **Check `packages/ui/src/index.ts` before writing new MUI markup.** Use the existing
-  `Custom*` wrappers (`CustomButton`, `CustomDialog`, `CustomTable`, `CustomTabs`, `CustomTextField`,
-  `CustomSelect`, `CustomSnackbar`, `KeyValueTable`, etc.). Avoid bare MUI imports in app code.
+- **`packages/ui/src` holds all the components to use.** Check `packages/ui/src/index.ts` before
+  writing new MUI markup. Use the existing `Custom*` wrappers (`CustomButton`, `CustomDialog`,
+  `CustomTable`, `CustomTabs`, `CustomTextField`, `CustomSelect`, `CustomSnackbar`, `KeyValueTable`,
+  etc.). No bare MUI `Table*`, `Select`, `MenuItem`, `TextField`, `Paper`, `Dialog`, `Button` in app
+  code — use `CustomBox` / `CustomTypography` for layout. Dropdown → `CustomSelect options=[…]`; grid →
+  `CustomTable columns data` (inputs via column `render`).
 - **Name collision check required** before adding any new export. `CustomButton`,
   `RequirementBadgeVariant`, `BadgeVariant`, `LegacyBadgeVariant` are already taken.
 

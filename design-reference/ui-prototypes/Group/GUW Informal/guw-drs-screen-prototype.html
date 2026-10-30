@@ -267,35 +267,6 @@
       font-weight: 800;
     }
 
-    .banner-actions {
-      display: flex;
-      justify-content: flex-end;
-      padding: 0 10px 6px;
-      background: #fff;
-    }
-
-    .grievance-history-button {
-      min-width: auto;
-      padding: 5px 11px;
-      border: 1px solid #e45f14;
-      border-radius: 18px;
-      background: #fff4ec;
-      color: #a92129;
-      font-size: 11px;
-      font-weight: 900;
-      line-height: 1.2;
-      white-space: nowrap;
-      box-shadow: 0 2px 7px rgba(169, 33, 41, .12);
-      transition: background-color .15s, border-color .15s, box-shadow .15s, transform .15s;
-    }
-
-    .grievance-history-button:hover {
-      border-color: #c83c2f;
-      background: #ffead7;
-      box-shadow: 0 3px 9px rgba(169, 33, 41, .18);
-      transform: translateY(-1px);
-    }
-
     .content {
       padding: 6px 4px 0;
     }
@@ -675,6 +646,7 @@
 
     .sdt-row .sdt-action {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: flex-end;
       gap: 8px;
@@ -746,6 +718,28 @@
       color: #444;
       font-size: 11px;
     }
+
+    .uw-multiselect { position: relative; }
+    .uw-multiselect-trigger {
+      display: flex; align-items: center; justify-content: space-between;
+      width: 100%; min-height: 34px; padding: 5px 10px;
+      border: 1px solid #c4c4c4; border-radius: 6px; background: #fff;
+      color: #333; font-size: 13px; cursor: pointer; text-align: left; gap: 6px;
+    }
+    .uw-multiselect-trigger svg { width: 16px; height: 16px; flex-shrink: 0; color: #666; }
+    .uw-multiselect-trigger .uw-multiselect-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .uw-multiselect-trigger .uw-multiselect-label.placeholder { color: #999; }
+    .uw-multiselect-menu {
+      position: fixed; z-index: 9999; background: #fff;
+      border: 1px solid #d1d5db; border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.13); padding: 6px 0; min-width: 180px;
+    }
+    .uw-multiselect-menu label {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 14px; font-size: 13px; color: #1f2328; cursor: pointer;
+    }
+    .uw-multiselect-menu label:hover { background: #f3f4f6; }
+    .uw-multiselect-menu input[type="checkbox"] { accent-color: #3b82d4; width: 13px; height: 13px; flex-shrink: 0; }
 
     .select,
     .text-input {
@@ -920,14 +914,9 @@
       font-weight: 900;
     }
 
-    .claim-audit-table tr:last-child td {
-      border-bottom: 0;
-    }
-
+    .claim-audit-table tr:last-child td { border-bottom: 0; }
     .claim-audit-table th:last-child,
-    .claim-audit-table td:last-child {
-      border-right: 0;
-    }
+    .claim-audit-table td:last-child { border-right: 0; }
 
     .special-remarks-table {
       width: 100%;
@@ -946,21 +935,9 @@
       vertical-align: top;
     }
 
-    .special-remarks-table th {
-      background: #ffead7;
-      color: #5b261c;
-      font-size: 10px;
-      font-weight: 900;
-    }
-
-    .special-remarks-table tr:last-child td {
-      border-bottom: 0;
-    }
-
-    .special-remarks-table th:last-child,
-    .special-remarks-table td:last-child {
-      border-right: 0;
-    }
+    .special-remarks-table th { background: #ffead7; color: #5b261c; font-size: 10px; font-weight: 900; }
+    .special-remarks-table tr:last-child td { border-bottom: 0; }
+    .special-remarks-table th:last-child, .special-remarks-table td:last-child { border-right: 0; }
 
     .table-validate-btn {
       min-height: 26px;
@@ -1124,285 +1101,49 @@
       background: #fff;
     }
 
-    .counter-offer-layout,
-    .reinsurer-layout {
-      grid-column: 1 / -1;
-      min-width: 0;
-    }
-
-    .counter-offer-wrap {
-      margin-top: 8px;
-      overflow: auto;
-      border: 1px solid #eadfd9;
-      border-radius: 10px;
-    }
-
-    .counter-offer-table {
-      width: 100%;
-      min-width: 1420px;
-      border-collapse: collapse;
-      font-size: 10px;
-    }
-
-    .counter-offer-table th,
-    .counter-offer-table td {
-      padding: 7px 6px;
-      border-right: 1px solid #eadfd9;
-      border-bottom: 1px solid #eadfd9;
-      vertical-align: middle;
-    }
-
-    .counter-offer-table th {
-      background: #ffead7;
-      color: #5b261c;
-      font-size: 10px;
-      font-weight: 800;
-      text-align: left;
-      white-space: nowrap;
-    }
-
-    .counter-offer-table th:last-child,
-    .counter-offer-table td:last-child {
-      border-right: 0;
-    }
-
-    .counter-offer-table tr:last-child td {
-      border-bottom: 0;
-    }
-
-    .counter-offer-table input,
-    .counter-offer-table select {
-      width: 100%;
-      min-width: 70px;
-      min-height: 31px;
-      padding: 5px 7px;
-      border: 1px solid #d9d1cc;
-      border-radius: 7px;
-      background: #fff;
-      color: #302a27;
-      font-size: 10px;
-    }
-
-    .counter-offer-table input[disabled] {
-      background: #f1f1f1;
-      color: #6b7280;
-    }
-
-    .counter-offer-title {
-      margin: 16px 0 8px;
-      color: #5b261c;
-      font-size: 14px;
-      font-weight: 800;
-    }
-
-    .dialog-save {
-      display: block;
-      min-width: 150px;
-      margin: 12px auto 2px;
-    }
-
-    .reinsurer-section {
-      margin-top: 16px;
-      border-top: 1px solid #eadfd9;
-      padding-top: 14px;
-    }
-
-    .reinsurer-section h3 {
-      margin: 0 0 10px;
-      color: #302a27;
-      font-size: 15px;
-      font-weight: 600;
-    }
-
-    .reinsurer-select-panel {
-      padding: 14px 12px 12px;
-      border-radius: 0 0 12px 12px;
-      background: #f5f5f5;
-    }
-
-    .reinsurer-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(150px, 1fr));
-      gap: 24px;
-    }
-
-    .reinsurer-grid label {
-      display: grid;
-      gap: 5px;
-    }
-
-    .reinsurer-grid input,
-    .reinsurer-grid select,
-    .reinsurer-section textarea {
-      width: 100%;
-      min-height: 34px;
-      padding: 7px 9px;
-      border: 1px solid #d9d1cc;
-      border-radius: 8px;
-      background: #fff;
-      color: #302a27;
-    }
-
-    .reinsurer-grid input:disabled {
-      background: #f1f1f1;
-      color: #6b7280;
-    }
-
-    .assignment-card {
-      display: block;
-      width: 100%;
-      margin-top: 24px;
-      overflow: hidden;
-      border: 1px solid #ddd5d0;
-      border-radius: 18px;
-    }
-
-    .assignment-title {
-      margin: 0;
-      padding: 14px 36px;
-      background: #e95d08;
-      color: #fff;
-      font-size: 14px;
-      font-weight: 800;
-    }
-
-    .assignment-table {
-      width: 100%;
-      table-layout: fixed;
-      border-collapse: collapse;
-      font-size: 12px;
-    }
-
-    .assignment-table th,
-    .assignment-table td {
-      height: 42px;
-      padding: 7px 10px;
-      border-bottom: 1px solid #ded9d6;
-      text-align: center;
-    }
-
-    .assignment-table th {
-      height: 62px;
-      background: #ffead7;
-      color: #302a27;
-      font-size: 13px;
-      font-weight: 700;
-      vertical-align: middle;
-    }
-
-    .assignment-table th:first-child,
-    .assignment-table td:first-child {
-      text-align: left;
-    }
-
-    .assignment-table th:first-child,
-    .assignment-table td:first-child {
-      width: 26%;
-    }
-
-    .assignment-table th:not(:first-child),
-    .assignment-table td:not(:first-child) {
-      width: 18.5%;
-    }
-
-    .assignment-table tr:last-child td {
-      border-bottom: 0;
-    }
-
-    .assignment-table input {
-      width: 22px;
-      height: 22px;
-      accent-color: #e95d08;
-      cursor: pointer;
-    }
-
-    .select-all {
-      display: block;
-      margin: 3px auto 0;
-      padding: 0;
-      border: 0;
-      outline: 0;
-      background: transparent;
-      color: #e95d08;
-      font: inherit;
-      font-size: 12px;
-      font-weight: 400;
-      line-height: 1.2;
-      text-decoration: underline;
-      cursor: pointer;
-    }
-
-    .select-all:hover {
-      color: #b7460c;
-      background: transparent;
-    }
-
-    .upload-disabled {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      min-height: 82px;
-      margin-top: 0;
-      border-radius: 0 0 18px 18px;
-      background: #f0f0f0;
-      color: #6c6c6c;
-      cursor: not-allowed;
-    }
-
-    .upload-disabled b {
-      display: grid;
-      place-items: center;
-      width: 27px;
-      height: 27px;
-      border-radius: 50%;
-      background: #e3e3e3;
-      font-size: 19px;
-      line-height: 1;
-    }
-
-    .reinsurer-section textarea {
-      min-height: 128px;
-      margin-top: 8px;
-      resize: vertical;
-    }
-
-    .reinsurer-actions {
-      display: flex;
-      gap: 22px;
-      margin-top: 18px;
-    }
-
-    .reinsurer-actions button {
-      min-width: 260px;
-      min-height: 48px;
-      border-radius: 28px;
-    }
-
-    .reinsurer-actions .contained {
-      background: #aa262a;
-    }
-
-    .reinsurer-actions .contained:hover {
-      background: #8f1f24;
-    }
-
-    .email-viewer {
-      display: grid;
-      place-items: center;
-      min-height: 430px;
-      border-radius: 10px;
-      background: #d9d9d9;
-      color: #8c8c8c;
-      font-size: 26px;
-      text-transform: uppercase;
-    }
-
-    @media (max-width: 760px) {
-      .reinsurer-grid {
-        grid-template-columns: 1fr 1fr;
-      }
-    }
+    .counter-offer-layout, .reinsurer-layout { grid-column: 1 / -1; min-width: 0; }
+    .counter-offer-wrap { margin-top: 8px; overflow: auto; border: 1px solid #eadfd9; border-radius: 10px; }
+    .counter-offer-table { width: 100%; min-width: 860px; border-collapse: collapse; font-size: 10px; }
+    .counter-offer-table th, .counter-offer-table td { padding: 7px 6px; border-right: 1px solid #eadfd9; border-bottom: 1px solid #eadfd9; vertical-align: middle; }
+    .counter-offer-table th { background: #ffead7; color: #5b261c; font-size: 10px; font-weight: 800; text-align: left; white-space: nowrap; }
+    .counter-offer-table th:last-child, .counter-offer-table td:last-child { border-right: 0; }
+    .counter-offer-table tr:last-child td { border-bottom: 0; }
+    .counter-offer-table input, .counter-offer-table select { width: 100%; min-width: 70px; min-height: 31px; padding: 5px 7px; border: 1px solid #d9d1cc; border-radius: 7px; background: #fff; color: #302a27; font-size: 10px; }
+    .counter-offer-table input[disabled] { background: #f1f1f1; color: #6b7280; }
+    .counter-offer-title { margin: 16px 0 8px; color: #5b261c; font-size: 14px; font-weight: 800; }
+    .dialog-save { display: block; min-width: 150px; margin: 12px auto 2px; }
+    .reinsurer-section { margin-top: 16px; border-top: 1px solid #eadfd9; padding-top: 14px; }
+    .reinsurer-section h3 { margin: 0 0 10px; color: #302a27; font-size: 15px; font-weight: 600; }
+    .reinsurer-select-panel { padding: 14px 12px 12px; border-radius: 0 0 12px 12px; background: #f5f5f5; }
+    .reinsurer-table { width: 100%; table-layout: fixed; border-collapse: collapse; background: #fff; }
+    .reinsurer-table th, .reinsurer-table td { padding: 8px 12px; border: 1px solid #ded9d6; text-align: left; overflow-wrap: anywhere; }
+    .reinsurer-table th { background: #ffead7; color: #5b261c; font-weight: 800; }
+    .reinsurer-table th:first-child { width: 14%; }
+    .reinsurer-table th:nth-child(2) { width: 38%; }
+    .reinsurer-table th:last-child { width: 48%; }
+    .reinsurer-table .mui-select-trigger { width: 100%; min-width: 0; }
+    .reinsurer-table select, .reinsurer-section textarea { width: 100%; min-height: 34px; padding: 7px 9px; border: 1px solid #d9d1cc; border-radius: 8px; background: #fff; color: #302a27; }
+    .assignment-card { display: block; width: 100%; margin-top: 24px; overflow: hidden; border: 1px solid #ddd5d0; border-radius: 18px; }
+    .assignment-title { margin: 0; padding: 14px 36px; background: #e95d08; color: #fff; font-size: 14px; font-weight: 800; }
+    .assignment-table { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 12px; }
+    .assignment-table th, .assignment-table td { height: 42px; padding: 7px 10px; border-bottom: 1px solid #ded9d6; text-align: center; }
+    .assignment-table th { height: 62px; background: #ffead7; color: #302a27; font-size: 13px; font-weight: 700; vertical-align: middle; }
+    .assignment-table th:first-child, .assignment-table td:first-child { text-align: left; }
+    .assignment-table th:first-child, .assignment-table td:first-child { width: 26%; }
+    .assignment-table th:not(:first-child), .assignment-table td:not(:first-child) { width: 37%; }
+    .assignment-table tr:last-child td { border-bottom: 0; }
+    .assignment-table input { width: 22px; height: 22px; accent-color: #e95d08; cursor: pointer; }
+    .select-all { display: block; margin: 3px auto 0; padding: 0; border: 0; outline: 0; background: transparent; color: #e95d08; font: inherit; font-size: 12px; font-weight: 400; line-height: 1.2; text-decoration: underline; cursor: pointer; }
+    .select-all:hover { color: #b7460c; background: transparent; }
+    .upload-disabled { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 82px; margin-top: 0; border-radius: 0 0 18px 18px; background: #f0f0f0; color: #6c6c6c; cursor: not-allowed; }
+    .upload-disabled b { display: grid; place-items: center; width: 27px; height: 27px; border-radius: 50%; background: #e3e3e3; font-size: 19px; line-height: 1; }
+    .reinsurer-section textarea { min-height: 128px; margin-top: 8px; resize: vertical; }
+    .reinsurer-actions { display: flex; gap: 22px; margin-top: 18px; }
+    .reinsurer-actions button { min-width: 260px; min-height: 48px; border-radius: 28px; }
+    .reinsurer-actions .contained { background: #aa262a; }
+    .reinsurer-actions .contained:hover { background: #8f1f24; }
+    .email-viewer { display: grid; place-items: center; min-height: 430px; border-radius: 10px; background: #d9d9d9; color: #8c8c8c; font-size: 26px; text-transform: uppercase; }
+    @media (max-width: 760px) { .reinsurer-table th, .reinsurer-table td { padding: 7px 6px; } .reinsurer-actions { flex-wrap: wrap; gap: 10px; } .reinsurer-actions button { min-width: 0; flex: 1 1 200px; } }
 
     .requirement-dialog .dialog-title {
       background: #fff3e9;
@@ -1435,88 +1176,20 @@
       padding-top: 24px;
     }
 
-    .uw-guideline-dialog {
-      width: min(1280px, calc(100vw - 48px));
-    }
-
-    .uw-guideline-dialog .dialog-title {
-      min-height: 48px;
-      background: #e45f14;
-      color: #fff;
-      font-size: 16px;
-    }
-
-    .uw-guideline-dialog .dialog-close {
-      color: #fff;
-    }
-
-    .uw-guideline-intro {
-      margin: 0 0 12px;
-      color: #6d625d;
-      font-size: 12px;
-    }
-
-    .uw-guideline-table-wrap {
-      overflow: auto;
-      border: 1px solid #ded6d1;
-      border-radius: 10px;
-    }
-
-    .uw-guideline-table {
-      width: 100%;
-      min-width: 920px;
-      border-collapse: collapse;
-      background: #fff;
-      font-size: 11px;
-    }
-
-    .uw-guideline-table th,
-    .uw-guideline-table td {
-      padding: 8px 9px;
-      border-right: 1px solid #e3ddd9;
-      border-bottom: 1px solid #e3ddd9;
-      vertical-align: top;
-      text-align: left;
-    }
-
-    .uw-guideline-table th {
-      background: #fff0e5;
-      color: #4a3025;
-      font-size: 11px;
-      font-weight: 800;
-    }
-
-    .uw-guideline-table tr:last-child td {
-      border-bottom: 0;
-    }
-
-    .uw-guideline-table th:last-child,
-    .uw-guideline-table td:last-child {
-      border-right: 0;
-    }
-
-    .uw-guideline-table td:nth-child(3) {
-      color: #8d232a;
-      font-weight: 700;
-      white-space: nowrap;
-    }
-
-    .uw-guideline-table .select,
-    .uw-guideline-table .text-input {
-      min-width: 150px;
-      padding: 6px 8px;
-    }
-
-    .uw-guideline-table .text-input {
-      width: 100%;
-    }
-
-    .uw-guideline-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      margin-top: 14px;
-    }
+    .uw-guideline-dialog { width: min(1280px, calc(100vw - 48px)); }
+    .uw-guideline-dialog .dialog-title { min-height: 48px; background: #e45f14; color: #fff; font-size: 16px; }
+    .uw-guideline-dialog .dialog-close { color: #fff; }
+    .uw-guideline-intro { margin: 0 0 12px; color: #6d625d; font-size: 12px; }
+    .uw-guideline-table-wrap { overflow: auto; border: 1px solid #ded6d1; border-radius: 10px; }
+    .uw-guideline-table { width: 100%; min-width: 920px; border-collapse: collapse; background: #fff; font-size: 11px; }
+    .uw-guideline-table th, .uw-guideline-table td { padding: 8px 9px; border-right: 1px solid #e3ddd9; border-bottom: 1px solid #e3ddd9; vertical-align: top; text-align: left; }
+    .uw-guideline-table th { background: #fff0e5; color: #4a3025; font-size: 11px; font-weight: 800; }
+    .uw-guideline-table tr:last-child td { border-bottom: 0; }
+    .uw-guideline-table th:last-child, .uw-guideline-table td:last-child { border-right: 0; }
+    .uw-guideline-table td:nth-child(3) { color: #8d232a; font-weight: 700; white-space: nowrap; }
+    .uw-guideline-table .select, .uw-guideline-table .text-input { min-width: 150px; padding: 6px 8px; }
+    .uw-guideline-table .text-input { width: 100%; }
+    .uw-guideline-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; }
 
     .bre-table {
       width: 100%;
@@ -1601,237 +1274,42 @@
       font-weight: 600;
     }
 
-    .dialog.grievance-dialog {
-      width: min(1536px, calc(100vw - 64px));
-      max-height: calc(100vh - 64px);
-    }
+    .dialog.grievance-history-dialog { width: min(1536px, calc(100vw - 32px)); }
+    .grievance-history-dialog .dialog-content { padding: 12px; max-height: calc(100vh - 150px); overflow-y: auto; }
+    .grievance-history-dialog .grievance-table th, .grievance-history-dialog .grievance-table td { padding: 10px 8px; overflow-wrap: anywhere; }
+    .grievance-history-pagination { display: flex; justify-content: center; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+    .grievance-history-pagination button { min-width: 28px; height: 28px; border: 0; border-radius: 4px; background: transparent; color: #555555; font: inherit; font-size: 12px; cursor: pointer; }
+    .grievance-history-pagination button:hover:not(:disabled) { background: #ffead7; }
+    .grievance-history-pagination button[aria-current="page"], .grievance-history-pagination button[aria-current="page"]:hover { color: #ffffff; background: #E45F14; }
+    .grievance-history-pagination button:disabled { cursor: default; opacity: .5; }
+    @media (max-width: 599px) { .grievance-history-dialog .dialog-content { padding: 8px; } }
 
-    .dialog.grievance-history-dialog {
-      width: min(1536px, calc(100vw - 64px));
-      max-height: calc(100vh - 64px);
-    }
-
-    .grievance-history-card {
-      overflow: hidden;
-      border: 1px solid #d8d8d8;
-      border-radius: 14px;
-      background: #fff;
-    }
-
-    .grievance-history-card-title {
-      padding: 9.6px 24px;
-      background: #e45f14;
-      color: #fff;
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    .grievance-history-table {
-      width: 100%;
-      table-layout: fixed;
-      border-collapse: collapse;
-    }
-
-    .grievance-history-table th {
-      padding: 4px 8px;
-      border-bottom: 1px solid #d6d6d6;
-      background: #ffead7;
-      color: #000;
-      font-size: 12px;
-      font-weight: 600;
-      line-height: 1.2;
-      text-align: left;
-    }
-
-    .grievance-history-table td {
-      padding: 4px 8px;
-      border-bottom: 1px solid #e1e1e1;
-      color: #4a4a4a;
-      font-size: 10px;
-      line-height: 1.2;
-      overflow-wrap: anywhere;
-      word-break: break-word;
-    }
-
-    .grievance-history-pagination {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 4px;
-      margin-top: 8px;
-    }
-
-    .grievance-history-pagination button {
-      min-width: 28px;
-      height: 28px;
-      padding: 0 6px;
-      border: 0;
-      border-radius: 4px;
-      background: transparent;
-      color: #555;
-      font-size: 13px;
-    }
-
-    .grievance-history-pagination .selected {
-      background: #e45f14;
-      color: #fff;
-    }
-
-    .grievance-history-pagination button:disabled {
-      color: rgba(0, 0, 0, .26);
-      cursor: default;
-    }
-
-    .grievance-wrap {
-      width: 100%;
-      min-width: 0;
-      padding: 6px 4px;
-    }
-
-    .grievance-table-card {
-      margin-top: 10px;
-      overflow: hidden;
-      border: 1px solid #d8d8d8;
-      border-radius: 14px;
-      background: #fff;
-    }
-
-    .grievance-table-title {
-      padding: 9.6px 24px;
-      background: #e45f14;
-      color: #fff;
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    .grievance-table {
-      width: 100%;
-      table-layout: fixed;
-      border-collapse: collapse;
-    }
-
-    .grievance-table th {
-      padding: 4px 8px;
-      border-bottom: 1px solid #d6d6d6;
-      background: #ffead7;
-      color: #000;
-      text-align: left;
-      font-size: 12px;
-      font-weight: 600;
-      line-height: 1.2;
-    }
-
-    .grievance-table td {
-      padding: 4px 8px;
-      border-bottom: 1px solid #e1e1e1;
-      color: #4a4a4a;
-      font-size: 12px;
-      line-height: 1.2;
-      vertical-align: middle;
-      overflow-wrap: anywhere;
-    }
-
-    .grievance-table tr:last-child td {
-      border-bottom: 0;
-    }
-
-    .grievance-table input[type="checkbox"] {
-      width: 18px;
-      height: 18px;
-      margin: 0;
-      accent-color: #9a2529;
-      cursor: pointer;
-    }
-
-    .grievance-remarks {
-      width: 100%;
-      min-height: 40px;
-      padding: 8.5px 12px;
-      border: 1px solid rgba(0, 0, 0, .23);
-      border-radius: 4px;
-      outline: 0;
-      background: #fff;
-      color: #333;
-      font: 12px Arial, Helvetica, sans-serif;
-    }
-
-    .grievance-remarks:hover {
-      border-color: #000;
-    }
-
-    .grievance-remarks:focus {
-      border: 2px solid #9a2529;
-      padding: 7.5px 11px;
-    }
-
-    .grievance-remarks.error {
-      border-color: #d32f2f;
-    }
-
-    .grievance-helper {
-      display: none;
-      margin-top: 3px;
-      color: #d32f2f;
-      font-size: 10px;
-    }
-
-    .grievance-helper.show {
-      display: block;
-    }
-
-    .grievance-error {
-      min-height: 18px;
-      margin: 8px 0 0;
-      color: #d32f2f;
-      text-align: center;
-      font-size: 12px;
-    }
-
-    .grievance-actions {
-      display: flex;
-      justify-content: center;
-      margin-top: 10px;
-    }
-
-    .grievance-actions .contained {
-      min-width: 180px;
-      border-radius: 50px;
-    }
-
-    .grievance-confirm-text {
-      margin: 0;
-      color: rgba(0, 0, 0, .87);
-      font-size: 14px;
-    }
-
-    .grievance-confirm-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-      padding-top: 24px;
-    }
-
-    .grievance-cancel {
-      padding: 5px 10px;
-      border: 1px solid #9a2529;
-      border-radius: 4px;
-      background: #fff;
-      color: #9a2529;
-      font-size: 14px;
-    }
+    .dialog.grievance-dialog { width: min(1536px, calc(100vw - 64px)); max-height: calc(100vh - 64px); }
+    .grievance-wrap { width: 100%; min-width: 0; padding: 6px 4px; }
+    .grievance-table-card { margin-top: 10px; overflow: hidden; border: 1px solid #d8d8d8; border-radius: 14px; background: #fff; }
+    .grievance-table-title { padding: 9.6px 24px; background: #e45f14; color: #fff; font-size: 12px; font-weight: 700; }
+    .grievance-table { width: 100%; table-layout: fixed; border-collapse: collapse; }
+    .grievance-table th { padding: 4px 8px; border-bottom: 1px solid #d6d6d6; background: #ffead7; color: #000; text-align: left; font-size: 12px; font-weight: 600; line-height: 1.2; }
+    .grievance-table td { padding: 4px 8px; border-bottom: 1px solid #e1e1e1; color: #4a4a4a; font-size: 12px; line-height: 1.2; vertical-align: middle; overflow-wrap: anywhere; }
+    .grievance-table tr:last-child td { border-bottom: 0; }
+    .grievance-table input[type="checkbox"] { width: 18px; height: 18px; margin: 0; accent-color: #9a2529; cursor: pointer; }
+    .grievance-remarks { width: 100%; min-height: 40px; padding: 8.5px 12px; border: 1px solid rgba(0,0,0,.23); border-radius: 4px; outline: 0; background: #fff; color: #333; font: 12px Arial, Helvetica, sans-serif; }
+    .grievance-remarks:hover { border-color: #000; }
+    .grievance-remarks:focus { border: 2px solid #9a2529; padding: 7.5px 11px; }
+    .grievance-remarks.error { border-color: #d32f2f; }
+    .grievance-helper { display: none; margin-top: 3px; color: #d32f2f; font-size: 10px; }
+    .grievance-helper.show { display: block; }
+    .grievance-error { min-height: 18px; margin: 8px 0 0; color: #d32f2f; text-align: center; font-size: 12px; }
+    .grievance-actions { display: flex; justify-content: center; margin-top: 10px; }
+    .grievance-actions .contained { min-width: 180px; border-radius: 50px; }
+    .grievance-confirm-text { margin: 0; color: rgba(0,0,0,.87); font-size: 14px; }
+    .grievance-confirm-actions { display: flex; justify-content: flex-end; gap: 8px; padding-top: 24px; }
+    .grievance-cancel { padding: 5px 10px; border: 1px solid #9a2529; border-radius: 4px; background: #fff; color: #9a2529; font-size: 14px; }
 
     @media (max-width: 700px) {
-      .dialog.grievance-dialog {
-        width: calc(100vw - 16px);
-      }
-
-      .grievance-table-card {
-        overflow-x: auto;
-      }
-
-      .grievance-table {
-        min-width: 680px;
-      }
+      .dialog.grievance-dialog { width: calc(100vw - 16px); }
+      .grievance-table-card { overflow-x: auto; }
+      .grievance-table { min-width: 680px; }
     }
 
     .req-toolbar {
@@ -2913,8 +2391,7 @@
         <div class="banner-content">
           <div class="banner-title"><strong>Rudra Prakash Sangha</strong><span class="app-pill">App No. -
               OB90377122</span></div>
-          <p class="banner-line">Life Assured 1 / Married / Male / 40 / Graduate / Salaried / 3I INFOTECH / ₹10,00,000 /
-            Pune,
+          <p class="banner-line">Life Assured 1 / Married / Male / 40 / Graduate / Salaried / 3I INFOTECH / ₹10,00,000 / Pune,
             Maharashtra / Indian / India</p>
           <p class="banner-line product">
             <Product Name &amp; product code - <span id="product-line">ICICI Pru GIFT Pro</span> / Channel - Agency / SA
@@ -2924,17 +2401,13 @@
           </p>
           <p class="banner-line"><strong>Riders:</strong> WOP - SA ₹15,00,000 / BTBB - SA ₹25,00,000 /
             TI Rider - SA ₹25,00,000 / ADBR - SA ₹25,00,000 / CI Rider - SA ₹25,00,000</p>
-          <p class="banner-line"><strong>Eligibility Parameters:</strong> TSA - ₹10,00,000 / TRSA - ₹5,00,000 /
-            TPSA - ₹10,00,000 / TFSA - ₹10,00,000 / TSSA - ₹10,00,000 /
+          <p class="banner-line"><strong>Sum at Risk:</strong> TSA - ₹10,00,000 / TRSA - ₹5,00,000 /
+            TPSA - ₹10,00,000 / TFSA - ₹10,00,000 / TFESA - ₹10,00,000 / TSSA - ₹10,00,000 /
             ADBR TSA - ₹5,00,000 / ATPD TSA - ₹5,00,000 / CI Rider TSA - ₹3,00,000 /
-            CI Rider TRSA - ₹3,00,000 / BTBB TSA - ₹5,00,000</p>
+            CI Rider TRSA - ₹3,00,000 / WOP TSA - ₹10,00,000 / BTBB TSA - ₹5,00,000 /
+            Total Premium - ₹10,000 / Total Premium Paid (AML) - ₹10,000</p>
         </div>
       </div>
-    </div>
-
-    <div class="banner-actions">
-      <button id="grievance-history-button" class="grievance-history-button" type="button"
-        aria-label="Open Grievance History">Grievance History</button>
     </div>
 
     <div class="content">
@@ -2945,34 +2418,32 @@
               <div class="panel risk-card" data-risk="financial" tabindex="0">
                 <div class="risk-heading">Financial</div>
                 <div class="risk-fields">
-                  <div>BRE Financial Decision: <b>NON-FSTP</b></div>
+                  <div>Financial Decision: <b>NON-FSTP</b></div>
                   <div>Financial Eligibility: <b>₹4,80,000</b></div>
                   <div>Derived Income: <b>₹16,00,000</b></div>
                   <div>Verified Income: <b>₹16,00,000</b></div>
-                  <div>BIU Financial Status (Match/Mismatch): <b>Match</b></div>
+                  <div>BIU Financial Status: <b>-</b></div>
                 </div>
                 <div class="risk-footer"><button class="round-arrow" type="button" data-risk-detail="financial"
-                    aria-label="View Financial risk details">›</button><button class="view-tag" type="button">View
-                    Financial</button>
+                    aria-label="View Financial risk details">›</button><button class="view-tag" type="button">View Financial</button>
                 </div>
               </div>
               <div class="panel risk-card" data-risk="medical" tabindex="0">
                 <div class="risk-heading">Medical</div>
                 <div class="risk-fields">
-                  <div>BRE Physical Medical Decision: <b>STP</b></div>
+                  <div>Physical Medical Decision: <b>STP</b></div>
                   <div>MunichRe Medical Decision: <b>-</b></div>
-                  <div>BIU Medical Status (Match/Mismatch): <b>Match</b></div>
+                  <div>BIU Medical Status: <b>-</b></div>
                 </div>
                 <div class="risk-footer"><button class="round-arrow" type="button" data-risk-detail="medical"
-                    aria-label="View Medical risk details">›</button><button class="view-tag" type="button">View
-                    Medical</button></div>
+                    aria-label="View Medical risk details">›</button><button class="view-tag" type="button">View Medical</button></div>
               </div>
               <div class="panel risk-card" data-risk="other" tabindex="0">
                 <div class="risk-heading">Risk Parameters</div>
                 <div class="risk-fields">
-                  <div>PEP Question Response (LA): <b>No</b></div>
-                  <div>FATF/OFAC Country Login: <b>No</b></div>
-                  <div>Health Question Positive: <b>Yes</b></div>
+                  <div>DRC Response: <b>Y</b></div>
+                  <div>Criminal Question Response LA: <b>No</b></div>
+                  <div>PEP Question Response LA: <b>No</b></div>
                 </div>
                 <div class="risk-footer"><button class="round-arrow" type="button" data-risk-detail="other"
                     aria-label="View Other Risk risk details">›</button>
@@ -3009,9 +2480,7 @@
         <div class="sdt-row">
           <div><span>Financial Decision</span><strong>Standard</strong></div>
           <div><span>Medical Decision</span><strong>Standard</strong></div>
-          <div class="sdt-action"><button id="claim-audit" class="contained" type="button">Claim Audit
-              (1)</button><button id="uw-guidelines" class="contained" type="button">UW Guidelines (7)</button><button
-              id="special-remarks" class="contained" type="button">Special Remarks</button></div>
+          <div class="sdt-action"><button id="claim-audit" class="contained" type="button">Claim Audit (1)</button><button id="uw-guidelines" class="contained" type="button">UW Guidelines (7)</button><button id="special-remarks" class="contained" type="button">Special Remarks</button><button id="grievance-history" class="contained" type="button" aria-haspopup="dialog">Grievance History</button></div>
         </div>
       </div>
     </div>
@@ -3020,26 +2489,19 @@
         <div class="uw-readonly">
           <div><b>BRE Overall Decision</b><span id="financial-decision">-</span></div>
           <div><b>BRE Overall Remarks</b><span id="medical-decision">-</span></div>
-        </div><label><span class="field-label" style="margin-bottom:8px">Case UW Decision</span><select class="select" id="uw-select" required>
+        </div><label><span class="field-label">Case UW Decision</span><select class="select" id="uw-select" required>
             <option value="" disabled selected>Select</option>
             <option value="STD">Standard</option>
-            <option value="CO">Counter Offer</option>
-            <option value="DC">Decline</option>
+            <option value="BOR_STD">Borderline Standard</option>
             <option value="REJ">Reject</option>
+            <option value="DC">Decline</option>
             <option value="POSTP">Postpone</option>
+            <option value="CO">Counter Offer</option>
+            <option value="EP">Extra Premium</option>
             <option value="HOLD">Hold</option>
-            <option value="REF_RISK">Refer to Risk</option>
-            <option value="REF_ACU">Refer to Accuity</option>
-            <option value="REF_REINS">Refer to Reinsurer</option>
-            <option value="REF_CMO">Refer to HO CMO</option>
-            <option value="REF_SR_UW">Refer to Sr.UW</option>
-            <option value="REF_HOD">Refer to HoD</option>
-            <option value="REF_CUW_CLM">Refer to CUW Claim Audit</option>
-            <option value="REF_IT">Refer to IT</option>
-            <option value="AMR">Raise Requirements</option>
-            <option value="REF_TELE_MER">Refer to Tele MER</option>
-            <option value="REF_VIDEO_MER">Refer to Video MER</option>
-            <option value="REF_DVT">Refer to DVT</option>
+            <option value="REFERRAL">Refer To</option>
+            <option value="AMR">Raise Requirement</option>
+            <option value="APPROVER">Refer to Approver</option>
           </select></label>
       </div>
     </section>
@@ -3090,57 +2552,56 @@
       { status: "Accept", ocrStatus: "pass", team: "COPS", profile: "", category: "KYC", subCategory: "Address Proof", document: "Driving License", reason: "Documents not submitted", fupCode: "ADP", extraRemarks: "", description: "ADP-Address proof of the proposer matching with application form (Passport - front & back or Aadhaar - front & back or Driving License or Voter id)", requirementId: 11794 },
       { status: "Pending", ocrStatus: "", team: "COPS", profile: "", category: "Medical", subCategory: "SPAARC call", document: "SPAARC call ID", reason: "Call ID to be raised for details mismatch in Application form", fupCode: "SCI", extraRemarks: "", description: "SPAARC call ID to be raised (related to Name, address, DOB, Pin Code, gender & residential status mismatch as per the IUW form)", requirementId: 12069 }
     ];
-    requirements.forEach((row) => { row.requirementPoolType = row.team; });
     // ApplicantSummary maps every source field, including missing values, into the Other Risk dialog.
     const otherRisk = {
-      pepQuestionResponseLA: "No", pepQuestionResponsePR: "No", fatfOfacCountryLogin: "No",
-      claimRegistered: "No", adverseIIB: "No", adverseAcr: "No",
-      criminalQuestionResponseLA: "No", criminalQuestionResponsePR: "No", faceMatchScoreBelow75: "No",
-      distanceBelowAcceptableRange: "No", adverseAppOid: "No", previousPolicySubstandard: "No",
-      avocationRelatedDisclosure: "No", hazardousOccupation: "No",
-      employmentInRiskyIndustry: "No", healthQuestionPositive: "Yes"
+      ptlrResponse: "", drcResponse: "Y", adverseIIB: "", criminalQuestionResponseLA: "No",
+      pepQuestionResponseLA: "No", criminalQuestionResponsePR: "No", pepQuestionResponsePR: "No",
+      previousPolicySubstandard: "No", avocationRelatedDisclosure: "", healthQuestionPositive: "Yes",
+      employmentInRiskyIndustry: "LowRiskPremium", fatfOfacCountryLogin: "No", hazardousOccupation: "",
+      eddFlag: "Yes", claimRiskIndicator: "", faceMatchScore: "", tobacco: "", narcotics: ""
     };
     // ApplicantSummary builds these two dialogs from riskAnalytics in the DRS mock response.
     const financialRisk = {
       breFinancialDecision: "NON-FSTP", financialEligibility: "₹4,80,000",
-      breRemark: "Financial assessment completed", derivedIncome: "₹16,00,000",
+      derivedIncome: "₹16,00,000", verifiedIncome: "₹16,00,000",
       counterOfferValue: "₹50,00,000", additionalSA: "0.0",
-      biuFinancialStatus: "Match", finalBureauIncome: "₹16,00,000", reinsurerCase: "No"
+      biuFinancialStatus: "", finalBureauIncome: "", reinsurerCase: "", financialRemark: ""
     };
     const medicalRisk = {
       brePhysicalMedicalDecision: "STP", brePhysicalMedicalRemark: "", breTeleVideoMerDecision: "",
       breTeleVideoMerRemark: "", munichReMedicalDecision: "",
-      munichReRating: "", biuMedicalStatus: "Match"
+      munichReRating: "", biuMedicalStatus: ""
     };
     const financialRiskFields = [
-      ["breFinancialDecision", "BRE Financial decision"], ["breRemark", "BRE Remark"],
-      ["financialEligibility", "Financial Eligibility"], ["derivedIncome", "Derived Income"],
+      ["breFinancialDecision", "Financial Decision"], ["financialEligibility", "Financial Eligibility"],
+      ["derivedIncome", "Derived Income"], ["verifiedIncome", "Verified Income"],
       ["counterOfferValue", "Counter Offer Value"], ["additionalSA", "Additional SA"],
-      ["biuFinancialStatus", "BIU Financial status (Match/Mismatch)"], ["finalBureauIncome", "Final Bureau Income"],
-      ["reinsurerCase", "Reinsurer Case"]
+      ["biuFinancialStatus", "BIU Financial Status"], ["finalBureauIncome", "Final Bureau Income"],
+      ["reinsurerCase", "Reinsurer Case"], ["financialRemark", "Financial Remark"]
     ];
     const medicalRiskFields = [
-      ["brePhysicalMedicalDecision", "BRE Physical Medical Decision"],
-      ["breTeleVideoMerDecision", "BRE Tele/Video MER Decision"],
-      ["munichReMedicalDecision", "MunichRe Medical decision"],
+      ["brePhysicalMedicalDecision", "Physical Medical Decision"],
+      ["breTeleVideoMerDecision", "Tele/Video MER Decision"],
+      ["breTeleVideoMerRemark", "Tele/Video MER Remark"], ["brePhysicalMedicalRemark", "Physical Medical Remark"],
+      ["munichReMedicalDecision", "MunichRe Medical Decision"],
       ["munichReRating", "MunichRe Rating"],
-      ["biuMedicalStatus", "BIU Medical status (Match/Mismatch)"],
-      ["brePhysicalMedicalRemark", "BRE Physical Medical Remark"],
-      ["breTeleVideoMerRemark", "BRE Tele/Video MER Remark"]
+      ["biuMedicalStatus", "BIU Medical Status"]
     ];
     const otherRiskFields = [
-      ["pepQuestionResponseLA", "PEP Question Response (LA)"], ["pepQuestionResponsePR", "PEP Question Response (PR)"],
-      ["fatfOfacCountryLogin", "FATF/OFAC Country Login"], ["claimRegistered", "Claim Registered"],
-      ["adverseIIB", "Adverse IIB"], ["adverseAcr", "Adverse ACR"],
-      ["criminalQuestionResponseLA", "Criminal Question Response (LA)"], ["criminalQuestionResponsePR", "Criminal Question Response (PR)"],
-      ["faceMatchScoreBelow75", "Face Match Score < 75%"], ["distanceBelowAcceptableRange", "Distance < acceptable range"],
-      ["adverseAppOid", "Adverse App OID"], ["previousPolicySubstandard", "Previous Policy Substandard"],
-      ["avocationRelatedDisclosure", "Avocation Related Disclosure"], ["hazardousOccupation", "Hazardous Occupation"],
-      ["employmentInRiskyIndustry", "Employment in Risky Industry"], ["healthQuestionPositive", "Health Question Positive"]
+      ["ptlrResponse", "PTLR Response"], ["drcResponse", "DRC Response"], ["adverseIIB", "Adverse IIB"],
+      ["criminalQuestionResponseLA", "Criminal Question Response LA"], ["pepQuestionResponseLA", "PEP Question Response LA"],
+      ["criminalQuestionResponsePR", "Criminal Question Response PR"], ["pepQuestionResponsePR", "PEP Question Response PR"],
+      ["previousPolicySubstandard", "Previous Policy Substandard"], ["avocationRelatedDisclosure", "Avocation Related Disclosure"],
+      ["healthQuestionPositive", "Health Question Positive"], ["employmentInRiskyIndustry", "Employment In Risky Industry"],
+      ["fatfOfacCountryLogin", "FATF/OFAC Country Login"], ["hazardousOccupation", "Hazardous Occupation"],
+      ["eddFlag", "EDD Flag"], ["claimRiskIndicator", "Claim Risk Indicator"], ["faceMatchScore", "Face Match Score"],
+      ["tobacco", "Tobacco"], ["narcotics", "Narcotics"], ["thirdPartyPayment", "Third Party Payment"],
+      ["pbRiskResponse", "Policy Bazar Risk Response"], ["adverseACRrange", "Adverse ACR"],
+      ["acceptable", "Distance < acceptable range"], ["adverseOID", "Adverse App OID"],["nagativePincode", "Negative Pincode"],["nomineeOtherThanBloodRelative","Nominee Other than Blood relative"]
     ];
     const statuses = ["All", "Pending", "Received", "Accept", "Cancelled", "Reject", "Waived"];
-    const columns = ["Requirement Pool type", "Profile", "Category", "Sub Category", "Document", "Reason", "FUP Code", "Description", "Extra Remark"];
-    const columnWidths = [120, 100, 110, 120, 125, 145, 90, 190, 170];
+    const columns = ["Actions", "Status", "OCR Status", "Team", "Profile", "Category", "Sub Category", "Document", "Reason", "FUP Code", "Extra Remarks", "Description"];
+    const columnWidths = [60, 125, 95, 85, 95, 105, 115, 120, 145, 85, 170, 85];
     const statusPriority = ["Accept", "Reject", "Cancelled", "Waived", "Received", "Pending", "Not Required"];
     let currentFilter = "All";
     let tableFilters = { category: [], subCategory: [], profile: [], fupCode: [], status: [] };
@@ -3229,33 +2690,106 @@
     }
     document.addEventListener("pointerdown", (event) => {
       if (activeSelectMenu && !activeSelectMenu.menu.contains(event.target) && !activeSelectMenu.trigger.contains(event.target)) closeSelectMenu();
+      // Close multiselect dropdown on outside click
+      if (activeMultiSelect && !activeMultiSelect.menu.contains(event.target) && !activeMultiSelect.trigger.contains(event.target)) closeMultiSelect();
+    });
+    let activeMultiSelect = null;
+    function closeMultiSelect() {
+      if (!activeMultiSelect) return;
+      activeMultiSelect.trigger.setAttribute("aria-expanded", "false");
+      activeMultiSelect.menu.remove();
+      activeMultiSelect = null;
+    }
+    function updateMultiSelectTrigger(wrapper) {
+      const checked = [...wrapper.querySelectorAll("input[type='checkbox']:checked")].map(cb => cb.value);
+      const label = wrapper.querySelector(".uw-multiselect-label");
+      if (!label) return;
+      if (checked.length === 0) { label.textContent = "Select"; label.className = "uw-multiselect-label placeholder"; }
+      else { label.textContent = checked.join(", "); label.className = "uw-multiselect-label"; }
+    }
+    document.addEventListener("click", (event) => {
+      const trigger = event.target.closest(".uw-multiselect-trigger");
+      if (!trigger) return;
+      const wrapper = trigger.closest(".uw-multiselect");
+      if (!wrapper) return;
+      if (activeMultiSelect?.trigger === trigger) { closeMultiSelect(); return; }
+      closeMultiSelect();
+      closeSelectMenu();
+      const options = wrapper.dataset.options?.split("|") || [];
+      const menu = document.createElement("div");
+      menu.className = "uw-multiselect-menu";
+      options.forEach(opt => {
+        const existing = wrapper.querySelector(`input[value="${CSS.escape ? CSS.escape(opt) : opt}"]`);
+        const label = document.createElement("label");
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.value = opt;
+        cb.checked = existing?.checked || false;
+        cb.addEventListener("change", () => {
+          // Sync a hidden checkbox inside the wrapper so state persists
+          let hidden = wrapper.querySelector(`input[data-opt="${opt}"]`);
+          if (!hidden) { hidden = document.createElement("input"); hidden.type = "checkbox"; hidden.hidden = true; hidden.dataset.opt = opt; wrapper.append(hidden); }
+          hidden.checked = cb.checked;
+          updateMultiSelectTrigger(wrapper);
+        });
+        label.append(cb, document.createTextNode(" " + opt));
+        menu.append(label);
+      });
+      const rect = trigger.getBoundingClientRect();
+      menu.style.left = `${Math.max(8, rect.left)}px`;
+      menu.style.width = `${Math.max(rect.width, 200)}px`;
+      menu.style.top = `${Math.min(rect.bottom + 4, window.innerHeight - Math.min(options.length * 34 + 12, 260) - 8)}px`;
+      document.body.append(menu);
+      trigger.setAttribute("aria-expanded", "true");
+      activeMultiSelect = { trigger, menu };
     });
     function notify(message) { const toast = $("#toast"); toast.textContent = message; toast.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { toast.hidden = true; }, 3500); }
-    function openDialog(title, html, narrow = false) { closeSelectMenu(); $("#dialog-title").textContent = title; $("#dialog-content").innerHTML = html; $("#dialog").classList.toggle("narrow", narrow); $("#dialog").classList.toggle("filter-dialog", title === "FILTER"); $("#dialog").classList.toggle("requirement-dialog", title === "Requirement Management"); $("#dialog").classList.toggle("uw-dialog", title === ""); $("#dialog").classList.toggle("uw-guideline-dialog", title === "UW Guidelines"); $("#dialog").classList.toggle("grievance-history-dialog", title === "Grievance History"); $("#dialog").classList.remove("applicant-profile-dialog", "grievance-dialog"); $("#modal-root").hidden = false; document.body.style.overflow = "hidden"; enhanceSelects($("#dialog-content")); $("#dialog-close").focus(); }
-    const grievanceHistoryRows = [{
-      userName: "Premanand Sawant",
-      userRole: "UW",
-      fupCode: "ECG",
-      grievanceRaisedRemark: "ECG graph is blurry",
-      grievanceRaisedDate: "7 Sep 2026",
-      tpaRemarks: "Provided new ECG graph"
-    }];
-    function grievanceHistoryHtml() {
-      const columns = [
-        ["userName", "User Name", "16%"],
-        ["userRole", "User Role", "12%"],
-        ["fupCode", "FUP Code", "12%"],
-        ["grievanceRaisedRemark", "Grievance Raised Remark", "24%"],
-        ["grievanceRaisedDate", "Grievance Raised Date", "18%"],
-        ["tpaRemarks", "TPA Remarks", "18%"]
-      ];
-      const header = columns.map(([, label, width]) => `<th style="width:${width}">${escapeHtml(label)}</th>`).join("");
-      const body = grievanceHistoryRows.length
-        ? grievanceHistoryRows.map(row => `<tr>${columns.map(([key]) => `<td>${escapeHtml(row[key])}</td>`).join("")}</tr>`).join("")
-        : `<tr><td colspan="${columns.length}" style="text-align:center;padding:12px">No data available</td></tr>`;
-      return `<div class="grievance-history-card"><div class="grievance-history-card-title">Grievance History</div><div style="overflow:auto"><table class="grievance-history-table"><thead><tr>${header}</tr></thead><tbody>${body}</tbody></table></div></div><div class="grievance-history-pagination" aria-label="Grievance History pagination"><button type="button" disabled aria-label="Go to previous page">‹</button><button type="button" class="selected" disabled aria-current="page">1</button><button type="button" disabled aria-label="Go to next page">›</button></div>`;
+    function openDialog(title, html, narrow = false) { closeSelectMenu(); $("#dialog-title").textContent = title; $("#dialog-content").innerHTML = html; $("#dialog").classList.toggle("narrow", narrow); $("#dialog").classList.toggle("filter-dialog", title === "FILTER"); $("#dialog").classList.toggle("requirement-dialog", title === "Requirement Management"); $("#dialog").classList.toggle("uw-dialog", title === ""); $("#dialog").classList.toggle("uw-guideline-dialog", title === "UW Guidelines"); $("#dialog").classList.remove("applicant-profile-dialog", "grievance-dialog", "grievance-history-dialog"); $("#modal-root").hidden = false; document.body.style.overflow = "hidden"; enhanceSelects($("#dialog-content")); $("#dialog-close").focus(); }
+    const STATIC_GRIEVANCE_HISTORY_ROWS = [
+      {
+        userName: "Premanand Sawant",
+        userRole: "UW",
+        fupCode: "ECG",
+        grievanceRaisedRemark: "ECG graph is blurry",
+        grievanceRaisedDate: "7 Sep 2026",
+        tpaRemarks: "Provided new ECG graph",
+      },
+    ];
+    const GRIEVANCE_HISTORY_ROWS_PER_PAGE = 5;
+    const GRIEVANCE_HISTORY_COLUMNS = [
+      { key: "userName", header: "User Name", width: "16%" },
+      { key: "userRole", header: "User Role", width: "12%" },
+      { key: "fupCode", header: "FUP Code", width: "12%" },
+      { key: "grievanceRaisedRemark", header: "Grievance Raised Remark", width: "24%" },
+      { key: "grievanceRaisedDate", header: "Grievance Raised Date", width: "18%" },
+      { key: "tpaRemarks", header: "TPA Remarks", width: "18%" },
+    ];
+    let grievanceHistoryPage = 1;
+    function renderGrievanceHistory() {
+      const pageCount = Math.max(1, Math.ceil(STATIC_GRIEVANCE_HISTORY_ROWS.length / GRIEVANCE_HISTORY_ROWS_PER_PAGE));
+      grievanceHistoryPage = Math.min(Math.max(1, grievanceHistoryPage), pageCount);
+      const start = (grievanceHistoryPage - 1) * GRIEVANCE_HISTORY_ROWS_PER_PAGE;
+      const visibleRows = STATIC_GRIEVANCE_HISTORY_ROWS.slice(start, start + GRIEVANCE_HISTORY_ROWS_PER_PAGE);
+      const disabled = pageCount <= 1;
+      const pageButton = (page, label, ariaLabel, isDisabled, selected = false) => `<button type="button" data-grievance-history-page="${page}" aria-label="${ariaLabel}" ${isDisabled ? "disabled" : ""} ${selected ? 'aria-current="page"' : ""}>${label}</button>`;
+      const pagination = pageButton(grievanceHistoryPage - 1, "&#8249;", "Previous page", disabled || grievanceHistoryPage === 1)
+        + Array.from({ length: pageCount }, (_, index) => pageButton(index + 1, index + 1, `Page ${index + 1}`, disabled, grievanceHistoryPage === index + 1)).join("")
+        + pageButton(grievanceHistoryPage + 1, "&#8250;", "Next page", disabled || grievanceHistoryPage === pageCount);
+      $("#dialog-content").innerHTML = `<section class="grievance-table-card"><div class="grievance-table-title">Grievance History</div><table class="grievance-table" aria-label="Grievance History"><colgroup>${GRIEVANCE_HISTORY_COLUMNS.map((column) => `<col style="width:${column.width}">`).join("")}</colgroup><thead><tr>${GRIEVANCE_HISTORY_COLUMNS.map((column) => `<th scope="col">${escapeHtml(column.header)}</th>`).join("")}</tr></thead><tbody>${visibleRows.length ? visibleRows.map((row) => `<tr>${GRIEVANCE_HISTORY_COLUMNS.map((column) => `<td>${escapeHtml(row[column.key])}</td>`).join("")}</tr>`).join("") : '<tr><td colspan="6">No grievance history available.</td></tr>'}</tbody></table></section><nav class="grievance-history-pagination" aria-label="Grievance History pagination">${pagination}</nav>`;
     }
-    $("#grievance-history-button").addEventListener("click", () => openDialog("Grievance History", grievanceHistoryHtml()));
+    $("#grievance-history").addEventListener("click", () => {
+      grievanceHistoryPage = 1;
+      openDialog("Grievance History", "");
+      $("#dialog").classList.add("grievance-history-dialog");
+      renderGrievanceHistory();
+    });
+    $("#dialog-content").addEventListener("click", (event) => {
+      const button = event.target.closest("[data-grievance-history-page]");
+      if (!button || button.disabled) return;
+      grievanceHistoryPage = Number(button.dataset.grievanceHistoryPage);
+      renderGrievanceHistory();
+      $(`[data-grievance-history-page="${grievanceHistoryPage}"][aria-current="page"]`)?.focus();
+    });
     function closeDialog() { if (returnToRequirements) { returnToRequirements = false; openRequirements(); return; } closeSelectMenu(); $("#modal-root").hidden = true; document.body.style.overflow = ""; }
     $("#dialog-close").addEventListener("click", closeDialog);
     $("#modal-root").addEventListener("click", (event) => { if (event.target.id === "modal-root") closeDialog(); });
@@ -3336,22 +2870,23 @@
     const filterSvg = '<svg viewBox="0 0 56 40" fill="none" aria-hidden="true"><path d="M26.94 30.65C26.46 30.65 25.99 30.53 25.55 30.29C24.67 29.8 24.14 28.91 24.14 27.91V22.61C24.14 22.11 23.81 21.36 23.5 20.98L19.76 17.02C19.13 16.39 18.65 15.31 18.65 14.5V12.2C18.65 10.6 19.86 9.35 21.4 9.35H34.6C36.12 9.35 37.35 10.58 37.35 12.1V14.3C37.35 15.35 36.72 16.54 36.13 17.13L31.8 20.96C31.38 21.31 31.05 22.08 31.05 22.7V27C31.05 27.89 30.49 28.92 29.79 29.34L28.41 30.23C27.96 30.51 27.45 30.65 26.94 30.65ZM21.4 10.85C20.7 10.85 20.15 11.44 20.15 12.2V14.5C20.15 14.87 20.45 15.59 20.83 15.97L24.64 19.98C25.15 20.61 25.65 21.66 25.65 22.6V27.9C25.65 28.55 26.1 28.87 26.29 28.97C26.71 29.2 27.22 29.2 27.61 28.96L29 28.07C29.28 27.9 29.56 27.36 29.56 27V22.7C29.56 21.63 30.08 20.45 30.83 19.82L35.11 16.03C35.45 15.69 35.86 14.88 35.86 14.29V12.1C35.86 11.41 35.3 10.85 34.61 10.85H21.4Z" fill="#5D5D5D"/></svg>';
     function selectHtml(field, row, index) {
       const options = field === "status" ? ["Pending", "Received", "Accept", "Cancelled", "Reject", "Waived"].filter((status) => status !== "Pending" || row.__new || row.status === "Pending")
-        : field === "requirementPoolType" ? ["COPS", "UW"]
+        : field === "team" ? ["COPS", "UW"]
           : field === "profile" ? ["lifeassured1", "lifeassured2"]
             : [...new Set(requirements.map((item) => item[field]).filter(Boolean))];
       if (row[field] && !options.includes(row[field])) options.unshift(row[field]);
-      const sequence = ["requirementPoolType", "category", "subCategory", "document", "reason", "fupCode"];
+      const sequence = ["team", "category", "subCategory", "document", "reason", "fupCode"];
       const parent = sequence[sequence.indexOf(field) - 1];
       const disabled = field === "status" ? row.__new || row.status === "Accept" : field !== "profile" && (options.length === 0 || (parent && !row[parent]));
       return `<select data-edit="${field}" data-index="${index}" ${disabled ? "disabled" : ""}><option value="" ${!row[field] ? "selected" : ""}>Select</option>${options.map((value) => `<option value="${escapeHtml(value)}" ${row[field] === value ? "selected" : ""}>${escapeHtml(value)}</option>`).join("")}</select>`;
     }
     function requirementRowHtml(row, index) {
-      const ordinary = ["requirementPoolType", "profile", "category", "subCategory", "document", "reason", "fupCode"]
-        .map((field) => `<div class="req-cell" title="${escapeHtml(row[field] || "")}">${row.__new ? selectHtml(field, row, index) : escapeHtml(displayValue(row[field]))}</div>`).join("");
+      const ordinary = ["ocrStatus", "team", "profile", "category", "subCategory", "document", "reason", "fupCode"]
+        .map((field) => `<div class="req-cell" title="${escapeHtml(row[field] || "")}">${row.__new && field !== "ocrStatus" ? selectHtml(field, row, index) : escapeHtml(displayValue(row[field]))}</div>`).join("");
       return `<div class="req-grid-row" data-row="${index}">
-        ${ordinary}
-        <div class="req-cell" title="${escapeHtml(row.description || "")}">${escapeHtml(displayValue(row.description))}</div>
-        <div class="req-cell"><input data-edit="extraRemarks" data-index="${index}" placeholder="Optional remark" aria-label="Extra remark (optional)" value="${escapeHtml(row.extraRemarks || "")}"></div>
+        <div class="req-cell center">${row.__new ? `<button class="req-remove" data-delete="${index}" title="Remove requirement" aria-label="Remove requirement" type="button">×</button>` : ""}</div>
+        <div class="req-cell status">${selectHtml("status", row, index)}</div>${ordinary}
+        <div class="req-cell"><input data-edit="extraRemarks" data-index="${index}" placeholder="Optional remarks" aria-label="Extra remarks (optional)" value="${escapeHtml(row.extraRemarks || "")}"></div>
+        <div class="req-cell center"><button class="req-eye" data-description="${index}" title="${escapeHtml(row.description || "No description available")}" aria-label="View Description" type="button" ${!row.description ? "disabled" : ""}>${eyeSvg}</button></div>
       </div>`;
     }
     function requirementTableHtml() {
@@ -3400,9 +2935,9 @@
     function openFilterDialog() { returnToRequirements = true; openDialog("FILTER", filterDialogHtml(), true); }
     $("#dialog-content").addEventListener("click", (event) => {
       const target = event.target.closest("button, input") || event.target;
-      if (target.id === "add-requirement") { requirements.unshift({ __new: true, status: "Pending", requirementPoolType: "", profile: "", category: "", subCategory: "", document: "", reason: "", fupCode: "", extraRemarks: "", description: "" }); currentFilter = "All"; tableFilters = { category: [], subCategory: [], profile: [], fupCode: [], status: [] }; page = 1; renderStatusChips(); openRequirements(); }
+      if (target.id === "add-requirement") { requirements.unshift({ __new: true, status: "Pending", ocrStatus: "", team: "UW", profile: "", category: "", subCategory: "", document: "", reason: "", fupCode: "", extraRemarks: "", description: "" }); currentFilter = "All"; tableFilters = { category: [], subCategory: [], profile: [], fupCode: [], status: [] }; page = 1; renderStatusChips(); openRequirements(); }
       if (target.id === "save-requirements") {
-        const required = [["requirementPoolType", "Requirement Pool type"], ["profile", "Profile"], ["category", "Category"], ["subCategory", "Sub Category"], ["document", "Document"], ["reason", "Reason"], ["fupCode", "FUP Code"]];
+        const required = [["team", "Team"], ["profile", "Profile"], ["category", "Category"], ["subCategory", "Sub Category"], ["document", "Document"], ["reason", "Reason"], ["fupCode", "FUP Code"]];
         const missing = requirements.filter((row) => row.__new).flatMap((row) => required.filter(([field]) => !row[field]).map(([, label]) => label));
         if (missing.length) notify(`Please fill required fields: ${[...new Set(missing)].join(", ")}`);
         else notify("Requirements saved successfully");
@@ -3432,7 +2967,7 @@
       const row = filteredRequirements()[Number(event.target.dataset.index)];
       if (!row) return;
       row[field] = event.target.value;
-      const sequence = ["requirementPoolType", "category", "subCategory", "document", "reason", "fupCode"];
+      const sequence = ["team", "category", "subCategory", "document", "reason", "fupCode"];
       const changedIndex = sequence.indexOf(field);
       if (row.__new && changedIndex >= 0) sequence.slice(changedIndex + 1).forEach((nextField) => { row[nextField] = ""; });
       renderStatusChips();
@@ -3442,119 +2977,357 @@
 
     function updateClearUwOption() {
       const select = $("#uw-select");
-      const existing = select.querySelector('option[value="__CLEAR_CASE_UW_DECISION__"]');
-      if (select.value && select.value !== "__CLEAR_CASE_UW_DECISION__" && !existing) select.add(new Option("Clear Case UW Decision", "__CLEAR_CASE_UW_DECISION__"), 1);
+      const existing = select.querySelector('option[value="CLEAR"]');
+      if (select.value && select.value !== "CLEAR" && !existing) select.add(new Option("Clear Case UW Decision", "CLEAR"), 1);
       else if (!select.value && existing) existing.remove();
     }
-    function counterOfferHtml() {
-      const rows = [
-        ["iProtect Smart", "Life Assured", "₹50,00,000", "20", "15", "—", "₹24,600"],
-        ["Accidental Death Rider", "Life Assured", "₹10,00,000", "20", "15", "—", "₹1,250"]
-      ];
-      const options = (items, placeholder = "Select") => `<option value="">${placeholder}</option>${items.map(item => `<option>${item}</option>`).join("")}`;
-      return `<div class="counter-offer-layout"><h3 class="counter-offer-title">Counter Offer Details</h3><div class="counter-offer-wrap"><table class="counter-offer-table"><thead><tr><th></th><th>Profile</th><th>Applied SA</th><th>Changed SA</th><th>PT</th><th>New PT</th><th>PPT</th><th>New PPT</th><th>EMR Class</th><th>EMR Reasons</th><th>FE Class</th><th>FE Reasons</th><th>Code</th><th>Premium Collected</th><th>Revised Premium</th><th>Reasons</th></tr></thead><tbody>${rows.map(row => `<tr><td><b>${row[0]}</b></td><td><input value="${row[1]}" disabled></td><td><input value="${row[2]}" disabled></td><td><input inputmode="numeric" placeholder="Enter SA"></td><td><input value="${row[3]}" disabled></td><td><input inputmode="numeric" placeholder="Enter PT"></td><td><input value="${row[4]}" disabled></td><td><input inputmode="numeric" placeholder="Enter PPT"></td><td><select>${options(["Standard", "Extra Mortality Rating", "Decline"])}</select></td><td><select>${options(["Medical", "Financial", "Other"], "Select reason")}</select></td><td><select>${options(["Standard", "Financial Extra", "Not Applicable"])}</select></td><td><select>${options(["Medical", "Financial", "Other"], "Select reason")}</select></td><td><select>${options(["CO01", "CO02", "CO03"])}</select></td><td><input value="${row[5]}" disabled></td><td><input value="${row[6]}" disabled></td><td><input placeholder="Enter reasons"></td></tr>`).join("")}</tbody></table></div><button id="counter-offer-save" class="contained dialog-save" type="button">Save</button></div>`;
+    const loadingClassOptions = {
+      "Medical Loading":  ["ML001 - Substandard", "ML002 - Rated Up", "ML003 - Extra Mortality", "ML004 - Occupational Hazard"],
+      "FE Loading":       ["FE001 - Financial Extra", "FE002 - Income Mismatch", "FE003 - High SA"],
+      "Smoker Loading":   ["SL001 - Smoker", "SL002 - Tobacco User", "SL003 - Ex-Smoker"],
+    };
+    const loadingReasonOptions = {
+      "Medical Loading":  ["Medical history", "BMI deviation", "Pre-existing condition", "Hazardous occupation"],
+      "FE Loading":       ["Income proof inadequate", "SA exceeds eligibility", "Financial inconsistency"],
+      "Smoker Loading":   ["Active smoker", "Tobacco chewer", "Recent cessation"],
+    };
+    const loadingTypes = new Set(["Medical Loading", "FE Loading", "Smoker Loading"]);
+    // All available products for EP add-row dropdown
+    const ddProducts = [
+      { label: "Base",  name: "iProtect Smart",        sa: "₹50,00,000", pt: "20", isRider: false },
+      { label: "Rider", name: "Accidental Death Rider", sa: "₹10,00,000", pt: "20", isRider: true  },
+      { label: "Rider", name: "WOP Rider",              sa: "₹15,00,000", pt: "20", isRider: true  },
+    ];
+    let ddUserRowCounter = 100; // IDs for user-added rows start at 100 to avoid clash with fixed rows
+    function counterOfferHtml(decisionType) {
+      const rows = ddProducts;
+      const opt = (items, placeholder = "Select") => `<option value="">${placeholder}</option>${items.map(item => `<option>${item}</option>`).join("")}`;
+      const typeOptions = (isRider) => {
+        let base;
+        if (decisionType === "BOR_STD") {
+          base = ["Standard", "Borderline Standard"];
+        } else if (decisionType === "CO") {
+          base = ["Standard", "Borderline Standard", "Reduce Cover", "Reduce PT"];
+          if (isRider) base.push("Deny Rider");
+        } else {
+          // EP — all values
+          base = ["Standard", "Borderline Standard", "Reduce Cover", "Reduce PT", "Medical Loading", "FE Loading", "Smoker Loading"];
+          if (isRider) base.push("Deny Rider");
+        }
+        return opt(base);
+      };
+      const rowHtml = (row, idx) => {
+        const ri = `dd-${idx}`;
+        return `<tr data-dd-ri="${ri}">
+          <td data-col="product" style="white-space:nowrap;font-size:10px">${row.name}</td>
+          <td data-col="type"><select class="dd-type" data-row="${ri}">${typeOptions(row.isRider)}</select></td>
+          <td data-col="bstd-code"><select class="dd-bstd-code" data-row="${ri}" disabled><option value="">Select</option>${["BS", "BS1", "BS2", "BS3", "BS4", "SS", "PMS"].map(i => `<option>${i}</option>`).join("")}</select></td>
+          <td data-col="sa"><input value="${row.sa}" disabled></td>
+          <td data-col="changed-sa"><input class="dd-changed-sa" data-row="${ri}" inputmode="numeric" placeholder="Enter SA" disabled></td>
+          <td data-col="pt"><input value="${row.pt}" disabled></td>
+          <td data-col="changed-pt"><input class="dd-changed-pt" data-row="${ri}" inputmode="numeric" placeholder="Enter PT" disabled></td>
+          <td data-col="loading-class"><select class="dd-loading-class" data-row="${ri}" disabled><option value="">Select</option></select></td>
+          <td data-col="loading-reason"><select class="dd-loading-reason" data-row="${ri}" disabled><option value="">Select</option></select></td>
+          <td data-col="action"></td>
+        </tr>`;
+      };
+      const isEP = decisionType === "EP";
+      const addBtn = isEP ? `<button class="dd-add-row contained" type="button" style="margin-top:8px;font-size:11px;padding:5px 14px">+ Add Row</button>` : "";
+      return `<div class="counter-offer-layout">
+        <h3 class="counter-offer-title">Decision Details</h3>
+        <div class="counter-offer-wrap">
+          <table class="counter-offer-table" data-decision="${decisionType}">
+            <thead><tr>
+              <th data-col="product">Product</th><th data-col="type">Type</th><th data-col="bstd-code">BSTD Code</th><th data-col="sa">SA</th><th data-col="changed-sa">Changed SA</th><th data-col="pt">PT</th><th data-col="changed-pt">Changed PT</th><th data-col="loading-class">Loading Class</th><th data-col="loading-reason">Loading Reason Code</th><th data-col="action"></th>
+            </tr></thead>
+            <tbody>${rows.map((row, idx) => rowHtml(row, idx)).join("")}</tbody>
+          </table>
+        </div>
+      </div>`;
+    }
+    // Build a user-added EP row (product is a dropdown; has delete button)
+    function ddUserRowHtml(ri) {
+      const opt = (items, placeholder = "Select") => `<option value="">${placeholder}</option>${items.map(item => `<option>${item}</option>`).join("")}`;
+      const productOpt = ddProducts.map(p => `<option value="${p.name}" data-is-rider="${p.isRider}" data-sa="${p.sa}" data-pt="${p.pt}">${p.name}</option>`).join("");
+      const typeOpt = opt(["Standard", "Borderline Standard", "Reduce Cover", "Reduce PT", "Medical Loading", "FE Loading", "Smoker Loading", "Deny Rider"]);
+      return `<tr data-dd-ri="${ri}" data-dd-user="1">
+        <td data-col="product"><select class="dd-product" data-row="${ri}" style="min-width:130px"><option value="">Select product</option>${productOpt}</select></td>
+        <td data-col="type"><select class="dd-type" data-row="${ri}" disabled>${typeOpt}</select></td>
+        <td data-col="bstd-code"><select class="dd-bstd-code" data-row="${ri}" disabled><option value="">Select</option>${["BS", "BS1", "BS2", "BS3", "BS4", "SS", "PMS"].map(i => `<option>${i}</option>`).join("")}</select></td>
+        <td data-col="sa"><input class="dd-sa-display" data-row="${ri}" disabled placeholder="—"></td>
+        <td data-col="changed-sa"><input class="dd-changed-sa" data-row="${ri}" inputmode="numeric" placeholder="Enter SA" disabled></td>
+        <td data-col="pt"><input class="dd-pt-display" data-row="${ri}" disabled placeholder="—"></td>
+        <td data-col="changed-pt"><input class="dd-changed-pt" data-row="${ri}" inputmode="numeric" placeholder="Enter PT" disabled></td>
+        <td data-col="loading-class"><select class="dd-loading-class" data-row="${ri}" disabled><option value="">Select</option></select></td>
+        <td data-col="loading-reason"><select class="dd-loading-reason" data-row="${ri}" disabled><option value="">Select</option></select></td>
+        <td data-col="action"><button class="dd-delete-row" data-row="${ri}" type="button" title="Remove row" style="background:none;border:none;cursor:pointer;color:#aa262a;font-size:14px;padding:4px 6px">✕</button></td>
+      </tr>`;
+    }
+    // Validate type combination for a product: loading types can combine freely; others cannot mix
+    function ddValidateTypeCombination(tbl, productName, newType, currentRi) {
+      if (!productName) return true;
+      const existingTypes = [...tbl.querySelectorAll(`tr[data-dd-user] .dd-product`)]
+        .filter(s => s.value === productName && s.dataset.row !== currentRi)
+        .map(s => tbl.querySelector(`.dd-type[data-row="${s.dataset.row}"]`)?.value)
+        .filter(Boolean);
+      if (existingTypes.length === 0) return true;
+      const newIsLoading = loadingTypes.has(newType);
+      // If new type is not a loading type, no other row for this product is allowed
+      if (!newIsLoading) return false;
+      // If new type is a loading type, all existing types for this product must also be loading types
+      return existingTypes.every(t => loadingTypes.has(t));
+    }
+    // Sync the enhanced-select trigger button's disabled state with its native <select>
+    function syncSelectTrigger(select) {
+      if (!select) return;
+      const trigger = select.nextElementSibling;
+      if (trigger?.classList.contains("mui-select-trigger")) trigger.disabled = select.disabled;
+    }
+    // Tear down the enhanced trigger and re-build it so disabled/options are picked up fresh
+    function reEnhanceSelect(select) {
+      if (!select) return;
+      const trigger = select.nextElementSibling;
+      if (trigger?.classList.contains("mui-select-trigger")) trigger.remove();
+      delete select.dataset.enhanced;
+      select.hidden = false;
+      enhanceSelects(select.parentElement);
+    }
+    function updateDecisionDetailRow(typeSelect) {
+      const ri       = typeSelect.dataset.row;
+      const val      = typeSelect.value;
+      const tbl      = typeSelect.closest("table");
+
+      // Combination validation for user-added rows (EP only)
+      if (val && typeSelect.closest("tr[data-dd-user]")) {
+        const productEl = tbl?.querySelector(`.dd-product[data-row="${ri}"]`);
+        const productName = productEl?.value;
+        if (productName && !ddValidateTypeCombination(tbl, productName, val, ri)) {
+          notify("Only Medical Loading, FE Loading and Smoker Loading can be combined on the same product. Other types cannot be mixed.");
+          typeSelect.value = "";
+          reEnhanceSelect(typeSelect);
+          return;
+        }
+      }
+
+      const changedSa  = tbl?.querySelector(`.dd-changed-sa[data-row="${ri}"]`);
+      const changedPt  = tbl?.querySelector(`.dd-changed-pt[data-row="${ri}"]`);
+      const loadClass  = tbl?.querySelector(`.dd-loading-class[data-row="${ri}"]`);
+      const loadReason = tbl?.querySelector(`.dd-loading-reason[data-row="${ri}"]`);
+      const bstdCode   = tbl?.querySelector(`.dd-bstd-code[data-row="${ri}"]`);
+      const isLoading  = loadingTypes.has(val);
+      const isBstd     = val === "Borderline Standard";
+
+      // BSTD Code — enable only when Borderline Standard
+      if (bstdCode) {
+        bstdCode.disabled = !isBstd;
+        if (!isBstd) bstdCode.value = "";
+        syncSelectTrigger(bstdCode);
+      }
+      // Entire BSTD Code column (th + all tds): visible only when at least one row is Borderline Standard
+      const anyBstd = [...tbl.querySelectorAll(".dd-type")].some(s => s.value === "Borderline Standard");
+      tbl.querySelectorAll("[data-col='bstd-code']").forEach(cell => { cell.hidden = !anyBstd; });
+
+      if (changedSa) { changedSa.disabled = val !== "Reduce Cover"; if (val !== "Reduce Cover") changedSa.value = ""; }
+      if (changedPt) { changedPt.disabled = val !== "Reduce PT";    if (val !== "Reduce PT")    changedPt.value = ""; }
+
+      // Loading Class & Reason — set disabled+options then re-enhance so trigger reflects correct state
+      if (loadClass) {
+        loadClass.disabled = !isLoading;
+        loadClass.value = "";
+        loadClass.innerHTML = `<option value="">Select</option>${(isLoading ? loadingClassOptions[val] : []).map(i => `<option>${i}</option>`).join("")}`;
+        reEnhanceSelect(loadClass);
+      }
+      if (loadReason) {
+        loadReason.disabled = !isLoading;
+        loadReason.value = "";
+        loadReason.innerHTML = `<option value="">Select</option>${(isLoading ? loadingReasonOptions[val] : []).map(i => `<option>${i}</option>`).join("")}`;
+        reEnhanceSelect(loadReason);
+      }
+    }
+    const reinsurerOptions = ["Swiss Re", "Munich Re", "Scor Re", "Gen Re", "RGA Re", "Hannover Re"];
+    const referralDocuments = ["Application Form", "PhotoId Proof", "Address Proof"];
+    const reinsurerRows = [
+      { code: "ABC", systemName: "Munich Re", uwName: "" },
+      { code: "CI", systemName: "Scor RE", uwName: "" }
+    ];
+    const reinsurerDocumentState = [[true, false], [false, false], [false, true]];
+    let reinsurerRemarks = "";
+    const effectiveReinsurerName = (row) => row.uwName || row.systemName;
+    function resetReinsurerState() {
+      reinsurerRows.forEach(row => { row.uwName = ""; });
+      reinsurerDocumentState.forEach((assignments, row) => assignments.forEach((_, column) => {
+        assignments[column] = (row === 0 && column === 0) || (row === 2 && column === 1);
+      }));
+      reinsurerRemarks = "";
+    }
+    function updateReinsurerAssignmentNames() {
+      reinsurerRows.forEach((row, column) => {
+        const name = effectiveReinsurerName(row);
+        const heading = document.querySelector(`[data-reinsurer-heading="${column}"]`);
+        if (heading) heading.textContent = name;
+        document.querySelector(`[data-select-all="${column}"]`)?.setAttribute("aria-label", `Select all documents for ${name}`);
+        document.querySelectorAll(`[data-doc-column="${column}"]`).forEach(checkbox => {
+          checkbox.setAttribute("aria-label", `Assign ${referralDocuments[Number(checkbox.dataset.docRow)]} to ${name}`);
+        });
+      });
     }
     function reinsurerHtml() {
-      const documents = ["Report 1", "Report 2", "Report 3", "Report 4", "Report 5"];
-      const reinsurers = ["Reinsurer 1", "Reinsurer 2", "Reinsurer 3", "Reinsurer 4"];
-      return `<div class="reinsurer-layout"><div class="reinsurer-section"><div class="reinsurer-select-panel"><h3>Select Reinsurers</h3><div class="reinsurer-grid"><label><span class="field-label">Reinsurer 1</span><input value="Swiss Re" disabled></label><label><span class="field-label">Reinsurer 2</span><input value="Munich Re" disabled></label><label><span class="field-label">Reinsurer 3</span><input value="SCOR Re" disabled></label><label><span class="field-label">Reinsurer 4</span><select id="reinsurer-four"><option value="">Select</option><option>RGA Reinsurance</option><option>Hannover Re</option><option>Gen Re</option></select></label></div></div><div class="assignment-card"><div class="assignment-title">Assign Documents</div><table class="assignment-table"><thead><tr><th>Document name</th>${reinsurers.map((name, index) => `<th>${name}<button class="select-all" type="button" data-select-all="${index}">(Select All)</button></th>`).join("")}</tr></thead><tbody>${documents.map((document, row) => `<tr><td>${document}</td>${reinsurers.map((_, column) => `<td><input type="checkbox" data-doc-column="${column}" ${[[0, 0], [1, 2], [2, 1], [3, 3], [4, 2]].some(([r, c]) => r === row && c === column) ? "checked" : ""}></td>`).join("")}</tr>`).join("")}</tbody></table><div class="upload-disabled" aria-disabled="true"><b>+</b><span>Upload and assign referral sheet</span></div></div><label style="display:block;margin-top:20px"><span class="field-label">Remarks</span><textarea id="reinsurer-remarks" rows="3" placeholder="Add remarks..."></textarea></label><div class="reinsurer-actions"><button id="generate-referral" class="outline-pill" type="button">Generate Referral Sheet</button><button id="email-reinsurers" class="contained" type="button">Email to Reinsurers</button></div></div></div>`;
+      return `<div class="reinsurer-layout"><div class="reinsurer-section">
+        <div class="reinsurer-select-panel"><h3>Reinsurer Details</h3>
+          <table class="reinsurer-table" aria-label="Reinsurer Details"><thead><tr>
+            <th scope="col">Code</th><th scope="col">Reinsurer Name - System</th><th scope="col">Reinsurer Name - UW</th>
+          </tr></thead><tbody>${reinsurerRows.map((row, index) => `<tr>
+            <td>${escapeHtml(row.code)}</td><td>${escapeHtml(row.systemName)}</td>
+            <td><select class="select" id="reinsurer-uw-${index}" data-reinsurer-row="${index}" aria-label="Reinsurer Name - UW for ${escapeHtml(row.code)}">
+              <option value="">Select</option>${reinsurerOptions.filter(name => name.toLowerCase() !== row.systemName.toLowerCase()).map(name => `<option value="${escapeHtml(name)}" ${row.uwName === name ? "selected" : ""}>${escapeHtml(name)}</option>`).join("")}
+            </select></td>
+          </tr>`).join("")}</tbody></table>
+        </div>
+        <div class="assignment-card"><div class="assignment-title">Assign Documents</div>
+          <table class="assignment-table"><thead><tr><th scope="col">Document name</th>${reinsurerRows.map((row, index) => `<th scope="col"><span data-reinsurer-heading="${index}">${escapeHtml(effectiveReinsurerName(row))}</span><button class="select-all" type="button" data-select-all="${index}" aria-label="Select all documents for ${escapeHtml(effectiveReinsurerName(row))}">(Select All)</button></th>`).join("")}</tr></thead>
+          <tbody>${referralDocuments.map((documentName, row) => `<tr><td>${escapeHtml(documentName)}</td>${reinsurerRows.map((reinsurer, column) => `<td><input type="checkbox" data-doc-row="${row}" data-doc-column="${column}" aria-label="Assign ${escapeHtml(documentName)} to ${escapeHtml(effectiveReinsurerName(reinsurer))}" ${reinsurerDocumentState[row][column] ? "checked" : ""}></td>`).join("")}</tr>`).join("")}</tbody></table>
+        </div>
+        <label style="display:block;margin-top:20px"><span class="field-label">Remarks</span><textarea id="reinsurer-remarks" rows="3" placeholder="Add remarks...">${escapeHtml(reinsurerRemarks)}</textarea></label>
+        <div class="reinsurer-actions"><button id="generate-referral" class="outline-pill" type="button">Generate Referral Sheet</button></div>
+      </div></div>`;
     }
+    $("#dialog-content").addEventListener("change", (event) => {
+      if (event.target.dataset.reinsurerRow !== undefined) {
+        const row = reinsurerRows[Number(event.target.dataset.reinsurerRow)];
+        const name = event.target.value;
+        if (!row || (name && (!reinsurerOptions.includes(name) || name.toLowerCase() === row.systemName.toLowerCase()))) return;
+        row.uwName = name;
+        updateReinsurerAssignmentNames();
+      }
+      if (event.target.dataset.docColumn !== undefined) {
+        reinsurerDocumentState[Number(event.target.dataset.docRow)][Number(event.target.dataset.docColumn)] = event.target.checked;
+      }
+    });
+    $("#dialog-content").addEventListener("input", (event) => {
+      if (event.target.id === "reinsurer-remarks") reinsurerRemarks = event.target.value;
+    });
     // State is kept outside the dialog markup because the dependent approver fields
     // are redrawn whenever the referral purpose, approver role or 1st UW decision changes.
-    const approverDecisionState = { purpose: "counterSign", approver: "", name: "", reason: "", firstDecision: "" };
-    const referralDecisionState = { firstDecision: "", parallelDecision: "" };
+    const approverDecisionState = { purpose: "counterSign", approver: "", reason: "", firstDecision: "" };
+    const referralDecisionState = { firstDecision: "" };
+    const reconsiderState = { possible: "", after: "", reqType: "", reqTypeOther: "", reqDetails: "" };
     function renderUwDialogFields() {
+      closeMultiSelect();
       const decision = $("#dialog-uw-select").value;
-      const selectedApprover = decision === "REF_SR_UW" ? "Sr UW" : decision === "REF_HOD" ? "HOD" : "";
-      if (selectedApprover) approverDecisionState.approver = selectedApprover;
-      const effectiveDecision = selectedApprover ? "__REFER_TO_APPROVER__" : decision;
-      const terminal = new Set(["STD", "BOR_STD", "REJ", "DC", "POSTP", "CO"]);
+      const referralTarget = $("#uwReferralTarget")?.value || "";
+      const effectiveDecision = decision === "REFERRAL" && referralTarget ? referralTarget : decision;
+      const terminal = new Set(["STD", "BOR_STD", "REJ", "DC", "POSTP", "CO", "EP"]);
       const field = (label, input) => `<div><label class="field-label">${label}</label>${input}</div>`;
       const textInput = (id, placeholder, disabled = false) => `<input class="text-input" id="${id}" placeholder="${placeholder}" ${disabled ? "disabled" : ""}>`;
-      const selectInput = (id, options, selected = "", placeholder = "Select") => `<select class="select" id="${id}"><option value="">${placeholder}</option>${options.map(option => {
-        const value = Array.isArray(option) ? option[0] : option;
-        const label = Array.isArray(option) ? option[1] : option;
-        return `<option value="${value}" ${selected === value ? "selected" : ""}>${label}</option>`;
-      }).join("")}</select>`;
-      const medicalReasons = [["1404", "High than normal level of sugar as per Hemoglobin A1c test"], ["1621", "Glycosuria(Presence of sugar in Urine)"], ["1906", "Cancer"]];
-      const nonMedicalReasons = [["5007", "High risk occupation"], ["5021", "Not eligible as per Internal evaluation criteria"], ["3001", "Risk Finding"]];
-      const allReasons = [...medicalReasons, ...nonMedicalReasons];
-      const firstDecisionOptions = [["STD", "Standard"], ["BOR_STD", "Borderline Standard"], ["REJ", "Reject"], ["DC", "Decline"], ["POSTP", "Postpone"], ["CO", "Counter Offer"]];
-      const parallelOptions = [["RAISE_AMR", "Raise AMR (Medical/Non-Medical)"], ["REF_CMO", "Refer to HO CMO"], ["REF_RSK", "Refer to Risk"], ["REF_ACU", "Refer to Accuity"], ["TEL_MER", "Tele MER/ Video MER"], ["NONE", "None"]];
+      const selectInput = (id, options) => `<select class="select" id="${id}"><option value="">Select</option>${options.map(value => `<option>${value}</option>`).join("")}</select>`;
+      const multiSelect = (id, options) => `<div class="uw-multiselect" id="${id}" data-options="${options.map(o => o.replace(/"/g, '&quot;')).join('|')}"><button type="button" class="uw-multiselect-trigger"><span class="uw-multiselect-label">Select</span>${chevronSvg}</button></div>`;
       let fields = "";
-      if (effectiveDecision && effectiveDecision !== "AMR" && effectiveDecision !== "__REFER_TO_APPROVER__") fields += field("Outlier", textInput("uwOutlier", "Enter outlier"));
+      if (decision === "REFERRAL") {
+        fields += field("Refer To", `<select class="select" id="uwReferralTarget"><option value="">Select referral type</option>${[
+          ["REF_IT", "IT"], ["REF_REINS", "Reinsurer"], ["REF_CMO", "HO CMO"], ["REF_CMO_LOCAL", "CMO"], ["REF_RISK", "Risk"], ["REF_ACU", "Accuity"], ["REF_CUW_CLM", "CUW Claim"],
+        ].map(([value, label]) => `<option value="${value}" ${referralTarget === value ? "selected" : ""}>${label}</option>`).join("")}</select>`);
+      }
       if (terminal.has(effectiveDecision)) fields += field("Decision Code", `<input class="text-input" value="${effectiveDecision}" disabled>`);
-      if (effectiveDecision === "STD") fields += field("Smoker Status", `<input class="text-input" value="Non Smoker" disabled>`);
-      if (effectiveDecision === "REJ") fields += field("Reject Reason", selectInput("uwReason", nonMedicalReasons));
-      if (effectiveDecision === "BOR_STD") fields += field("Borderline Standard Reason", selectInput("uwReason", allReasons));
-      if (effectiveDecision === "DC") fields += field("Decline Reason", selectInput("uwReason", allReasons));
-      if (effectiveDecision === "POSTP") fields += field("Postpone Reason", selectInput("uwReason", allReasons)) + field("Postponement Period", selectInput("uwPostponementPeriod", [["1_MONTH", "1 Month"], ["3_MONTHS", "3 Months"], ["6_MONTHS", "6 Months"], ["9_MONTHS", "9 Months"], ["1_YEAR", "1 Year"], ["2_YEARS", "2 Years"], ["3_YEARS", "3 Years"]]));
-      if (effectiveDecision === "CO") fields += field("Counter Offer Reason", selectInput("uwReason", allReasons)) + counterOfferHtml();
-      if (effectiveDecision === "HOLD") fields += field("Hold Reasons", selectInput("uwReason", [["IT_ISSUE", "IT issue"], ["SR_UW_OPINION", "Sr.UW opinion pending"], ["OTHER", "Other"]]));
-      if (effectiveDecision === "__REFER_TO_APPROVER__") {
+      if (effectiveDecision && !["CO", "EP"].includes(effectiveDecision)) fields += field("Smoker Flag", selectInput("uwSmokerFlag", ["Smoker", "Non Smoker"]));
+//      if (effectiveDecision === "STD") fields += field("Smoker Status", `<input class="text-input" value="Non Smoker" disabled>`);
+      if (effectiveDecision && !["STD", "HOLD", "APPROVER", "REFERRAL", "AMR"].includes(effectiveDecision) && !effectiveDecision.startsWith("REF_")) {
+        const allReasonOptions = [
+          "Medical conditions that affect mood",
+          "Financially Not Eligible",
+          "Defects in body posture",
+          "Previous policy found as repudiated / Death claim",
+          "Asthma"
+        ];
+        const rejectReasonOptions = [
+          "Previous policy found as repudiated / Death claim",
+          "Financially Not Eligible"
+        ];
+        fields += field("Reasons", multiSelect("uwSubStdReason", effectiveDecision === "REJ" ? rejectReasonOptions : allReasonOptions));
+      }
+      if (effectiveDecision === "POSTP") fields += field("Postponement Period", selectInput("uwPostponementPeriod", ["3 months", "6 months", "12 months"]));
+      if (effectiveDecision === "CO") fields += counterOfferHtml("CO");
+      if (effectiveDecision === "BOR_STD") fields += counterOfferHtml("BOR_STD");
+      if (effectiveDecision === "EP") fields += counterOfferHtml("EP");
+      if (effectiveDecision === "HOLD") fields += field("Hold Reasons", selectInput("uwReason", ["Medical", "Financial", "Other"]));
+      if (effectiveDecision === "APPROVER") {
         const isHod = approverDecisionState.approver === "HOD";
         const isSrUw = approverDecisionState.approver === "Sr UW";
         const reasonLabel = isSrUw ? "Sr UW Reasons" : "HOD Reasons";
         const firstDecision = approverDecisionState.firstDecision;
-        const firstDecisionLabels = { STD: "Standard", BOR_STD: "Borderline Standard", REJ: "Reject", DC: "Decline", POSTP: "Postpone", CO: "Counter Offer" };
+        const firstDecisionLabels = { STD: "Standard", BOR_STD: "Borderline Standard", REJ: "Reject", DC: "Decline", POSTP: "Postpone", CO: "Counter Offer", EP: "Extra Premium" };
         const reasonOptions = approverDecisionState.purpose === "opinion"
-          ? [["MED_OP", "Medical Opinion"]]
-          : isSrUw ? [["ABV_CASE", "Above Limit Case"]] : [["PEP_CASE", "PEP Case"]];
+          ? ["Medical opinion", "Financial opinion", "Other"]
+          : ["Counter signing", "Medical assessment", "Financial assessment", "Other"];
         const selectedOptions = (options, selected, placeholder = "Select") => `<select class="select" id="${selected.id}"><option value="">${placeholder}</option>${options.map(({ value, label }) => `<option value="${value}" ${selected.value === value ? "selected" : ""}>${label}</option>`).join("")}</select>`;
         fields += field("Referral purpose", `<label style="font-size:11px"><input type="radio" name="referralPurpose" value="counterSign" ${approverDecisionState.purpose === "counterSign" ? "checked" : ""}> Counter Sign</label> <label style="font-size:11px"><input type="radio" name="referralPurpose" value="opinion" ${approverDecisionState.purpose === "opinion" ? "checked" : ""}> Opinion</label>`);
+        fields += field("Refer To", selectedOptions(["HOD", "Sr UW"].map(value => ({ value, label: value })), { id: "uwApprover", value: approverDecisionState.approver }, "Select HOD or Sr UW"));
         if (isHod || isSrUw) {
-          fields += field(isSrUw ? "Name of Sr.UW" : "Name of HoD", selectInput("uwApproverName", isSrUw ? [["sruw.user1", "Sr UW User 1"], ["sruw.user2", "Sr UW User 2"]] : [["hod.user1", "HoD User 1"], ["hod.user2", "HoD User 2"]], approverDecisionState.name, "Select user"));
-          fields += field("Outlier", textInput("uwOutlier", "Enter outlier"));
-          fields += field(reasonLabel, selectInput("uwApproverReason", reasonOptions, approverDecisionState.reason, `Select ${reasonLabel}`));
+          fields += field(reasonLabel, selectedOptions(reasonOptions.map(value => ({ value, label: value })), { id: "uwApproverReason", value: approverDecisionState.reason }, `Select ${reasonLabel}`));
           fields += field("1st UW Decision", selectedOptions(Object.entries(firstDecisionLabels).map(([value, label]) => ({ value, label })), { id: "uwFirstDecision", value: firstDecision }, "Select"));
           if (firstDecision) fields += field("Decision Code", `<input class="text-input" value="${firstDecision}" disabled>`);
-          if (firstDecision === "STD") fields += field("Smoker Status", `<input class="text-input" value="Non Smoker" disabled>`);
-          if (firstDecision === "REJ") fields += field("Reject Reason", selectInput("uwFirstDecisionReason", nonMedicalReasons));
-          if (firstDecision === "BOR_STD") fields += field("Borderline Standard Reason", selectInput("uwFirstDecisionReason", allReasons));
-          if (firstDecision === "DC") fields += field("Decline Reason", selectInput("uwFirstDecisionReason", allReasons));
-          if (firstDecision === "CO") fields += field("Counter Offer Reason", selectInput("uwFirstDecisionReason", allReasons));
-          if (firstDecision === "POSTP") fields += field("Postpone Reason", selectInput("uwFirstDecisionReason", allReasons)) + field("Postponement Period", selectInput("uwFirstPostponementPeriod", [["1_MONTH", "1 Month"], ["3_MONTHS", "3 Months"], ["6_MONTHS", "6 Months"], ["9_MONTHS", "9 Months"], ["1_YEAR", "1 Year"], ["2_YEARS", "2 Years"], ["3_YEARS", "3 Years"]]));
-          if (firstDecision === "CO") fields += counterOfferHtml();
+//      if (firstDecision === "STD") fields += field("Smoker Status", `<input class="text-input" value="Non Smoker" disabled>`);
+          if (["REJ", "BOR_STD", "DC", "CO"].includes(firstDecision)) fields += field(`${firstDecisionLabels[firstDecision]} Reason`, selectInput("uwFirstDecisionReason", ["Medical", "Financial", "Non-medical", "Other"]));
+          if (firstDecision === "POSTP") fields += field("Postpone Reason", selectInput("uwFirstDecisionReason", ["Medical", "Financial", "Non-medical", "Other"])) + field("Postponement Period", selectInput("uwFirstPostponementPeriod", ["3 months", "6 months", "12 months"]));
         }
       }
-      if (effectiveDecision === "REF_RISK") fields += field("Risk Referral Reasons", selectInput("uwReferralReason", [["ADV_PROFILE", "Adverse Profile"], ["NEG_PINCODE", "Negative Pincode"], ["ADV_AGENT", "Adverse Agent"], ["ADV_BRANCH", "Adverse Branch"], ["DRC_ADV", "DRC Adverse"], ["IIB_ADV", "IIB Adverse"], ["PTRL_ADV", "PTRL Adverse"], ["BRE_REQ", "BRE Requirement"]]));
-      if (effectiveDecision === "REF_REINS") fields += field("Reinsurer Referral reasons", selectInput("uwReferralReason", [["MED", "Medical"], ["FIN", "Financial"], ["RES", "Residential"], ["EXCEPTION", "Exception"], ["FAC", "Facultative"]]));
-      if (effectiveDecision === "REF_CMO") fields += field("Name of HO CMO", selectInput("uwReferralUser", [["cmo.user1", "HO CMO User 1"], ["cmo.user2", "HO CMO User 2"]], "", "Select user"));
-      if (["REF_CMO", "REF_RISK", "REF_ACU"].includes(effectiveDecision)) {
-        const filteredParallelOptions = parallelOptions.filter(([, label]) => !(effectiveDecision === "REF_CMO" && label === "Refer to HO CMO") && !(effectiveDecision === "REF_RISK" && label === "Refer to Risk") && !(effectiveDecision === "REF_ACU" && label === "Refer to Accuity"));
-        fields += field("Parallel UW Decision", selectInput("uwParallelDecision", filteredParallelOptions, referralDecisionState.parallelDecision));
-        if (referralDecisionState.parallelDecision === "REF_CMO") fields += field("Name of HO CMO", selectInput("uwParallelReferralValue", [["cmo.user1", "HO CMO User 1"], ["cmo.user2", "HO CMO User 2"]], "", "Select value"));
-        if (referralDecisionState.parallelDecision === "REF_RSK") fields += field("Risk Referral Reasons", selectInput("uwParallelReferralValue", [["ADV_PROFILE", "Adverse Profile"], ["NEG_PINCODE", "Negative Pincode"], ["ADV_AGENT", "Adverse Agent"], ["ADV_BRANCH", "Adverse Branch"], ["DRC_ADV", "DRC Adverse"], ["IIB_ADV", "IIB Adverse"], ["PTRL_ADV", "PTRL Adverse"], ["BRE_REQ", "BRE Requirement"]]));
-      }
-      if (["REF_REINS", "REF_CMO", "REF_RISK", "REF_ACU"].includes(effectiveDecision)) {
-        fields += field("1st UW Decision", selectInput("uwReferralFirstDecision", firstDecisionOptions, referralDecisionState.firstDecision));
+      const referralFields = {
+        REF_IT: ["IT Referral Reason", ["System issue", "Data correction", "Other"]],
+        REF_REINS: ["Reinsurer Referral Reason", ["High sum assured", "Medical risk", "Other"]],
+        REF_CMO: ["HO CMO Referral Reason", ["Medical review", "Specialist opinion", "Other"]],
+        REF_CMO_LOCAL: ["CMO Referral Reason", ["Medical review", "Specialist opinion", "Other"]],
+        REF_RISK: ["Risk Referral Reason", ["Risk assessment", "Policy exception", "Other"]],
+        REF_ACU: ["Accuity Referral Reason", ["Screening review", "Match review", "Other"]],
+        REF_CUW_CLM: ["CUW Claim Referral Reason", ["Claim history", "Investigation", "Other"]],
+      };
+      if (referralFields[effectiveDecision]) fields += field(referralFields[effectiveDecision][0], selectInput("uwReferralReason", referralFields[effectiveDecision][1]));
+      if (["REF_REINS", "REF_CMO", "REF_CMO_LOCAL", "REF_RISK", "REF_ACU"].includes(effectiveDecision)) {
+        const options = [["STD", "Standard"], ["BOR_STD", "Borderline Standard"], ["REJ", "Reject"], ["DC", "Decline"], ["POSTP", "Postpone"], ["CO", "Counter Offer"], ["EP", "Extra Premium"]];
+        fields += field("1st UW Decision", `<select class="select" id="uwReferralFirstDecision"><option value="">Select</option>${options.map(([value, label]) => `<option value="${value}" ${referralDecisionState.firstDecision === value ? "selected" : ""}>${label}</option>`).join("")}</select>`);
         if (referralDecisionState.firstDecision) fields += field("Decision Code", `<input class="text-input" value="${referralDecisionState.firstDecision}" disabled>`);
-        if (referralDecisionState.firstDecision === "STD") fields += field("Smoker Status", `<input class="text-input" value="Non Smoker" disabled>`);
-        if (referralDecisionState.firstDecision === "REJ") fields += field("Reject Reason", selectInput("uwReferralFirstReason", nonMedicalReasons));
-        if (referralDecisionState.firstDecision === "BOR_STD") fields += field("Borderline Standard Reason", selectInput("uwReferralFirstReason", allReasons));
-        if (referralDecisionState.firstDecision === "DC") fields += field("Decline Reason", selectInput("uwReferralFirstReason", allReasons));
-        if (referralDecisionState.firstDecision === "CO") fields += field("Counter Offer Reason", selectInput("uwReferralFirstReason", allReasons));
-        if (referralDecisionState.firstDecision === "POSTP") fields += field("Postpone Reason", selectInput("uwReferralFirstReason", allReasons)) + field("Postponement Period", selectInput("uwReferralPostponementPeriod", [["1_MONTH", "1 Month"], ["3_MONTHS", "3 Months"], ["6_MONTHS", "6 Months"], ["9_MONTHS", "9 Months"], ["1_YEAR", "1 Year"], ["2_YEARS", "2 Years"], ["3_YEARS", "3 Years"]]));
-        if (referralDecisionState.firstDecision === "CO") fields += counterOfferHtml();
+//        if (referralDecisionState.firstDecision === "STD") fields += field("Smoker Status", `<input class="text-input" value="Non Smoker" disabled>`);
+        if (["REJ", "BOR_STD", "DC", "CO"].includes(referralDecisionState.firstDecision)) fields += field("1st UW Decision Reason", selectInput("uwReferralFirstReason", ["Medical", "Financial", "Non-medical", "Other"]));
+        if (referralDecisionState.firstDecision === "POSTP") fields += field("Postpone Reason", selectInput("uwReferralFirstReason", ["Medical", "Financial", "Non-medical", "Other"])) + field("Postponement Period", selectInput("uwReferralPostponementPeriod", ["3 months", "6 months", "12 months"]));
+      }
+      // Reconsideration fields — shown for DC / POSTP / REJ only
+      if (["DC", "POSTP", "REJ"].includes(effectiveDecision)) {
+        const rcYesNo = `<div style="display:flex;gap:16px;align-items:center;padding:5px 0">
+          <label style="font-size:12px;display:flex;align-items:center;gap:5px"><input type="radio" name="uwReconsiderPossible" value="Yes" ${reconsiderState.possible === "Yes" ? "checked" : ""}> Yes</label>
+          <label style="font-size:12px;display:flex;align-items:center;gap:5px"><input type="radio" name="uwReconsiderPossible" value="No"  ${reconsiderState.possible === "No"  ? "checked" : ""}> No</label>
+        </div>`;
+        fields += field("Reconsideration Possible?", rcYesNo);
+        if (reconsiderState.possible === "Yes") {
+          const afterOpts = ["Immediately","15 days","1 Month","2 Months","3 Months","4 Months","5 Months","6 Months","7 Months","8 Months","9 Months","10 Months","11 Months","1 Year"];
+          fields += field("Reconsider After", selectInput("uwReconsiderAfter", afterOpts));
+          const reqTypes = ["Repeat Medical","Specific Test","Doctor Report","Documents","Investigation Reports","Additional Surrogate Income","Other"];
+          fields += field("Requirement Type", selectInput("uwReqType", reqTypes));
+          if (reconsiderState.reqType === "Other") {
+            fields += field("Other Requirement Type", `<input class="text-input" id="uwReqTypeOther" placeholder="Enter requirement type" value="${escapeHtml(reconsiderState.reqTypeOther)}">`);
+          }
+        }
+        fields += field("Requirement Details", `<textarea class="text-input" id="uwReqDetails" rows="3" maxlength="4000" placeholder="Enter details... (max 4000 characters)">${escapeHtml(reconsiderState.reqDetails)}</textarea>`);
       }
       if (effectiveDecision === "REF_REINS") fields += reinsurerHtml();
       $("#uw-dialog-details").innerHTML = fields;
+      const isReinsurerReferral = effectiveDecision === "REF_REINS";
+      $("#uw-remarks-field")?.toggleAttribute("hidden", isReinsurerReferral);
+      $("#case-uw-decision-field")?.toggleAttribute("hidden", isReinsurerReferral);
       enhanceSelects($("#uw-dialog-details"));
     }
     let syncingUwDecision = false;
     $("#uw-select").addEventListener("change", (event) => {
       if (syncingUwDecision) return;
-      if (event.target.value === "__CLEAR_CASE_UW_DECISION__") { event.target.value = ""; updateClearUwOption(); return; }
+      if (event.target.value === "CLEAR") { event.target.value = ""; updateClearUwOption(); return; }
       const decision = event.target.value;
       if (!decision) return;
+      resetReinsurerState();
       approverDecisionState.purpose = "counterSign";
       approverDecisionState.approver = "";
-      approverDecisionState.name = "";
       approverDecisionState.reason = "";
       approverDecisionState.firstDecision = "";
       referralDecisionState.firstDecision = "";
+      reconsiderState.possible = ""; reconsiderState.after = ""; reconsiderState.reqType = ""; reconsiderState.reqTypeOther = ""; reconsiderState.reqDetails = "";
       updateClearUwOption();
-      openDialog("", `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px"><label><span class="field-label">UW Remarks</span><textarea id="uw-remarks" class="text-input" rows="3" maxlength="10000" placeholder="Enter remarks..."></textarea><small id="remarks-count">0/10000</small></label><label><span class="field-label">Case UW Decision</span><select class="select" id="dialog-uw-select">${event.target.innerHTML}</select></label></div><div id="uw-dialog-details" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:12px"></div><div style="text-align:center;margin-top:16px"><button id="uw-submit" class="contained" type="button">Submit</button></div>`);
+      openDialog("", `<div id="uw-main-fields" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px"><label id="uw-remarks-field"><span class="field-label">UW Remarks</span><textarea id="uw-remarks" class="text-input" rows="3" maxlength="10000" placeholder="Enter remarks..."></textarea><small id="remarks-count">0/10000</small></label><label id="case-uw-decision-field"><span class="field-label">Case UW Decision</span><select class="select" id="dialog-uw-select">${event.target.innerHTML}</select></label></div><div id="uw-dialog-details" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:12px"></div><div style="text-align:center;margin-top:16px"><button id="uw-submit" class="contained" type="button">Submit</button></div>`);
       $("#dialog-uw-select").value = decision;
       $("#dialog-uw-select").dispatchEvent(new Event("change", { bubbles: true }));
     });
@@ -3567,14 +3340,9 @@
       }
       if (event.target.id === "uwApprover") {
         approverDecisionState.approver = event.target.value;
-        approverDecisionState.name = "";
         approverDecisionState.reason = "";
         approverDecisionState.firstDecision = "";
         renderUwDialogFields();
-        return;
-      }
-      if (event.target.id === "uwApproverName") {
-        approverDecisionState.name = event.target.value;
         return;
       }
       if (event.target.id === "uwApproverReason") {
@@ -3591,23 +3359,51 @@
         renderUwDialogFields();
         return;
       }
-      if (event.target.id === "uwParallelDecision") {
-        referralDecisionState.parallelDecision = event.target.value;
+      if (event.target.name === "uwReconsiderPossible") {
+        reconsiderState.possible = event.target.value;
+        reconsiderState.after = ""; reconsiderState.reqType = ""; reconsiderState.reqTypeOther = "";
         renderUwDialogFields();
+        return;
+      }
+      if (event.target.id === "uwReconsiderAfter") { reconsiderState.after = event.target.value; return; }
+      if (event.target.id === "uwReqType") {
+        reconsiderState.reqType = event.target.value;
+        reconsiderState.reqTypeOther = "";
+        renderUwDialogFields();
+        return;
+      }
+      if (event.target.classList.contains("dd-type")) { updateDecisionDetailRow(event.target); return; }
+      if (event.target.classList.contains("dd-product")) {
+        const ri = event.target.dataset.row;
+        const tbl = event.target.closest("table");
+        const selected = event.target.options[event.target.selectedIndex];
+        const saEl  = tbl?.querySelector(`.dd-sa-display[data-row="${ri}"]`);
+        const ptEl  = tbl?.querySelector(`.dd-pt-display[data-row="${ri}"]`);
+        const typeEl = tbl?.querySelector(`.dd-type[data-row="${ri}"]`);
+        const isRider = selected?.dataset.isRider === "true";
+        if (saEl)  saEl.value  = selected?.dataset.sa  || "";
+        if (ptEl)  ptEl.value  = selected?.dataset.pt  || "";
+        // Unlock type only after product chosen; rebuild options based on rider status
+        if (typeEl) {
+          const opt = (items) => `<option value="">Select</option>${items.map(i => `<option>${i}</option>`).join("")}`;
+          const base = ["Standard", "Borderline Standard", "Reduce Cover", "Reduce PT", "Medical Loading", "FE Loading", "Smoker Loading"];
+          if (isRider) base.push("Deny Rider");
+          typeEl.innerHTML = opt(base);
+          typeEl.disabled = !event.target.value;
+          reEnhanceSelect(typeEl);
+        }
         return;
       }
       if (event.target.id === "uwReferralTarget") { renderUwDialogFields(); return; }
       if (event.target.id !== "dialog-uw-select") return;
-      const clear = event.target.value === "__CLEAR_CASE_UW_DECISION__";
+      const clear = event.target.value === "CLEAR";
       $("#uw-select").value = clear ? "" : event.target.value;
       updateClearUwOption();
       if (clear) { closeDialog(); return; }
       approverDecisionState.approver = "";
-      approverDecisionState.name = "";
       approverDecisionState.reason = "";
       approverDecisionState.firstDecision = "";
       referralDecisionState.firstDecision = "";
-      referralDecisionState.parallelDecision = "";
       renderUwDialogFields();
     });
     $("#dialog-content").addEventListener("click", (event) => {
@@ -3615,10 +3411,40 @@
       if (selectAllColumn !== undefined) {
         const checkboxes = [...document.querySelectorAll(`[data-doc-column="${selectAllColumn}"]`)];
         const shouldSelect = checkboxes.some((checkbox) => !checkbox.checked);
-        checkboxes.forEach((checkbox) => { checkbox.checked = shouldSelect; });
+        checkboxes.forEach((checkbox) => {
+          checkbox.checked = shouldSelect;
+          reinsurerDocumentState[Number(checkbox.dataset.docRow)][Number(selectAllColumn)] = shouldSelect;
+        });
         return;
       }
-      if (event.target.id === "counter-offer-save") { notify("Counter offer details saved successfully"); return; }
+      if (event.target.classList.contains("dd-add-row")) {
+        const tbl = event.target.closest(".counter-offer-layout")?.querySelector(".counter-offer-table");
+        if (!tbl) return;
+        const ri = `dd-u${ddUserRowCounter++}`;
+        const tbody = tbl.querySelector("tbody");
+        // <tr> can't be parsed inside a <div>; wrap in table/tbody for correct parsing
+        const tmpTable = document.createElement("table");
+        const tmpTbody = document.createElement("tbody");
+        tmpTable.append(tmpTbody);
+        tmpTbody.innerHTML = ddUserRowHtml(ri);
+        const newTr = tmpTbody.firstElementChild;
+        tbody.append(newTr);
+        enhanceSelects(newTr);
+        // Sync BSTD column visibility
+        const anyBstd = [...tbl.querySelectorAll(".dd-type")].some(s => s.value === "Borderline Standard");
+        tbl.querySelectorAll("[data-col='bstd-code']").forEach(cell => { cell.hidden = !anyBstd; });
+        return;
+      }
+      if (event.target.classList.contains("dd-delete-row")) {
+        const ri = event.target.dataset.row;
+        const tbl = event.target.closest("table");
+        tbl?.querySelector(`tr[data-dd-ri="${ri}"][data-dd-user]`)?.remove();
+        // Recalculate BSTD column visibility after removal
+        const anyBstd = [...(tbl?.querySelectorAll(".dd-type") || [])].some(s => s.value === "Borderline Standard");
+        tbl?.querySelectorAll("[data-col='bstd-code']").forEach(cell => { cell.hidden = !anyBstd; });
+        return;
+      }
+      if (event.target.id === "counter-offer-save") { notify("Decision details saved successfully"); return; }
       if (event.target.id === "generate-referral") {
         const remarks = $("#reinsurer-remarks")?.value.trim();
         if (!remarks) { notify("Please add remarks before generating the referral sheet"); return; }
@@ -3652,7 +3478,11 @@
       const table = `<div style="overflow:auto"><table class="special-remarks-table"><thead><tr>${headers.map((header) => `<th>${escapeHtml(header)}</th>`).join("")}</tr></thead><tbody>${specialRemarksRows.map((row) => `<tr>${row.map((cell) => `<td>${escapeHtml(cell)}</td>`).join("")}<td><button class="table-validate-btn" type="button">Validate</button></td></tr>`).join("")}</tbody></table></div>`;
       openDialog("Special Remarks", table);
     });
-    $("#dialog-content").addEventListener("input", (event) => { if (event.target.id === "uw-remarks") $("#remarks-count").textContent = `${event.target.value.length}/10000`; });
+    $("#dialog-content").addEventListener("input", (event) => {
+      if (event.target.id === "uw-remarks") { $("#remarks-count").textContent = `${event.target.value.length}/10000`; return; }
+      if (event.target.id === "uwReqTypeOther") { reconsiderState.reqTypeOther = event.target.value; return; }
+      if (event.target.id === "uwReqDetails")   { reconsiderState.reqDetails   = event.target.value; return; }
+    });
     function uwGuidelinesHtml() {
       const rows = [
         ["Income document waived or not received", "Income document waived or not raised. Please provide justification", ""],
@@ -3668,11 +3498,13 @@
     }
     $("#dialog-content").addEventListener("click", (event) => {
       if (event.target.id !== "uw-submit") return;
-      if (!$("#uw-remarks").value.trim()) { notify("Please enter UW Remarks"); return; }
-      const isApproverReferral = ["REF_SR_UW", "REF_HOD"].includes($("#uw-select").value);
-      if (isApproverReferral && !$("#uwApproverName")?.value) { notify("Please select approver name"); return; }
-      if (isApproverReferral && !approverDecisionState.reason) { notify(`Please select ${approverDecisionState.approver === "Sr UW" ? "Sr UW" : "HOD"} Reasons`); return; }
-      if (isApproverReferral && !approverDecisionState.firstDecision) { notify("Please select 1st UW Decision"); return; }
+      const isReinsurerReferral = $("#uw-select").value === "REFERRAL" && $("#uwReferralTarget")?.value === "REF_REINS";
+      const remarksField = $("#uw-remarks");
+      if (!isReinsurerReferral && !remarksField?.value.trim()) { notify("Please enter UW Remarks"); return; }
+      if ($("#uw-select").value === "APPROVER" && !$("#uwApprover")?.value) { notify("Please select Refer To"); return; }
+      if ($("#uw-select").value === "APPROVER" && !approverDecisionState.reason) { notify(`Please select ${approverDecisionState.approver === "Sr UW" ? "Sr UW" : "HOD"} Reasons`); return; }
+      if ($("#uw-select").value === "APPROVER" && !approverDecisionState.firstDecision) { notify("Please select 1st UW Decision"); return; }
+      if ($("#uw-select").value === "REFERRAL" && !$("#uwReferralTarget")?.value) { notify("Please select a referral type"); return; }
       openDialog("UW Guidelines", uwGuidelinesHtml());
     });
     $("#dialog-content").addEventListener("click", (event) => {

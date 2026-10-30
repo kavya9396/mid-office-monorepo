@@ -14,6 +14,7 @@ import { GroupAuditTrailPage } from "../modules/auditTrail/GroupAuditTrailPage";
 // import { GroupApplicantProfilePage } from "../modules/applicantProfile/GroupApplicantProfilePage";
 import { GroupOpenTasksPage } from "../modules/openTasks/GroupOpenTasksPage";
 import { GroupPreviousPolicyPage } from "../modules/previousPolicy/GroupPreviousPolicyPage";
+import { GuwDrsPage } from "../modules/guw/GuwDrsPage";
 import { GroupRiskDetailsPage } from "../modules/riskDetails/GroupRiskDetailsPage";
 
 export function AppRoutes() {
@@ -30,6 +31,8 @@ export function AppRoutes() {
         >
           <Route index element={<Navigate to="/inbox" replace />} />
           <Route path="/inbox" element={<GroupInboxPage />} />
+          <Route path="/drs" element={<DvtUser />} />
+          <Route path="/guw/drs" element={<GuwDrsPage />} />
           <Route path="/drs" element={<GroupDrsPage />} />
           {/* <Route path="/applicant-profile" element={<GroupApplicantProfilePage />} /> */}
           <Route path="/previous-policy" element={<GroupPreviousPolicyPage />} />

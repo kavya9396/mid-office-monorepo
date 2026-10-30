@@ -32,6 +32,10 @@ export type DetailCardProps = {
   tables?: DetailTable[];
   dialogTitle?: string;
   dialogMaxWidth?: DialogProps["maxWidth"];
+  /** Override the top border colour (default: theme primary). */
+  accentColor?: string;
+  /** Override the value text colour in summary fields (default: inherits). */
+  valueColor?: string;
 };
 
 const FieldText = ({ name, value }: DetailAttribute) => (
@@ -57,6 +61,8 @@ export function DetailCard({
   tables = [],
   dialogTitle,
   dialogMaxWidth = "sm",
+  accentColor,
+  valueColor,
 }: Readonly<DetailCardProps>) {
   const [open, setOpen] = useState(false);
   const expandable = expandedAttributes.length > 0 || tables.length > 0;
@@ -67,7 +73,9 @@ export function DetailCard({
       <Box
         sx={{
           backgroundColor: colors.white,
-          borderTop: (theme) => `4px solid ${theme.palette.primary.main}`,
+          borderTop: accentColor
+            ? `4px solid ${accentColor}`
+            : (theme) => `4px solid ${theme.palette.primary.main}`,
           borderRadius: "10px",
           boxShadow: `0 2px 8px ${colors.shadowNeutral}`,
           px: 1.25,
@@ -84,7 +92,7 @@ export function DetailCard({
             mb: 1,
           }}
         >
-          <Typography sx={{ fontSize: 12, fontWeight: 800, color: "primary.main" }}>{title}</Typography>
+          <Typography sx={{ fontSize: 12, fontWeight: 800, color: accentColor ?? "primary.main" }}>{title}</Typography>
           {expandable && (
             <IconButton
               aria-label={`View ${title}`}
@@ -112,7 +120,16 @@ export function DetailCard({
         >
           {attributes.map((attr) => (
             <Box key={attr.name} sx={{ minWidth: 0 }}>
-              <FieldText {...attr} />
+              {valueColor ? (
+                <Typography component="div" noWrap sx={{ fontSize: 10, fontWeight: 500 }}>
+                  {attr.name}:{" "}
+                  <Box component="span" sx={{ fontWeight: 700, fontSize: 10, color: valueColor }}>
+                    {attr.value || "-"}
+                  </Box>
+                </Typography>
+              ) : (
+                <FieldText {...attr} />
+              )}
             </Box>
           ))}
         </Box>

@@ -1,5 +1,6 @@
 export { appTheme, colors } from "./theme";
 
+
 export { default as CustomAccordion } from "./Accordion/Accordion";
 export {
   default as Badge,
@@ -9,6 +10,7 @@ export {
   type RequirementBadgeVariant,
 } from "./Badge/Badge";
 export { default as BadgeWithCount } from "./Badge/BadgeWithCount";
+export { default as CustomBox } from "./Box/Box";
 export { default as CustomButton } from "./Button/Button";
 export { default as Calendar, type CalendarProps } from "./Calendar/Calendar";
 export { default as CustomCheckbox } from "./Checkbox/Checkbox";
@@ -17,6 +19,7 @@ export {
   default as KeyValueTable,
   type KeyValueRow,
 } from "./KeyValueTable/KeyValueTable";
+export { default as CustomPagination } from "./Pagination/Pagination";
 export { default as CustomRadioGroup } from "./Radio/Radio";
 export { default as SearchBar } from "./SearchBar/SearchBar";
 export {
@@ -36,6 +39,7 @@ export { default as CustomTable, type Column } from "./Table/Table";
 export { default as CustomTabs, type TabItem } from "./Tabs/Tabs";
 export { default as CustomTextField } from "./TextField/TextField";
 export { default as CustomTooltip } from "./Tooltip/Tooltip";
+export { default as CustomTypography } from "./Typography/Typography";
 export {
   CloseIcon,
   DangerIcon,
