@@ -244,7 +244,9 @@ export function GroupInboxPage() {
 
     setNavError(null);
     const query = new URLSearchParams({ applicationNo }).toString();
-    navigate(`/drs?${query}`);
+    const route =
+      selectedCategory === "GUW_TASK" ? `/guw/drs?${query}` : `/drs?${query}`;
+    navigate(route);
   }
 
   const categories = data ? Object.keys(data.poolData) : [];

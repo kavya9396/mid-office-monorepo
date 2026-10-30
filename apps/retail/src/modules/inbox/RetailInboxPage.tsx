@@ -249,7 +249,9 @@ export function RetailInboxPage() {
         ? "/mas/drs"
         : category === "PIVV_TASK"
           ? "/pivv/drs"
-          : "/drs";
+          : category === "MMT_TASK"
+            ? "/mmt-grievance/drs"
+            : "/drs";
     navigate(`${drsPath}?${query}`);
   }
 

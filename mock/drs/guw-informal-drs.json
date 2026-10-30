@@ -1,0 +1,151 @@
+{
+  "records": [
+    {
+      "applicationNo": "NB0000030",
+      "applicantName": "Rudra Prakash Sangha",
+      "applicationLabel": "App No. - OB90377122",
+      "lines": [
+        {
+          "text": "Life Assured 1 / Married / Male / 40 / Graduate / Salaried / 3I INFOTECH / ₹10,00,000 / Pune, Maharashtra / Indian / India"
+        },
+        {
+          "text": "ICICI Pru GIFT Pro / Channel - Agency / SA - ₹10,68,000 / MPH Name - / Policy Term - / Annual Premium - / PAD - / Date of loan disbursement - / Coverage option - / Loan type - / Bank type - / Loan term - / Loan Account No. - / Share of loan - / Applicant status - / Loan amount - / Master policy holder code - / Type of loan -",
+          "emphasis": true
+        },
+        {
+          "text": "Riders: WOP - SA ₹15,00,000 / BTBB - SA ₹25,00,000 / TI Rider - SA ₹25,00,000 / ADBR - SA ₹25,00,000 / CI Rider - SA ₹25,00,000"
+        },
+        {
+          "text": "Sum at Risk: TSA - ₹10,00,000 / TRSA - ₹5,00,000 / TPSA - ₹10,00,000 / TFSA - ₹10,00,000 / TFESA - ₹10,00,000 / TSSA - ₹10,00,000 / ADBR TSA - ₹5,00,000 / ATPD TSA - ₹5,00,000 / CI Rider TSA - ₹3,00,000 / CI Rider TRSA - ₹3,00,000 / WOP TSA - ₹10,00,000 / BTBB TSA - ₹5,00,000 / Total Premium - ₹10,000 / Total Premium Paid (AML) - ₹10,000"
+        }
+      ],
+      "riskCards": [
+        {
+          "type": "FINANCIAL",
+          "title": "Financial",
+          "accentColor": "#b3262e",
+          "valueColor": "#b3262e",
+          "attributes": [
+            { "name": "Financial Decision",     "value": "NON-FSTP" },
+            { "name": "Financial Eligibility",  "value": "₹4,80,000" },
+            { "name": "Derived Income",          "value": "₹16,00,000" },
+            { "name": "Verified Income",         "value": "₹16,00,000" },
+            { "name": "BIU Financial Status",   "value": "Match" }
+          ],
+          "expandedAttributes": [
+            { "name": "BRE Financial decision",              "value": "NON-FSTP" },
+            { "name": "BRE Remark",                          "value": "Financial assessment completed" },
+            { "name": "Financial Eligibility",               "value": "₹4,80,000" },
+            { "name": "Derived Income",                      "value": "₹16,00,000" },
+            { "name": "Counter Offer Value",                 "value": "₹50,00,000" },
+            { "name": "Additional SA",                       "value": "0.0" },
+            { "name": "BIU Financial status (Match/Mismatch)", "value": "Match" },
+            { "name": "Final Bureau Income",                 "value": "₹16,00,000" },
+            { "name": "Reinsurer Case",                      "value": "No" }
+          ]
+        },
+        {
+          "type": "MEDICAL",
+          "title": "Medical",
+          "accentColor": "#28743c",
+          "valueColor": "#28743c",
+          "attributes": [
+            { "name": "Physical Medical Decision",           "value": "STP" },
+            { "name": "MunichRe Medical Decision",           "value": "" },
+            { "name": "BIU Medical Status",                  "value": "Match" }
+          ],
+          "expandedAttributes": [
+            { "name": "BRE Physical Medical Decision",         "value": "STP" },
+            { "name": "BRE Tele/Video MER Decision",           "value": "" },
+            { "name": "MunichRe Medical decision",             "value": "" },
+            { "name": "MunichRe Rating",                       "value": "" },
+            { "name": "BIU Medical status (Match/Mismatch)",   "value": "Match" },
+            { "name": "BRE Physical Medical Remark",           "value": "" },
+            { "name": "BRE Tele/Video MER Remark",             "value": "" }
+          ]
+        },
+        {
+          "type": "OTHER",
+          "title": "Risk Parameters",
+          "accentColor": "#b3262e",
+          "valueColor": "#b3262e",
+          "attributes": [
+            { "name": "DRC Response",                    "value": "Y" },
+            { "name": "Criminal Question Response LA",   "value": "No" },
+            { "name": "PEP Question Response LA",        "value": "No" }
+          ],
+          "expandedAttributes": [
+            { "name": "PEP Question Response (LA)",       "value": "No" },
+            { "name": "PEP Question Response (PR)",       "value": "No" },
+            { "name": "FATF/OFAC Country Login",          "value": "No" },
+            { "name": "Claim Registered",                 "value": "No" },
+            { "name": "Adverse IIB",                      "value": "No" },
+            { "name": "Adverse ACR",                      "value": "No" },
+            { "name": "Criminal Question Response (LA)",  "value": "No" },
+            { "name": "Criminal Question Response (PR)",  "value": "No" },
+            { "name": "Face Match Score < 75%",           "value": "No" },
+            { "name": "Distance < acceptable range",      "value": "No" },
+            { "name": "Adverse App OID",                  "value": "No" },
+            { "name": "Previous Policy Substandard",      "value": "No" },
+            { "name": "Avocation Related Disclosure",     "value": "No" },
+            { "name": "Hazardous Occupation",             "value": "No" },
+            { "name": "Employment in Risky Industry",     "value": "No" },
+            { "name": "Health Question Positive",         "value": "Yes" }
+          ]
+        }
+      ],
+      "sdtRow": {
+        "financialDecision": "Standard",
+        "medicalDecision": "Standard",
+        "grievanceHistoryCount": 2,
+        "claimAuditCount": 1,
+        "uwGuidelinesCount": 7
+      },
+      "breData": {
+        "breCode": "ST",
+        "initialDiscrepancy": ["ACR","OCD","PAN","ADP","AGE","IDM","KYP"],
+        "finalDiscrepancy": ["ACR","OCD","PAN","ADP","AGE","IDM","KYP","NYC"],
+        "statusChips": [
+          { "label": "All",       "count": 7 },
+          { "label": "Pending",   "count": 1 },
+          { "label": "Received",  "count": 1 },
+          { "label": "Accept",    "count": 2 },
+          { "label": "Cancelled", "count": 1 },
+          { "label": "Reject",    "count": 1 },
+          { "label": "Waived",    "count": 1 }
+        ]
+      },
+      "uwData": {
+        "breOverallDecision": "NON-FSTP",
+        "breOverallRemarks": "Financial assessment completed",
+        "submittedDecision": {
+          "decisionCode": "CO",
+          "remarks": "Counter offer proposed due to financial eligibility shortfall and borderline medical findings.",
+          "fields": [
+            { "label": "Case UW Decision", "value": "Counter Offer" },
+            { "label": "Decision Code", "value": "CO" },
+            { "label": "Reasons", "value": "Financially Not Eligible, Asthma", "wide": true }
+          ],
+          "reconsiderationFields": [],
+          "showBstdColumn": true,
+          "counterOfferRows": [
+            { "id": "dd-0", "productName": "iProtect Smart", "isRider": false, "type": "Reduce Cover", "bstdCode": "", "sa": "₹50,00,000", "changedSa": "₹40,00,000", "pt": "20", "changedPt": "", "loadingClass": "", "loadingReason": "" },
+            { "id": "dd-1", "productName": "Accidental Death Rider", "isRider": true, "type": "Deny Rider", "bstdCode": "", "sa": "₹10,00,000", "changedSa": "", "pt": "20", "changedPt": "", "loadingClass": "", "loadingReason": "" },
+            { "id": "dd-2", "productName": "WOP Rider", "isRider": true, "type": "Borderline Standard", "bstdCode": "BS1", "sa": "₹15,00,000", "changedSa": "", "pt": "20", "changedPt": "", "loadingClass": "", "loadingReason": "" }
+          ],
+          "reinsurerRows": [],
+          "documentRows": [],
+          "guidelines": [
+            { "reason": "Income document waived or not received", "remark": "Income document waived or not raised. Please provide justification", "systemAction": "", "justificationReason": "Requirement waived", "justificationRemark": "Income proof waived as per sampling norms." },
+            { "reason": "Medical requirement waived or not received", "remark": "Medical document waived or not raised. Please provide justification", "systemAction": "", "justificationReason": "", "justificationRemark": "" },
+            { "reason": "Financially not viable", "remark": "Justification required as financial eligibility is less than TFSA", "systemAction": "", "justificationReason": "Financial assessment", "justificationRemark": "SA reduced to align with financial eligibility." },
+            { "reason": "DRC Risk Blank or Null Risk", "remark": "DRC Risk value is Blank or Null Risk — kindly take counter signing", "systemAction": "REFER_TO_CS", "justificationReason": "", "justificationRemark": "" },
+            { "reason": "TSA above your UW limit", "remark": "Case above your underwriting limit, please take counter signing", "systemAction": "REFER_TO_CS", "justificationReason": "", "justificationRemark": "" },
+            { "reason": "Application form validity expired", "remark": "Please call for fresh medical questionnaire", "systemAction": "REFER_TO_HOD", "justificationReason": "", "justificationRemark": "" },
+            { "reason": "BIU model response field is blank", "remark": "BIU models predict response is blank — cannot take STD, XRT or COF decision. Kindly get the BIU response", "systemAction": "", "justificationReason": "", "justificationRemark": "" }
+          ]
+        }
+      }
+    }
+  ]
+}

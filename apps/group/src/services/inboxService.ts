@@ -28,8 +28,12 @@ export async function fetchGroupInbox(): Promise<InboxData> {
 
   const poolData: Record<string, InboxTask[]> = {};
 
-  for (const [category, tasks] of Object.entries(inboxMock.poolData)) {
-    poolData[category] = tasks
+  const poolEntries = Object.entries(
+    inboxMock.poolData as Record<string, Array<{ businessType?: string; applicationNo: string; taskId: string; customerName: string; productName: string; appliedSa?: number | string | null; annualPremium?: number | string | null; status?: string }>>
+  );
+
+  for (const [category, tasks] of poolEntries) {
+    const groupTasks = tasks
       .filter((task) => task.businessType === "GROUP")
       .map((task) => ({
         applicationNo: task.applicationNo,
@@ -41,6 +45,11 @@ export async function fetchGroupInbox(): Promise<InboxData> {
         annualPremium: task.annualPremium,
         status: task.status,
       }));
+
+    // Only include categories that have at least one GROUP task
+    if (groupTasks.length > 0) {
+      poolData[category] = groupTasks;
+    }
   }
 
   return {

@@ -11,6 +11,7 @@ behaviour rules derived directly from the HTML prototypes.
 | File | Business Line | Workstream |
 |---|---|---|
 | [00-shared-layout.md](./00-shared-layout.md) | All | Shared layout, Header, Sidebar, design tokens |
+| [shared-login.md](./shared-login.md) | All | Shared login screen (`apps/common`) — referenced by all workstreams |
 | [retail-cuw.md](./retail-cuw.md) | Retail | Chief Underwriter (CUW) |
 | [retail-pre-issuance-cuw.md](./retail-pre-issuance-cuw.md) | Retail | Pre-Issuance CUW |
 | [retail-cvt.md](./retail-cvt.md) | Retail | Credit Verification Team (CVT) |

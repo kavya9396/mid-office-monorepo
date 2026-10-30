@@ -1,4 +1,4 @@
-﻿# Monorepo Folder Structure
+# Monorepo Folder Structure
 
 > Part of the [React Frontend Architecture & Engineering Specification](./README.md).
 
@@ -63,6 +63,9 @@ mid-office-monorepo/
 │   │   │   │   │   ├── MASAuditTrailPage.tsx
 │   │   │   │   │   ├── MASMedicalReportPage.tsx  # thin wrapper → DvtReportPage type="medical"
 │   │   │   │   │   └── MASFinancialReportPage.tsx # thin wrapper → DvtReportPage type="financial"
+│   │   │   │   ├── mmt-grievance/
+│   │   │   │   │   ├── MmtGrievanceDecision.tsx   # "TPA Grievance Details" grid, pager, Submit (validation only)
+│   │   │   │   │   └── MmtGrievanceDrsPage.tsx    # MMT Grievance DRS: AppHeader + ApplicantBanner + GrievanceHistory + MmtGrievanceDecision (route /mmt-grievance/drs; opened from Inbox MMT_TASK)
 │   │   │   │   ├── pivv/
 │   │   │   │   │   ├── PivvDrsPage.tsx            # PIVV DRS: AppHeader + ApplicantBanner + PivvDecisionForm (route /pivv/drs; opened from Inbox PIVV_TASK)
 │   │   │   │   │   └── PivvDecisionForm.tsx       # "PIVV Details" table, Submit, Confirm Submit dialog
@@ -76,7 +79,8 @@ mid-office-monorepo/
 │   │   │       ├── drsService.ts
 │   │   │       ├── inboxService.ts
 │   │   │       ├── masAuditTrailService.ts
-│   │   │       └── pivvService.ts
+│   │   │       ├── pivvService.ts
+│   │   │       └── mmtGrievanceService.ts
 │   │   ├── Dockerfile
 │   │   ├── index.html
 │   │   ├── package.json
@@ -133,6 +137,8 @@ mid-office-monorepo/
 │   │   │   │   └── Icons.tsx          # All SVG icons — proxy here, never import @mui/icons-material directly
 │   │   │   ├── KeyValueTable/
 │   │   │   │   └── KeyValueTable.tsx  # KeyValueTable, KeyValueRow
+│   │   │   ├── Pagination/
+│   │   │   │   └── Pagination.tsx     # CustomPagination
 │   │   │   ├── Radio/
 │   │   │   │   └── Radio.tsx          # CustomRadioGroup
 │   │   │   ├── SearchBar/
@@ -276,6 +282,8 @@ mid-office-monorepo/
   | `@insurance-poc/common/dvt-section-viewer` | `src/components/DvtSectionViewer.tsx` | `DvtSectionViewer`, `DvtSectionViewerProps` |
   | `@insurance-poc/common/dvt-report-page` | `src/components/DvtReportPage.tsx` | `DvtReportPage`, `DvtReportPageProps` |
   | `@insurance-poc/common/detail-card` | `src/components/DetailCard.tsx` | `DetailCard`, `DetailCardProps`, `DetailAttribute`, `DetailTable` |
+  | `@insurance-poc/common/grievance-history` | `src/components/GrievanceHistory.tsx` | `GrievanceHistory`, `grievanceColumns`, `GrievanceHistoryRow`, `GrievanceHistoryProps` - "Grievance History" table + pager (uses `CustomTable`, `CustomPagination`, `usePagination`); reused by MMT Grievance and other grievance screens |
+  | `@insurance-poc/common/use-pagination` | `src/components/Requirement Mgmt/usePagination.ts` | `usePagination`, `UsePaginationResult` |
   | `@insurance-poc/common/decision-bar` | `src/components/DecisionBar.tsx` | `DecisionBar`, `DecisionComparisonTable`, `DecisionBarItem`, `DecisionBarProps`, `ComparisonRow` |
   | `@insurance-poc/common/quick-links` | `src/components/QuickLinks.tsx` | `QuickLinks`, `QuickLinkItem`, `QuickLinksProps` |
   | `@insurance-poc/common/previous-policy` | `src/components/PreviousPolicy.tsx` | `PreviousPolicy`, `PreviousPolicyDialog`, `PreviousPolicyProps` |
@@ -339,6 +347,7 @@ Wraps MUI v6 + Emotion. All components are exported from `packages/ui/src/index.
 | `CustomSearchSelect`, `SearchSelectOption` | `Select/CustomSearchSelect.tsx` | Search-enabled select |
 | `CustomApiAutocomplete`, `ApiAutocompleteOption` | `Select/CustomApiAutocomplete.tsx` | API-driven autocomplete |
 | `CustomCheckbox` | `Checkbox/Checkbox.tsx` | MUI Checkbox wrapper |
+| `CustomPagination` | `Pagination/Pagination.tsx` | MUI Pagination wrapper (rounded, small, selected page white on `#E45F14`). `onChange(page)` receives the page number. Used by `GrievanceHistory` |
 | `CustomRadioGroup` | `Radio/Radio.tsx` | MUI RadioGroup wrapper |
 | `CustomSnackbar` | `SnackBar/Snackbar.tsx` | Toast notification |
 | `CustomTooltip` | `Tooltip/Tooltip.tsx` | MUI Tooltip wrapper |
@@ -399,6 +408,8 @@ Local JSON files consumed exclusively through service modules. `mock/` is declar
 | `mock/inbox/inbox.json` | `apps/retail` + `apps/group` inboxService | `poolData` by category; `businessType` field filters per app |
 | `mock/drs/retail-drs.json` | `apps/retail` drsService | DRS records keyed by `applicationNo` |
 | `mock/drs/group-drs.json` | `apps/group` drsService | DRS records keyed by `applicationNo` |
+| `mock/drs/mmt-grievance-drs.json` | `apps/retail` mmtGrievanceService | MMT Grievance DRS banner records keyed by `applicationNo` |
+| `mock/drs/mmt-grievance-rows.json` | `apps/retail` mmtGrievanceService | MMT Grievance history (`history`) and TPA decision (`decision`) rows keyed by `applicationNo`. Mock is default; set `VITE_USE_MOCK=false` plus `VITE_MMT_GRIEVANCE_HISTORY_URL` / `VITE_MMT_GRIEVANCE_DECISION_URL` (typed in `apps/retail/src/vite-env.d.ts`) for the real API |
 | `mock/mas/mas-audit-trail.json` | `apps/retail` masAuditTrailService | MAS audit trail entries (mock; BFF placeholder) |
 
 **Service pattern** (all services follow this pattern — screens never import mock JSON directly):
