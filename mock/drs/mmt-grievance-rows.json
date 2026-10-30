@@ -1,0 +1,21 @@
+{
+  "records": [
+    {
+      "applicationNo": "NB0000021",
+      "history": [],
+      "decision": [
+        {
+          "userName": "Premanand Sawant",
+          "fupCode": "ECG",
+          "profile": "Life Assured",
+          "grievanceRemarks": "ECG graph is blurry",
+          "tpaRemark": "",
+          "raisedDate": "7 Sep 2026",
+          "updatedDate": "-",
+          "raisedBy": "Premanand Sawant",
+          "updatedBy": "-"
+        }
+      ]
+    }
+  ]
+}

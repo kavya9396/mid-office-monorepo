@@ -14,7 +14,17 @@ Use Ask mode — do not change any code. Screen: $ARGUMENTS
    - **Missing** — not found.
    - **Different** — found but diverges from spec or HTML (file + line + description).
 
-3. Also verify:
+3. Also verify **structural fidelity** for every region (header/ribbon/banner, cards, rows, tables):
+   - Rendered text composition matches the prototype: concatenated strings keep the same
+     parts, order, separators, and conditional pieces (e.g. `Name | Age | Gender` must not
+     become separate label/value fields).
+   - Same element grouping/order and same empty-value fallbacks.
+   - Any shared component used (`DetailCard`, `KeyValueTable`, `ApplicantBanner`, `CustomTable`,
+     etc.) renders the region identically to the prototype; otherwise mark **Different**.
+   Report each deviation as **Different** with file + line, the prototype's output, and the
+   built output.
+
+4. Also verify:
    - Labels and button text match the HTML word for word.
    - Error messages match `data-error-*` values word for word.
    - `data-testid` = `data-field-id` on every input.
@@ -25,10 +35,10 @@ Use Ask mode — do not change any code. Screen: $ARGUMENTS
    - TypeScript: no `any`, no unsafe assertions in this screen's files.
    - All inputs have `<label>` or `aria-label`; interactive elements are keyboard-reachable.
 
-4. Reply with:
+5. Reply with:
    - **Score**: done / total items (e.g. "42 / 45").
    - Checklist of Missing and Different items, formatted so it can be pasted into `/build $ARGUMENTS`.
    - Any TypeScript or accessibility issues found.
 
-5. If score is 100 % and this pattern has no reference screen in `docs/spec/screens/INDEX.md`,
+6. If score is 100 % and this pattern has no reference screen in `docs/spec/screens/INDEX.md`,
    suggest this screen as the reference. Do not edit INDEX.md yourself.
