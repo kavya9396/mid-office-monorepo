@@ -1,6 +1,54 @@
 {
   "userId": "UW001",
   "poolData": {
+    "MAS_TASK": [
+      {
+        "applicationNo": "MAS1001",
+        "taskId": "TSK-MAS-001",
+        "customerName": "Priya Sharma",
+        "productName": "Retail Term Life",
+        "businessType": "RETAIL",
+        "appliedSa": 2000000,
+        "annualPremium": 22400,
+        "status": "Medical Pending"
+      },
+      {
+        "applicationNo": "MAS1002",
+        "taskId": "TSK-MAS-002",
+        "customerName": "Suresh Nair",
+        "productName": "Retail Whole Life",
+        "businessType": "RETAIL",
+        "appliedSa": 1000000,
+        "annualPremium": 15600,
+        "status": "Financial Pending"
+      }
+    ],
+    "PIVV_TASK": [
+      {
+        "applicationNo": "PIVV1001",
+        "taskId": "TSK-PIVV-001",
+        "customerName": "Rudra Prakash Sangha",
+        "productName": "ICICI Pru GIFT Pro - E36",
+        "businessType": "RETAIL",
+        "appliedSa": 1068000,
+        "annualPremium": 10000,
+        "status": "Pending"
+      }
+    ],
+
+    "MMT_TASK": [
+      {
+        "applicationNo": "NB0000021",
+        "taskId": "TSK-MMT-001",
+        "customerName": "Rudra Prakash Sangha",
+        "productName": "ICICI Pru GIFT Pro - E36",
+        "businessType": "RETAIL",
+        "appliedSa": 1068000,
+        "annualPremium": 10000,
+        "status": "Pending"
+      }
+    ],
+
     "CVT_TASK": [
       {
         "applicationNo": "RET1001",
@@ -31,6 +79,18 @@
         "appliedSa": "50000",
         "annualPremium": 1234.5,
         "status": "In review"
+      }
+    ],
+    "GUW_TASK": [
+      {
+        "applicationNo": "NB0000030",
+        "taskId": "TSK-GUW-001",
+        "customerName": "Rudra Prakash Sangha",
+        "productName": "ICICI Pru GIFT Pro",
+        "businessType": "GROUP",
+        "appliedSa": 1068000,
+        "annualPremium": 10000,
+        "status": "Pending"
       }
     ],
     "DVT_TASK": [
