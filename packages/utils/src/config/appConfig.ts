@@ -36,4 +36,7 @@ export const authUrls = {
       "VITE_AUTH_CHANGE_PASSWORD_API",
     );
   },
+  get logout(): string {
+    return requiredUrl(import.meta.env.VITE_AUTH_LOGOUT_API, "VITE_AUTH_LOGOUT_API");
+  },
 };

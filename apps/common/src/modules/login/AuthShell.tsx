@@ -86,11 +86,11 @@ function AuthCopyright({ showLegalLinks }: Readonly<{ showLegalLinks: boolean }>
         {showLegalLinks ? (
           <>
             © 2026 ICICI Life Insurance,&nbsp;
-            <Link component="button" type="button" underline="hover" sx={inlineLinkSx}>
+            <Link href="" underline="hover" sx={inlineLinkSx}>
               Privacy Policy
             </Link>
             &nbsp; | &nbsp;
-            <Link component="button" type="button" underline="hover" sx={inlineLinkSx}>
+            <Link href="" underline="hover" sx={inlineLinkSx}>
               Terms and Conditions
             </Link>
           </>

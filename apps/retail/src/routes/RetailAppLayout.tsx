@@ -29,13 +29,20 @@ export function RetailAppLayout() {
     : readQueryValue(params.get("applicationNo"));
 
   return (
-    <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <Box
+      sx={{
+        height: "100dvh",
+        display: "flex",
+        flexDirection: "column",
+        overflow: isInbox ? "hidden" : "auto",
+      }}
+    >
       <Header
         inboxPath={INBOX_PATH}
         role={role}
         applicationNo={applicationNo}
       />
-      <Box component="main" sx={{ flex: 1, minWidth: 0 }}>
+      <Box component="main" sx={{ flex: 1, minWidth: 0, minHeight: 0, overflow: isInbox ? "hidden" : "auto" }}>
         <Outlet />
       </Box>
     </Box>

@@ -48,7 +48,7 @@ export function ResetPasswordPage() {
       const message = apiResultMessage(result.message, "Password reset");
       setSnackbar(authSnackbar(message, "success"));
       window.setTimeout(() => {
-        navigate(commonPaths.login, { replace: true });
+        navigate(commonPaths.login, { replace: true, state: { resetMessage: message } });
       }, SUCCESS_REDIRECT_MS);
     } catch (reason: unknown) {
       const message = readApiMessage(reason, "Unable to reset the password.");

@@ -1,9 +1,10 @@
 import { z } from "zod";
+import { passwordSchema } from "./loginSchema";
 
 export const resetPasswordSchema = z
   .object({
-    newPassword: z.string().min(8, "Password must be at least 8 characters long"),
-    confirmPassword: z.string().min(1, "Confirm your password"),
+    newPassword: passwordSchema,
+    confirmPassword: passwordSchema,
   })
   .refine((value) => value.newPassword === value.confirmPassword, {
     message: "Passwords do not match",

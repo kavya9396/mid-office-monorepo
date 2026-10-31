@@ -4,6 +4,7 @@ const USER_ID_KEY = "userId";
 const DISPLAY_NAME_KEY = "displayName";
 const BUSINESS_TYPE_KEY = "businessType";
 const MUST_CHANGE_PASSWORD_KEY = "mustChangePassword";
+const LAST_LOGIN_AT_KEY = "lastLoginAt";
 /** Legacy mock-only key — removed on clear so real API sessions stay clean. */
 const LEGACY_PASSWORD_CHANGED_KEY = "passwordChangedUserIds";
 
@@ -27,6 +28,10 @@ export function setToken(token: string): void {
   readStorage()?.setItem(TOKEN_KEY, token);
 }
 
+export function getRefreshToken(): string | null {
+  return readStorage()?.getItem(REFRESH_TOKEN_KEY) ?? null;
+}
+
 export function setRefreshToken(token: string): void {
   const storage = readStorage();
   if (!storage) return;
@@ -45,7 +50,13 @@ export function clearToken(): void {
   storage?.removeItem(DISPLAY_NAME_KEY);
   storage?.removeItem(BUSINESS_TYPE_KEY);
   storage?.removeItem(MUST_CHANGE_PASSWORD_KEY);
+  storage?.removeItem(LAST_LOGIN_AT_KEY);
   storage?.removeItem(LEGACY_PASSWORD_CHANGED_KEY);
+}
+
+/** Removes every session value, including token, user, and any other saved keys. */
+export function clearSession(): void {
+  readStorage()?.clear();
 }
 
 /**
@@ -84,6 +95,20 @@ export function setSessionBusinessType(
   businessType: SessionBusinessType,
 ): void {
   readStorage()?.setItem(BUSINESS_TYPE_KEY, businessType);
+}
+
+export function setLastLoginAt(value: string): void {
+  const storage = readStorage();
+  if (!storage) return;
+  if (value.trim().length === 0) {
+    storage.removeItem(LAST_LOGIN_AT_KEY);
+    return;
+  }
+  storage.setItem(LAST_LOGIN_AT_KEY, value.trim());
+}
+
+export function getLastLoginAt(): string | null {
+  return readStorage()?.getItem(LAST_LOGIN_AT_KEY) ?? null;
 }
 
 export function getSessionBusinessType(): SessionBusinessType | null {

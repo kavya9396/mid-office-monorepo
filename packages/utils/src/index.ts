@@ -1,7 +1,10 @@
 export { authUrls, useMock } from "./config";
 export {
   authReducer,
+  clearSession,
   clearToken,
+  getLastLoginAt,
+  getRefreshToken,
   getSessionBusinessType,
   getSessionUser,
   getToken,
@@ -10,6 +13,7 @@ export {
   mustChangePassword,
   redirectHandled,
   sessionExpired,
+  setLastLoginAt,
   setMustChangePassword,
   setRefreshToken,
   setSessionBusinessType,

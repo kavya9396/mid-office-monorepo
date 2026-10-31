@@ -9,6 +9,11 @@
       "import": "./src/services/loginService.ts",
       "default": "./src/services/loginService.ts"
     },
+    "./auth-api": {
+      "types": "./src/services/authApi.ts",
+      "import": "./src/services/authApi.ts",
+      "default": "./src/services/authApi.ts"
+    },
     "./header": {
       "types": "./src/components/layout/Header.tsx",
       "import": "./src/components/layout/Header.tsx",

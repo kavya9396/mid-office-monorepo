@@ -16,7 +16,8 @@ import {
   type TabItem,
 } from "@insurance-poc/ui";
 import {
-  clearToken,
+  clearSession,
+  setLastLoginAt,
   setMustChangePassword,
   setRefreshToken,
   setSessionBusinessType,
@@ -71,6 +72,7 @@ type LoginSuccessHandlerArgs = {
   user: Parameters<typeof setSessionUser>[0];
   firstLogin: boolean;
   mustChangePassword: boolean;
+  lastLoginAt: string;
   businessType: BusinessType;
   navigateToChangePassword: () => void;
 };
@@ -81,6 +83,7 @@ function handleLoginSuccess({
   user,
   firstLogin,
   mustChangePassword,
+  lastLoginAt,
   businessType,
   navigateToChangePassword,
 }: LoginSuccessHandlerArgs): void {
@@ -88,6 +91,7 @@ function handleLoginSuccess({
   setRefreshToken(refreshToken);
   setSessionUser(user);
   setSessionBusinessType(businessType);
+  setLastLoginAt(lastLoginAt);
 
   // Server is source of truth: force change-password only when firstLogin / mustChangePassword is true.
   // Never persist mustChangePassword=false in sessionStorage.
@@ -292,11 +296,12 @@ export function LoginPage() {
         user: loginResult.user,
         firstLogin: loginResult.firstLogin,
         mustChangePassword: loginResult.mustChangePassword,
+        lastLoginAt: loginResult.lastLoginAt,
         businessType,
         navigateToChangePassword: () => navigate(commonPaths.changePassword),
       });
     } catch (reason: unknown) {
-      clearToken();
+      clearSession();
       showNotify(readApiMessage(reason, "Login failed."), "error");
     }
   };
