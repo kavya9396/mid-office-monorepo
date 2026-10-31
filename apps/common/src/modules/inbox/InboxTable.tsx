@@ -128,13 +128,13 @@ function compareText(left: string, right: string, direction: SortDirection): num
 function downloadCsv(title: string, columns: string[], rows: InboxCase[]): void {
   const header = columns.map(formatColumnName).join(",");
   const body = rows
-    .map((row) => columns.map((column) => `"${cellText(row.fields[column]).split('"').join('""')}"`).join(","))
+    .map((row) => columns.map((column) => `"${cellText(row.fields[column]).replaceAll('"', '""')}"`).join(","))
     .join("\n");
   const blob = new Blob([`${header}\n${body}`], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `${title.split(" ").join("_")}.csv`;
+  link.download = `${title.replaceAll(" ", "_")}.csv`;
   link.click();
   URL.revokeObjectURL(url);
 }

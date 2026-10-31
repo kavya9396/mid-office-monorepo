@@ -122,7 +122,7 @@ export function toDisplayLabel(value: string): string {
 }
 
 export function taskDetailsTitle(taskKey: string): string {
-  return `${taskKey.split("_").join(" ")} Details`;
+  return `${taskKey.replaceAll("_", " ")} Details`;
 }
 
 const COLUMN_LABELS: Record<string, string> = {
@@ -133,10 +133,21 @@ const COLUMN_LABELS: Record<string, string> = {
   ptlr: "PTLR",
 };
 
+function splitCamelCase(value: string): string {
+  let result = "";
+  for (let index = 0; index < value.length; index += 1) {
+    const current = value.charAt(index);
+    const previous = value.charAt(index - 1);
+    const needsSpace = previous >= "a" && previous <= "z" && current >= "A" && current <= "Z";
+    result += needsSpace ? ` ${current}` : current;
+  }
+  return result;
+}
+
 export function formatColumnName(key: string): string {
   const mapped = COLUMN_LABELS[key];
   if (mapped) return mapped;
-  const spaced = key.split("_").join(" ").replaceAll(/([a-z])([A-Z])/g, "$1 $2");
+  const spaced = splitCamelCase(key.replaceAll("_", " "));
   return spaced
     .split(" ")
     .filter((part) => part.length > 0)
@@ -155,7 +166,7 @@ export function initials(value: string): string {
 }
 
 export function isApplicationColumn(column: string): boolean {
-  const normalized = column.split("_").join("").split(" ").join("").toLowerCase();
+  const normalized = column.replaceAll("_", "").replaceAll(" ", "").toLowerCase();
   return normalized === "applicationno" || normalized === "applicationnumber";
 }
 

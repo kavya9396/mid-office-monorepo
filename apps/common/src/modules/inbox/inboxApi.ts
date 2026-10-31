@@ -113,7 +113,7 @@ export function mapRoleListPayload(value: unknown): InboxData {
 
   const poolData: Partial<Record<RolePoolKey, InboxCase[]>> = {};
   for (const poolName of ROLE_POOL_KEYS) {
-    if (!Object.prototype.hasOwnProperty.call(value.poolData, poolName)) continue;
+    if (!Object.hasOwn(value.poolData, poolName)) continue;
     const cases = value.poolData[poolName];
     poolData[poolName] = Array.isArray(cases)
       ? cases.flatMap((item, index) => {
