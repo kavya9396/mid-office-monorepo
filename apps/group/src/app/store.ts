@@ -24,8 +24,7 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
       .prepend(listenerMiddleware.middleware)
-      .concat(authApi.middleware, groupInboxApi.middleware),
-      .concat(groupInboxApi.middleware, groupDrsApi.middleware),
+      .concat(authApi.middleware, groupInboxApi.middleware, groupDrsApi.middleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;
