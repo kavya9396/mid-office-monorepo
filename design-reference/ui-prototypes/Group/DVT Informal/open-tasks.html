@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Open Tasks</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{--orange:#e45f14;--maroon:#9a2529;--border:#e4dedb;--text:#302a27;--muted:#7b716c;--head:#fff0e5}
+    *{box-sizing:border-box} html,body{margin:0;height:100%;font-family:Mulish,Arial,sans-serif;color:var(--text);background:#f8f6f5} button{font:inherit;cursor:pointer}
+    .app-header{height:57px;display:flex;align-items:stretch;position:sticky;top:0;z-index:20;background:linear-gradient(to bottom,#f58220 0%,#e65318 42%,#c92e27 72%,#98252b 100%);box-shadow:0 3px 12px rgba(111,24,24,.25);color:#fff}
+    .back{width:44px;border:0;border-right:1px solid rgba(255,255,255,.25);background:rgba(126,22,31,.42);color:#fff;display:grid;place-items:center;font-size:25px}.logo{width:150px;height:57px;object-fit:cover}.spacer{flex:1}.clock{align-self:center;min-width:175px;padding-right:12px;text-align:right;border-right:1px solid rgba(255,255,255,.35);line-height:1.4;font-size:12px}.clock b{display:block;font-size:11px;margin-top:2px}.user{display:flex;align-items:center;gap:9px;margin:0 16px 0 12px;font-size:12px;font-weight:700}.avatar{width:35px;height:35px;border:1px solid rgba(255,255,255,.45);border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.2);font-size:16px}
+    main{height:calc(100dvh - 57px);padding:10px 12px;overflow:auto}.card{height:100%;min-height:430px;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 5px 18px rgba(0,0,0,.06);overflow:hidden;display:flex;flex-direction:column}.titlebar{height:42px;min-height:42px;background:var(--orange);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 14px}.titlebar h1{margin:0;font-size:15px;font-weight:800}.count{padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.18);font-size:10px;font-weight:800}
+    .table-wrap{flex:1;min-height:0;overflow:auto}table{width:100%;min-width:960px;border-collapse:collapse;table-layout:fixed}th,td{border-bottom:1px solid #ece7e4;text-align:left;vertical-align:middle;overflow:hidden;text-overflow:ellipsis}th{position:sticky;top:0;z-index:2;background:var(--head);color:#5d4136;padding:9px 10px;font-size:10px;font-weight:800;white-space:nowrap;border-bottom:1px solid #efcdb8}td{padding:10px;font-size:10.5px;line-height:1.35;color:#393330}tbody tr:hover{background:#fffaf7}
+    /* Seven widths exactly match the seven table columns. */
+    th:nth-child(1){width:15%}th:nth-child(2){width:14%}th:nth-child(3){width:8%}th:nth-child(4){width:8%}th:nth-child(5){width:30%}th:nth-child(6){width:15%}th:nth-child(7){width:10%}
+    .service-id{color:var(--maroon);font-weight:800;white-space:nowrap}.code{display:inline-flex;min-width:52px;justify-content:center;padding:3px 6px;border-radius:12px;background:#f4f1ef;border:1px solid #ddd5d1;color:#5e5652;font-size:9px;font-weight:800}.pool{display:inline-flex;max-width:100%;padding:3px 7px;border-radius:12px;background:#fff0e7;border:1px solid #f2cbb4;color:#a84812;font-size:9px;font-weight:800;white-space:nowrap}.source{font-weight:700;color:#5c5551}.footer{height:38px;min-height:38px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 10px;font-size:10px;color:var(--muted);background:#fcfbfa}.pages{display:flex;align-items:center;gap:3px}.pages button{width:25px;height:25px;border:0;border-radius:6px;background:transparent;color:#665e5a}.pages button.active{background:var(--orange);color:#fff;font-weight:800}
+    @media(max-width:760px){.clock,.user span{display:none}main{padding:6px}.card{height:auto;min-height:calc(100dvh - 69px)}table{min-width:920px}}
+  </style>
+</head>
+<body>
+  <header class="app-header"><button class="back" id="back" type="button" aria-label="Back to DRS" title="Back to DRS">‹</button><img class="logo" src="ICICI%20Logo.svg" alt="ICICI Life Logo"><div class="spacer"></div><div class="clock"><div id="now"></div><b>Session: 15:00</b></div><div class="user"><span class="avatar">○</span><span>CUW User</span></div></header>
+  <main><section class="card" aria-label="Open Tasks"><div class="titlebar"><h1>Open Tasks</h1><span class="count">5 Open</span></div><div class="table-wrap"><table><thead><tr><th>Call log date</th><th>Service call ID</th><th>CT</th><th>ST</th><th>Call Details</th><th>User Pool</th><th>Source</th></tr></thead><tbody>
+    <tr><td>22-Sep-2026 10:15</td><td class="service-id">SC-260922-0142</td><td><span class="code">CT-01</span></td><td><span class="code">ST-03</span></td><td>Review pending medical reports and confirm underwriting action.</td><td><span class="pool">CUW</span></td><td class="source">CRM</td></tr>
+    <tr><td>22-Sep-2026 09:42</td><td class="service-id">SC-260922-0128</td><td><span class="code">CT-02</span></td><td><span class="code">ST-05</span></td><td>Validate income documents received against declared annual income.</td><td><span class="pool">Financial UW</span></td><td class="source">Portal</td></tr>
+    <tr><td>21-Sep-2026 16:30</td><td class="service-id">SC-260921-0097</td><td><span class="code">CT-04</span></td><td><span class="code">ST-02</span></td><td>Customer requested a call regarding pending policy requirements.</td><td><span class="pool">CUW</span></td><td class="source">Call Centre</td></tr>
+    <tr><td>21-Sep-2026 14:05</td><td class="service-id">SC-260921-0084</td><td><span class="code">CT-03</span></td><td><span class="code">ST-04</span></td><td>Review PIVV outcome and verify recorded responses before decision.</td><td><span class="pool">PIVV</span></td><td class="source">Workflow</td></tr>
+    <tr><td>20-Sep-2026 11:20</td><td class="service-id">SC-260920-0061</td><td><span class="code">CT-02</span></td><td><span class="code">ST-01</span></td><td>Clarification required for identity document uploaded with proposal.</td><td><span class="pool">CUW</span></td><td class="source">DMS</td></tr>
+  </tbody></table></div><div class="footer"><span>Showing 5 of 5 tasks</span><div class="pages"><button type="button">‹</button><button class="active" type="button">1</button><button type="button">›</button></div></div></section></main>
+  <script>document.getElementById('back').addEventListener('click',()=>window.location.href='./dvt-drs.html');document.getElementById('now').textContent=new Intl.DateTimeFormat('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}).format(new Date());</script>
+</body>
+</html>

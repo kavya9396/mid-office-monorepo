@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Box, Chip } from "@mui/material";
 import type { ChipProps } from "@mui/material";
 import type { SxProps, Theme } from "@mui/material/styles";
@@ -11,7 +12,7 @@ export type LegacyBadgeVariant = "Low" | "Medium" | "High" | "Neutral";
 export type BadgeVariant = LegacyBadgeVariant | RequirementBadgeVariant;
 
 export interface BadgeProps extends Omit<ChipProps, "label" | "variant"> {
-  label?: string;
+  label?: ReactNode;
   variant?: BadgeVariant;
   count?: number;
   selected?: boolean;
@@ -86,7 +87,15 @@ const isRequirementVariant = (
 
   return (
     <Chip
-      aria-label={hasCount ? `${displayLabel}: ${count}` : displayLabel}
+      aria-label={
+        typeof label === "string"
+          ? hasCount
+            ? `${label}: ${count}`
+            : label
+          : typeof displayLabel === "string"
+          ? displayLabel
+          : undefined
+      }
       aria-pressed={interactive ? selected : undefined}
       {...chipProps}
       size={size}

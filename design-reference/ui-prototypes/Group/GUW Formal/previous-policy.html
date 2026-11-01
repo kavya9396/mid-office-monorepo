@@ -1,0 +1,669 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Previous Policies</title>
+  <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root { font-family: Mulish, Arial, sans-serif; color: #263238; background: #fff; font-synthesis: none; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-size: 12px; }
+    button, select { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible { outline: 2px solid #e45f14; outline-offset: 2px; }
+    [hidden] { display: none !important; }
+
+    /* Header.tsx: same gradient, logo, date/session and user controls. */
+    .app-header { position: sticky; top: 0; z-index: 100; display: flex; align-items: stretch; height: 57px; color: #fff; background: linear-gradient(to bottom,#f58220 0%,#e65318 42%,#c92e27 72%,#98252b 100%); box-shadow: 0 3px 12px rgba(111,24,24,.25); }
+    .back-button { display: grid; place-items: center; flex: none; width: 44px; height: 57px; padding: 0; border: 0; border-right: 1px solid rgba(255,255,255,.25); border-radius: 0; background: rgba(126,22,31,.42); color: #fff; }
+    .back-button:hover { background: rgba(126,22,31,.62); }
+    .logo { display: block; width: 150px; height: 57px; object-fit: cover; }
+    .header-spacer { flex: 1; }
+    .header-date { align-self: center; min-width: 175px; padding-right: 12px; text-align: right; border-right: 1px solid rgba(255,255,255,.35); line-height: 1.4; }
+    .header-date div:first-child { opacity: .9; font-size: 12px; }
+    .header-date div:last-child { margin-top: 2px; font-size: 11px; font-weight: 700; }
+    .user-wrap { position: relative; display: flex; align-items: center; align-self: stretch; margin: 0 16px 0 12px; }
+    .user-button { display: flex; align-items: center; gap: 9px; min-height: 40px; padding: 4px 8px; border: 0; border-radius: 8px; background: transparent; color: #fff; }
+    .user-button:hover { background: rgba(255,255,255,.14); }
+    .user-avatar { display: grid; place-items: center; width: 35px; height: 35px; border: 1px solid rgba(255,255,255,.45); border-radius: 50%; background: rgba(255,255,255,.2); }
+    .user-name { min-width: 80px; max-width: 150px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; text-align: left; font-size: 12px; font-weight: 700; }
+    .user-menu { position: absolute; top: 60px; right: 0; z-index: 110; width: 240px; overflow: hidden; border: 1px solid #eee; border-radius: 4px; background: #fff; color: #333; box-shadow: 0 5px 18px rgba(0,0,0,.24); }
+    .user-menu button { width: 100%; padding: 12px 16px; border: 0; background: #fff; color: #333; text-align: left; font-size: 14px; }
+    .user-menu button:hover { background: #fff3ee; }
+    .user-menu button + button { border-top: 1px solid #eee; }
+
+    /* PreviousPolicy.tsx */
+    main { width: 100%; padding: 8px 0 32px; }
+    .policy-accordion { width: 100%; margin-bottom: 16px; overflow: hidden; border: 1px solid #d8d8d8; border-radius: 12px; background: #fff; }
+    .accordion-summary { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 48px; padding: 10px 16px; border: 0; border-radius: 0; background: #e45f14; color: #fff; text-align: left; }
+    .accordion-summary span:first-child { font-size: 12px; font-weight: 700; }
+    .accordion-arrow { display: inline-block; color: #fff; font-size: 12px; line-height: 1; transform: rotate(0); transition: transform .18s; }
+    .accordion-summary[aria-expanded="true"] .accordion-arrow { transform: rotate(180deg); }
+    .accordion-details { padding: 16px; min-width: 0; }
+    .section-heading { margin: 0 0 10px; color: #0e3762; font-size: 14px; font-weight: 700; }
+    .section-heading.spaced { margin-top: 20px; }
+    .table-block { width: 100%; min-width: 0; }
+    .table-viewport { width: 100%; max-height: 420px; overflow-x: hidden; overflow-y: auto; border: 1px solid #d8e0e8; border-radius: 8px; }
+    .table-viewport.scroll-wide { overflow-x: auto; }
+    .policy-table { width: 100%; table-layout: fixed; border-collapse: collapse; }
+    .policy-table.wide { min-width: var(--wide-width); }
+    .policy-table th, .policy-table td { width: var(--column-width); overflow: hidden; overflow-wrap: anywhere; word-break: normal; white-space: normal; text-overflow: ellipsis; text-align: left; vertical-align: middle; }
+    .policy-table.ipru th:first-child, .policy-table.ipru td:first-child { width: 4.5% !important; padding-left: 4px; padding-right: 4px; text-align: center; }
+    .policy-table.ipru th, .policy-table.ipru td { padding-left: 5px; padding-right: 5px; font-size: 10px; }
+    .cell-value { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+    .policy-table th { position: sticky; top: 0; z-index: 1; padding: 9.2px 8px; border-bottom: 1px solid rgba(255,255,255,.35); background: #e45f14; color: #fff; font-size: 11px; font-weight: 600; line-height: 1.25; }
+    .policy-table td { padding: 8.8px 8px; border-bottom: 1px solid #e7ebef; color: #263238; font-size: 11px; line-height: 1.35; }
+    .policy-table tbody tr:nth-child(even) { background: #fafbfc; }
+    .policy-table tbody tr:last-child td { border-bottom: 0; }
+    .empty-row { text-align: center !important; padding: 24px 8px !important; }
+    .table-footer { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 12px; width: 100%; min-height: 34px; padding: 8px; border-top: 1px solid #d8e0e8; border-radius: 0 0 8px 8px; background: #f5f6f7; }
+    .pagination { display: flex; align-items: center; gap: 2px; }
+    .pagination button { display: grid; place-items: center; min-width: 20px; height: 20px; padding: 0 3px; border: 0; border-radius: 7px; background: transparent; color: #5f5f5f; font-size: 14px; font-weight: 400; }
+    .pagination button.active { background: #e45f14; color: #fff; }
+    .pagination button:hover:not(:disabled):not(.active) { background: rgba(0,0,0,.04); }
+    .pagination button:disabled { opacity: .4; cursor: default; }
+    .show-more { display: inline-grid; place-items: center; width: 30px; min-height: 28px; padding: 4px; border: 1px solid #e45f14; border-radius: 6px; background: #fff; color: #e45f14; }
+    .show-more:hover { border-color: #d95400; background: #fff3eb; }
+    .family-section { margin-top: 16px; min-width: 0; margin-left:5px }
+    .family-section .table-viewport { max-height: none; }
+    .dialog-backdrop { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; padding: 16px; background: rgba(0,0,0,.5); }
+    .dialog { position: relative; display: flex; flex-direction: column; width: min(1536px,calc(100vw - 64px)); max-height: calc(100vh - 64px); overflow: hidden; border-radius: 8px; background: #fff; box-shadow: 0 18px 54px rgba(0,0,0,.24); }
+    .dialog-title { min-height: 56px; margin: 0; padding: 16px 56px 8px 24px; color: #222; font-size: 20px; font-weight: 700; }
+    .dialog-close { position: absolute; top: 6px; right: 6px; display: grid; place-items: center; width: 40px; height: 40px; padding: 8px; border: 0; border-radius: 50%; background: transparent; color: #9a2529; }
+    .dialog-close:hover { background: rgba(154,37,41,.04); }
+    .dialog-close svg { width: 24px; height: 24px; }
+    .dialog-content { padding: 8px 24px 24px; overflow: auto; }
+    @media (min-width: 1536px) { .policy-table th, .policy-table td { padding-left: 8px; padding-right: 8px; font-size: 12px; } }
+    @media (max-width: 899px) { .policy-table th, .policy-table td { padding-left: 4px; padding-right: 4px; font-size: 10px; } }
+    @media (max-width: 599px) { .header-date, .user-name { display: none; } .user-wrap { margin-right: 8px; } .accordion-details { padding: 10px; } .dialog { width: calc(100vw - 32px); } }
+  </style>
+</head>
+<body>
+  <header class="app-header"><button id="back-button" class="back-button" type="button" aria-label="Back to DRS" title="Back to DRS"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 20.67C14.81 20.67 14.62 20.6 14.47 20.45L7.95 13.93C6.89 12.87 6.89 11.13 7.95 10.07L14.47 3.55C14.76 3.26 15.24 3.26 15.53 3.55C15.82 3.84 15.82 4.32 15.53 4.61L9.01 11.13C8.53 11.61 8.53 12.39 9.01 12.87L15.53 19.39C15.82 19.68 15.82 20.16 15.53 20.45C15.38 20.59 15.19 20.67 15 20.67Z" fill="currentColor"/></svg></button><img class="logo" src="ICICI%20Logo.svg" alt="ICICI Life Logo"><div class="header-spacer"></div><div class="header-date"><div id="current-time"></div><div>Session: <span id="session-time">15:00</span></div></div><div class="user-wrap"><button id="user-button" class="user-button" type="button" aria-expanded="false"><span class="user-avatar"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 12.75C8.83 12.75 6.25 10.17 6.25 7C6.25 3.83 8.83 1.25 12 1.25C15.17 1.25 17.75 3.83 17.75 7C17.75 10.17 15.17 12.75 12 12.75ZM12 2.75C9.66 2.75 7.75 4.66 7.75 7C7.75 9.34 9.66 11.25 12 11.25C14.34 11.25 16.25 9.34 16.25 7C16.25 4.66 14.34 2.75 12 2.75Z" fill="currentColor"/><path d="M20.59 22.75C20.18 22.75 19.84 22.41 19.84 22C19.84 18.55 16.32 15.75 12 15.75C7.68 15.75 4.16 18.55 4.16 22C4.16 22.41 3.82 22.75 3.41 22.75C3 22.75 2.66 22.41 2.66 22C2.66 17.73 6.85 14.25 12 14.25C17.15 14.25 20.59 16.95 20.59 22C20.59 22.41 20.25 22.75 19.84 22.75Z" fill="currentColor"/></svg></span><span class="user-name" id="header-user-name"></span><span>⌄</span></button><div id="user-menu" class="user-menu" hidden><button type="button" data-menu="break">◷ &nbsp; Breaktime</button><button type="button" data-menu="logout">⇥ &nbsp; Logout</button></div></div></header>
+  <main id="policy-content"></main>
+  <div id="dialog-backdrop" class="dialog-backdrop" hidden><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title"><button id="dialog-close" class="dialog-close" type="button" aria-label="Close dialog"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 22.75C6.07 22.75 1.25 17.93 1.25 12C1.25 6.07 6.07 1.25 12 1.25C17.93 1.25 22.75 6.07 22.75 12C22.75 17.93 17.93 22.75 12 22.75ZM12 2.75C6.9 2.75 2.75 6.9 2.75 12C2.75 17.1 6.9 21.25 12 21.25C17.1 21.25 21.25 17.1 21.25 12C21.25 6.9 17.1 2.75 12 2.75Z" fill="currentColor"/><path d="M9.17 15.58C8.98 15.58 8.79 15.51 8.64 15.36C8.35 15.07 8.35 14.59 8.64 14.3L14.3 8.64C14.59 8.35 15.07 8.35 15.36 8.64C15.65 8.93 15.65 9.41 15.36 9.7L9.7 15.36C9.56 15.51 9.36 15.58 9.17 15.58Z" fill="currentColor"/><path d="M14.83 15.58C14.64 15.58 14.45 15.51 14.3 15.36L8.64 9.7C8.35 9.41 8.35 8.93 8.64 8.64C8.93 8.35 9.41 8.35 9.7 8.64L15.36 14.3C15.65 14.59 15.65 15.07 15.36 15.36C15.21 15.51 15.02 15.58 14.83 15.58Z" fill="currentColor"/></svg></button><h2 id="dialog-title" class="dialog-title"></h2><div id="dialog-content" class="dialog-content"></div></div></div>
+  <script>
+    const $ = (selector) => document.querySelector(selector);
+    const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
+    const MEMBERS = [
+      { key: "lifeAssured1", label: "Lifeassured1" },
+      { key: "lifeAssured2", label: "Lifeassured2" },
+      { key: "proposer", label: "Proposer" }
+    ];
+    const roleType = (new URLSearchParams(location.search).get("role") || "CUW_TASK").trim().toUpperCase();
+    const PAGE_SIZE = 3;
+    const pageState = {};
+    const expandedMembers = new Set(["lifeAssured1"]);
+    let detailMember = null;
+    let detailPolicyNumber = null;
+
+    // The column specifications and demo records below are copied from PreviousPolicy.tsx.
+    // Source's default showDummyData=true, so each member accordion uses the same demo data.
+const IPRU_COLUMNS = [
+  { header: "Riders", keys: ["riders"] },
+  { header: "Client Id", keys: ["clientId"] },
+  { header: "Application No", keys: ["applicationNo"] },
+  { header: "Policy No", keys: ["policyNumber", "policyNo", "policy_number"] },
+  { header: "Product", keys: ["productName", "product", "product_name"] },
+  { header: "Sum Assured", keys: ["appliedSumAssured", "appliedSA", "sumAssured", "applied_sum_assured"], formatter: formatCurrency },
+  { header: "Policy Status", keys: ["policyStatus"] },
+  { header: "Decision", keys: ["uwDecision", "uw_decision", "underwritingDecision", "decision"] },
+  { header: "Application Date", keys: ["applicationDate"], formatter: formatDateOnly },
+  { header: "Claims Flag", keys: ["claimsFlag"] },
+  { header: "Mortality Class", keys: ["mortalityClass"] },
+  { header: "Installment Premium", keys: ["installmentPremium"], formatter: formatCurrency },
+  { header: "Client Role", keys: ["clientRole"] },
+  { header: "Company Name", keys: ["companyName"] },
+  { header: "Year of Issue/Application", keys: ["yearOfIssueApplication"] },
+   { header: "Fund Value", keys: ["fundValue", "fund_value"], formatter: formatCurrency },
+];
+
+const IPRU_DETAIL_COLUMNS = [
+  { header: "Policy Number", keys: ["policyNumber", "policyNo", "policy_number"] },
+  { header: "Rider Code", keys: ["riderCode"] },
+  { header: "Rider Name", keys: ["riderName"] },
+  { header: "Rider Sub type", keys: ["riderSubType"] },
+  { header: "Face Value", keys: ["faceValue"], formatter: formatCurrency },
+  { header: "Mortality Class", keys: ["mortalityClass"] },
+  { header: "UW_Mortality Class-Base", keys: ["uwMortalityClassBase"] },
+  { header: "Sum assured", keys: ["sumAssured"], formatter: formatCurrency },
+  { header: "Rating", keys: ["rating"] },
+  { header: "SAR Consideration", keys: ["sarConsideration"] },
+  { header: "Client Role", keys: ["clientRole"] },
+];
+
+const IIB_NON_IPRU_COLUMNS = [
+  { header: "QUESTDBNO", keys: ["questDbNo", "quest_db_no", "QUESTDBNO", "questDBNO"] },
+  { header: "Quest Sum Assured", keys: ["questSumAssured", "quest_sum_assured"], formatter: formatCurrency },
+  { header: "Quest Policy Status", keys: ["questPolicyStatus", "quest_policy_status"] },
+  { header: "Quest Company Number", keys: ["questCompanyNumber", "quest_company_number"] },
+  { header: "Matching Parameter", keys: ["matchingParameter", "matching_parameter"] },
+  { header: "Quest DOP DOC", keys: ["questDopDoc", "quest_dop_doc"], formatter: formatDateOnly },
+  { header: "Quest Date Of Death", keys: ["questDateOfDeath", "quest_date_of_death"], formatter: formatDateOnly },
+  { header: "Quest Cause Of Death", keys: ["questCauseOfDeath", "quest_cause_of_death"] },
+  { header: "Quest Record Last Updated", keys: ["questRecordLastUpdated", "quest_record_last_updated"], formatter: formatDateOnly },
+  { header: "Quest Entity Caution Status", keys: ["questEntityCautionStatus", "quest_entity_caution_status"] },
+  { header: "Intermediary Caution Status", keys: ["intermediaryCautionStatus", "intermediary_caution_status"] },
+];
+
+const NEGATIVE_MATCH_COLUMNS = [
+  { header: "Is Negative Match", keys: ["isNegativeMatch", "negativeMatch", "is_negative_match"] },
+  { header: "Whether Standard Life", keys: ["whetherStandardLife", "whether_standard_life"] },
+  { header: "Medical Nonmedical", keys: ["medicalNonmedical", "medical_nonmedical"] },
+  { header: "Reason For Decline", keys: ["reasonForDecline", "reason_for_decline"] },
+  { header: "Reason For Postpone", keys: ["reasonForPostpone", "reason_for_postpone"] },
+  { header: "Reason For Repudiaton", keys: ["reasonForRepudiation", "reason_for_repudiation"] },
+  { header: "Linked NonLinked", keys: ["linkedNonLinked", "linked_non_linked"] },
+  { header: "Product Type", keys: ["productType", "product_type"] },
+  { header: "Remarks", keys: ["remarks"] },
+  { header: "Broad Reason", keys: ["broadReason", "broad_reason"] },
+  { header: "Granular Reason 1", keys: ["granularReason1", "granular_reason_1"] },
+  { header: "Granular Reason 2", keys: ["granularReason2", "granular_reason_2"] },
+];
+
+const APP_FORM_DETAILS_COLUMNS = [
+  { header: "Company Name", keys: ["companyName", "company_name"] },
+  { header: "Policy Number", keys: ["policyNumber", "policyNo", "policy_number"] },
+  { header: "Base Sum Assured(In Rs)", keys: ["baseSumAssured", "base_sum_assured"], formatter: formatCurrency },
+  { header: "Proposal Date", keys: ["proposalDate", "proposal_date"], formatter: formatDateOnly },
+  { header: "Policy Decision", keys: ["policyDecision", "policy_decision"] },
+];
+
+const DUMMY_QUICK_LINKS = {
+  "ipru": [
+    {
+      "policyNumber": "DEMO-IPRU-001",
+      "riderDetails": [{"riderCode": "DEMO-R001", "riderName": "Accidental Death Benefit", "riderSubType": "Accidental Death", "faceValue": 500000, "mortalityClass": "Standard", "uwMortalityClassBase": "Standard", "sumAssured": 500000, "rating": "Standard", "sarConsideration": "Yes"}],
+      "productName": "Sample Term Plan",
+      "productType": "Term",
+      "dateOfIssuance": "2024-04-12",
+      "uwDecision": "Standard",
+      "appliedSumAssured": 5000000,
+      "medicalsReceivedDate": "2024-04-01",
+      "validity": "6 months",
+      "financialsReceivedDate": "2024-04-03",
+      "tmsar": 7500000,
+      "tfsar": 10000000,
+      "fundValue": 0
+    },
+    {
+      "policyNumber": "DEMO-IPRU-002",
+      "riderDetails": [{"riderCode": "DEMO-R002", "riderName": "Critical Illness Benefit", "riderSubType": "Critical Illness", "faceValue": 300000, "mortalityClass": "Substandard", "uwMortalityClassBase": "Standard", "sumAssured": 300000, "rating": "+25%", "sarConsideration": "Yes"}],
+      "productName": "Sample Savings Plan",
+      "productType": "Savings",
+      "dateOfIssuance": "2024-02-12",
+      "uwDecision": "Standard",
+      "appliedSumAssured": 2000000,
+      "medicalsReceivedDate": "2024-04-01",
+      "validity": "6 months",
+      "financialsReceivedDate": "2024-04-03",
+      "tmsar": 3000000,
+      "tfsar": 4000000,
+      "fundValue": 0
+    },
+    {
+      "policyNumber": "DEMO-IPRU-003",
+      "riderDetails": [{"riderCode": "DEMO-R003", "riderName": "Waiver of Premium", "riderSubType": "Premium Waiver", "faceValue": 200000, "mortalityClass": "Standard", "uwMortalityClassBase": "Standard", "sumAssured": 200000, "rating": "Standard", "sarConsideration": "Yes"}],
+      "productName": "Sample ULIP Plan",
+      "productType": "ULIP",
+      "dateOfIssuance": "2024-03-12",
+      "uwDecision": "Standard",
+      "appliedSumAssured": 3000000,
+      "medicalsReceivedDate": "2024-04-01",
+      "validity": "6 months",
+      "financialsReceivedDate": "2024-04-03",
+      "tmsar": 4500000,
+      "tfsar": 6000000,
+      "fundValue": 350000
+    },
+    {
+      "policyNumber": "DEMO-IPRU-004",
+      "riderDetails": [{"riderCode": "DEMO-R004", "riderName": "Accidental Disability Benefit", "riderSubType": "Permanent Disability", "faceValue": 400000, "mortalityClass": "Substandard", "uwMortalityClassBase": "Standard", "sumAssured": 400000, "rating": "+50%", "sarConsideration": "Yes"}],
+      "productName": "Sample Whole Life Plan",
+      "productType": "Whole Life",
+      "dateOfIssuance": "2024-04-12",
+      "uwDecision": "Standard",
+      "appliedSumAssured": 4000000,
+      "medicalsReceivedDate": "2024-04-01",
+      "validity": "6 months",
+      "financialsReceivedDate": "2024-04-03",
+      "tmsar": 6000000,
+      "tfsar": 8000000,
+      "fundValue": 0
+    },
+    {
+      "policyNumber": "DEMO-IPRU-005",
+      "riderDetails": [{"riderCode": "DEMO-R005", "riderName": "Income Benefit", "riderSubType": "Monthly Income", "faceValue": 600000, "mortalityClass": "Standard", "uwMortalityClassBase": "Standard", "sumAssured": 600000, "rating": "Standard", "sarConsideration": "Yes"}],
+      "productName": "Sample Endowment Plan",
+      "productType": "Endowment",
+      "dateOfIssuance": "2024-05-12",
+      "uwDecision": "Standard",
+      "appliedSumAssured": 5000000,
+      "medicalsReceivedDate": "2024-04-01",
+      "validity": "6 months",
+      "financialsReceivedDate": "2024-04-03",
+      "tmsar": 7500000,
+      "tfsar": 10000000,
+      "fundValue": 0
+    }
+  ],
+  "iibNonIpru": [
+    {
+      "iibMatch": "Yes",
+      "questDbNo": "DEMO-QUEST-001",
+      "questSumAssured": 2500000,
+      "questPolicyStatus": "In Force",
+      "questCompanyNumber": "DEMO-INS-01",
+      "matchingParameter": "Name, DOB and PAN",
+      "questDopDoc": "2023-06-15",
+      "questDateOfDeath": "Not applicable",
+      "questCauseOfDeath": "Not applicable",
+      "questRecordLastUpdated": "2026-09-01",
+      "questEntityCautionStatus": "Clear",
+      "intermediaryCautionStatus": "Clear"
+    },
+    {
+      "iibMatch": "Yes",
+      "questDbNo": "DEMO-QUEST-002",
+      "questSumAssured": 2000000,
+      "questPolicyStatus": "In Force",
+      "questCompanyNumber": "DEMO-INS-02",
+      "matchingParameter": "Name and DOB",
+      "questDopDoc": "2023-02-15",
+      "questDateOfDeath": "Not applicable",
+      "questCauseOfDeath": "Not applicable",
+      "questRecordLastUpdated": "2026-09-01",
+      "questEntityCautionStatus": "Clear",
+      "intermediaryCautionStatus": "Clear"
+    },
+    {
+      "iibMatch": "Yes",
+      "questDbNo": "DEMO-QUEST-003",
+      "questSumAssured": 3000000,
+      "questPolicyStatus": "Lapsed",
+      "questCompanyNumber": "DEMO-INS-03",
+      "matchingParameter": "PAN",
+      "questDopDoc": "2023-03-15",
+      "questDateOfDeath": "Not applicable",
+      "questCauseOfDeath": "Not applicable",
+      "questRecordLastUpdated": "2026-09-01",
+      "questEntityCautionStatus": "Clear",
+      "intermediaryCautionStatus": "Clear"
+    },
+    {
+      "iibMatch": "Yes",
+      "questDbNo": "DEMO-QUEST-004",
+      "questSumAssured": 4000000,
+      "questPolicyStatus": "Paid Up",
+      "questCompanyNumber": "DEMO-INS-04",
+      "matchingParameter": "Name and mobile",
+      "questDopDoc": "2023-04-15",
+      "questDateOfDeath": "Not applicable",
+      "questCauseOfDeath": "Not applicable",
+      "questRecordLastUpdated": "2026-09-01",
+      "questEntityCautionStatus": "Clear",
+      "intermediaryCautionStatus": "Clear"
+    },
+    {
+      "iibMatch": "Yes",
+      "questDbNo": "DEMO-QUEST-005",
+      "questSumAssured": 5000000,
+      "questPolicyStatus": "In Force",
+      "questCompanyNumber": "DEMO-INS-05",
+      "matchingParameter": "Name, DOB and PAN",
+      "questDopDoc": "2023-05-15",
+      "questDateOfDeath": "Not applicable",
+      "questCauseOfDeath": "Not applicable",
+      "questRecordLastUpdated": "2026-09-01",
+      "questEntityCautionStatus": "Clear",
+      "intermediaryCautionStatus": "Clear"
+    }
+  ],
+  "negativeMatch": [
+    {
+      "questDbNo": "DEMO-QUEST-001",
+      "isNegativeMatch": "Yes",
+      "whetherStandardLife": "No",
+      "medicalNonmedical": "Medical",
+      "reasonForDecline": "Adverse medical findings (dummy)",
+      "reasonForPostpone": "Not applicable",
+      "reasonForRepudiation": "Not applicable",
+      "linkedNonLinked": "Non-linked",
+      "productType": "Term",
+      "remarks": "Fictional record for UI preview",
+      "broadReason": "Medical",
+      "granularReason1": "Cardiac history",
+      "granularReason2": "Abnormal investigation"
+    },
+    {
+      "questDbNo": "DEMO-QUEST-002",
+      "isNegativeMatch": "No",
+      "whetherStandardLife": "Yes",
+      "medicalNonmedical": "Medical",
+      "reasonForDecline": "Not applicable",
+      "reasonForPostpone": "Not applicable",
+      "reasonForRepudiation": "Not applicable",
+      "linkedNonLinked": "Non-linked",
+      "productType": "Savings",
+      "remarks": "Fictional review record 2",
+      "broadReason": "No adverse match",
+      "granularReason1": "Not applicable",
+      "granularReason2": "Not applicable"
+    },
+    {
+      "questDbNo": "DEMO-QUEST-003",
+      "isNegativeMatch": "Yes",
+      "whetherStandardLife": "No",
+      "medicalNonmedical": "Medical",
+      "reasonForDecline": "Adverse medical findings (dummy)",
+      "reasonForPostpone": "Not applicable",
+      "reasonForRepudiation": "Not applicable",
+      "linkedNonLinked": "Non-linked",
+      "productType": "Term",
+      "remarks": "Fictional review record 3",
+      "broadReason": "Medical",
+      "granularReason1": "Cardiac history",
+      "granularReason2": "Abnormal investigation"
+    },
+    {
+      "questDbNo": "DEMO-QUEST-004",
+      "isNegativeMatch": "No",
+      "whetherStandardLife": "Yes",
+      "medicalNonmedical": "Medical",
+      "reasonForDecline": "Not applicable",
+      "reasonForPostpone": "Not applicable",
+      "reasonForRepudiation": "Not applicable",
+      "linkedNonLinked": "Non-linked",
+      "productType": "Whole Life",
+      "remarks": "Fictional review record 4",
+      "broadReason": "No adverse match",
+      "granularReason1": "Not applicable",
+      "granularReason2": "Not applicable"
+    },
+    {
+      "questDbNo": "DEMO-QUEST-005",
+      "isNegativeMatch": "Yes",
+      "whetherStandardLife": "No",
+      "medicalNonmedical": "Medical",
+      "reasonForDecline": "Adverse medical findings (dummy)",
+      "reasonForPostpone": "Not applicable",
+      "reasonForRepudiation": "Not applicable",
+      "linkedNonLinked": "Non-linked",
+      "productType": "Endowment",
+      "remarks": "Fictional review record 5",
+      "broadReason": "Medical",
+      "granularReason1": "Cardiac history",
+      "granularReason2": "Abnormal investigation"
+    }
+  ],
+  "applicationFormDetails": [
+    {
+      "policyType": "Term",
+      "policyNumber": "AF-2023-001245",
+      "proposalDate": "2023-06-01",
+      "baseSumAssured": 2500000,
+      "riderName": "Accidental Death Benefit",
+      "riderSumAssured": 500000,
+      "policyDecision": "Standard",
+      "companyName": "Sample Life Insurance",
+      "policyDecisionDate": "2023-06-15",
+      "policyStatus": "In Force",
+      "reasonForDecision": "Not applicable",
+      "policyBelongsToMe": "Yes",
+      "remarks": "Fictional declared policy",
+      "declaredPolicy": "Yes"
+    },
+    {
+      "policyType": "Savings",
+      "policyNumber": "AF-2023-001684",
+      "proposalDate": "2023-02-02",
+      "baseSumAssured": 2000000,
+      "riderName": "Accidental Death Benefit",
+      "riderSumAssured": 200000,
+      "policyDecision": "Standard",
+      "companyName": "Sample Insurer 2",
+      "policyDecisionDate": "2023-02-15",
+      "policyStatus": "In Force",
+      "reasonForDecision": "Not applicable",
+      "policyBelongsToMe": "Yes",
+      "remarks": "Fictional declared policy 2",
+      "declaredPolicy": "Yes"
+    },
+    {
+      "policyType": "Term",
+      "policyNumber": "AF-2023-002118",
+      "proposalDate": "2023-03-03",
+      "baseSumAssured": 3000000,
+      "riderName": "Accidental Death Benefit",
+      "riderSumAssured": 300000,
+      "policyDecision": "Standard",
+      "companyName": "Sample Insurer 3",
+      "policyDecisionDate": "2023-03-15",
+      "policyStatus": "In Force",
+      "reasonForDecision": "Not applicable",
+      "policyBelongsToMe": "Yes",
+      "remarks": "Fictional declared policy 3",
+      "declaredPolicy": "Yes"
+    },
+    {
+      "policyType": "Whole Life",
+      "policyNumber": "AF-2023-002564",
+      "proposalDate": "2023-04-04",
+      "baseSumAssured": 4000000,
+      "riderName": "Accidental Death Benefit",
+      "riderSumAssured": 400000,
+      "policyDecision": "Standard",
+      "companyName": "Sample Insurer 4",
+      "policyDecisionDate": "2023-04-15",
+      "policyStatus": "In Force",
+      "reasonForDecision": "Not applicable",
+      "policyBelongsToMe": "Yes",
+      "remarks": "Fictional declared policy 4",
+      "declaredPolicy": "Yes"
+    },
+    {
+      "policyType": "Endowment",
+      "policyNumber": "AF-2023-002971",
+      "proposalDate": "2023-05-05",
+      "baseSumAssured": 5000000,
+      "riderName": "Accidental Death Benefit",
+      "riderSumAssured": 500000,
+      "policyDecision": "Standard",
+      "companyName": "Sample Insurer 5",
+      "policyDecisionDate": "2023-05-15",
+      "policyStatus": "In Force",
+      "reasonForDecision": "Not applicable",
+      "policyBelongsToMe": "Yes",
+      "remarks": "Fictional declared policy 5",
+      "declaredPolicy": "Yes"
+    }
+  ]
+};
+
+const FAMILY_POLICY_COLUMNS = [
+  { header: "Type(Verified/Declared)", keys: ["type"] },
+  { header: "Relation With LA", keys: ["relationWithLifeAssured"] },
+  { header: "Insurance Company", keys: ["insuranceCompany"] },
+  { header: "Sum Assured", keys: ["sumAssured"], formatter: formatCurrency },
+  { header: "Annual Income", keys: ["annualIncome"], formatter: formatCurrency },
+  { header: "Policy Status", keys: ["policyStatus"] },
+];
+
+const DUMMY_FAMILY_POLICIES = [
+  {
+    insuranceCompany: "Sample Life Insurance A",
+    sumAssured: 2500000,
+    relationWithLifeAssured: "Father",
+    policyStatus: "In Force",
+    annualIncome: 900000,
+    type: "Declared",
+  },
+  {
+    insuranceCompany: "Sample Life Insurance B",
+    sumAssured: 5000000,
+    relationWithLifeAssured: "Husband",
+    policyStatus: "In Force",
+    annualIncome: 1500000,
+    type: "Verified",
+  },
+];
+
+const DEDUPE_POSIDEX_COLUMNS = [
+  { header: "Client Id", keys: ["clientId"] },
+  { header: "First Name", keys: ["firstName"] },
+  { header: "Surname", keys: ["surname"] },
+  { header: "State", keys: ["state"] },
+  { header: "City", keys: ["city"] },
+  { header: "DOB", keys: ["dob"], formatter: formatDateOnly },
+  { header: "Mobile No", keys: ["mobileNo"] },
+  { header: "Landline No", keys: ["landlineNo"] },
+  { header: "Record Type", keys: ["recordType"] },
+  { header: "% Match", keys: ["matchPercentage"] },
+  { header: "Risk Indicator", keys: ["riskIndicator"] },
+];
+
+const DUMMY_DEDUPE_POSIDEX = [
+  { clientId: "CID-100284", firstName: "Aarav", surname: "Shah", state: "Maharashtra", city: "Mumbai", dob: "1988-07-14", mobileNo: "98765 43210", landlineNo: "022-2845 6102", recordType: "Existing Customer", matchPercentage: "96%", riskIndicator: "Low" },
+  { clientId: "CID-100917", firstName: "Aarav", surname: "Shah", state: "Maharashtra", city: "Thane", dob: "1988-07-14", mobileNo: "98765 43210", landlineNo: "022-2580 4231", recordType: "Prospect", matchPercentage: "89%", riskIndicator: "Medium" },
+  { clientId: "CID-101436", firstName: "Aarav", surname: "Saha", state: "Gujarat", city: "Ahmedabad", dob: "1987-07-14", mobileNo: "98765 43219", landlineNo: "079-2643 2280", recordType: "Historical Record", matchPercentage: "72%", riskIndicator: "Review" },
+];
+
+    const readValue = (row, keys) => {
+      for (const key of keys) {
+        const candidate = row[key];
+        if (candidate !== null && candidate !== undefined && String(candidate).trim() !== "") return candidate;
+      }
+      return "-";
+    };
+    const displayValue = (raw) => String(raw ?? "").trim() || "-";
+    function formatCurrency(raw) { return raw === null || raw === undefined || raw === "" || raw === "-" ? "-" : Number.isNaN(Number(raw)) ? String(raw) : `₹ ${Number(raw).toLocaleString("en-IN")}`; }
+    function formatDateOnly(raw) {
+      if (raw === null || raw === undefined || raw === "" || raw === "-") return "-";
+      const text = String(raw);
+      const iso = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      const local = text.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+      const pieces = iso ? [iso[1], iso[2], iso[3]] : local ? [local[3], local[2], local[1]] : null;
+      if (!pieces) return "-";
+      const date = new Date(Number(pieces[0]), Number(pieces[1]) - 1, Number(pieces[2]));
+      return Number.isNaN(date.getTime()) ? "-" : date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+    }
+    function combineMatchRows(iibRows, negativeRows) {
+      const keyOf = (row) => { const raw = readValue(row, ["questDbNo", "quest_db_no", "QUESTDBNO", "questDBNO"]); return raw === "-" ? "" : String(raw).trim(); };
+      const matched = new Set();
+      const combined = iibRows.flatMap((row) => {
+        const key = keyOf(row);
+        const matches = negativeRows.flatMap((negative, index) => {
+          if (!key || keyOf(negative) !== key) return [];
+          matched.add(index);
+          return [{ ...row, ...negative }];
+        });
+        return matches.length ? matches : [row];
+      });
+      return [...combined, ...negativeRows.filter((_, index) => !matched.has(index))];
+    }
+    function rowsFor(key, memberKey) {
+      if (key === "ipru") return DUMMY_QUICK_LINKS.ipru.map((policy, index) => ({
+        ...policy,
+        riders: `${policy.riderDetails?.length || 0} Rider${policy.riderDetails?.length === 1 ? "" : "s"}`,
+        clientId: `CID-${102841 + index * 73}`,
+        applicationNo: `APP-2026-${String(10421 + index).padStart(5, "0")}`,
+        policyStatus: index === 2 ? "Lapsed" : "In Force",
+        applicationDate: `202${index % 2 ? 3 : 4}-${String(index + 2).padStart(2, "0")}-10`,
+        claimsFlag: index === 1 ? "Yes" : "No",
+        mortalityClass: policy.riderDetails?.[0]?.mortalityClass || "Standard",
+        installmentPremium: 24000 + index * 4500,
+        clientRole: memberKey === "proposer" ? "Proposer" : "Life Assured",
+        companyName: "ICICI Prudential Life Insurance",
+        yearOfIssueApplication: `FY ${index % 2 ? "2023-24" : "2024-25"}`,
+      }));
+      if (key === "ipruDetails") return DUMMY_QUICK_LINKS.ipru.flatMap((policy) => {
+        const riders = Array.isArray(policy.riderDetails) && policy.riderDetails.length ? policy.riderDetails : [policy];
+        return riders.map((rider) => ({ ...rider, policyNumber: readValue(policy, ["policyNumber", "policyNo", "policy_number"]), clientRole: rider.clientRole ?? memberKey }));
+      }).filter((rider) => !detailPolicyNumber || rider.policyNumber === detailPolicyNumber);
+      if (key === "iibNonIpru") return combineMatchRows(DUMMY_QUICK_LINKS.iibNonIpru, DUMMY_QUICK_LINKS.negativeMatch);
+      if (key === "applicationForm") return DUMMY_QUICK_LINKS.applicationFormDetails;
+      if (key === "family") return DUMMY_FAMILY_POLICIES;
+      if (key === "dedupePosidex") return DUMMY_DEDUPE_POSIDEX;
+      return [];
+    }
+    function columnsFor(key) {
+      if (key === "ipru") return IPRU_COLUMNS;
+      if (key === "ipruDetails") return IPRU_DETAIL_COLUMNS;
+      if (key === "iibNonIpru") return [...IIB_NON_IPRU_COLUMNS, ...NEGATIVE_MATCH_COLUMNS];
+      if (key === "applicationForm") return APP_FORM_DETAILS_COLUMNS;
+      if (key === "dedupePosidex") return DEDUPE_POSIDEX_COLUMNS;
+      return FAMILY_POLICY_COLUMNS;
+    }
+    function pagination(key, memberKey, rowCount) {
+      const stateKey = `${memberKey}:${key}`;
+      const totalPages = Math.max(1, Math.ceil(rowCount / PAGE_SIZE));
+      const page = Math.min(pageState[stateKey] || 1, totalPages);
+      const button = (label, nextPage, active = false, disabled = false) => `<button type="button" data-page="${nextPage}" data-table="${key}" data-member="${memberKey}" class="${active ? "active" : ""}" ${disabled ? "disabled" : ""} aria-label="${label}">${label}</button>`;
+      return `<nav class="pagination" aria-label="${memberKey} ${key} table pagination">${button("‹", page - 1, false, page === 1)}${Array.from({ length: totalPages }, (_, index) => button(String(index + 1), index + 1, page === index + 1)).join("")}${button("›", page + 1, false, page === totalPages)}</nav>`;
+    }
+    function policyTable(key, memberKey) {
+      const rows = rowsFor(key, memberKey);
+      const columns = columnsFor(key);
+      const stateKey = `${memberKey}:${key}`;
+      const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+      const page = Math.min(pageState[stateKey] || 1, totalPages);
+      const visibleRows = rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+      const wide = key === "iibNonIpru";
+      const compactColumnWidth = 138;
+      const widthStyle = `--column-width:${100 / columns.length}%;${wide ? `--wide-width:${columns.length * compactColumnWidth}px` : ""}`;
+      return `<div class="table-block"><div class="table-viewport ${wide ? "scroll-wide" : ""}"><table class="policy-table ${wide ? "wide" : ""} ${key === "ipru" ? "ipru" : ""}" style="${widthStyle}"><thead><tr>${columns.map((column) => `<th title="${escapeHtml(column.header)}">${escapeHtml(column.header)}</th>`).join("")}</tr></thead><tbody>${rows.length ? visibleRows.map((row) => `<tr>${columns.map((column) => { const raw = readValue(row, column.keys); const display = column.formatter ? column.formatter(raw) : displayValue(raw); if (key === "ipru" && column.keys[0] === "riders") return `<td><button class="show-more" type="button" aria-label="Show rider details" title="Show all rider details" data-show-more="${memberKey}" data-policy="${escapeHtml(readValue(row, ["policyNumber", "policyNo", "policy_number"]))}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12s2.7-5 8-5 8 5 8 5-2.7 5-8 5-8-5-8-5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="12" r="2.4" stroke="currentColor" stroke-width="1.8"/></svg></button></td>`; return `<td title="${escapeHtml(display)}"><span class="cell-value">${escapeHtml(display)}</span></td>`; }).join("")}</tr>`).join("") : `<tr><td class="empty-row" colspan="${columns.length}">No previous policies available.</td></tr>`}</tbody></table></div><div class="table-footer">${pagination(key, memberKey, rows.length)}</div></div>`;
+    }
+    function section(title, key, memberKey, spaced = false) { return `<h2 class="section-heading ${spaced ? "spaced" : ""}">${escapeHtml(title)}</h2>${policyTable(key, memberKey)}`; }
+    function memberContent(memberKey) {
+      return section("Dedupe - Posidex", "dedupePosidex", memberKey) + section("IPRU", "ipru", memberKey, true) + section("IIB / Non IPRU and Negative Match Details", "iibNonIpru", memberKey, true) + (roleType === "DVT_FORMAL_TASK" ? "" : section("Details as per application form", "applicationForm", memberKey, true));
+    }
+    function renderMain() {
+      $("#policy-content").innerHTML = MEMBERS.map((member) => {
+        const expanded = expandedMembers.has(member.key);
+        return `<section class="policy-accordion"><button class="accordion-summary" type="button" aria-expanded="${expanded}" aria-controls="${member.key}-content" data-toggle="${member.key}"><span>Previous Policies - ${member.label}</span><span class="accordion-arrow" aria-hidden="true">⌄</span></button><div class="accordion-details" id="${member.key}-content" ${expanded ? "" : "hidden"}>${memberContent(member.key)}</div></section>`;
+      }).join("") + `<section class="family-section">${section("Parents / Husbands / Siblings", "family", "family")}</section>`;
+    }
+    function openDetails(memberKey, policyNumber = null) {
+      detailMember = memberKey;
+      detailPolicyNumber = policyNumber;
+      pageState[`${memberKey}:ipruDetails`] = 1;
+      const member = MEMBERS.find((item) => item.key === memberKey);
+      $("#dialog-title").textContent = `Rider Details - ${member?.label || memberKey}`;
+      renderDetails();
+      $("#dialog-backdrop").hidden = false;
+      $("#dialog-close").focus();
+    }
+    function renderDetails() { if (detailMember) $("#dialog-content").innerHTML = policyTable("ipruDetails", detailMember); }
+    function closeDetails() { detailMember = null; detailPolicyNumber = null; $("#dialog-backdrop").hidden = true; }
+    $("#policy-content").addEventListener("click", (event) => {
+      const toggle = event.target.closest("[data-toggle]");
+      if (toggle) { const key = toggle.dataset.toggle; expandedMembers.has(key) ? expandedMembers.delete(key) : expandedMembers.add(key); renderMain(); return; }
+      const show = event.target.closest("[data-show-more]");
+      if (show) { openDetails(show.dataset.showMore, show.dataset.policy || null); return; }
+      const pageButton = event.target.closest("[data-page]");
+      if (pageButton && !pageButton.disabled) { pageState[`${pageButton.dataset.member}:${pageButton.dataset.table}`] = Number(pageButton.dataset.page); renderMain(); }
+    });
+    $("#dialog-content").addEventListener("click", (event) => { const button = event.target.closest("[data-page]"); if (button && !button.disabled) { pageState[`${button.dataset.member}:${button.dataset.table}`] = Number(button.dataset.page); renderDetails(); } });
+    $("#dialog-close").addEventListener("click", closeDetails);
+    $("#dialog-backdrop").addEventListener("click", (event) => { if (event.target.id === "dialog-backdrop") closeDetails(); });
+    document.addEventListener("keydown", (event) => { if (event.key === "Escape") closeDetails(); });
+    $("#back-button").addEventListener("click", () => {
+      if (window.history.length > 1) window.history.back();
+      else window.location.href = "./guw-drs-screen-prototype.html";
+    });
+    $("#user-button").addEventListener("click", () => { const menu = $("#user-menu"); menu.hidden = !menu.hidden; $("#user-button").setAttribute("aria-expanded", String(!menu.hidden)); });
+    $("#user-menu").addEventListener("click", (event) => {
+      const action = event.target.closest("[data-menu]")?.dataset.menu;
+      $("#user-menu").hidden = true;
+      if (action === "logout") window.location.href = "./login.html";
+    });
+    try { $("#header-user-name").textContent = localStorage.getItem("username") || ""; } catch { $("#header-user-name").textContent = ""; }
+    function updateClock() { const parts = Object.fromEntries(new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kolkata", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true }).formatToParts(new Date()).map((part) => [part.type, part.value])); $("#current-time").textContent = `${Number(parts.day)} ${parts.month} ${parts.year}, ${parts.hour}:${parts.minute}:${parts.second} ${String(parts.dayPeriod).toLowerCase()}`; }
+    updateClock(); setInterval(updateClock, 1000);
+    let sessionSeconds = 15 * 60;
+    setInterval(() => { sessionSeconds = Math.max(0, sessionSeconds - 1); $("#session-time").textContent = `${String(Math.floor(sessionSeconds / 60)).padStart(2, "0")}:${String(sessionSeconds % 60).padStart(2, "0")}`; }, 1000);
+    renderMain();
+  </script>
+</body>
+</html>

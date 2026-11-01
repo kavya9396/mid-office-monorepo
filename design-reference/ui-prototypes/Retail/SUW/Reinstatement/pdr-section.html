@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDR Section</title>
+  <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root { font-family: Mulish, Arial, sans-serif; color: #302a27; background: #fff8f3; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-size: 13px; }
+    .app-header { height: 57px; position: sticky; top: 0; z-index: 20; display: flex; align-items: stretch; color: #fff; background: linear-gradient(to bottom,#f58220,#e65318 42%,#c92e27 72%,#98252b); box-shadow: 0 3px 12px rgba(111,24,24,.25); }
+    .back { width: 44px; border: 0; border-right: 1px solid rgba(255,255,255,.25); border-radius: 0; color: #fff; background: rgba(126,22,31,.42); cursor: pointer; display: grid; place-items: center; }
+    .back:hover { background: rgba(126,22,31,.62); }
+    .logo { width: 150px; height: 57px; display: block; object-fit: cover; }
+    .header-spacer { flex: 1; }
+    .header-date { align-self: center; min-width: 175px; padding-right: 12px; text-align: right; border-right: 1px solid rgba(255,255,255,.35); line-height: 1.4; }
+    .header-date div:first-child { opacity: .9; font-size: 12px; }.header-date div:last-child { margin-top:2px; font-size:11px; font-weight:700; }
+    .user-menu-wrap { position:relative; align-self:stretch; display:flex; align-items:center; margin:0 16px 0 12px; }.user-button { display:flex; align-items:center; gap:9px; border:0; padding:0; background:transparent; color:#fff; }.user-avatar { display:grid; place-items:center; width:35px; height:35px; border:1px solid rgba(255,255,255,.45); border-radius:50%; background:rgba(255,255,255,.2); }.user-name { min-width:80px; font-weight:700; }.user-popover { position:absolute; top:65px; right:0; width:220px; overflow:hidden; border:1px solid #f1d7d0; border-radius:8px; background:#fff; color:#323232; box-shadow:0 8px 24px rgba(70,20,20,.18); }.user-popover button { width:100%; border:0; border-radius:0; padding:11px 14px; background:#fff; color:#323232; text-align:left; }.user-popover button+button { border-top:1px solid #eee; } [hidden] { display:none!important; }
+    .page { max-width: 1360px; margin: 22px auto 40px; padding: 0 20px; }
+    .title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    h1 { margin: 0; color: #8d232a; font-size: 21px; }
+    .sub { color: #756d69; margin-top: 4px; }
+    .meta { display: grid; grid-template-columns: repeat(4,minmax(160px,1fr)); gap: 10px; padding: 13px 15px; border: 1px solid #ead8ce; border-radius: 8px; background: #fff; margin-bottom: 14px; }
+    .meta div { color: #756d69; font-size: 11px; }
+    .meta b { display: block; color: #302a27; margin-top: 3px; font-size: 13px; }
+    .card { border: 1px solid #ead8ce; border-radius: 9px; overflow: hidden; background: #fff; box-shadow: 0 2px 7px rgba(104,58,37,.07); }
+    .card-head { padding: 12px 16px; color: #fff; background: #e45f14; font-size: 15px; font-weight: 800; }
+    .hint { padding: 9px 16px; background: #fff4e9; color: #7b4e31; border-bottom: 1px solid #f0d9c5; font-size: 12px; }
+    .questions { padding: 7px 14px 14px; }
+    .question { display: grid; grid-template-columns: 28px minmax(0,1fr) 110px; gap: 10px; align-items: start; padding: 11px 3px; border-bottom: 1px solid #f0e8e2; }
+    .question:last-child { border-bottom: 0; }
+    .question-content.full { grid-column: 2 / 4; min-width: 0; }
+    .num { color: #8d232a; font-weight: 800; font-size: 14px; padding-top: 2px; }
+    .q-title { font-weight: 700; line-height: 1.38; }
+    .q-note { color: #756d69; font-size: 12px; line-height: 1.35; margin-top: 3px; }
+    .choice { display: flex; gap: 7px; justify-content: flex-end; padding-top: 1px; }
+    .choice label { border: 1px solid #d8cbc4; border-radius: 5px; padding: 5px 7px; color: #594d48; cursor: pointer; background: #fff; font-size: 12px; }
+    .choice input { accent-color: #e45f14; vertical-align: -2px; margin: 0 3px 0 0; }
+    .detail { grid-column: 2 / 4; display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; margin-top: 2px; }
+    .field { width:100%; min-height:32px; border:1px solid #dfd5d0; border-radius:5px; padding:7px 8px; color:#302a27; background:#fffcfa; font-size:11px; }.field:focus { outline:2px solid #e45f14; outline-offset:1px; }.field::placeholder { color:#8b817c; }
+    .field.wide { grid-column: span 3; }
+    .subpoints { margin: 6px 0 0; padding-left: 17px; color: #514743; line-height: 1.42; font-size: 12px; }
+    .health-list { margin-top:7px; }.health-row { display:grid; grid-template-columns:28px minmax(0,1fr) 110px; gap:7px; align-items:start; padding:3px 0; font-size:12px; line-height:1.3; }.health-row .letter { font-weight:800; }.health-row .subletter { padding-left:20px; font-weight:800; }.health-row .choice { padding-top:0; }.health-row .choice label { padding:3px 5px; font-size:11px; }.health-group { padding-left:20px; }.health-group .health-row { grid-template-columns:38px minmax(0,1fr) 110px; }
+    .other-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 11px; }
+    .other-table th { background: #fbefe7; color: #783d26; font-weight: 800; }
+    .other-table th, .other-table td { border: 1px solid #eaded8; padding: 7px; text-align: left; }
+    .other-table td { height: 30px; }.other-table input,.other-table select { width:100%; min-width:72px; border:0; background:transparent; padding:2px; font:inherit; color:#302a27; }.other-table input:focus,.other-table select:focus { outline:2px solid #e45f14; outline-offset:-1px; }
+    .wide-form-table { font-size:10px; table-layout:fixed; }.wide-form-table th,.wide-form-table td { padding:5px 4px; vertical-align:top; }.wide-form-table th { line-height:1.25; }.wide-form-table input,.wide-form-table select { min-width:0; font-size:10px; }.yn-cell { display:flex; gap:3px; }.yn-cell label { display:flex; gap:2px; align-items:center; white-space:nowrap; font-size:10px; }
+    .actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 14px; }
+    button { font: inherit; cursor: pointer; border-radius: 6px; padding: 8px 16px; font-weight: 700; }
+    .secondary { border: 1px solid #9e7e6e; color: #7d5140; background: #fff; }
+    .primary { border: 1px solid #c94312; color: #fff; background: #e45f14; }
+    @media (max-width: 760px) { .meta { grid-template-columns: repeat(2,1fr); } .question { grid-template-columns: 25px 1fr; } .choice { grid-column: 2; justify-content: flex-start; } .detail { grid-column: 2; grid-template-columns: 1fr; } .field.wide { grid-column: span 1; } .other-table { display: block; overflow-x: auto; } }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <button class="back" type="button" onclick="history.back()" aria-label="Back to Inbox" title="Back to Inbox">&#8249;</button>
+    <img class="logo" src="ICICI%20Logo.svg" alt="ICICI Life Logo">
+    <div class="header-spacer"></div><div class="header-date"><div id="current-time"></div><div>Session: <span id="session-time">15:00</span></div></div>
+    <div class="user-menu-wrap"><button id="user-button" class="user-button" type="button" aria-label="User menu" aria-expanded="false"><span class="user-avatar">&#9787;</span><span class="user-name" id="header-user-name">ipru75474</span><span>⌄</span></button><div id="user-popover" class="user-popover" hidden><button type="button">◷ &nbsp; Breaktime <b>30 mins ›</b></button><button type="button">⇥ &nbsp; Logout</button></div></div>
+  </header>
+  <main class="page">
+    <div class="title-row"><div><h1>PDR Section</h1><div class="sub">Personal Health Declaration - Please provide the following information</div></div></div>
+    <section class="meta"><div>Application No.<b>APP-2026-000184</b></div><div>Policy No.<b>PL-89562431</b></div><div>Life Assured<b>Rohan Mehta</b></div><div>Declaration Date<b>25 Sep 2026</b></div></section>
+    <section class="card">
+      <div class="card-head">Personal Health Declaration</div>
+      <div class="hint">Answer all questions for the Life Assured. Provide details wherever the response is Yes.</div>
+      <div class="questions">
+        <div class="question"><div class="num">1.</div><div><div class="q-title">Height and weight of the Life Assured</div></div><div class="detail"><input class="field" placeholder="Height (cms)"><input class="field" placeholder="Weight (kgs)"></div></div>
+        <div class="question"><div class="num">2.</div><div><div class="q-title">Is the Life Assured in good health?</div><div class="q-note">If No, provide details.</div></div><div class="choice"><label><input type="radio" name="q2">Yes</label><label><input type="radio" name="q2">No</label></div><div class="detail"><textarea class="field wide" placeholder="Health details / remarks"></textarea></div></div>
+        <div class="question"><div class="num">3.</div><div class="question-content full"><div class="q-title">Health Questions</div><div class="health-list">
+          <div class="health-row"><div class="letter">a)</div><div>Do you have any physical deformity/ handicap/ congenital defect/ abnormality?</div><div class="choice"><label><input type="radio" name="q3a">Yes</label><label><input type="radio" name="q3a">No</label></div></div>
+          <div class="health-row"><div class="letter">b)</div><div>Have you ever consulted any doctor or are you currently undergoing any tests, investigations, awaiting results of any tests or investigations or have you ever been advised to undergo any tests, investigations or surgery or been hospitalized for general check up, Observation, Treatment or Surgery?</div><div class="choice"><label><input type="radio" name="q3b">Yes</label><label><input type="radio" name="q3b">No</label></div></div>
+          <div class="health-row"><div class="letter">c)</div><div>Are you aware of or have you ever been treated or hospitalized for Cancer, Tumour, Cyst or any other growth or referred to an Oncologist or Cancer hospital for any investigation or treatment?</div><div class="choice"><label><input type="radio" name="q3c">Yes</label><label><input type="radio" name="q3c">No</label></div></div>
+          <div class="health-row"><div class="letter">d)</div><div>Did you have any Ailment/ Injury/ Accident requiring Treatment/ Medication for more than a week?</div><div class="choice"><label><input type="radio" name="q3d">Yes</label><label><input type="radio" name="q3d">No</label></div></div>
+          <div class="health-row"><div class="letter">e)</div><div>Have you ever availed leave on medical grounds in the last two years?</div><div class="choice"><label><input type="radio" name="q3e">Yes</label><label><input type="radio" name="q3e">No</label></div></div>
+          <div class="health-row"><div class="letter">f)</div><div>Has the Life Assured (“you”) suffered or is suffering from any of the following?</div></div>
+          <div class="health-group">
+            <div class="health-row"><div class="subletter">(i)</div><div>Diabetes/ High Blood Sugar/ High/Low BP (Blood Pressure)</div><div class="choice"><label><input type="radio" name="q3f1">Yes</label><label><input type="radio" name="q3f1">No</label></div></div>
+            <div class="health-row"><div class="subletter">(ii)</div><div>Disorders of Eye, Ear, Nose, Throat including defective sight or speech or hearing and discharge from ears</div><div class="choice"><label><input type="radio" name="q3f2">Yes</label><label><input type="radio" name="q3f2">No</label></div></div>
+            <div class="health-row"><div class="subletter">(iii)</div><div>Ailments relating to Liver, Reproductive System</div><div class="choice"><label><input type="radio" name="q3f3">Yes</label><label><input type="radio" name="q3f3">No</label></div></div>
+            <div class="health-row"><div class="subletter">(iv)</div><div>Loss of Weight of 10 kgs or more in the last six months</div><div class="choice"><label><input type="radio" name="q3f4">Yes</label><label><input type="radio" name="q3f4">No</label></div></div>
+            <div class="health-row"><div class="subletter">(v)</div><div>Symptoms/ ailments relating to Brain, Mental / Psychiatric ailment, Parkinsonism, Multiple Sclerosis, Nervous system, Stroke, Paralysis or Epilepsy</div><div class="choice"><label><input type="radio" name="q3f5">Yes</label><label><input type="radio" name="q3f5">No</label></div></div>
+            <div class="health-row"><div class="subletter">(vi)</div><div>Asthma, Bronchitis, Blood Spitting, Tuberculosis or other Respiratory disorders</div><div class="choice"><label><input type="radio" name="q3f6">Yes</label><label><input type="radio" name="q3f6">No</label></div></div>
+            <div class="health-row"><div class="subletter">(vii)</div><div>Anemia, Blood or Blood related disorders, musculoskeletal disorders such as Arthritis, recurrent back pain, slipped disc or any other disorder of Spine, Joints or Limbs or Leprosy</div><div class="choice"><label><input type="radio" name="q3f7">Yes</label><label><input type="radio" name="q3f7">No</label></div></div>
+            <div class="health-row"><div class="subletter">(viii)</div><div>Were you or your spouse ever tested for Hepatitis B or C, HIV/AIDS or any other Sexually Transmitted Disease?</div><div class="choice"><label><input type="radio" name="q3f8">Yes</label><label><input type="radio" name="q3f8">No</label></div></div>
+            <div class="health-row"><div class="subletter">(ix)</div><div>Chest pain, Palpitation, Rheumatic fever, heart murmur, heart attack, shortness of breath or any other heart related disorder</div><div class="choice"><label><input type="radio" name="q3f9">Yes</label><label><input type="radio" name="q3f9">No</label></div></div>
+            <div class="health-row"><div class="subletter">(x)</div><div>Symptoms/ ailments relating to kidney, prostate, hydrocele, urinary system</div><div class="choice"><label><input type="radio" name="q3f10">Yes</label><label><input type="radio" name="q3f10">No</label></div></div>
+            <div class="health-row"><div class="subletter">(xi)</div><div>Gastritis, Stomach or Duodenal Ulcer, Hernia, Liver disease, Jaundice, Hepatitis, Fistula, Piles or any other disease or disorders of the Gastro-Intestinal System.</div><div class="choice"><label><input type="radio" name="q3f11">Yes</label><label><input type="radio" name="q3f11">No</label></div></div>
+            <div class="health-row"><div class="subletter">(xii)</div><div>Thyroid disorder or any other disease or disorder of the Endocrine system, High Cholesterol/Hyperlipidemia</div><div class="choice"><label><input type="radio" name="q3f12">Yes</label><label><input type="radio" name="q3f12">No</label></div></div>
+            <div class="health-row"><div class="subletter">(xiii)</div><div>Have you undergone/ have been recommended to undergo any of the following - Angioplasty, Bypass Surgery, Brain surgery, Heart valve surgery, Aorta surgery or organ transplant or any other major Surgery or Treatment</div><div class="choice"><label><input type="radio" name="q3f13">Yes</label><label><input type="radio" name="q3f13">No</label></div></div>
+          </div>
+          <div class="health-row"><div class="letter">g)</div><div>Any other illness or impairment not mentioned above</div><div class="choice"><label><input type="radio" name="q3g">Yes</label><label><input type="radio" name="q3g">No</label></div></div>
+        </div></div></div>
+        <div class="question"><div class="num">4.</div><div><div class="q-title">Have you ever been or are you currently investigated, charge sheeted, prosecuted, convicted, acquitted, or subject to pending criminal/civil charges in India or abroad?</div></div><div class="choice"><label><input type="radio" name="q4">Yes</label><label><input type="radio" name="q4">No</label></div><div class="detail"><textarea class="field wide" placeholder="Details, if Yes"></textarea></div></div>
+        <div class="question"><div class="num">5.</div><div class="question-content full"><div class="q-title">Following Questions need to be answered if the Life Assured (“you”) is a Female:</div><div class="health-list">
+          <div class="health-row"><div class="letter">a)</div><div>Have you ever suffered / Are you suffering from Gynaecological problems?</div><div class="choice"><label><input type="radio" name="q5a">Yes</label><label><input type="radio" name="q5a">No</label></div></div>
+          <div class="health-row"><div class="letter">b)</div><div>i) Are you pregnant at present? If Yes, duration in weeks <input class="field" style="width:110px;min-height:26px" placeholder="Weeks"></div><div class="choice"><label><input type="radio" name="q5b1">Yes</label><label><input type="radio" name="q5b1">No</label></div></div>
+          <div class="health-row"><div class="letter"></div><div>ii) Any complications, miscarriage, medical Termination of Pregnancy or Caesarian, if applicable</div><div class="choice"><label><input type="radio" name="q5b2">Yes</label><label><input type="radio" name="q5b2">No</label></div></div>
+          <div class="health-row"><div class="letter">c)</div><div>Have you ever undergone any investigation or treatment or received medical advice or consulted a physician for</div></div>
+          <div class="health-group">
+            <div class="health-row"><div class="subletter">i)</div><div>Any disease or disorder of the cervix, uterus, ovary(ies) or vagina, abnormal bleeding, cancer or growth?</div><div class="choice"><label><input type="radio" name="q5c1">Yes</label><label><input type="radio" name="q5c1">No</label></div></div>
+            <div class="health-row"><div class="subletter">ii)</div><div>Any disease or disorder of the breast(s) such breast lump, cyst, fibrocystic disease, nipple change or discharge, cancer or growth?</div><div class="choice"><label><input type="radio" name="q5c2">Yes</label><label><input type="radio" name="q5c2">No</label></div></div>
+            <div class="health-row"><div class="subletter">iii)</div><div>Have you undergone any mammogram or Papsmear?</div><div class="choice"><label><input type="radio" name="q5c3">Yes</label><label><input type="radio" name="q5c3">No</label></div></div>
+          </div></div></div></div>
+        <div class="question"><div class="num">6.</div><div><div class="q-title">Details for Yes answers to Questions 3 and 5</div></div><div class="detail"><input class="field" placeholder="Nature of ailment / test"><input class="field" placeholder="Date of diagnosis / test"><input class="field" placeholder="Treatment / findings"><input class="field" placeholder="Doctor / hospital"><input class="field" placeholder="Leave period & dates"><input class="field" placeholder="Reason for leave"></div></div>
+        <div class="question"><div class="num">7.</div><div class="question-content full"><div class="q-title">Does the Life Assured consume / has consumed any of the following?</div><table class="other-table"><thead><tr><th>Substance Consumed</th><th>YES</th><th>NO</th><th>Consumed as</th><th>Quantity / Day</th><th>For No. of Years</th></tr></thead><tbody>
+          <tr><td>Tobacco</td><td><input type="checkbox" aria-label="Tobacco Yes"></td><td><input type="checkbox" aria-label="Tobacco No"></td><td><input placeholder="Cigar/Cigarette/Beedi/Gutkha"></td><td><input aria-label="Tobacco Quantity"></td><td><input aria-label="Tobacco Years"></td></tr>
+          <tr><td>Alcohol</td><td><input type="checkbox" aria-label="Alcohol Yes"></td><td><input type="checkbox" aria-label="Alcohol No"></td><td><input placeholder="Beer/Wine/Hard Liquor"></td><td><input aria-label="Alcohol Quantity"></td><td><input aria-label="Alcohol Years"></td></tr>
+          <tr><td>Any Narcotic</td><td><input type="checkbox" aria-label="Narcotic Yes"></td><td><input type="checkbox" aria-label="Narcotic No"></td><td><input aria-label="Narcotic Form"></td><td><input aria-label="Narcotic Quantity"></td><td><input aria-label="Narcotic Years"></td></tr>
+        </tbody></table></div></div>
+        <div class="question"><div class="num">8.</div><div><div class="q-title">Has the Life Assured changed occupation, residence, or avocation since policy issuance / last revival?</div><div class="q-note">Include any occupation or avocation associated with a specific hazard or risk.</div></div><div class="choice"><label><input type="radio" name="q8">Yes</label><label><input type="radio" name="q8">No</label></div><div class="detail"><textarea class="field wide" placeholder="Change and hazard / risk details"></textarea></div></div>
+        <div class="question"><div class="num">9.</div><div class="question-content full"><div class="q-title">What is the status of other proposal/ revival application (if any), for an insurance policy (ies) on the life of the Life Assured with ICICI Prudential or any other insurance company, after the date of proposal of this policy/ last revival?</div><table class="other-table wide-form-table"><thead><tr><th>Policy or Proposal No.</th><th>Company Name</th><th>Year of Issue/ application</th><th>Medical Policy<br><small>Yes / No</small></th><th>Annual Premium (₹)</th><th>Basic Sum Assured (₹)</th><th>Basic Plan - decision (Std./ With Extra/ Postponed/ Declined/ Not Completed)</th><th>Mention names of Riders and decision (Std./With Extra/ Postponed/ Declined/ Not Completed)</th><th>In Force/ Lapsed<br>(Mention year of Lapse/ Revival Applied For)</th></tr></thead><tbody>
+          <tr><td><input aria-label="Policy Proposal 1"></td><td><input aria-label="Company 1"></td><td><input aria-label="Year 1"></td><td><div class="yn-cell"><label><input type="radio" name="medical1">Yes</label><label><input type="radio" name="medical1">No</label></div></td><td><input aria-label="Premium 1"></td><td><input aria-label="Sum Assured 1"></td><td><input aria-label="Basic Plan Decision 1"></td><td><input aria-label="Rider Decision 1"></td><td><input aria-label="Status 1"></td></tr>
+          <tr><td><input aria-label="Policy Proposal 2"></td><td><input aria-label="Company 2"></td><td><input aria-label="Year 2"></td><td><div class="yn-cell"><label><input type="radio" name="medical2">Yes</label><label><input type="radio" name="medical2">No</label></div></td><td><input aria-label="Premium 2"></td><td><input aria-label="Sum Assured 2"></td><td><input aria-label="Basic Plan Decision 2"></td><td><input aria-label="Rider Decision 2"></td><td><input aria-label="Status 2"></td></tr>
+          <tr><td><input aria-label="Policy Proposal 3"></td><td><input aria-label="Company 3"></td><td><input aria-label="Year 3"></td><td><div class="yn-cell"><label><input type="radio" name="medical3">Yes</label><label><input type="radio" name="medical3">No</label></div></td><td><input aria-label="Premium 3"></td><td><input aria-label="Sum Assured 3"></td><td><input aria-label="Basic Plan Decision 3"></td><td><input aria-label="Rider Decision 3"></td><td><input aria-label="Status 3"></td></tr>
+        </tbody></table><div class="q-note">* Please attach a separate sheet in case the space is inadequate</div></div></div>
+      </div>
+    </section>
+    <div class="actions"><button class="secondary" type="button" onclick="history.back()">Cancel</button><button class="primary" type="button">Save PDR</button></div>
+  </main>
+  <script>
+    const time = document.getElementById('current-time'); const session = document.getElementById('session-time');
+    function updateTime(){ time.textContent = new Date().toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}); }
+    updateTime(); setInterval(updateTime, 30000); let seconds = 900; setInterval(()=>{ seconds=Math.max(0,seconds-1); session.textContent=`${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`; },1000);
+    document.getElementById('user-button').addEventListener('click',()=>{const p=document.getElementById('user-popover');p.hidden=!p.hidden;});
+  </script>
+</body>
+</html>
