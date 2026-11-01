@@ -4,7 +4,7 @@ import Typography from "@mui/material/Typography";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { commonPaths } from "@insurance-poc/routes";
 import { CustomButton, CustomSnackbar } from "@insurance-poc/ui";
-import { getToken, clearToken } from "@insurance-poc/utils";
+import { getToken, clearSession } from "@insurance-poc/utils";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useChangePasswordMutation } from "../../services/authApi";
@@ -44,11 +44,11 @@ export function ChangePasswordPage() {
         oldPassword: values.oldPassword,
         newPassword: values.newPassword,
       }).unwrap();
-      clearToken();
       const message = apiResultMessage(result.message, "Password changed");
       setSnackbar(authSnackbar(message, "success"));
       setRedirecting(true);
       window.setTimeout(() => {
+        clearSession();
         navigate(commonPaths.login, { replace: true });
       }, SUCCESS_REDIRECT_MS);
     } catch (reason: unknown) {

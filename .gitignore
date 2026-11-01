@@ -6,5 +6,6 @@ dist
 *.local
 *.tsbuildinfo
 .pnpm-store
-
+.cursor/
 .bob
+

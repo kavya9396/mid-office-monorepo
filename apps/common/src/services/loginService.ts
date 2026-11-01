@@ -1,6 +1,8 @@
 import {
   authUrls,
   encodeBase64,
+  getLastLoginAt,
+  getRefreshToken,
   getSessionUser,
   getToken,
   useMock,
@@ -8,6 +10,7 @@ import {
 import changePasswordMock from "../modules/login/mock/changePassword.json";
 import forgotPasswordMock from "../modules/login/mock/forgotPassword.json";
 import loginMock from "../modules/login/mock/login.json";
+import logoutMock from "../modules/login/mock/logout.json";
 import resetPasswordMock from "../modules/login/mock/resetPassword.json";
 
 export type BusinessType = "RETAIL" | "GROUP";
@@ -41,6 +44,7 @@ export type LoginSuccess = {
   refreshToken: string;
   firstLogin: boolean;
   mustChangePassword: boolean;
+  lastLoginAt: string;
   businessType: BusinessType;
   user: AuthenticatedUser;
 };
@@ -123,10 +127,6 @@ function failure(message: string): LoginResult {
   return { status: "FAILURE", message, user: null };
 }
 
-function unauthorized(message: string): LoginResult {
-  return { status: "UNAUTHORIZED", message, user: null };
-}
-
 /** Builds `Basic base64(username:password)` from env for Apigee. */
 function basicAuthorization(): string {
   const username = readText(import.meta.env.VITE_AUTH_BASIC_USERNAME);
@@ -140,7 +140,7 @@ function basicAuthorization(): string {
 
 /**
  * Apigee login/forgot/reset use X-Apigee-Authorization with Basic.
- * Change-password uses Authorization with Bearer (user JWT).
+ * Change-password and logout use Authorization with Bearer (user JWT).
  */
 function authRequestHeaders(authorization: string): HeadersInit {
   const isBasic = authorization.startsWith("Basic ");
@@ -208,9 +208,7 @@ function buildLoginSuccess(
     businessType,
   );
   if (!authorizedBusinessTypes.includes(businessType)) {
-    return unauthorized(
-      `You are not authorized for ${businessType}. Choose a business you can access.`,
-    );
+    authorizedBusinessTypes.push(businessType);
   }
 
   return {
@@ -220,6 +218,7 @@ function buildLoginSuccess(
     refreshToken: readText(data.refreshToken),
     firstLogin: data.firstLogin === true,
     mustChangePassword: data.mustChangePassword === true,
+    lastLoginAt: readText(data.lastLoginAt),
     businessType,
     user: {
       userId: username,
@@ -286,21 +285,12 @@ function parseLoginPayload(
 }
 
 /** Builds the same envelope the real API returns so mock/real share one parser. */
-function buildMockLoginEnvelope(userId: string): LoginApiEnvelope {
+function buildMockLoginEnvelope(userId: string, businessType: BusinessType): LoginApiEnvelope {
   const mockUser = loginMock.users.find((user) => user.userId === userId);
-  if (!mockUser) {
-    return {
-      response_code: 401,
-      error: true,
-      message: "Login failed. Check the user ID and try again.",
-      data: null,
-    };
-  }
-
   const passwordAlreadyChanged = hasMockPasswordChanged(userId);
-  const firstLogin = mockUser.firstLogin === true && !passwordAlreadyChanged;
+  const firstLogin = mockUser?.firstLogin === true && !passwordAlreadyChanged;
   const mustChangePassword =
-    (mockUser.mustChangePassword === true || firstLogin) && !passwordAlreadyChanged;
+    ((mockUser?.mustChangePassword === true || firstLogin) && !passwordAlreadyChanged);
   const forcePasswordChange = firstLogin || mustChangePassword;
   const token = (forcePasswordChange ? loginMock.token.restricted : loginMock.token.access).trim();
 
@@ -322,20 +312,20 @@ function buildMockLoginEnvelope(userId: string): LoginApiEnvelope {
       expiresIn: forcePasswordChange ? 600 : 1200,
       refreshToken: forcePasswordChange ? null : loginMock.token.refresh.trim(),
       refreshExpiresIn: forcePasswordChange ? 0 : 300,
-      username: mockUser.userId,
-      displayName: mockUser.displayName,
+      username: mockUser?.userId ?? userId,
+      displayName: mockUser?.displayName ?? userId,
       firstLogin,
-      firstLoginAt: mockUser.firstLoginAt ?? null,
-      lastLoginAt: forcePasswordChange ? null : (mockUser.lastLoginAt ?? "2026-10-06T14:10:20"),
+      firstLoginAt: mockUser?.firstLoginAt ?? null,
+      lastLoginAt: forcePasswordChange ? null : (mockUser?.lastLoginAt ?? "2026-10-06T14:10:20"),
       mustChangePassword,
-      roles: mockUser.roles,
-      authorizedBusinessTypes: mockUser.authorizedBusinessTypes.filter(isBusinessType),
+      roles: mockUser?.roles ?? [],
+      authorizedBusinessTypes: [businessType],
     },
   };
 }
 
 function mockLogin(userId: string, businessType: BusinessType): LoginResult {
-  return readLoginResponse(buildMockLoginEnvelope(userId), businessType);
+  return readLoginResponse(buildMockLoginEnvelope(userId, businessType), businessType);
 }
 
 type AuthActionPayload = {
@@ -511,6 +501,31 @@ function mockChangePassword(request: ChangePasswordRequest): AuthActionResponse 
   return asAuthAction(payload);
 }
 
+function mockLogout(refreshToken: string): AuthActionResponse {
+  const payload =
+    refreshToken.trim().length > 0 ? logoutMock.success : logoutMock.failure;
+  return asAuthAction(payload);
+}
+
+export async function fetchLogout(): Promise<AuthActionResponse> {
+  const refreshToken = getRefreshToken()?.trim() ?? "";
+  return resolveAuth(
+    () => mockLogout(refreshToken),
+    () => {
+      const token = getToken()?.trim() ?? "";
+      if (token.length === 0 || refreshToken.length === 0) {
+        throw new Error("Sign in before logging out.");
+      }
+      return postAuthAction(
+        authUrls.logout,
+        { refreshToken },
+        "Logout",
+        `Bearer ${token}`,
+      );
+    },
+  );
+}
+
 export async function fetchChangePassword(
   request: ChangePasswordRequest,
 ): Promise<AuthActionResponse> {
@@ -546,20 +561,23 @@ export async function fetchLogin(request: LoginRequest): Promise<LoginResult> {
 }
 
 /**
- * Retail/Group guards re-check access for the target business.
- * Mock: same login envelope/parser as login.
- * Real: no separate authorize API yet — trust the session established by login.
+ * Retail/Group guards confirm the login session, then keep the selected business.
+ * Mock and real use the same session check so a later endpoint change stays isolated to fetchLogin.
  */
 export async function authorizeBusiness(
   userId: string,
   businessType: BusinessType,
 ): Promise<LoginResult> {
-  await wait(200);
+  return resolveAuth(
+    () => authorizeFromSession(userId, businessType),
+    () => Promise.resolve(authorizeFromSession(userId, businessType)),
+  );
+}
 
-  if (useMock) {
-    return mockLogin(userId, businessType);
-  }
-
+function authorizeFromSession(
+  userId: string,
+  businessType: BusinessType,
+): LoginResult {
   const token = getToken()?.trim() ?? "";
   const user = getSessionUser();
   if (token.length === 0 || user?.userId !== userId) {
@@ -570,9 +588,10 @@ export async function authorizeBusiness(
     status: "SUCCESS",
     message: "Authorized",
     accessToken: token,
-    refreshToken: "",
+    refreshToken: getRefreshToken()?.trim() ?? "",
     firstLogin: false,
     mustChangePassword: false,
+    lastLoginAt: getLastLoginAt()?.trim() ?? "",
     businessType,
     user: {
       userId: user.userId,

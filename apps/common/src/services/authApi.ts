@@ -3,6 +3,7 @@ import {
   fetchChangePassword,
   fetchForgotPassword,
   fetchLogin,
+  fetchLogout,
   fetchResetPassword,
   type AuthActionResponse,
   type ChangePasswordRequest,
@@ -61,6 +62,17 @@ export const authApi = createApi({
     changePassword: build.mutation<AuthActionResponse, ChangePasswordRequest>({
       queryFn: authActionQuery(fetchChangePassword, "Unable to change the password."),
     }),
+    logout: build.mutation<AuthActionResponse, void>({
+      async queryFn() {
+        try {
+          const result = await fetchLogout();
+          if (result.error) return { error: result.message };
+          return { data: result };
+        } catch (reason: unknown) {
+          return queryError(reason, "Unable to log out.");
+        }
+      },
+    }),
   }),
 });
 
@@ -69,4 +81,5 @@ export const {
   useForgotPasswordMutation,
   useResetPasswordMutation,
   useChangePasswordMutation,
+  useLogoutMutation,
 } = authApi;

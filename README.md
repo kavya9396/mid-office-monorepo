@@ -634,13 +634,15 @@ The toggle calls the shared mock authorization function before changing applicat
 
 - Retail screen: `apps/retail/src/modules/inbox/RetailInboxPage.tsx`
 - Retail data mapping: `apps/retail/src/services/inboxService.ts`
+- Retail mock records: `apps/retail/src/modules/inbox/mock/retailInbox.json`
 - Group screen: `apps/group/src/modules/inbox/GroupInboxPage.tsx`
 - Group data mapping: `apps/group/src/services/inboxService.ts`
-- Mock records: `mock/inbox/inbox.json`
+- Group mock records: `apps/group/src/modules/inbox/mock/groupInbox.json`
 
 Keep each Inbox inside its corresponding business application.
 
-When adding a category, add another key under `poolData`. The sidebar is generated dynamically and does not need a hardcoded category entry.
+The sidebar uses the role-list API pool keys. Keep its `poolData` keys aligned with
+`ROLE_POOL_KEYS` in `apps/common/src/modules/inbox/inboxApi.ts`.
 
 When adding a task, preserve the existing record fields. `businessType` must be `RETAIL` or `GROUP`. Retail Inbox displays only `RETAIL` records, and Group Inbox displays only `GROUP` records.
 

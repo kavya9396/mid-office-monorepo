@@ -19,7 +19,7 @@ export const forgotPasswordSchema = z.object({
     .trim()
     .min(1, "User ID is required")
     .refine(
-      (value) => RegexPatterns.alphanumeric.test(value) || isEmailAddress(value),
+      (value) => RegexPatterns.userId.test(value) || isEmailAddress(value),
       "Enter a valid user ID or email",
     ),
 });

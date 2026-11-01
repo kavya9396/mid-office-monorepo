@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import changePasswordMock from "../modules/login/mock/changePassword.json";
 import forgotPasswordMock from "../modules/login/mock/forgotPassword.json";
 import loginMock from "../modules/login/mock/login.json";
+import logoutMock from "../modules/login/mock/logout.json";
 import resetPasswordMock from "../modules/login/mock/resetPassword.json";
 import type { LoginResult, LoginSuccess } from "./loginService";
 
@@ -12,6 +13,7 @@ const authMode = vi.hoisted(() => ({
     forgotPassword: "https://auth.test/forgot-password",
     resetPassword: "https://auth.test/reset-password",
     changePassword: "https://auth.test/change-password",
+    logout: "https://auth.test/logout",
   },
 }));
 
@@ -36,6 +38,9 @@ vi.mock("@insurance-poc/utils", async () => {
       },
       get changePassword() {
         return authMode.urls.changePassword;
+      },
+      get logout() {
+        return authMode.urls.logout;
       },
     },
   };
@@ -128,17 +133,16 @@ describe("login module", () => {
       vi.useFakeTimers();
     });
 
-    it("rejects an unknown user", async () => {
+    it("signs in any mock user that reached the service", async () => {
       const { fetchLogin } = await loadLogin();
       const result = await runMock(() =>
-        fetchLogin({ userId: "missing", password: "secret", businessType: "RETAIL" }),
+        fetchLogin({ userId: "LDAP99999", password: "NewerPass@1234", businessType: "RETAIL" }),
       );
 
-      expect(result).toEqual({
-        status: "FAILURE",
-        message: "Login failed. Check the user ID and try again.",
-        user: null,
-      });
+      expectSuccess(result);
+      expect(result.user.userId).toBe("LDAP99999");
+      expect(result.businessType).toBe("RETAIL");
+      expect(result.lastLoginAt).toBe("2026-10-06T14:10:20");
     });
 
     it("signs in a retail user", async () => {
@@ -153,6 +157,7 @@ describe("login module", () => {
       expect(result.firstLogin).toBe(false);
       expect(result.mustChangePassword).toBe(false);
       expect(result.businessType).toBe("RETAIL");
+      expect(result.lastLoginAt).toBe(loginMock.users[1]?.lastLoginAt);
       expect(result.user).toMatchObject({
         userId: "UW001",
         displayName: "Retail Underwriter",
@@ -160,17 +165,15 @@ describe("login module", () => {
       });
     });
 
-    it("rejects a business the user cannot access", async () => {
+    it("opens the business selected on the login form", async () => {
       const { fetchLogin } = await loadLogin();
       const result = await runMock(() =>
-        fetchLogin({ userId: "UW001", password: "secret", businessType: "GROUP" }),
+        fetchLogin({ userId: "UW001", password: "NewerPass@1234", businessType: "GROUP" }),
       );
 
-      expect(result).toEqual({
-        status: "UNAUTHORIZED",
-        message: "You are not authorized for GROUP. Choose a business you can access.",
-        user: null,
-      });
+      expectSuccess(result);
+      expect(result.businessType).toBe("GROUP");
+      expect(result.user.authorizedBusinessTypes).toContain("GROUP");
     });
 
     it("requires a password change on first login, then allows a normal login", async () => {
@@ -178,22 +181,23 @@ describe("login module", () => {
       const { setSessionUser } = await import("@insurance-poc/utils");
 
       const first = await runMock(() =>
-        fetchLogin({ userId: "12343", password: "secret", businessType: "RETAIL" }),
+        fetchLogin({ userId: "LDAP12345", password: "NewerPass@1234", businessType: "RETAIL" }),
       );
       expectSuccess(first);
       expect(first.firstLogin).toBe(true);
       expect(first.mustChangePassword).toBe(true);
       expect(first.accessToken).toBe(loginMock.token.restricted);
       expect(first.refreshToken).toBe("");
+      expect(first.lastLoginAt).toBe("");
 
-      setSessionUser({ userId: "12343", displayName: "12343" });
+      setSessionUser({ userId: "LDAP12345", displayName: "LDAP12345" });
       const changed = await runMock(() =>
         fetchChangePassword({ oldPassword: "old-password", newPassword: "new-password" }),
       );
       expect(changed.error).toBe(false);
 
       const second = await runMock(() =>
-        fetchLogin({ userId: "12343", password: "secret", businessType: "RETAIL" }),
+        fetchLogin({ userId: "LDAP12345", password: "NewerPass@1234", businessType: "RETAIL" }),
       );
       expectSuccess(second);
       expect(second.firstLogin).toBe(false);
@@ -216,7 +220,8 @@ describe("login module", () => {
             displayName: "Retail Underwriter",
             firstLogin: false,
             mustChangePassword: false,
-            roles: ["CVT_TASK"],
+            lastLoginAt: "2026-10-06T14:10:20",
+            roles: ["CVT_POOL"],
             authorizedBusinessTypes: ["RETAIL"],
           },
         }),
@@ -234,6 +239,7 @@ describe("login module", () => {
       expectSuccess(result);
       expect(result.accessToken).toBe("access-token");
       expect(result.refreshToken).toBe("refresh-token");
+      expect(result.lastLoginAt).toBe("2026-10-06T14:10:20");
       const posted = postedRequest(fetchMock);
       expect(posted.url).toBe(authMode.urls.login);
       expect(posted.headers.get("X-Apigee-Authorization")).toBe(
@@ -295,6 +301,37 @@ describe("login module", () => {
       if (result.status === "SUCCESS") throw new Error("expected failure");
       expect(result.message).toContain("Failed to fetch");
       expect(result.message).toContain("VITE_BASE_URL");
+    });
+  });
+
+  describe("authorize business", () => {
+    beforeEach(() => {
+      authMode.useMock = true;
+      vi.useFakeTimers();
+    });
+
+    it("keeps the selected business after a successful login session", async () => {
+      const { authorizeBusiness } = await loadLogin();
+      const { setSessionUser, setToken } = await import("@insurance-poc/utils");
+      setToken("mock-jwt-token");
+      setSessionUser({ userId: "UW001", displayName: "Retail Underwriter" });
+
+      const result = await runMock(() => authorizeBusiness("UW001", "RETAIL"));
+
+      expectSuccess(result);
+      expect(result.businessType).toBe("RETAIL");
+      expect(result.user.userId).toBe("UW001");
+    });
+
+    it("rejects a missing session", async () => {
+      const { authorizeBusiness } = await loadLogin();
+      const result = await runMock(() => authorizeBusiness("UW001", "RETAIL"));
+
+      expect(result).toEqual({
+        status: "FAILURE",
+        message: "Session expired. Please sign in again.",
+        user: null,
+      });
     });
   });
 
@@ -478,6 +515,77 @@ describe("login module", () => {
       expect(posted.headers.get("X-Apigee-Authorization")).toBeNull();
       expect(readString(posted.body, "oldPassword")).toBe("old-password");
       expect(readString(posted.body, "newPassword")).toBe("new-password");
+    });
+  });
+
+  describe("logout", () => {
+    beforeEach(() => {
+      authMode.useMock = true;
+      vi.useFakeTimers();
+    });
+
+    it("returns the logged-out response when a refresh token is present", async () => {
+      const { fetchLogout } = await loadLogin();
+      const { setRefreshToken } = await import("@insurance-poc/utils");
+      setRefreshToken("UNySFLgYgMokV7ty3i7bK_K-0amHmAjhDqx8DXXwwis");
+
+      const result = await runMock(() => fetchLogout());
+
+      expect(result).toEqual({
+        response_code: logoutMock.success.response_code,
+        error: false,
+        message: logoutMock.success.message,
+        data: null,
+      });
+    });
+
+    it("rejects logout when the refresh token is missing", async () => {
+      const { fetchLogout } = await loadLogin();
+      const result = await runMock(() => fetchLogout());
+
+      expect(result).toEqual({
+        response_code: logoutMock.failure.response_code,
+        error: true,
+        message: logoutMock.failure.message,
+        data: null,
+      });
+    });
+
+    it("requires a signed-in session before calling the API", async () => {
+      authMode.useMock = false;
+      vi.useRealTimers();
+      const fetchMock = vi.fn<typeof fetch>();
+      vi.stubGlobal("fetch", fetchMock);
+      const { fetchLogout } = await loadLogin();
+
+      await expect(fetchLogout()).rejects.toThrow("Sign in before logging out.");
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it("posts the refresh token with the user bearer token", async () => {
+      authMode.useMock = false;
+      vi.useRealTimers();
+      const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+        jsonResponse(logoutMock.success),
+      );
+      vi.stubGlobal("fetch", fetchMock);
+      const { fetchLogout } = await loadLogin();
+      const { setRefreshToken, setToken } = await import("@insurance-poc/utils");
+      setToken("user-jwt");
+      setRefreshToken("UNySFLgYgMokV7ty3i7bK_K-0amHmAjhDqx8DXXwwis");
+
+      const result = await fetchLogout();
+
+      expect(result.error).toBe(false);
+      expect(result.message).toBe(logoutMock.success.message);
+      const posted = postedRequest(fetchMock);
+      expect(posted.url).toBe(authMode.urls.logout);
+      expect(posted.headers.get("Authorization")).toBe("Bearer user-jwt");
+      expect(posted.headers.get("accept")).toBe("*/*");
+      expect(posted.headers.get("Content-Type")).toBe("application/json");
+      expect(readString(posted.body, "refreshToken")).toBe(
+        "UNySFLgYgMokV7ty3i7bK_K-0amHmAjhDqx8DXXwwis",
+      );
     });
   });
 });

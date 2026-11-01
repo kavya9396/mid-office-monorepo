@@ -5,12 +5,16 @@ export {
   sessionExpired,
 } from "./authSlice";
 export {
+  clearSession,
   clearToken,
   getSessionBusinessType,
+  getLastLoginAt,
+  getRefreshToken,
   getSessionUser,
   getToken,
   hasSession,
   mustChangePassword,
+  setLastLoginAt,
   setMustChangePassword,
   setRefreshToken,
   setSessionBusinessType,

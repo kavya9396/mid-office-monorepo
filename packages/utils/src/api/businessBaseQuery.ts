@@ -57,7 +57,7 @@ export function createBusinessBaseQuery(baseUrl: string): BaseQueryFn<
     prepareHeaders: (headers) => {
       const token = getToken();
       if (token) headers.set("Authorization", `Bearer ${token}`);
-      headers.set("Accept", "application/json");
+      if (!headers.has("Accept")) headers.set("Accept", "application/json");
       return headers;
     },
   });
