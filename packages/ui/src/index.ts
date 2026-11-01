@@ -35,10 +35,12 @@ export { default as CustomSnackbar } from "./SnackBar/Snackbar";
 export { default as CustomTable, type Column } from "./Table/Table";
 export { default as CustomTabs, type TabItem } from "./Tabs/Tabs";
 export { default as CustomTextField } from "./TextField/TextField";
+export { default as CustomTooltip } from "./Tooltip/Tooltip";
 export {
-  BriefcaseIcon,
   CloseIcon,
   DangerIcon,
+  DeleteIcon,
+  BriefcaseIcon,
   EditIcon,
   EyeIcon,
   EyeSlashIcon,
@@ -56,14 +58,14 @@ export {
   KeyUpArrowIcon,
   LinkIcon,
   LogoutIcon,
+  RefreshIcon,
+  SearchIcon,
+  SettingsIcon,
   MenuIcon,
   NoteIcon,
   PhoneIcon,
   PlusIcon,
-  RefreshIcon,
   ScannerIcon,
-  SearchIcon,
-  SettingsIcon,
   SmsIcon,
   TaskIcon,
   TextAlignLeftIcon,
@@ -73,4 +75,3 @@ export {
   UserProfileIcon,
   WalletIcon,
 } from "./icons/Icons";
-export { default as CustomTooltip } from "./Tooltip/Tooltip";

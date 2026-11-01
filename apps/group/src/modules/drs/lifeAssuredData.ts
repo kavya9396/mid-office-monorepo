@@ -14,127 +14,52 @@ type Address = {
 
 type SummaryMember = {
   memberType: string;
-  proposerSummary: Record<string, string | number | { years: number } | null>;
+  proposerSummary: Record<string, string | number | boolean | { years: number; days?: number } | null>;
   kycDetails: Record<string, string>;
   address: Address[];
   contactDetails: Record<string, string>;
   healthDetail: { height: string; weight: string; bmi: string };
-  nominee: { firstName: string; lastName: string; dob: string; gender: string; percentage: number }[];
+  nominee: {
+    firstName: string;
+    lastName: string;
+    dob: string;
+    gender: string;
+    percentage: number;
+    proposerNomineeRelation?: string;
+    accountNumber?: string;
+    ifsc?: string;
+  }[];
   appointee: { firstName: string; lastName: string; dob: string; gender: string }[];
 };
 
-// Same values as summary[lifeassured1/2] in /mock/drs/drs.mock.json inside dvt-drs.html
-const baseMember: Omit<SummaryMember, "memberType"> = {
-  proposerSummary: {
-    firstName: "Rudra",
-    middleName: "Prakash",
-    lastName: "Sangha",
-    gender: "Male",
-    maritalStatus: "",
-    dob: "1988-08-09T00:00",
-    age: { years: 38 },
-    profileImage: "",
-    nationality: "India",
-    countryOfResidence: "India",
-    residentStatus: "IND",
-    education: "Graduate",
-    designation: "Manager",
-    disabled: "",
-    udidNumber: "UDID-98765",
-  },
-  kycDetails: {
-    panNumber: "",
-    identityProofType: "Aadhaar",
-    identityProofNumber: "AAAAA1111A",
-    addressProof: "Aadhaar",
-    incomeProof: "Aadhaar",
-    existingCkycNumber: "NA",
-    pep: "No",
-    criminalProceedings: "No",
-    panFlag: "Verified",
-    panAadharSeedingStatus: "Y",
-    identityProofExpiryDate: "2099-12-31T00:00",
-    pranNo: "123456789012",
-    pranNoVerification: "Verified",
-  },
-  address: [
-    {
-      type: "communication",
-      addressLine1: "malad",
-      addressLine2: "malad",
-      addressLine3: "",
-      landmark: "prism",
-      city: "mumbai",
-      state: "maharashtra",
-      pinCode: "400064",
-      residingCountry: "",
-    },
-    {
-      type: "permanent",
-      addressLine1: "RFRF",
-      addressLine2: "FGHJK",
-      addressLine3: "FGHJKL",
-      landmark: "",
-      city: "THANE",
-      state: "Maharashtra",
-      pinCode: "400709",
-      residingCountry: "India",
-    },
-  ],
-  contactDetails: {
-    mobileNo: "9878716726",
-    alternateMobileNo: "",
-    std: "",
-    landlineNo: "",
-    emailId: "TRSTR@GMAIL.COM",
-    emailPref: "Y",
-    smsPref: "Y",
-  },
-  healthDetail: { height: "165.1", weight: "67", bmi: "25.0" },
-  nominee: [
-    { firstName: "Smit", lastName: "Sangha", dob: "1991-03-12T00:00", gender: "Male", percentage: 0 },
-  ],
-  appointee: [{ firstName: "Shivani", lastName: "Sangha", dob: "1991-03-12T00:00", gender: "Female" }],
+type ProductDetail = { code: string; productType: string };
+
+type RiderDetail = { riderName: string; sumAssured: number; riderTerm: number };
+
+export type LoanDetail = {
+  baseSumAssured: string;
+  loanAmount: string;
+  loanDisbursementDate: string;
+  loanShare: string;
+  loanTerm: string;
+  policyTerm: string;
+  masterCode: string;
+  loanAccountNumber: string;
 };
 
-const mockSummary: SummaryMember[] = [
-  { memberType: "lifeassured1", ...baseMember },
-  { memberType: "lifeassured2", ...baseMember },
-];
-
-// applicationOverview.productDetail[0] in the same mock
-const mockProductDetail = { code: "E36", productType: "" };
-
-// Fallback rows the prototype shows when the API sends no image records
-const mockImageRecords = [
-  {
-    imageType: "Live photograph",
-    document: "Applicant selfie",
-    faceMatchScore: "98.6%",
-    imageQuality: "Good",
-    remarks: "Face matched successfully",
-  },
-  {
-    imageType: "Identity proof",
-    document: "Aadhaar photograph",
-    faceMatchScore: "96.2%",
-    imageQuality: "Good",
-    remarks: "Image is clear and readable",
-  },
-  {
-    imageType: "Proposal form",
-    document: "Signed proposal image",
-    faceMatchScore: "94.8%",
-    imageQuality: "Acceptable",
-    remarks: "Signature and image verified",
-  },
-];
+export type LifeAssuredSource = {
+  summary: unknown[];
+  productDetail: ProductDetail;
+  riderDetails: RiderDetail[];
+  loan: LoanDetail;
+  imageRecords: never[];
+};
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 // "1988-08-09T00:00" -> "9 Aug 1988" (same output as the prototype)
 const formatDate = (value?: string) => {
-  const match = value?.trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value?.trim() ?? "");
   if (!match) return "";
   const [, year, month, day] = match;
   return `${Number(day)} ${MONTHS[Number(month) - 1]} ${year}`;
@@ -169,7 +94,17 @@ const addressFields = (address?: Address): FieldData[] => [
 
 const fullName = (first: string, last: string) => [first, last].filter(Boolean).join(" ") || "-";
 
-const toApplicant = (member: SummaryMember, total: number): LifeAssuredApplicant => {
+// Summary values are loosely typed; only non-empty strings are valid name parts
+const joinNameParts = (...parts: unknown[]) =>
+  parts.filter((part): part is string => typeof part === "string" && part !== "").join(" ");
+
+const toApplicant = (
+  member: SummaryMember,
+  total: number,
+  productDetail: ProductDetail,
+  riders: RiderDetail[],
+  loan: LoanDetail,
+): LifeAssuredApplicant => {
   const summary = member.proposerSummary;
   const kyc = member.kycDetails;
   const contact = member.contactDetails;
@@ -179,11 +114,11 @@ const toApplicant = (member: SummaryMember, total: number): LifeAssuredApplicant
     id: member.memberType,
     label: memberLabel(member.memberType, total),
     profileImage: text(summary.profileImage) as string | undefined,
-    imageRecords: mockImageRecords,
+    imageRecords: [],
     personalFields: [
       {
         label: "Applicant Name",
-        value: [summary.firstName, summary.middleName, summary.lastName].filter(Boolean).join(" "),
+        value: joinNameParts(summary.firstName, summary.middleName, summary.lastName),
       },
       { label: "Date of Birth", value: formatDate(summary.dob as string) },
       { label: "Age", value: years == null ? "-" : `${years} Years` },
@@ -231,8 +166,8 @@ const toApplicant = (member: SummaryMember, total: number): LifeAssuredApplicant
       { label: "Negative Pincode", value: undefined },
     ],
     productFields: [
-      { label: "Product Code", value: mockProductDetail.code },
-      { label: "Product Type", value: mockProductDetail.productType },
+      { label: "Product Code", value: productDetail.code },
+      { label: "Product Type", value: productDetail.productType },
       { label: "Fund Source", value: undefined },
       { label: "Partner Type", value: undefined },
     ],
@@ -252,6 +187,22 @@ const toApplicant = (member: SummaryMember, total: number): LifeAssuredApplicant
       appointeeDOB: formatDate(a.dob) || "-",
       appointeeRelationship: "-",
     })),
+    editNominees: member.nominee.map((n) => ({
+      firstName: n.firstName,
+      lastName: n.lastName,
+      dob: n.dob.slice(0, 10),
+      gender: n.gender,
+      proposerNomineeRelation: "",
+      percentage: String(n.percentage),
+      accountNumber: "",
+      ifsc: "",
+    })),
+    editRiders: riders.map((r) => ({
+      riderName: r.riderName,
+      sumAssured: String(r.sumAssured),
+      riderTerm: String(r.riderTerm),
+    })),
+    editLoan: loan,
     lifestyleFields: [
       { label: "Height", value: member.healthDetail.height },
       { label: "Weight", value: member.healthDetail.weight },
@@ -267,6 +218,14 @@ const toApplicant = (member: SummaryMember, total: number): LifeAssuredApplicant
   };
 };
 
-export const mockApplicants: LifeAssuredApplicant[] = mockSummary.map((member) =>
-  toApplicant(member, mockSummary.length),
-);
+export function mapApplicants(source: LifeAssuredSource): LifeAssuredApplicant[] {
+  return (source.summary as SummaryMember[]).map((member) =>
+    toApplicant(
+      member,
+      source.summary.length,
+      source.productDetail,
+      source.riderDetails,
+      source.loan,
+    ),
+  );
+}

@@ -1,0 +1,1 @@
+export { RegexPatterns } from "./regexPatterns";

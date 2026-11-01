@@ -10,6 +10,7 @@ import {
   getSessionBusinessType,
   getSessionUser,
   hasSession,
+  mustChangePassword,
   setSessionBusinessType,
 } from "@insurance-poc/utils";
 
@@ -19,6 +20,11 @@ export function RequireSession({ children }: { children: ReactNode }) {
   const [allowed, setAllowed] = useState(false);
 
   useEffect(() => {
+    if (mustChangePassword()) {
+      replaceUrl(commonPaths.changePassword);
+      return;
+    }
+
     if (!hasCredentials || !userId) {
       replaceUrl(commonPaths.login);
       return;

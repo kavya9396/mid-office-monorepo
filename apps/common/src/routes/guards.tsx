@@ -1,18 +1,25 @@
 import { useEffect, type ReactNode } from "react";
-import { businessInboxUrl, replaceUrl } from "@insurance-poc/routes";
+import { businessInboxUrl, commonPaths, replaceUrl } from "@insurance-poc/routes";
 import {
   getSessionBusinessType,
   hasSession,
+  mustChangePassword,
 } from "@insurance-poc/utils";
 
 export function RedirectIfSession({ children }: { children: ReactNode }) {
   const businessType = getSessionBusinessType();
   const destination = businessType ? businessInboxUrl(businessType) : null;
-  const shouldRedirect = hasSession() && Boolean(destination);
+  const changingPassword = mustChangePassword();
+  const shouldRedirect = hasSession() && (changingPassword || Boolean(destination));
 
   useEffect(() => {
-    if (shouldRedirect && destination) replaceUrl(destination);
-  }, [destination, shouldRedirect]);
+    if (!hasSession()) return;
+    if (changingPassword) {
+      replaceUrl(commonPaths.changePassword);
+      return;
+    }
+    if (destination) replaceUrl(destination);
+  }, [changingPassword, destination]);
 
   if (shouldRedirect) return null;
 

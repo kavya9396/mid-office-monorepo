@@ -259,10 +259,10 @@ export const SettingsIcon = ({ width = 40 }) => (
   </svg>
 );
 
-export const FilterIcon = ({ width = 40 }) => (
+export const FilterIcon = ({ width = 40, height = 40 }) => (
   <svg
     width={width}
-    height="40"
+    height={height}
     viewBox="0 0 56 40"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
@@ -801,6 +801,19 @@ export const EditIcon = ({width = 20, height = 20}) => (
     <path d="M21 22.75H3C2.59 22.75 2.25 22.41 2.25 22C2.25 21.59 2.59 21.25 3 21.25H21C21.41 21.25 21.75 21.59 21.75 22C21.75 22.41 21.41 22.75 21 22.75Z" fill="currentColor" />
   </svg>
 );
+export const DeleteIcon = ({ width = 20, height = 20 }) => (
+  <svg width={width} height={height} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"
+    role="presentation"
+  >
+    <path d="M21 6.73H20.98C17.65 6.4 14.32 6.28 11.02 6.4H11C9.02 6.47 7.04 6.6 5.07 6.79L3 6.73C2.59 6.73 2.25 6.39 2.25 5.98C2.25 5.57 2.59 5.23 3 5.23H21C21.41 5.23 21.75 5.57 21.75 5.98C21.75 6.39 21.41 6.73 21 6.73Z" fill="currentColor" />
+    <path d="M8.5 5.72C8.46 5.72 8.42 5.72 8.37 5.71C7.97 5.64 7.69 5.25 7.76 4.85L7.98 3.54C8.14 2.58 8.36 1.25 10.69 1.25H13.31C15.65 1.25 15.87 2.63 16.02 3.55L16.24 4.85C16.31 5.26 16.03 5.65 15.63 5.71C15.22 5.78 14.83 5.5 14.77 5.1L14.55 3.8C14.41 2.93 14.38 2.76 13.32 2.76H10.7C9.64 2.76 9.62 2.89 9.47 3.79L9.24 5.09C9.18 5.46 8.86 5.72 8.5 5.72Z" fill="currentColor" />
+    <path d="M15.21 22.75H8.79C5.3 22.75 5.16 20.82 5.05 19.26L4.4 9.19C4.37 8.78 4.69 8.42 5.1 8.39C5.52 8.37 5.87 8.68 5.9 9.09L6.55 19.16C6.66 20.68 6.7 21.25 8.79 21.25H15.21C17.31 21.25 17.35 20.68 17.45 19.16L18.1 9.09C18.13 8.68 18.49 8.37 18.9 8.39C19.31 8.42 19.63 8.77 19.6 9.19L18.95 19.26C18.84 20.82 18.7 22.75 15.21 22.75Z" fill="currentColor" />
+    <path d="M13.66 17.25H10.33C9.92 17.25 9.58 16.91 9.58 16.5C9.58 16.09 9.92 15.75 10.33 15.75H13.66C14.07 15.75 14.41 16.09 14.41 16.5C14.41 16.91 14.07 17.25 13.66 17.25Z" fill="currentColor" />
+    <path d="M14.5 13.25H9.5C9.09 13.25 8.75 12.91 8.75 12.5C8.75 12.09 9.09 11.75 9.5 11.75H14.5C14.91 11.75 15.25 12.09 15.25 12.5C15.25 12.91 14.91 13.25 14.5 13.25Z" fill="currentColor" />
+  </svg>
+);
+
+
 
 export const HouseIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"    aria-hidden="true"

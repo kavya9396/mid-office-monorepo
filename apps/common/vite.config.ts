@@ -19,6 +19,7 @@ function proxyPrefix(base: string): string {
 }
 
 export default defineConfig({
+  envDir: monorepoRoot,
   base: devConfig.viteBase.common,
   clearScreen: false,
   plugins: [redirectBareAppRoots(), react()],
@@ -35,6 +36,8 @@ export default defineConfig({
     proxy: {
       [proxyPrefix(devConfig.viteBase.retail)]: proxyToDevApp(devConfig.ports.retail),
       [proxyPrefix(devConfig.viteBase.group)]: proxyToDevApp(devConfig.ports.group),
+      "/api/inbox/retail": proxyToDevApp(devConfig.ports.retail),
+      "/api/inbox/group": proxyToDevApp(devConfig.ports.group),
     },
   },
 });
