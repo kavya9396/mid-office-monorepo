@@ -1,5 +1,10 @@
+import { useCallback } from "react";
 import { InboxScreen } from "@insurance-poc/common/inbox-screen";
-import { useGetRetailInboxQuery } from "../../services/inboxApi";
+import {
+  useGetRetailInboxQuery,
+  useLazyFetchRetailPoolColumnsQuery,
+  useSaveRetailPoolColumnsMutation,
+} from "../../services/inboxApi";
 
 function readQueryError(error: unknown): string {
   if (typeof error === "object" && error !== null) {
@@ -15,6 +20,16 @@ function readQueryError(error: unknown): string {
 
 export function RetailInboxPage() {
   const inbox = useGetRetailInboxQuery();
+  const [loadColumns] = useLazyFetchRetailPoolColumnsQuery();
+  const [saveColumns] = useSaveRetailPoolColumnsMutation();
+  const onLoadColumns = useCallback(
+    (poolKey: string) => loadColumns(poolKey).unwrap(),
+    [loadColumns],
+  );
+  const onSaveColumns = useCallback(
+    (poolKey: string, selectedFields: string[]) => saveColumns({ poolKey, selectedFields }).unwrap(),
+    [saveColumns],
+  );
 
   return (
     <InboxScreen
@@ -25,6 +40,8 @@ export function RetailInboxPage() {
       onRetry={() => {
         void inbox.refetch();
       }}
+      onLoadColumns={onLoadColumns}
+      onSaveColumns={onSaveColumns}
     />
   );
 }
