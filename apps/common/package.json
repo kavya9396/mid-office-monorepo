@@ -94,6 +94,11 @@
       "import": "./src/components/LifeAssured/LifeAssured.tsx",
       "default": "./src/components/LifeAssured/LifeAssured.tsx"
     },
+    "./case-uw-decision": {
+      "types": "./src/components/CaseUwDecision.tsx",
+      "import": "./src/components/CaseUwDecision.tsx",
+      "default": "./src/components/CaseUwDecision.tsx"
+    },
     "./decision-section": {
       "types": "./src/components/DecisionSection.tsx",
       "import": "./src/components/DecisionSection.tsx",

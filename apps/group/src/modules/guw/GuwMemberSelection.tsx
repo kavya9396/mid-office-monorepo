@@ -4,6 +4,13 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { CustomDialog } from "@insurance-poc/ui";
 import { ApplicantBanner, type BannerRow } from "@insurance-poc/common/applicant-banner";
+import { CaseUwDecision } from "@insurance-poc/common/case-uw-decision";
+import {
+  fetchCaseDecisionOptions,
+  fetchGuwDrs,
+  type DropdownOption,
+  type GuwDrsRecord,
+} from "../../services/guwService";
 
 /* ------------------------------------------------------------------ */
 /* Types                                                                */
@@ -121,6 +128,22 @@ export function GuwMemberSelection() {
   const role = params.get("role")?.trim() ?? "";
 
   const [detailMember, setDetailMember] = useState<GuwMember | null>(null);
+  const [record, setRecord] = useState<GuwDrsRecord | null>(null);
+  const [decisionOptions, setDecisionOptions] = useState<DropdownOption[]>([]);
+  const [caseDecision, setCaseDecision] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    void fetchCaseDecisionOptions().then((opts) => {
+      if (active) setDecisionOptions(opts);
+    });
+    if (applicationNo) {
+      void fetchGuwDrs(applicationNo).then((r) => {
+        if (active) setRecord(r);
+      });
+    }
+    return () => { active = false; };
+  }, [applicationNo]);
 
   /** Build DRS query params, preserving the role display label for the header. */
   const makeDrsQuery = (memberId: string, memberCount: number): string => {
@@ -333,6 +356,15 @@ export function GuwMemberSelection() {
           })}
         </Box>
       </Box>
+
+      {/* Financial Decision, Medical Decision and Case UW Decision on one row */}
+      <CaseUwDecision
+        financialDecision={record?.sdtRow.financialDecision}
+        medicalDecision={record?.sdtRow.medicalDecision}
+        options={decisionOptions}
+        value={caseDecision}
+        onChange={setCaseDecision}
+      />
 
       {/* UW Decision detail dialog */}
       <CustomDialog
