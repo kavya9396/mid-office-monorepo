@@ -15,6 +15,7 @@ import { GroupOpenTasksPage } from "../modules/openTasks/GroupOpenTasksPage";
 import { GroupPreviousPolicyPage } from "../modules/previousPolicy/GroupPreviousPolicyPage";
 import { GroupRiskDetailsPage } from "../modules/riskDetails/GroupRiskDetailsPage";
 import GroupDrsRouter from "../modules/drs/GroupDrsRouter";
+import { GuwMemberSelection } from "../modules/guw/GuwMemberSelection";
 
 export function AppRoutes() {
   return (
@@ -31,6 +32,8 @@ export function AppRoutes() {
           <Route index element={<Navigate to="/inbox" replace />} />
           <Route path="/inbox" element={<GroupInboxPage />} />
           <Route path="/drs" element={<GroupDrsRouter />} />
+          <Route path="/guw/member-selection" element={<GuwMemberSelection />} />
+          <Route path="/guw/drs" element={<GroupDrsRouter />} />
           {/* <Route path="/applicant-profile" element={<GroupApplicantProfilePage />} /> */}
           <Route path="/previous-policy" element={<GroupPreviousPolicyPage />} />
           <Route path="/open-tasks" element={<GroupOpenTasksPage />} />
