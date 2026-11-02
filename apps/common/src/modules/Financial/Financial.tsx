@@ -49,6 +49,10 @@ import {
   type FinancialSubmitPayload,
   type FinancialTableLayout,
 } from "./financial.config";
+import {
+  isFinancialFieldRequired,
+  validateFinancialField,
+} from "./financial.schema";
 
 export * from "./financial.config";
 
@@ -88,7 +92,14 @@ interface FinancialStore {
   pick: (prefix: string) => Record<string, string>;
   /** Resets every field whose id starts with `prefix` to the saved values. */
   restore: (prefix: string, saved: Readonly<Record<string, string>>) => void;
+  /** Validation message for a field (`undefined` when valid). */
+  getError: (id: string) => string | undefined;
+  setError: (id: string, message: string | undefined) => void;
+  /** Clears the validation messages of every field whose id starts with `prefix`. */
+  clearErrors: (prefix: string) => void;
 }
+
+const errorKey = (id: string) => `error:${id}`;
 
 const fieldId = (sectionKey: string, index: number) => `${sectionKey}-${index}`;
 
@@ -106,11 +117,27 @@ const createFinancialStore = (
   initial: Record<string, string>,
 ): FinancialStore => {
   const values: Record<string, string> = { ...initial };
+  const errors: Record<string, string> = {};
   const listeners = new Map<string, Set<Listener>>();
   const notify = (id: string) =>
     listeners.get(id)?.forEach((listener) => listener());
+  const clearErrors = (prefix: string) =>
+    Object.keys(errors)
+      .filter((id) => id.startsWith(prefix))
+      .forEach((id) => {
+        delete errors[id];
+        notify(errorKey(id));
+      });
 
   return {
+    getError: (id) => errors[id],
+    setError: (id, message) => {
+      if (errors[id] === message) return;
+      if (message === undefined) delete errors[id];
+      else errors[id] = message;
+      notify(errorKey(id));
+    },
+    clearErrors,
     get: (id) => values[id] ?? "",
     set: (id, value) => {
       if ((values[id] ?? "") === value) return;
@@ -132,6 +159,7 @@ const createFinancialStore = (
         Object.entries(values).filter(([id]) => id.startsWith(prefix)),
       ),
     restore: (prefix, saved) => {
+      clearErrors(prefix);
       Object.keys(values)
         .filter((id) => id.startsWith(prefix))
         .forEach((id) => {
@@ -160,6 +188,16 @@ function useFieldValue(id: string): string {
     [store, id],
   );
   const getSnapshot = useCallback(() => store.get(id), [store, id]);
+  return useSyncExternalStore(subscribe, getSnapshot);
+}
+
+function useFieldError(id: string): string | undefined {
+  const store = useFinancialStore();
+  const subscribe = useCallback(
+    (listener: Listener) => store.subscribe(errorKey(id), listener),
+    [store, id],
+  );
+  const getSnapshot = useCallback(() => store.getError(id), [store, id]);
   return useSyncExternalStore(subscribe, getSnapshot);
 }
 
@@ -281,7 +319,7 @@ const REQUIRED_MARK_SX = { color: "#B42318", fontWeight: 700 } as const;
 const STATEMENT_LABEL_SX = {
   m: 0,
   color: "#475467",
-  fontSize: 11,
+  fontSize: 12,
   fontWeight: 600,
 } as const;
 
@@ -306,49 +344,18 @@ const getGridSx = (columns: number, flush: boolean) => {
   return created;
 };
 
-const TABLE_BASE_SX = {
-  width: "100%",
-  borderCollapse: "collapse",
-  tableLayout: "fixed",
-  "& th, & td": {
-    p: "6px 8px",
-    borderBottom: "1px solid #E4E7EC",
-    verticalAlign: "middle",
-  },
-  "& tr:last-child th, & tr:last-child td": { borderBottom: 0 },
-  "& thead th": {
-    color: "#475467",
-    bgcolor: "#F8FAFC",
-    fontSize: 12,
-    fontWeight: 700,
-    textAlign: "left",
-  },
-  "& tbody th": {
-    color: "#475467",
-    bgcolor: "#fff",
-    fontSize: 13,
-    fontWeight: 500,
-    textAlign: "left",
-    overflowWrap: "anywhere",
-  },
-  "& tbody tr:nth-of-type(even)": { bgcolor: "#FCFCFD" },
-} as const;
-const YEAR_TABLE_SX = { ...TABLE_BASE_SX, minWidth: 680 } as const;
-const RECEIPTS_TABLE_SX = { ...TABLE_BASE_SX, minWidth: 900 } as const;
-const TABLE_TITLE_SX = {
-  m: "0 0 5px",
-  color: "#344054",
+const YEAR_ROW_LABEL_SX = {
+  color: "#475467",
   fontSize: 12,
-  fontWeight: 700,
+  fontWeight: 500,
+  overflowWrap: "anywhere",
 } as const;
-const TABLE_WRAP_SX = {
-  width: "100%",
-  minWidth: 0,
-  overflowX: "auto",
-  border: "1px solid #E4E7EC",
-  borderRadius: "6px",
+/** Body rows only (`td`); the Year / Receipt header cells (`th`) keep their size. */
+const YEAR_TABLE_ROWS_SX = {
+  "& td, & td *": { fontSize: "12px" },
+  "& td .MuiOutlinedInput-root, & td input.MuiInputBase-input, & td .MuiSelect-select, & td .MuiPickersSectionList-root":
+    { fontSize: "12px" },
 } as const;
-const RECEIPT_SUMMARY_ROW_SX = { bgcolor: "#FFF8F4" } as const;
 const TABLE_AREA_SX = {
   p: "8px 10px",
   display: "flex",
@@ -488,7 +495,7 @@ const NAV_ITEM_SX = {
   color: "#667085",
   bgcolor: "transparent",
   fontFamily: "inherit",
-  fontSize: 13,
+  fontSize: 12,
   fontWeight: 500,
   lineHeight: 1.3,
   textAlign: "left",
@@ -530,6 +537,8 @@ interface FinancialControlProps {
   readOnly: boolean;
   type?: "text" | "number";
   placeholder?: string;
+  /** Returns an error message for the value, or `undefined` when valid. */
+  validate?: (value: string) => string | undefined;
 }
 
 /**
@@ -543,12 +552,17 @@ const FinancialControl = memo(function FinancialControl({
   readOnly,
   type = "text",
   placeholder,
+  validate,
 }: Readonly<FinancialControlProps>) {
   const store = useFinancialStore();
   const value = useFieldValue(id);
+  const error = useFieldError(id);
   const onChange = useCallback(
-    (next: string) => store.set(id, next),
-    [store, id],
+    (next: string) => {
+      store.set(id, next);
+      if (validate) store.setError(id, validate(next));
+    },
+    [store, id, validate],
   );
 
   if (readOnly) {
@@ -576,6 +590,8 @@ const FinancialControl = memo(function FinancialControl({
           value={value}
           placeholder={selectPlaceholder(kind)}
           onChange={onChange}
+          error={Boolean(error)}
+          helperText={error}
         />
       </Box>
     );
@@ -589,6 +605,8 @@ const FinancialControl = memo(function FinancialControl({
           format={FINANCIAL_DATE_FORMAT}
           maxDate={dayjs()}
           disableTodayAndFuture={false}
+          error={Boolean(error)}
+          helperText={error}
           onChange={(next) =>
             onChange(next ? next.format(FINANCIAL_DATE_FORMAT) : "")
           }
@@ -605,6 +623,8 @@ const FinancialControl = memo(function FinancialControl({
         value={value}
         placeholder={placeholder}
         onChange={(event) => onChange(event.target.value)}
+        error={Boolean(error)}
+        helperText={error}
         htmlInputProps={{ "aria-label": ariaLabel }}
       />
     </Box>
@@ -627,7 +647,14 @@ const FieldBlock = memo(function FieldBlock({
   forceReadOnly = false,
 }: Readonly<FieldBlockProps>) {
   const editing = useContext(EditingContext);
-  const [label, , required] = section.fields[index];
+  const [label, , configRequired] = section.fields[index];
+  // The validation schema is the source of truth for mandatory fields.
+  const required =
+    isFinancialFieldRequired(section.key, label) ?? configRequired;
+  const validate = useCallback(
+    (value: string) => validateFinancialField(section.key, label, value),
+    [section.key, label],
+  );
   const kind = resolveFinancialControlKind(section.key, label);
   const locked =
     forceReadOnly || FINANCIAL_LOCKED_FIELDS.has(`${section.key}:${label}`);
@@ -647,6 +674,7 @@ const FieldBlock = memo(function FieldBlock({
         ariaLabel={`${section.title}: ${displayLabel ?? label}`}
         kind={kind}
         readOnly={readOnly}
+        validate={validate}
       />
     </Box>
   );
@@ -689,146 +717,175 @@ function FieldGrid({
 /* Section bodies                                                      */
 /* ------------------------------------------------------------------ */
 
+type YearTableColumnKey = "label" | "month" | "c1" | "c2" | "c3" | "c4" | "c5" | "c6";
+
+const YEAR_TABLE_VALUE_KEYS = ["c1", "c2", "c3", "c4", "c5", "c6"] as const;
+
+interface YearTableSummaryCell {
+  label: string;
+  index: number;
+}
+
+/** One table row; the string columns only provide the keys `CustomTable` needs, cells render from the other props. */
+interface YearTableRow extends Record<YearTableColumnKey, string> {
+  id: string;
+  rowLabel: string;
+  required: boolean;
+  /** Field index per value column (-1 when the section has no such field). */
+  indexes: readonly number[];
+  /** Set on the receipts summary row: label / read-only value pairs laid across the columns. */
+  summary: readonly YearTableSummaryCell[] | null;
+}
+
+const EMPTY_YEAR_ROW_CELLS: Record<YearTableColumnKey, string> = {
+  label: "",
+  month: "",
+  c1: "",
+  c2: "",
+  c3: "",
+  c4: "",
+  c5: "",
+  c6: "",
+};
+
 function YearTable({
   section,
   layout,
 }: Readonly<{ section: FinancialSection; layout: FinancialTableLayout }>) {
   const editing = useContext(EditingContext);
   const isReceipts = layout.kind === "receipts";
-  // const count = isReceipts ? 6 : layout.kind === "year4" ? 4 : 3;
   let count: number;
-
-if (isReceipts) {
-  count = 6;
-} else if (layout.kind === "year4") {
-  count = 4;
-} else {
-  count = 3;
-}
-  const headings = Array.from({ length: count }, (_, i) =>
-    isReceipts ? `Receipt ${i + 1}` : `Year ${i + 1}`,
-  );
   let firstWidth: number;
-
-if (count === 6) {
-  firstWidth = 12;
-} else if (count === 4) {
-  firstWidth = 20;
-} else {
-  firstWidth = 28;
-}
-  // const firstWidth = count === 6 ? 12 : count === 4 ? 20 : 28;
-  const monthWidth = count === 6 ? 12 : 0;
+  if (isReceipts) {
+    count = 6;
+    firstWidth = 12;
+  } else if (layout.kind === "year4") {
+    count = 4;
+    firstWidth = 20;
+  } else {
+    count = 3;
+    firstWidth = 28;
+  }
+  const monthWidth = isReceipts ? 12 : 0;
   const restWidth = `${(100 - firstWidth - monthWidth) / count}%`;
-  const topIndex =
-    isReceipts && layout.top?.length
-      ? findFieldIndex(section, layout.top[0])
-      : -1;
-  const colSpan = headings.length + 1;
+
+  const rows = useMemo<YearTableRow[]>(() => {
+    const dataRows = layout.rows.map<YearTableRow>((rowLabel) => {
+      const indexes = Array.from({ length: count }, (_, column) => {
+        let fieldLabel = `${rowLabel} Year ${column + 1}`;
+        if (isReceipts) fieldLabel = `${rowLabel} Receipt${column + 1}`;
+        else if (column === 0) fieldLabel = rowLabel;
+        return findFieldIndex(section, fieldLabel);
+      });
+      return {
+        ...EMPTY_YEAR_ROW_CELLS,
+        id: rowLabel,
+        rowLabel,
+        required: indexes.some(
+          (index) => index >= 0 && section.fields[index][2],
+        ),
+        indexes,
+        summary: null,
+      };
+    });
+    if (isReceipts && layout.bottom) {
+      dataRows.push({
+        ...EMPTY_YEAR_ROW_CELLS,
+        id: "summary",
+        rowLabel: "",
+        required: false,
+        indexes: [],
+        summary: layout.bottom.map((item) => {
+          const { label, fieldLabel } = toLabelRef(item);
+          return { label, index: findFieldIndex(section, fieldLabel) };
+        }),
+      });
+    }
+    return dataRows;
+  }, [section, layout, count, isReceipts]);
+
+  const columns = useMemo<Column<YearTableRow>[]>(() => {
+    /** Summary row: even positions hold a label, odd positions the read-only value. */
+    const renderSummaryCell = (row: YearTableRow, position: number) => {
+      const pair = row.summary?.[Math.floor(position / 2)];
+      if (!pair) return null;
+      if (position % 2 === 0) {
+        return <Box sx={YEAR_ROW_LABEL_SX}>{pair.label}</Box>;
+      }
+      return pair.index >= 0 ? (
+        <FieldBlock section={section} index={pair.index} forceReadOnly />
+      ) : null;
+    };
+
+    const result: Column<YearTableRow>[] = [
+      {
+        key: "label",
+        header: "",
+        width: `${firstWidth}%`,
+        render: (_value, row) =>
+          row.summary ? (
+            renderSummaryCell(row, 0)
+          ) : (
+            <Box sx={YEAR_ROW_LABEL_SX}>
+              {row.rowLabel}
+              {row.required && !isReceipts && <RequiredMark />}
+            </Box>
+          ),
+      },
+    ];
+
+    if (isReceipts) {
+      result.push({
+        key: "month",
+        header: "",
+        width: `${monthWidth}%`,
+        render: (_value, row) =>
+          row.summary ? (
+            renderSummaryCell(row, 1)
+          ) : (
+            <FinancialControl
+              id={`${section.key}-month-${row.rowLabel}`}
+              ariaLabel={`Select month for ${row.rowLabel}`}
+              kind="month"
+              readOnly={!editing}
+              validate={(value) =>
+                validateFinancialField(section.key, row.rowLabel, value)
+              }
+            />
+          ),
+      });
+    }
+
+    YEAR_TABLE_VALUE_KEYS.slice(0, count).forEach((key, column) => {
+      result.push({
+        key,
+        header: isReceipts ? `Receipt ${column + 1}` : `Year ${column + 1}`,
+        width: restWidth,
+        render: (_value, row) => {
+          if (row.summary) return renderSummaryCell(row, column + 2);
+          const index = row.indexes[column];
+          return index >= 0 ? (
+            <FieldBlock section={section} index={index} />
+          ) : null;
+        },
+      });
+    });
+    return result;
+  }, [section, count, firstWidth, monthWidth, restWidth, isReceipts, editing]);
 
   return (
-    <Box>
-      <Box component="h4" sx={TABLE_TITLE_SX}>
-        {layout.title ?? section.title}
+    <>
+      {isReceipts && layout.top && layout.top.length > 0 && (
+        <FieldGrid section={section} labels={layout.top} columns={2} flush />
+      )}
+      <Box sx={YEAR_TABLE_ROWS_SX}>
+        <CustomTable<YearTableRow>
+          columns={columns}
+          data={rows}
+          getRowId={(row) => row.id}
+        />
       </Box>
-      <Box sx={TABLE_WRAP_SX}>
-        <Box
-          component="table"
-          sx={isReceipts ? RECEIPTS_TABLE_SX : YEAR_TABLE_SX}
-        >
-          <colgroup>
-            <col style={{ width: `${firstWidth}%` }} />
-            {isReceipts && <col style={{ width: `${monthWidth}%` }} />}
-            {headings.map((heading) => (
-              <col key={heading} style={{ width: restWidth }} />
-            ))}
-          </colgroup>
-          <thead>
-            {topIndex >= 0 && layout.top && (
-              <tr>
-                <th scope="row">
-                  {layout.top[0]}
-                  {section.fields[topIndex][2] && <RequiredMark />}
-                </th>
-                <td colSpan={colSpan}>
-                  <FieldBlock section={section} index={topIndex} />
-                </td>
-              </tr>
-            )}
-            <tr>
-              <th scope="col" />
-              {isReceipts && <th scope="col" />}
-              {headings.map((heading) => (
-                <th key={heading} scope="col">
-                  {heading}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {layout.rows.map((rowLabel) => {
-              const indexes = headings.map((_, column) => {
-                let fieldLabel = `${rowLabel} Year ${column + 1}`;
-                if (isReceipts) fieldLabel = `${rowLabel} Receipt${column + 1}`;
-                else if (column === 0) fieldLabel = rowLabel;
-                return findFieldIndex(section, fieldLabel);
-              });
-              const required = indexes.some(
-                (index) => index >= 0 && section.fields[index][2],
-              );
-              const monthId = `${section.key}-month-${rowLabel}`;
-              return (
-                <tr key={rowLabel}>
-                  <th scope="row">
-                    {rowLabel}
-                    {required && !isReceipts && <RequiredMark />}
-                  </th>
-                  {isReceipts && (
-                    <td>
-                      <FinancialControl
-                        id={monthId}
-                        ariaLabel={`Select month for ${rowLabel}`}
-                        kind="month"
-                        readOnly={!editing}
-                      />
-                    </td>
-                  )}
-                  {indexes.map((index, column) => (
-                    <td key={`${rowLabel}-${headings[column]}`}>
-                      {index >= 0 && (
-                        <FieldBlock section={section} index={index} />
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              );
-            })}
-            {isReceipts && layout.bottom && (
-              <Box component="tr" sx={RECEIPT_SUMMARY_ROW_SX}>
-                {layout.bottom.map((item) => {
-                  const { label, fieldLabel } = toLabelRef(item);
-                  const index = findFieldIndex(section, fieldLabel);
-                  return [
-                    <th key={`${fieldLabel}-th`} scope="row">
-                      {label}
-                    </th>,
-                    <td key={`${fieldLabel}-td`}>
-                      {index >= 0 && (
-                        <FieldBlock
-                          section={section}
-                          index={index}
-                          forceReadOnly
-                        />
-                      )}
-                    </td>,
-                  ];
-                })}
-              </Box>
-            )}
-          </tbody>
-        </Box>
-      </Box>
-    </Box>
+    </>
   );
 }
 
@@ -869,7 +926,11 @@ function MonthlyIncomeBody({
 
   const columns = useMemo<Column<MonthlyIncomeRow>[]>(
     () => [
-      { key: "month", header: "Month" },
+      {
+        key: "month",
+        header: "Month",
+        render: (value) => <Box sx={YEAR_ROW_LABEL_SX}>{value}</Box>,
+      },
       {
         key: "selected",
         headerRender: () => (
@@ -884,6 +945,9 @@ function MonthlyIncomeBody({
             ariaLabel={`Month ${row.number}`}
             kind="month"
             readOnly={!editing}
+            validate={(value) =>
+              validateFinancialField(section.key, `Month ${row.number}`, value)
+            }
           />
         ),
       },
@@ -903,6 +967,13 @@ function MonthlyIncomeBody({
             type="number"
             placeholder="Enter income"
             readOnly={!editing}
+            validate={(value) =>
+              validateFinancialField(
+                section.key,
+                `Income for Month ${row.number}`,
+                value,
+              )
+            }
           />
         ),
       },
@@ -946,15 +1017,18 @@ function StatementBody({
         <FieldGrid section={section} labels={layout.top} columns={2} flush />
       )}
       <Box sx={STATEMENT_GRID_SX}>
-        {layout.monthly.map((item) => {
+        {layout.monthly.map((item, position) => {
           const { label, fieldLabel } = toLabelRef(item);
           const index = findFieldIndex(section, fieldLabel);
           if (index < 0) return null;
+          // The month dropdown beside a monthly value is validated as "Month <position>".
+          const monthLabel = `Month ${position + 1}`;
           return (
             <Box key={fieldLabel} sx={STATEMENT_ROW_SX}>
               <Box component="label" sx={STATEMENT_LABEL_SX}>
                 {label}
-                {section.fields[index][2] && <RequiredMark />}
+                {(isFinancialFieldRequired(section.key, fieldLabel) ??
+                  section.fields[index][2]) && <RequiredMark />}
               </Box>
               <Box sx={STATEMENT_INPUTS_SX}>
                 <FinancialControl
@@ -962,6 +1036,9 @@ function StatementBody({
                   ariaLabel={`Select month for ${label}`}
                   kind="month"
                   readOnly={!editing}
+                  validate={(value) =>
+                    validateFinancialField(section.key, monthLabel, value)
+                  }
                 />
                 <FieldBlock section={section} index={index} />
               </Box>
@@ -1321,8 +1398,64 @@ export function Financial({
     [stopEditing],
   );
 
+  /** Validates every field of a section against its schema and shows the errors; true when valid. */
+  const validateSection = useCallback(
+    (sectionKey: string) => {
+      const section = sections.find((item) => item.key === sectionKey);
+      if (!section) return true;
+      let valid = true;
+      const check = (id: string, label: string) => {
+        const message = validateFinancialField(
+          section.key,
+          label,
+          store.get(id),
+        );
+        store.setError(id, message);
+        if (message) valid = false;
+      };
+      const monthlyLayout = FINANCIAL_MONTHLY_INCOME_LAYOUTS[section.key];
+      section.fields.forEach(([label], index) => {
+        // In monthly-income sections "Month N" is rendered as an entry row, not as a field.
+        if (monthlyLayout && /^Month \d+$/.test(label)) return;
+        check(fieldId(section.key, index), label);
+      });
+      // Statement sections (e.g. Salary Slips) have a month dropdown beside each monthly value.
+      FINANCIAL_STATEMENT_LAYOUTS[section.key]?.monthly.forEach(
+        (item, position) => {
+          const index = findFieldIndex(section, toLabelRef(item).fieldLabel);
+          if (index >= 0)
+            check(
+              `${fieldId(section.key, index)}-month`,
+              `Month ${position + 1}`,
+            );
+        },
+      );
+      // Receipts tables (FORM J) have a month dropdown per row that is not a section field.
+      const tableLayout = FINANCIAL_TABLE_LAYOUTS[section.key];
+      if (tableLayout?.kind === "receipts") {
+        tableLayout.rows.forEach((rowLabel) =>
+          check(`${section.key}-month-${rowLabel}`, rowLabel),
+        );
+      }
+      if (monthlyLayout) {
+        for (let n = 1; n <= monthlyLayout.entries; n += 1) {
+          check(`${section.key}-entry-month-${n}`, `Month ${n}`);
+          check(`${section.key}-entry-income-${n}`, `Income for Month ${n}`);
+        }
+      }
+      if (!valid)
+        setSnackbar({
+          message: FINANCIAL_MESSAGES.validationFailed,
+          severity: "warning",
+        });
+      return valid;
+    },
+    [sections, store],
+  );
+
   const handleSave = useCallback(
     (sectionKey: string) => {
+      if (!validateSection(sectionKey)) return;
       stopEditing(sectionKey, false);
       const title =
         sections.find((section) => section.key === sectionKey)?.title ?? "";
@@ -1331,7 +1464,7 @@ export function Financial({
         severity: "success",
       });
     },
-    [sections, stopEditing],
+    [sections, stopEditing, validateSection],
   );
 
   /** Opens the chosen document in a popup, remembering its values so closing without saving discards edits. */
@@ -1352,13 +1485,14 @@ export function Financial({
 
   const saveDialog = useCallback(() => {
     if (!dialogKey) return;
+    if (!validateSection(dialogKey)) return;
     stopEditing(dialogKey, false);
     setSnackbar({
       message: FINANCIAL_MESSAGES.sectionSaved(dialogSection?.title ?? ""),
       severity: "success",
     });
     setDialogOpen(false);
-  }, [dialogKey, dialogSection, stopEditing]);
+  }, [dialogKey, dialogSection, stopEditing, validateSection]);
 
   const handleApplicantChange = (applicantKey: string) => {
     setActiveApplicantKey(applicantKey);

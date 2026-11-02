@@ -964,6 +964,7 @@ export const FINANCIAL_MESSAGES = {
   documents: "Financial documents are available in the source application.",
   submitted: "Financial details submitted successfully.",
   sectionSaved: (title: string) => `${title} saved successfully.`,
+  validationFailed: "Please correct the highlighted fields before saving.",
 } as const;
 
 const YES_NO_LABEL = /^(Is\b|Photo available\b|Latest 6 months.*statements given\b|Any Overdraft)/i;
