@@ -68,8 +68,13 @@
       "types": "./src/modules/Financial/Financial.tsx",
       "import": "./src/modules/Financial/Financial.tsx",
       "default": "./src/modules/Financial/Financial.tsx"
-    },
-    "./life-assured": {
+  },
+  "./medical": {
+    "types": "./src/modules/Medical/Medical.tsx",
+    "import": "./src/modules/Medical/Medical.tsx",
+    "default": "./src/modules/Medical/Medical.tsx"
+  },
+  "./life-assured": {
       "types": "./src/components/LifeAssured/LifeAssured.tsx",
       "import": "./src/components/LifeAssured/LifeAssured.tsx",
       "default": "./src/components/LifeAssured/LifeAssured.tsx"

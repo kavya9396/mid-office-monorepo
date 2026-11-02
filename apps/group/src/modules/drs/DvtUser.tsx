@@ -12,6 +12,7 @@ import { DetailCard } from "@insurance-poc/common/detail-card";
 import { DecisionSection, type DecisionSubmitPayload } from "@insurance-poc/common/decision-section";
 import { LifeAssured } from "@insurance-poc/common/life-assured";
 import { Financial } from "@insurance-poc/common/financial";
+import { Medical } from "@insurance-poc/common/medical";
 import { RequirementMgmt } from "@insurance-poc/common/requirement-mgmt";
 import { QuickLinksModule } from "@insurance-poc/common/quick-links";
 import { ApplicantProfile } from "@insurance-poc/common/applicant-profile";
@@ -36,6 +37,7 @@ const quickLinksConfig = GROUP_QUICK_LINKS_CONFIG.dvt;
 
 const DRS_PATH = "/drs";
 const FINANCIAL_PATH = "/drs/financial";
+const MEDICAL_PATH = "/drs/medical";
 const APPLICANT_ID_PARAM = "applicantId";
 
 export interface DvtUserProps {
@@ -73,6 +75,7 @@ const DvtUser = () => {
   const [params] = useSearchParams();
   const lowerPath = pathname.toLowerCase();
   const isFinancialRoute = lowerPath.endsWith(FINANCIAL_PATH) || lowerPath.endsWith(`${FINANCIAL_PATH}/`);
+  const isMedicalRoute = lowerPath.endsWith(MEDICAL_PATH) || lowerPath.endsWith(`${MEDICAL_PATH}/`);
   const requestedApplicationNo = params.get("applicationNo")?.trim() ?? "";
   const drs = useGetGroupDrsQuery(requestedApplicationNo);
   const applicationNo = requestedApplicationNo || drs.data?.applicationNo || "";
@@ -86,6 +89,17 @@ const DvtUser = () => {
     navigate({ pathname: FINANCIAL_PATH, search: `?${next.toString()}` });
   };
   const closeFinancial = () => {
+    const next = new URLSearchParams(params);
+    next.delete(APPLICANT_ID_PARAM);
+    const query = next.toString();
+    navigate({ pathname: DRS_PATH, search: query ? `?${query}` : "" });
+  };
+  const openMedical = (applicantId: string) => {
+    const next = new URLSearchParams(params);
+    next.set(APPLICANT_ID_PARAM, applicantId);
+    navigate({ pathname: MEDICAL_PATH, search: `?${next.toString()}` });
+  };
+  const closeMedical = () => {
     const next = new URLSearchParams(params);
     next.delete(APPLICANT_ID_PARAM);
     const query = next.toString();
@@ -145,6 +159,19 @@ const DvtUser = () => {
         initialApplicantKey={params.get(APPLICANT_ID_PARAM)?.trim() || undefined}
         onBack={closeFinancial}
         onSubmit={(payload) => console.log("Submit financial", payload)}
+      />
+    );
+  }
+
+  if (isMedicalRoute) {
+    const medicalApplicants = applicants.map((applicant) => ({ key: applicant.id, label: applicant.label }));
+    return (
+      <Medical
+        summary={detailCards}
+        applicants={medicalApplicants.length > 0 ? medicalApplicants : undefined}
+        initialApplicantKey={params.get(APPLICANT_ID_PARAM)?.trim() || undefined}
+        onBack={closeMedical}
+        onSubmit={(payload) => console.log("Submit medical", payload)}
       />
     );
   }
@@ -249,7 +276,7 @@ const DvtUser = () => {
       <LifeAssured
         applicants={applicants}
         onEdit={handleApplicantAction("Edit")}
-        onViewMedical={handleApplicantAction("View Medical")}
+        onViewMedical={openMedical}
         onViewFinancial={openFinancial}
       />
 

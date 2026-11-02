@@ -20,9 +20,11 @@ import {
   CustomSearchSelect,
   CustomSelect,
   CustomSnackbar,
+  CustomTable,
   CustomTabs,
   CustomTextField,
   ScrollToTop,
+  type Column,
 } from "@insurance-poc/ui";
 import {
   buildFinancialYesNoOptions,
@@ -360,28 +362,7 @@ const INCOME_DIVIDER_SX = {
   pt: "2px",
   borderTop: "1px solid #E4E7EC",
 } as const;
-const INCOME_TABLE_SX = {
-  width: "100%",
-  borderCollapse: "separate",
-  borderSpacing: 0,
-  overflow: "hidden",
-  border: "1px solid #E4E7EC",
-  borderRadius: "7px",
-  bgcolor: "#fff",
-  "& th, & td": {
-    p: "7px 9px",
-    textAlign: "left",
-    verticalAlign: "middle",
-    borderBottom: "1px solid #E4E7EC",
-  },
-  "& tr:last-child td": { borderBottom: 0 },
-  "& th": {
-    color: "#6B2731",
-    bgcolor: "#FFF3EE",
-    fontSize: 11,
-    fontWeight: 700,
-  },
-} as const;
+const INCOME_HEADER_SX = { fontSize: 12, fontWeight: 600, color: "#000" } as const;
 const STATEMENT_GRID_SX = {
   display: "grid",
   gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
@@ -851,6 +832,13 @@ if (count === 6) {
   );
 }
 
+interface MonthlyIncomeRow {
+  number: number;
+  month: string;
+  selected: string;
+  income: string;
+}
+
 function MonthlyIncomeBody({
   section,
   layout,
@@ -868,53 +856,70 @@ function MonthlyIncomeBody({
         !/month|monthly|net salary credited pm|sip per month/i.test(label),
     );
 
+  const rows = useMemo<MonthlyIncomeRow[]>(
+    () =>
+      Array.from({ length: layout.entries }, (_, i) => ({
+        number: i + 1,
+        month: `Month ${i + 1}`,
+        selected: "",
+        income: "",
+      })),
+    [layout.entries],
+  );
+
+  const columns = useMemo<Column<MonthlyIncomeRow>[]>(
+    () => [
+      { key: "month", header: "Month" },
+      {
+        key: "selected",
+        headerRender: () => (
+          <Box component="span" sx={INCOME_HEADER_SX}>
+            Selected Month
+            <RequiredMark />
+          </Box>
+        ),
+        render: (_value, row) => (
+          <FinancialControl
+            id={`${section.key}-entry-month-${row.number}`}
+            ariaLabel={`Month ${row.number}`}
+            kind="month"
+            readOnly={!editing}
+          />
+        ),
+      },
+      {
+        key: "income",
+        headerRender: () => (
+          <Box component="span" sx={INCOME_HEADER_SX}>
+            Income
+            <RequiredMark />
+          </Box>
+        ),
+        render: (_value, row) => (
+          <FinancialControl
+            id={`${section.key}-entry-income-${row.number}`}
+            ariaLabel={`Income for month ${row.number}`}
+            kind="text"
+            type="number"
+            placeholder="Enter income"
+            readOnly={!editing}
+          />
+        ),
+      },
+    ],
+    [section.key, editing],
+  );
+
   return (
     <Box sx={INCOME_BLOCK_SX}>
       {layout.top.length > 0 && (
         <FieldGrid section={section} labels={layout.top} flush />
       )}
-      <Box component="table" sx={INCOME_TABLE_SX}>
-        <thead>
-          <tr>
-            <th>Month</th>
-            <th>
-              Selected Month
-              <RequiredMark />
-            </th>
-            <th>
-              Income
-              <RequiredMark />
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {Array.from({ length: layout.entries }, (_, i) => i + 1).map(
-            (number) => (
-              <tr key={number}>
-                <td>Month {number}</td>
-                <td>
-                  <FinancialControl
-                    id={`${section.key}-entry-month-${number}`}
-                    ariaLabel={`Month ${number}`}
-                    kind="month"
-                    readOnly={!editing}
-                  />
-                </td>
-                <td>
-                  <FinancialControl
-                    id={`${section.key}-entry-income-${number}`}
-                    ariaLabel={`Income for month ${number}`}
-                    kind="text"
-                    type="number"
-                    placeholder="Enter income"
-                    readOnly={!editing}
-                  />
-                </td>
-              </tr>
-            ),
-          )}
-        </tbody>
-      </Box>
+      <CustomTable<MonthlyIncomeRow>
+        columns={columns}
+        data={rows}
+        getRowId={(row) => row.number}
+      />
       {layout.average.length > 0 && (
         <Box sx={INCOME_DIVIDER_SX}>
           <FieldGrid section={section} labels={layout.average} flush />
@@ -1206,6 +1211,7 @@ export function Financial({
   /** Mirror of `editing` so handlers stay referentially stable. */
   const editingRef = useRef<Record<string, boolean>>({});
   const observerLockUntil = useRef(0);
+  const navRef = useRef<HTMLElement | null>(null);
 
   const registerRef = useCallback(
     (sectionKey: string, element: HTMLElement | null) => {
@@ -1250,6 +1256,24 @@ export function Financial({
       window.removeEventListener("scrollend", releaseLock);
     };
   }, [sections]);
+
+  // Keep the highlighted left-panel item visible: scroll only the panel (never the page) when
+  // the active item is outside its visible area, centring it for context.
+  useEffect(() => {
+    const nav = navRef.current;
+    const item = nav?.querySelector<HTMLElement>(
+      `[data-target="${activeSectionKey}"]`,
+    );
+    if (!nav || !item) return;
+    const navRect = nav.getBoundingClientRect();
+    const itemRect = item.getBoundingClientRect();
+    if (itemRect.top >= navRect.top && itemRect.bottom <= navRect.bottom) return;
+    const top =
+      nav.scrollTop +
+      (itemRect.top - navRect.top) -
+      (nav.clientHeight - item.offsetHeight) / 2;
+    nav.scrollTo({ top, behavior: "smooth" });
+  }, [activeSectionKey]);
 
   const dialogSection = useMemo(
     () => sections.find((section) => section.key === dialogKey),
@@ -1377,7 +1401,6 @@ export function Financial({
           width: "100%",
           minWidth: 0,
           p: "16px",
-          bgcolor: "#fff",
           display: "grid",
           gridTemplateColumns: "minmax(0, 1fr)",
           alignItems: "start",
@@ -1428,7 +1451,7 @@ export function Financial({
                 borderColor: "primary.main",
                 borderRadius: "50%",
                 color: colors.primary,
-                bgcolor: "#FFF4EC",
+                bgcolor: "#fff",
                 fontSize: 12,
                 fontWeight: 800,
               }}
@@ -1483,7 +1506,12 @@ export function Financial({
             },
           }}
         >
-          <Box component="nav" aria-label="Financial sections" sx={NAV_SX}>
+          <Box
+            component="nav"
+            ref={navRef}
+            aria-label="Financial sections"
+            sx={NAV_SX}
+          >
             {sections.map((section) => (
               <NavItem
                 key={section.key}

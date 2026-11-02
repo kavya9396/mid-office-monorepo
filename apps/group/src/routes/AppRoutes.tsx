@@ -34,6 +34,7 @@ export function AppRoutes() {
           <Route path="/inbox" element={<GroupInboxPage />} />
           <Route path="/drs" element={<GroupDrsPage />} />
           <Route path="/drs/financial" element={<GroupDrsPage />} />
+          <Route path="/drs/medical" element={<GroupDrsPage />} />
           {/* <Route path="/applicant-profile" element={<GroupApplicantProfilePage />} /> */}
           <Route path="/previous-policy" element={<GroupPreviousPolicyPage />} />
           <Route path="/open-tasks" element={<GroupOpenTasksPage />} />
