@@ -49,6 +49,16 @@ import {
   type MedicalSection,
   type MedicalSubmitPayload,
 } from "./medical.config";
+import {
+  calculateMedicalAverage,
+  calculateMedicalMeasurements,
+  getMedicalFamilyRowValidator,
+  getMedicalFieldValidator,
+  getMedicalParameterValidator,
+  MEDICAL_PARAMETER_COLUMNS,
+  type MedicalFieldValidator,
+  type MedicalParameterColumn,
+} from "./medical.schema";
 
 dayjs.extend(customParseFormat);
 
@@ -84,12 +94,63 @@ interface MedicalStore {
 const fieldId = (sectionKey: string, index: number) =>
   `${sectionKey}-${index}`;
 
-/** Prototype default rows: Father, Mother and one blank row to be picked by the user. */
+/** Store id of the field `validator` depends on (same section), if any. */
+const dependencyFieldId = (
+  section: MedicalSection,
+  validator: MedicalFieldValidator | undefined,
+): string | undefined => {
+  if (!validator?.dependsOn) return undefined;
+  const index = section.fields.findIndex(
+    ([label]) => label === validator.dependsOn,
+  );
+  return index === -1 ? undefined : fieldId(section.key, index);
+};
+
+/** Field labels used by each section that auto-calculates feet / inches / BMI. */
+const MEASUREMENT_SECTION_LABELS: readonly {
+  sectionKey: string;
+  height: string;
+  weight: string;
+  feet: string;
+  inches: string;
+  bmi: string;
+}[] = [
+  {
+    sectionKey: "measurement",
+    height: "Height (cms)",
+    weight: "Weight (Kgs)",
+    feet: "Height (Fts)",
+    inches: "Inches",
+    bmi: "BMI",
+  },
+  {
+    sectionKey: "tele_measurements",
+    height: "Height (cms)",
+    weight: "Weight (kgs)",
+    feet: "Height (ft)",
+    inches: "Inches",
+    bmi: "BMI",
+  },
+];
+
+/** Starter rows: Father and Mother. Further rows are added by the user. */
 const FAMILY_DEFAULT_ROWS: readonly MedicalFamilyRow[] = [
   { relation: "Father" },
   { relation: "Mother" },
-  { relation: "" },
 ];
+
+const FAMILY_FIXED_RELATIONS: readonly string[] = ["Father", "Mother"];
+
+/** Ids of the Father / Mother starter rows: their relation is locked and they cannot be removed. */
+const familyFixedRowIds = (section: MedicalSection): ReadonlySet<string> =>
+  new Set(
+    (section.familyRows ?? FAMILY_DEFAULT_ROWS).flatMap((row, i) =>
+      FAMILY_FIXED_RELATIONS.includes(row.relation) ? [String(i + 1)] : [],
+    ),
+  );
+
+const FAMILY_RELATION_VALIDATOR = getMedicalFamilyRowValidator("relation");
+const FAMILY_AGE_VALIDATOR = getMedicalFamilyRowValidator("age");
 
 const createInitialValues = (sections: readonly MedicalSection[]) => {
   const initial: Record<string, string> = {};
@@ -164,6 +225,8 @@ const createMedicalStore = (
 
 const StoreContext = createContext<MedicalStore | null>(null);
 const EditingContext = createContext(false);
+/** True once Save was attempted on the section, so untouched invalid fields show their error. */
+const ValidationAttemptedContext = createContext(false);
 
 function useMedicalStore(): MedicalStore {
   const store = useContext(StoreContext);
@@ -413,6 +476,10 @@ interface MedicalControlProps {
   selectPlaceholder?: string;
   /** Overrides the dropdown options derived from `kind`. */
   options?: readonly MedicalOption[];
+  /** Schema-backed field validator; when set, errors are shown on the control. */
+  validator?: MedicalFieldValidator;
+  /** Store id of the field the validator's rules depend on. */
+  dependencyId?: string;
 }
 
 const MedicalControl = memo(function MedicalControl({
@@ -424,13 +491,30 @@ const MedicalControl = memo(function MedicalControl({
   placeholder = "-",
   selectPlaceholder = "Select",
   options: optionsOverride,
+  validator,
+  dependencyId,
 }: Readonly<MedicalControlProps>) {
   const store = useMedicalStore();
   const value = useFieldValue(id);
+  const dependencyValue = useFieldValue(dependencyId ?? "");
+  const attempted = useContext(ValidationAttemptedContext);
+  const [touched, setTouched] = useState(false);
   const onChange = useCallback(
-    (next: string) => store.set(id, next),
+    (next: string) => {
+      store.set(id, next);
+      setTouched(true);
+    },
     [store, id],
   );
+
+  useEffect(() => {
+    if (readOnly) setTouched(false);
+  }, [readOnly]);
+
+  const errorMessage =
+    !readOnly && (touched || attempted)
+      ? validator?.validate(value, dependencyValue)
+      : undefined;
 
   if (readOnly) {
     return (
@@ -455,6 +539,8 @@ const MedicalControl = memo(function MedicalControl({
           value={value}
           placeholder={selectPlaceholder}
           onChange={onChange}
+          error={Boolean(errorMessage)}
+          helperText={errorMessage}
         />
       </Box>
     );
@@ -468,6 +554,8 @@ const MedicalControl = memo(function MedicalControl({
           format={MEDICAL_DATE_FORMAT}
           maxDate={dayjs()}
           disableTodayAndFuture={false}
+          error={Boolean(errorMessage)}
+          helperText={errorMessage}
           onChange={(next) =>
             onChange(next ? next.format(MEDICAL_DATE_FORMAT) : "")
           }
@@ -484,6 +572,9 @@ const MedicalControl = memo(function MedicalControl({
         value={value}
         placeholder={placeholder}
         onChange={(event) => onChange(event.target.value)}
+        onBlur={() => setTouched(true)}
+        error={Boolean(errorMessage)}
+        helperText={errorMessage}
         htmlInputProps={{ "aria-label": ariaLabel }}
       />
     </Box>
@@ -504,7 +595,15 @@ const FieldBlock = memo(function FieldBlock({
   forceReadOnly = false,
 }: Readonly<FieldBlockProps>) {
   const editing = useContext(EditingContext);
-  const [label, , required] = section.fields[index];
+  const [label, , configRequired] = section.fields[index];
+  const validator = useMemo(
+    () => getMedicalFieldValidator(section.key, label),
+    [section.key, label],
+  );
+  const dependencyId = dependencyFieldId(section, validator);
+  const dependencyValue = useFieldValue(dependencyId ?? "");
+  // The schema decides whether a field is mandatory; the config flag is the fallback.
+  const required = validator?.isRequired(dependencyValue) ?? configRequired;
   const kind = resolveMedicalControlKind(section.key, label);
   const locked =
     forceReadOnly ||
@@ -526,6 +625,9 @@ const FieldBlock = memo(function FieldBlock({
         kind={kind}
         readOnly={readOnly}
         selectPlaceholder={section.selectPlaceholder}
+        options={validator?.options}
+        validator={validator}
+        dependencyId={dependencyId}
       />
     </Box>
   );
@@ -596,18 +698,27 @@ const FamilyHistoryBody = memo(function FamilyHistoryBody({
     [ids],
   );
 
+  const fixedIds = useMemo(() => familyFixedRowIds(section), [section]);
+
   const columns = useMemo<Column<FamilyRow>[]>(
     () => [
       {
         key: "relation",
         header: "Relation Type",
         width: "24%",
+        headerRender: () => (
+          <Typography sx={{ fontSize: "12px", fontWeight: 600, color: "#000" }}>
+            Relation Type
+            {FAMILY_RELATION_VALIDATOR.isRequired() && <RequiredMark />}
+          </Typography>
+        ),
         render: (_value, row) => (
           <MedicalControl
             id={familyRowKey(section.key, row.id, "relation")}
             ariaLabel={`Relation type, row ${row.id}`}
             kind="familyRelation"
-            readOnly={!editing}
+            readOnly={!editing || fixedIds.has(row.id)}
+            validator={FAMILY_RELATION_VALIDATOR}
           />
         ),
       },
@@ -615,12 +726,19 @@ const FamilyHistoryBody = memo(function FamilyHistoryBody({
         key: "age",
         header: "Age",
         width: "12%",
+        headerRender: () => (
+          <Typography sx={{ fontSize: "12px", fontWeight: 600, color: "#000" }}>
+            Age
+            {FAMILY_AGE_VALIDATOR.isRequired() && <RequiredMark />}
+          </Typography>
+        ),
         render: (_value, row) => (
           <MedicalControl
             id={familyRowKey(section.key, row.id, "age")}
             ariaLabel={`Age, row ${row.id}`}
             kind="number"
             readOnly={!editing}
+            validator={FAMILY_AGE_VALIDATOR}
           />
         ),
       },
@@ -658,7 +776,7 @@ const FamilyHistoryBody = memo(function FamilyHistoryBody({
           <CustomButton
             variant="text"
             aria-label={`Remove family member, row ${row.id}`}
-            disabled={!editing}
+            disabled={!editing || fixedIds.has(row.id)}
             onClick={() => removeRow(row.id)}
             sx={FAMILY_DELETE_SX}
           >
@@ -667,7 +785,7 @@ const FamilyHistoryBody = memo(function FamilyHistoryBody({
         ),
       },
     ],
-    [editing, removeRow, section.key],
+    [editing, fixedIds, removeRow, section.key],
   );
 
   return (
@@ -715,6 +833,13 @@ const HabitAddictionBody = memo(function HabitAddictionBody({
   section,
 }: Readonly<{ section: MedicalSection }>) {
   const editing = useContext(EditingContext);
+  const validators = useMemo(
+    () =>
+      section.fields.map(([label]) =>
+        getMedicalFieldValidator(section.key, label),
+      ),
+    [section.fields, section.key],
+  );
 
   const rows = useMemo<HabitRow[]>(() => {
     const habits: HabitRow[] = [];
@@ -734,16 +859,32 @@ const HabitAddictionBody = memo(function HabitAddictionBody({
       fieldIndex: string,
       label: string,
       kind: "yesNo" | "number",
-    ) => (
-      <MedicalControl
-        id={fieldId(section.key, Number(fieldIndex))}
-        ariaLabel={label}
-        kind={kind}
-        readOnly={!editing}
-      />
-    );
+    ) => {
+      const validator = validators[Number(fieldIndex)];
+      return (
+        <MedicalControl
+          id={fieldId(section.key, Number(fieldIndex))}
+          ariaLabel={label}
+          kind={kind}
+          readOnly={!editing}
+          selectPlaceholder={section.selectPlaceholder}
+          validator={validator}
+          dependencyId={dependencyFieldId(section, validator)}
+        />
+      );
+    };
     return [
-      { key: "habit", header: "", width: "28%" },
+      {
+        key: "habit",
+        header: "",
+        width: "28%",
+        render: (_value, row) => (
+          <>
+            {row.habit}
+            {validators[Number(row.indicator)]?.isRequired() && <RequiredMark />}
+          </>
+        ),
+      },
       {
         key: "indicator",
         header: "INDICATOR",
@@ -829,6 +970,20 @@ interface LabResultRow {
 
 const LAB_TABLE_WRAP_SX = { p: "0 10px 10px", minWidth: 0, overflowX: "auto" } as const;
 
+const LAB_PLAIN_TEXT_SX = { color: "#344054", fontSize: 13 } as const;
+
+const PlainTextValue = memo(function PlainTextValue({
+  id,
+  ariaLabel,
+}: Readonly<{ id: string; ariaLabel: string }>) {
+  const value = useFieldValue(id);
+  return (
+    <Box component="span" aria-label={ariaLabel} data-field={id} sx={LAB_PLAIN_TEXT_SX}>
+      {value || "-"}
+    </Box>
+  );
+});
+
 const LabResultTable = memo(function LabResultTable({
   section,
 }: Readonly<{ section: MedicalSection }>) {
@@ -840,17 +995,33 @@ const LabResultTable = memo(function LabResultTable({
       labels.map((label) => {
         const index = section.fields.findIndex(([fieldLabel]) => fieldLabel === label);
         const locked = MEDICAL_LOCKED_FIELDS.has(`${section.key}:${label}`);
+        const validator = getMedicalFieldValidator(section.key, label);
         return {
           key: label,
           header: label,
-          render: () => (
-            <MedicalControl
-              id={fieldId(section.key, index)}
-              ariaLabel={`${section.title}: ${label}`}
-              kind={resolveMedicalControlKind(section.key, label)}
-              readOnly={!editing || locked}
-            />
+          headerRender: () => (
+            <Typography sx={{ fontSize: "12px", fontWeight: 600, color: "#000" }}>
+              {label}
+              {validator?.isRequired() && <RequiredMark />}
+            </Typography>
           ),
+          render: () =>
+            section.plainTextTableFieldLabels?.includes(label) ? (
+              <PlainTextValue
+                id={fieldId(section.key, index)}
+                ariaLabel={`${section.title}: ${label}`}
+              />
+            ) : (
+              <MedicalControl
+                id={fieldId(section.key, index)}
+                ariaLabel={`${section.title}: ${label}`}
+                kind={resolveMedicalControlKind(section.key, label)}
+                readOnly={!editing || locked}
+                selectPlaceholder={section.selectPlaceholder}
+                options={validator?.options}
+                validator={validator}
+              />
+            ),
         };
       }),
     [editing, labels, section],
@@ -916,6 +1087,38 @@ const PARAM_ABNORMAL_COLOR = "#B42318";
 const paramId = (sectionKey: string, index: number, column: string) =>
   `${sectionKey}-param-${index}-${column}`;
 
+/** Store id of the partner parameter's Value that `validator` depends on, if any. */
+const parameterDependencyId = (
+  section: MedicalSection,
+  validator: MedicalFieldValidator | undefined,
+): string | undefined => {
+  if (!validator?.dependsOn) return undefined;
+  const index = (section.parameters ?? []).findIndex(
+    ([name]) => name === validator.dependsOn,
+  );
+  return index === -1 ? undefined : paramId(section.key, index, "value");
+};
+
+/** Parameter name with an asterisk when the schema makes its Value mandatory. */
+const ParameterName = memo(function ParameterName({
+  section,
+  row,
+}: Readonly<{ section: MedicalSection; row: ParameterRow }>) {
+  const validator = useMemo(
+    () => getMedicalParameterValidator(section.key, row.name, "value"),
+    [section.key, row.name],
+  );
+  const dependencyId = parameterDependencyId(section, validator);
+  const dependencyValue = useFieldValue(dependencyId ?? "");
+  const required = validator?.isRequired(dependencyValue) ?? row.required;
+  return (
+    <>
+      {row.name}
+      {required && <RequiredMark />}
+    </>
+  );
+});
+
 const ParameterFindings = memo(function ParameterFindings({
   sectionKey,
   index,
@@ -958,30 +1161,34 @@ const ParameterTable = memo(function ParameterTable({
   const columns = useMemo<Column<ParameterRow>[]>(() => {
     const control = (
       row: ParameterRow,
-      column: string,
+      column: MedicalParameterColumn | "unit",
       label: string,
       kind: "number" | "text" = "number",
       options?: readonly MedicalOption[],
-    ) => (
-      <MedicalControl
-        id={paramId(section.key, row.index, column)}
-        ariaLabel={`${row.name}: ${label}`}
-        kind={kind}
-        readOnly={!editing}
-        options={options}
-      />
-    );
+    ) => {
+      const validator =
+        column === "unit"
+          ? undefined
+          : getMedicalParameterValidator(section.key, row.name, column);
+      return (
+        <MedicalControl
+          id={paramId(section.key, row.index, column)}
+          ariaLabel={`${row.name}: ${label}`}
+          kind={kind}
+          readOnly={!editing}
+          options={validator?.options ?? options}
+          selectPlaceholder={section.selectPlaceholder}
+          validator={validator}
+          dependencyId={parameterDependencyId(section, validator)}
+        />
+      );
+    };
     return [
       {
         key: "name",
         header: "Parameter",
         width: "22%",
-        render: (_value, row) => (
-          <>
-            {row.name}
-            {row.required && <RequiredMark />}
-          </>
-        ),
+        render: (_value, row) => <ParameterName section={section} row={row} />,
       },
       {
         key: "index",
@@ -1019,7 +1226,7 @@ const ParameterTable = memo(function ParameterTable({
         ),
       },
     ];
-  }, [editing, section.key]);
+  }, [editing, section]);
 
   return (
     <Box sx={PARAM_WRAP_SX}>
@@ -1077,6 +1284,7 @@ const SectionBody = memo(function SectionBody({
 interface SectionCardProps {
   section: MedicalSection;
   editing: boolean;
+  validationAttempted: boolean;
   onEdit: (sectionKey: string) => void;
   onSave: (sectionKey: string) => void;
   onReset: (sectionKey: string) => void;
@@ -1086,6 +1294,7 @@ interface SectionCardProps {
 const SectionCard = memo(function SectionCard({
   section,
   editing,
+  validationAttempted,
   onEdit,
   onSave,
   onReset,
@@ -1142,7 +1351,9 @@ const SectionCard = memo(function SectionCard({
 
       <Box sx={{ minWidth: 0 }}>
         <EditingContext.Provider value={editing || alwaysEditable}>
-          <SectionBody section={section} />
+          <ValidationAttemptedContext.Provider value={validationAttempted}>
+            <SectionBody section={section} />
+          </ValidationAttemptedContext.Provider>
         </EditingContext.Provider>
       </Box>
     </Box>
@@ -1207,7 +1418,78 @@ export function Medical({
     () => createMedicalStore(createInitialValues(sections)),
     [sections],
   );
+  // Measurements: feet, inches and BMI are disabled and auto calculated.
+  useEffect(() => {
+    const cleanups = MEASUREMENT_SECTION_LABELS.flatMap((labels) => {
+      const section = sections.find((s) => s.key === labels.sectionKey);
+      if (!section) return [];
+      const idOf = (label: string) => {
+        const index = section.fields.findIndex(([l]) => l === label);
+        return index === -1 ? undefined : fieldId(section.key, index);
+      };
+      const heightId = idOf(labels.height);
+      const weightId = idOf(labels.weight);
+      const feetId = idOf(labels.feet);
+      const inchesId = idOf(labels.inches);
+      const bmiId = idOf(labels.bmi);
+      if (!heightId || !weightId || !feetId || !inchesId || !bmiId) return [];
+
+      const recalculate = () => {
+        const derived = calculateMedicalMeasurements(
+          store.get(heightId),
+          store.get(weightId),
+        );
+        store.set(feetId, derived.heightFts);
+        store.set(inchesId, derived.inches);
+        store.set(bmiId, derived.bmi);
+      };
+      if (store.get(heightId) || store.get(weightId)) recalculate();
+      return [
+        store.subscribe(heightId, recalculate),
+        store.subscribe(weightId, recalculate),
+      ];
+    });
+    return () => cleanups.forEach((cleanup) => cleanup());
+  }, [sections, store]);
+
+  // Blood pressure: Avg Systolic / Avg Diastolic are disabled and auto populated.
+  useEffect(() => {
+    const section = sections.find(
+      (s) => s.key === "blood_pressure_pulse_details",
+    );
+    if (!section) return;
+    const idsOf = (prefix: string) =>
+      section.fields.flatMap(([label], index) =>
+        new RegExp(`^${prefix} [1-3]$`).test(label)
+          ? [fieldId(section.key, index)]
+          : [],
+      );
+    const idOf = (label: string) => {
+      const index = section.fields.findIndex(([l]) => l === label);
+      return index === -1 ? undefined : fieldId(section.key, index);
+    };
+    const groups = [
+      { readingIds: idsOf("Systolic"), averageId: idOf("Avg Systolic") },
+      { readingIds: idsOf("Diastolic"), averageId: idOf("Avg Diastolic") },
+    ];
+
+    const cleanups = groups.flatMap(({ readingIds, averageId }) => {
+      if (!averageId) return [];
+      const recalculate = () =>
+        store.set(
+          averageId,
+          calculateMedicalAverage(readingIds.map((id) => store.get(id))),
+        );
+      if (readingIds.some((id) => store.get(id))) recalculate();
+      return readingIds.map((id) => store.subscribe(id, recalculate));
+    });
+    return () => cleanups.forEach((cleanup) => cleanup());
+  }, [sections, store]);
+
   const [editing, setEditing] = useState<Record<string, boolean>>({});
+  const [validationAttempted, setValidationAttempted] = useState<
+    Record<string, boolean>
+  >({});
   const [dialogKey, setDialogKey] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [activeSectionKey, setActiveSectionKey] = useState(
@@ -1366,22 +1648,89 @@ export function Medical({
     [store],
   );
 
+  const setAttempted = useCallback((sectionKey: string, value: boolean) => {
+    setValidationAttempted((prev) =>
+      prev[sectionKey] === value ? prev : { ...prev, [sectionKey]: value },
+    );
+  }, []);
+
+  /** Runs the section's schema validators; returns true when every field is valid. */
+  const validateSection = useCallback(
+    (section: MedicalSection) => {
+      if (section.layout === "familyHistory") {
+        const rowIds = store.get(`${section.key}-rows`);
+        return (rowIds ? rowIds.split(",") : []).every(
+          (rowId) =>
+            FAMILY_RELATION_VALIDATOR.validate(
+              store.get(familyRowKey(section.key, rowId, "relation")),
+            ) === undefined &&
+            FAMILY_AGE_VALIDATOR.validate(
+              store.get(familyRowKey(section.key, rowId, "age")),
+            ) === undefined,
+        );
+      }
+      const parametersValid = (section.parameters ?? []).every(([name], index) =>
+        MEDICAL_PARAMETER_COLUMNS.every((column) => {
+          const validator = getMedicalParameterValidator(section.key, name, column);
+          if (!validator) return true;
+          const dependencyId = parameterDependencyId(section, validator);
+          return (
+            validator.validate(
+              store.get(paramId(section.key, index, column)),
+              dependencyId ? store.get(dependencyId) : undefined,
+            ) === undefined
+          );
+        }),
+      );
+      if (!parametersValid) return false;
+      return section.fields.every(([label], index) => {
+        if (
+          MEDICAL_LOCKED_FIELDS.has(label) ||
+          MEDICAL_LOCKED_FIELDS.has(`${section.key}:${label}`)
+        ) {
+          return true;
+        }
+        const validator = getMedicalFieldValidator(section.key, label);
+        if (!validator) return true;
+        const dependencyId = dependencyFieldId(section, validator);
+        return (
+          validator.validate(
+            store.get(fieldId(section.key, index)),
+            dependencyId ? store.get(dependencyId) : undefined,
+          ) === undefined
+        );
+      });
+    },
+    [store],
+  );
+
   const handleReset = useCallback(
-    (sectionKey: string) => stopEditing(sectionKey, true),
-    [stopEditing],
+    (sectionKey: string) => {
+      setAttempted(sectionKey, false);
+      stopEditing(sectionKey, true);
+    },
+    [setAttempted, stopEditing],
   );
 
   const handleSave = useCallback(
     (sectionKey: string) => {
+      const section = sections.find((s) => s.key === sectionKey);
+      if (section && !validateSection(section)) {
+        setAttempted(sectionKey, true);
+        setSnackbar({
+          message: MEDICAL_MESSAGES.validationFailed,
+          severity: "warning",
+        });
+        return;
+      }
+      setAttempted(sectionKey, false);
       stopEditing(sectionKey, false);
-      const title =
-        sections.find((section) => section.key === sectionKey)?.title ?? "";
       setSnackbar({
-        message: MEDICAL_MESSAGES.sectionSaved(title),
+        message: MEDICAL_MESSAGES.sectionSaved(section?.title ?? ""),
         severity: "success",
       });
     },
-    [sections, stopEditing],
+    [sections, setAttempted, stopEditing, validateSection],
   );
 
   const openDialog = useCallback(
@@ -1395,19 +1744,31 @@ export function Medical({
   );
 
   const closeDialog = useCallback(() => {
-    if (dialogKey) store.restore(`${dialogKey}-`, dialogOriginalRef.current);
+    if (dialogKey) {
+      store.restore(`${dialogKey}-`, dialogOriginalRef.current);
+      setAttempted(dialogKey, false);
+    }
     setDialogOpen(false);
-  }, [dialogKey, store]);
+  }, [dialogKey, setAttempted, store]);
 
   const saveDialog = useCallback(() => {
     if (!dialogKey) return;
+    if (dialogSection && !validateSection(dialogSection)) {
+      setAttempted(dialogKey, true);
+      setSnackbar({
+        message: MEDICAL_MESSAGES.validationFailed,
+        severity: "warning",
+      });
+      return;
+    }
+    setAttempted(dialogKey, false);
     stopEditing(dialogKey, false);
     setSnackbar({
       message: MEDICAL_MESSAGES.sectionSaved(dialogSection?.title ?? ""),
       severity: "success",
     });
     setDialogOpen(false);
-  }, [dialogKey, dialogSection, stopEditing]);
+  }, [dialogKey, dialogSection, setAttempted, stopEditing, validateSection]);
 
   const handleApplicantChange = (applicantKey: string) => {
     setActiveApplicantKey(applicantKey);
@@ -1597,6 +1958,7 @@ export function Medical({
                 key={section.key}
                 section={section}
                 editing={Boolean(editing[section.key])}
+                validationAttempted={Boolean(validationAttempted[section.key])}
                 onEdit={startEditing}
                 onSave={handleSave}
                 onReset={handleReset}
@@ -1662,7 +2024,11 @@ export function Medical({
               }}
             >
               <EditingContext.Provider value>
-                <SectionBody section={dialogSection} />
+                <ValidationAttemptedContext.Provider
+                  value={Boolean(validationAttempted[dialogSection.key])}
+                >
+                  <SectionBody section={dialogSection} />
+                </ValidationAttemptedContext.Provider>
               </EditingContext.Provider>
             </Box>
           )}

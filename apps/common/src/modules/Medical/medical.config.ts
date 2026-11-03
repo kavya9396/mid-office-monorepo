@@ -3,6 +3,11 @@
  * Structure, field definitions, dropdown options, and validation rules mirror
  * the "View Medical" module of design-reference/ui-prototypes/Group/DVT Informal/dvt-drs.html.
  */
+import {
+  MEDICAL_SCHEMA_EDUCATION,
+  MEDICAL_SCHEMA_GENDER,
+  MEDICAL_SCHEMA_OCCUPATION,
+} from "./medical.schema";
 
 /** [label, value, required?] */
 export type MedicalFieldDef = readonly [
@@ -58,6 +63,8 @@ export interface MedicalSection {
    * (e.g. lab Value / Range / Unit / Findings), using the labels as column headers.
    */
   tableFieldLabels?: readonly string[];
+  /** Labels of `tableFieldLabels` shown as plain text instead of a (read-only) input box. */
+  plainTextTableFieldLabels?: readonly string[];
   /** Starter rows for a `familyHistory` layout (defaults to Father, Mother and one blank row). */
   familyRows?: readonly MedicalFamilyRow[];
   /** Read-only "CMO decision" table rendered above the section's fields. */
@@ -116,28 +123,22 @@ export const MEDICAL_YES_NO_OPTIONS: MedicalOption[] = [
   { label: "No", value: "No" },
 ];
 
-export const MEDICAL_GENDER_OPTIONS: MedicalOption[] = [
-  { label: "Male", value: "Male" },
-  { label: "Female", value: "Female" },
-  { label: "Transgender", value: "Transgender" },
-];
+const toMedicalOptions = (values: readonly string[]): MedicalOption[] =>
+  values.map((value) => ({ label: value, value }));
+
+export const MEDICAL_GENDER_OPTIONS: MedicalOption[] =
+  toMedicalOptions(MEDICAL_SCHEMA_GENDER);
 
 export const MEDICAL_PLACE_OF_EXAMINATION_OPTIONS: MedicalOption[] = [
   { label: "Clinic", value: "Clinic" },
   { label: "Res/Office", value: "Res/Office" },
 ];
 
-export const MEDICAL_EDUCATION_OPTIONS: MedicalOption[] = [
-  { label: "Graduate", value: "Graduate" },
-  { label: "Post Graduate", value: "Post Graduate" },
-  { label: "Secondary", value: "Secondary" },
-];
+export const MEDICAL_EDUCATION_OPTIONS: MedicalOption[] =
+  toMedicalOptions(MEDICAL_SCHEMA_EDUCATION);
 
-export const MEDICAL_OCCUPATION_OPTIONS: MedicalOption[] = [
-  { label: "Salaried", value: "Salaried" },
-  { label: "Self Employed", value: "Self Employed" },
-  { label: "Professional", value: "Professional" },
-];
+export const MEDICAL_OCCUPATION_OPTIONS: MedicalOption[] =
+  toMedicalOptions(MEDICAL_SCHEMA_OCCUPATION);
 
 export const MEDICAL_DEAD_OR_ALIVE_OPTIONS: MedicalOption[] = [
   { label: "Alive", value: "Alive" },
@@ -145,16 +146,16 @@ export const MEDICAL_DEAD_OR_ALIVE_OPTIONS: MedicalOption[] = [
 ];
 
 export const MEDICAL_FAMILY_RELATION_OPTIONS: MedicalOption[] = [
-  { label: "Father", value: "Father" },
-  { label: "Mother", value: "Mother" },
+  // { label: "Father", value: "Father" },
+  // { label: "Mother", value: "Mother" },
   { label: "Brother", value: "Brother" },
   { label: "Sister", value: "Sister" },
   { label: "Spouse", value: "Spouse" },
-  { label: "Son", value: "Son" },
-  { label: "Daughter", value: "Daughter" },
-  { label: "Grandfather", value: "Grandfather" },
-  { label: "Grandmother", value: "Grandmother" },
-  { label: "Other", value: "Other" },
+  // { label: "Son", value: "Son" },
+  // { label: "Daughter", value: "Daughter" },
+  // { label: "Grandfather", value: "Grandfather" },
+  // { label: "Grandmother", value: "Grandmother" },
+  // { label: "Other", value: "Other" },  
 ];
 
 export const MEDICAL_BUILD_OPTIONS: MedicalOption[] = [
@@ -257,6 +258,7 @@ export const MEDICAL_MER_SECTION: MedicalSection = {
   groupKey: "mer",
   title: "MER",
   cols: 3,
+  selectPlaceholder: "--Select--",
   fields: MEDICAL_MER_FIELDS,
 };
 
@@ -280,6 +282,7 @@ export const MEDICAL_HABIT_ADDICTIONS_SECTION: MedicalSection = {
   groupKey: "mer",
   title: "Habit and Addictions",
   cols: 3,
+  selectPlaceholder: "--Select--",
   fields: MEDICAL_HABIT_ADDICTIONS_FIELDS,
 };
 
@@ -387,6 +390,7 @@ export const MEDICAL_TELE_MER_SECTION: MedicalSection = {
   groupKey: "tele_video_mer",
   title: "Tele/Video MER",
   cols: 3,
+  selectPlaceholder: "--Select--",
   fields: MEDICAL_TELE_MER_FIELDS,
 };
 
@@ -448,6 +452,7 @@ export const MEDICAL_TELE_HABIT_ADDICTION_SECTION: MedicalSection = {
   title: "Habit and Addiction",
   layout: "habitAddiction",
   cols: 3,
+  selectPlaceholder: "--Select--",
   fields: MEDICAL_TELE_HABIT_ADDICTION_FIELDS,
 };
 
@@ -507,22 +512,7 @@ export const MEDICAL_2DECHO_SECTION: MedicalSection = {
   groupKey: "special_medical",
   title: "2DECHO",
   cols: 3,
-  cmoDecisions: [
-    {
-      userName: "Dr. Nitin Rao",
-      poolName: "Special Medical CMO",
-      decision: "Accepted",
-      remarks: "Echo report reviewed. EF is within acceptable range.",
-      updatedOn: "2026-09-19 07:12:30",
-    },
-    {
-      userName: "Dr. Meera Iyer",
-      poolName: "Cardiac Review Pool",
-      decision: "No further requirement",
-      remarks: "No structural abnormality noted in submitted report.",
-      updatedOn: "2026-09-20 07:12:30",
-    },
-  ],
+  selectPlaceholder: "---SELECT---",
   fields: MEDICAL_2DECHO_FIELDS,
 };
 
@@ -530,8 +520,8 @@ export const MEDICAL_BLOOD_UREA_FIELDS: readonly MedicalFieldDef[] = [
   ["Medical Type", "", true],
   ["Test Date", "", true],
   ["Findings", "", true],
-  ["Blood Urea", "", true],
-  ["BUN", "", true],
+  ["Blood Urea", "", false],
+  ["BUN", "", false],
   ["Result", "", false],
   ["Examinee Name", "", false],
   ["Examinee Age", "", false],
@@ -546,6 +536,7 @@ export const MEDICAL_BLOOD_UREA_SECTION: MedicalSection = {
   groupKey: "special_medical",
   title: "BLOOD UREA and NITRO",
   cols: 3,
+  selectPlaceholder: "---SELECT---",
   fields: MEDICAL_BLOOD_UREA_FIELDS,
 };
 
@@ -566,6 +557,7 @@ export const MEDICAL_CXR_SECTION: MedicalSection = {
   groupKey: "special_medical",
   title: "CXR",
   cols: 3,
+  selectPlaceholder: "---SELECT---",
   fields: MEDICAL_CXR_FIELDS,
 };
 
@@ -589,6 +581,7 @@ export const MEDICAL_DOBUTAMINE_STRESS_ECHO_SECTION: MedicalSection = {
   groupKey: "special_medical",
   title: "DOBUTAMINE STRESS ECHOCARDIOGRAM",
   cols: 3,
+  selectPlaceholder: "---SELECT---",
   fields: MEDICAL_STRESS_ECHO_FIELDS,
 };
 
@@ -597,6 +590,7 @@ export const MEDICAL_EXERCISE_STRESS_ECHO_SECTION: MedicalSection = {
   groupKey: "special_medical",
   title: "EXERCISE STRESS ECHOCARDIOGRAM",
   cols: 3,
+  selectPlaceholder: "---SELECT---",
   fields: MEDICAL_STRESS_ECHO_FIELDS,
 };
 
@@ -620,6 +614,7 @@ export const MEDICAL_ECG_SECTION: MedicalSection = {
   groupKey: "special_medical",
   title: "ECG",
   cols: 3,
+  selectPlaceholder: "---SELECT---",
   cmoDecisions: [
     {
       userName: "Dr. Arvind Shah",
@@ -656,6 +651,7 @@ export const MEDICAL_MAMMOGRAM_SECTION: MedicalSection = {
   groupKey: "special_medical",
   title: "MAMMOGRAM",
   cols: 3,
+  selectPlaceholder: "---SELECT---",
   fields: MEDICAL_MAMMOGRAM_FIELDS,
 };
 
@@ -676,11 +672,12 @@ export const MEDICAL_PAP_SMEAR_SECTION: MedicalSection = {
   groupKey: "special_medical",
   title: "PAP SMEAR",
   cols: 3,
+  selectPlaceholder: "---SELECT---",
   fields: MEDICAL_PAP_SMEAR_FIELDS,
 };
 
 export const MEDICAL_PFT_FIELDS: readonly MedicalFieldDef[] = [
-  ["Medical Type", ""],
+  ["Medical Type", "", true],
   ["Date", ""],
   ["Examinee Name", ""],
   ["Examinee Age", ""],
@@ -701,6 +698,7 @@ export const MEDICAL_PFT_SECTION: MedicalSection = {
   groupKey: "special_medical",
   title: "PFT",
   cols: 3,
+  selectPlaceholder: "---SELECT---",
   fields: MEDICAL_PFT_FIELDS,
 };
 
@@ -721,6 +719,7 @@ export const MEDICAL_STOOL_TEST_SECTION: MedicalSection = {
   groupKey: "special_medical",
   title: "STOOL TEST",
   cols: 3,
+  selectPlaceholder: "---SELECT---",
   fields: MEDICAL_STOOL_TEST_FIELDS,
 };
 
@@ -744,6 +743,7 @@ export const MEDICAL_TMT_SECTION: MedicalSection = {
   groupKey: "special_medical",
   title: "TMT",
   cols: 3,
+  selectPlaceholder: "---SELECT---",
   cmoDecisions: [
     {
       userName: "Dr. Rakesh Kulkarni",
@@ -780,6 +780,7 @@ export const MEDICAL_USG_SECTION: MedicalSection = {
   groupKey: "special_medical",
   title: "USG",
   cols: 3,
+  selectPlaceholder: "---SELECT---",
   fields: MEDICAL_USG_FIELDS,
 };
 
@@ -800,6 +801,7 @@ export const MEDICAL_FUNDOSCOPY_TEST_SECTION: MedicalSection = {
   groupKey: "special_medical",
   title: "Fundoscopy Test",
   cols: 3,
+  selectPlaceholder: "---SELECT---",
   fields: MEDICAL_FUNDOSCOPY_TEST_FIELDS,
 };
 
@@ -818,7 +820,7 @@ export const MEDICAL_BLOOD_SUGAR_FIELDS: readonly MedicalFieldDef[] = [
   ["Diagnostic Centre Pincode", ""],
   ["Doctor Name", ""],
   ["Doctor Registration No", ""],
-  ["Value", ""],
+  ["Value", "", true],
   ["Lab Range Start", ""],
   ["Lab Range End", ""],
   ["Unit Value", ""],
@@ -830,7 +832,9 @@ export const MEDICAL_BLOOD_SUGAR_SECTION: MedicalSection = {
   groupKey: "other_medical",
   title: "Blood Sugar Random",
   cols: 3,
+  selectPlaceholder: "--Select--",
   tableFieldLabels: ["Value", "Lab Range Start", "Lab Range End", "Unit Value", "Findings"],
+  plainTextTableFieldLabels: ["Findings"],
   fields: MEDICAL_BLOOD_SUGAR_FIELDS,
 };
 
@@ -849,31 +853,31 @@ export const MEDICAL_CBC_FIELDS: readonly MedicalFieldDef[] = [
 
 /** [parameter, unit, required?] */
 export const MEDICAL_CBC_PARAMETERS: readonly MedicalParameterDef[] = [
-  ["Hemoglobin(Hb)", "g/dL", true],
-  ["RBC", "million/µL", true],
-  ["WBC", "/µL", true],
-  ["Platelets", "/µL", true],
-  ["PCV", "%", true],
-  ["MCV", "%", true],
-  ["Differential_Neutrophil", "%"],
-  ["Differential_Lymphocyte", "%"],
-  ["Differential_Eosinophil", "%"],
-  ["Differential_Monocyte", "%"],
-  ["Differential_Basophil", "%"],
-  ["Esr", "%", true],
-  ["Absolute_Neutrophil", "%"],
-  ["Absolute_Lymphocyte", "%"],
-  ["Absolute_Eosinophil", "%"],
-  ["Absolute_Monocyte", "%"],
-  ["Absolute_Basophil", "%"],
-  ["MPV", "%"],
-  ["PDW", "%"],
-  ["MCH", "%"],
-  ["MCHC", "%"],
-  ["RDW", "%"],
-  ["RBC_Morphology", "million/µL"],
-  ["WBC_Morphology", "/µL"],
-  ["Platelet_Morphology", "/µL"],
+  ["Hemoglobin(Hb)", "", true],
+  ["RBC", "", true],
+  ["WBC", "", true],
+  ["Platelets", "", true],
+  ["PCV", "", true],
+  ["MCV", "", true],
+  ["Differential_Neutrophil", ""],
+  ["Differential_Lymphocyte", ""],
+  ["Differential_Eosinophil", ""],
+  ["Differential_Monocyte", ""],
+  ["Differential_Basophil", ""],
+  ["Esr", "", true],
+  ["Absolute_Neutrophil", ""],
+  ["Absolute_Lymphocyte", ""],
+  ["Absolute_Eosinophil", ""],
+  ["Absolute_Monocyte", ""],
+  ["Absolute_Basophil", ""],
+  ["MPV", ""],
+  ["PDW", ""],
+  ["MCH", ""],
+  ["MCHC", ""],
+  ["RDW", ""],
+  ["RBC_Morphology", ""],
+  ["WBC_Morphology", ""],
+  ["Platelet_Morphology", ""],
 ];
 
 export const MEDICAL_CBC_SECTION: MedicalSection = {
@@ -881,6 +885,7 @@ export const MEDICAL_CBC_SECTION: MedicalSection = {
   groupKey: "other_medical",
   title: "CBC Group",
   cols: 3,
+  selectPlaceholder: "--Select--",
   parametersTitle: "CBC Test Parameters",
   parameters: MEDICAL_CBC_PARAMETERS,
   fields: MEDICAL_CBC_FIELDS,
@@ -909,7 +914,9 @@ export const MEDICAL_COT_SECTION: MedicalSection = {
   groupKey: "other_medical",
   title: "COT",
   cols: 3,
+  selectPlaceholder: "--Select--",
   tableFieldLabels: ["Value", "Lab Range Start", "Lab Range End", "Unit Value", "Findings"],
+  plainTextTableFieldLabels: ["Findings"],
   fields: MEDICAL_COT_FIELDS,
 };
 
@@ -918,7 +925,9 @@ export const MEDICAL_GHB_SECTION: MedicalSection = {
   groupKey: "other_medical",
   title: "GHB",
   cols: 3,
+  selectPlaceholder: "--Select--",
   tableFieldLabels: ["Value", "Lab Range Start", "Lab Range End", "Unit Value", "Findings"],
+  plainTextTableFieldLabels: ["Findings"],
   fields: MEDICAL_BLOOD_SUGAR_FIELDS,
 };
 
@@ -927,7 +936,9 @@ export const MEDICAL_HBA1C_SECTION: MedicalSection = {
   groupKey: "other_medical",
   title: "HBA1C",
   cols: 3,
+  selectPlaceholder: "--Select--",
   tableFieldLabels: ["Value", "Lab Range Start", "Lab Range End", "Unit Value", "Findings"],
+  plainTextTableFieldLabels: ["Findings"],
   fields: MEDICAL_BLOOD_SUGAR_FIELDS,
 };
 
@@ -936,7 +947,9 @@ export const MEDICAL_HBSAG_SECTION: MedicalSection = {
   groupKey: "other_medical",
   title: "HBSAG",
   cols: 3,
+  selectPlaceholder: "--Select--",
   tableFieldLabels: ["Value", "Lab Range Start", "Lab Range End", "Unit Value", "Findings"],
+  plainTextTableFieldLabels: ["Findings"],
   fields: MEDICAL_COT_FIELDS,
 };
 
@@ -945,7 +958,9 @@ export const MEDICAL_HIV_ELISA_SECTION: MedicalSection = {
   groupKey: "other_medical",
   title: "HIV Elisa",
   cols: 3,
+  selectPlaceholder: "--Select--",
   tableFieldLabels: ["Value", "Lab Range Start", "Lab Range End", "Unit Value", "Findings"],
+  plainTextTableFieldLabels: ["Findings"],
   fields: MEDICAL_COT_FIELDS,
 };
 
@@ -953,17 +968,17 @@ export const MEDICAL_LFT_FIELDS: readonly MedicalFieldDef[] = MEDICAL_CBC_FIELDS
 
 /** [parameter, unit, required?] */
 export const MEDICAL_LFT_PARAMETERS: readonly MedicalParameterDef[] = [
-  ["SGPT/ALT", "U/L", true],
-  ["SGOT/AST", "U/L", true],
-  ["GGT", "U/L", true],
-  ["Serum Bilirubin-Total", "mg/dL", true],
-  ["Direct", "%", true],
-  ["Indirect", "%", true],
-  ["Serum Protein- Total", "g/dL", true],
-  ["Albumin", "g/dL", true],
-  ["Globulin=(Total-Albumin)", "g/dL", true],
-  ["Alkaline Phosphate", "U/L", true],
-  ["Albumin/Globulin_Ratio", "g/dL", true],
+  ["SGPT/ALT", "", true],
+  ["SGOT/AST", "", true],
+  ["GGT", "", true],
+  ["Serum Bilirubin-Total", "", true],
+  ["Direct", "", true],
+  ["Indirect", "", true],
+  ["Serum Protein- Total", "", true],
+  ["Albumin", "", true],
+  ["Globulin=(Total-Albumin)", "", true],
+  ["Alkaline Phosphate", "", true],
+  ["Albumin/Globulin_Ratio", "", true],
 ];
 
 export const MEDICAL_LFT_SECTION: MedicalSection = {
@@ -971,6 +986,7 @@ export const MEDICAL_LFT_SECTION: MedicalSection = {
   groupKey: "other_medical",
   title: "LFT",
   cols: 3,
+  selectPlaceholder: "--Select--",
   parametersTitle: "LFT Test Parameters",
   parameters: MEDICAL_LFT_PARAMETERS,
   fields: MEDICAL_LFT_FIELDS,
@@ -980,12 +996,12 @@ export const MEDICAL_LIPIDS_FIELDS: readonly MedicalFieldDef[] = MEDICAL_CBC_FIE
 
 /** [parameter, unit, required?] */
 export const MEDICAL_LIPIDS_PARAMETERS: readonly MedicalParameterDef[] = [
-  ["Total Cholesterol: TC", "mg/dL", true],
-  ["Triglycerides: TG", "mg/dL", true],
-  ["HDL", "mg/dL", true],
-  ["LDL", "mg/dL", true],
-  ["VLDL", "mg/dL"],
-  ["TC/HDL Ratio", "mg/dL", true],
+  ["Total Cholesterol: TC", "", true],
+  ["Triglycerides: TG", "", true],
+  ["HDL", "", true],
+  ["LDL", "", true],
+  ["VLDL", ""],
+  ["TC/HDL Ratio", "", true],
 ];
 
 export const MEDICAL_LIPIDS_SECTION: MedicalSection = {
@@ -993,6 +1009,7 @@ export const MEDICAL_LIPIDS_SECTION: MedicalSection = {
   groupKey: "other_medical",
   title: "LIPIDS",
   cols: 3,
+  selectPlaceholder: "--Select--",
   parametersTitle: "LIPIDS Test Parameters",
   parameters: MEDICAL_LIPIDS_PARAMETERS,
   fields: MEDICAL_LIPIDS_FIELDS,
@@ -1000,9 +1017,9 @@ export const MEDICAL_LIPIDS_SECTION: MedicalSection = {
 
 /** [parameter, unit, required?] */
 export const MEDICAL_OGTT_PARAMETERS: readonly MedicalParameterDef[] = [
-  ["OGTT1", "%", true],
-  ["OGTT2", "%", true],
-  ["OGTT3", "µIU/mL", true],
+  ["OGTT1", "", true],
+  ["OGTT2", "", true],
+  ["OGTT3", "", true],
 ];
 
 export const MEDICAL_OGTT_SECTION: MedicalSection = {
@@ -1010,6 +1027,7 @@ export const MEDICAL_OGTT_SECTION: MedicalSection = {
   groupKey: "other_medical",
   title: "OGTT Group",
   cols: 3,
+  selectPlaceholder: "--Select--",
   parametersTitle: "OGTT Test Parameters",
   parameters: MEDICAL_OGTT_PARAMETERS,
   fields: MEDICAL_CBC_FIELDS,
@@ -1020,56 +1038,39 @@ export const MEDICAL_PPBS_SECTION: MedicalSection = {
   groupKey: "other_medical",
   title: "PPBS",
   cols: 3,
+  selectPlaceholder: "--Select--",
   tableFieldLabels: ["Value", "Lab Range Start", "Lab Range End", "Unit Value", "Findings"],
+  plainTextTableFieldLabels: ["Findings"],
   fields: MEDICAL_BLOOD_SUGAR_FIELDS,
 };
 
-const RUA_NIL_TRACE_PRESENT: readonly MedicalOption[] = [
-  { label: "Nil", value: "Nil" },
-  { label: "Trace", value: "Trace" },
-  { label: "Present", value: "Present" },
-];
-
-const RUA_COLOUR: readonly MedicalOption[] = [
-  { label: "Pale Yellow", value: "Pale Yellow" },
-  { label: "Yellow", value: "Yellow" },
-  { label: "Amber", value: "Amber" },
-];
-
-const RUA_APPEARANCE: readonly MedicalOption[] = [
-  { label: "Clear", value: "Clear" },
-  { label: "Slightly Cloudy", value: "Slightly Cloudy" },
-  { label: "Cloudy", value: "Cloudy" },
-];
-
-const RUA_NEGATIVE_POSITIVE: readonly MedicalOption[] = [
-  { label: "Negative", value: "Negative" },
-  { label: "Positive", value: "Positive" },
-];
-
-/** [parameter, unit, required?, options?] */
+/**
+ * [parameter, unit, required?]
+ * Dropdown options for the dropdown-valued parameters come from the schema
+ * (`MEDICAL_SECTION_PARAMETER_RULES` in medical.schema.ts).
+ */
 export const MEDICAL_RUA_PARAMETERS: readonly MedicalParameterDef[] = [
-  ["Sugar/Glycosuria", "mg/dL", true, RUA_NIL_TRACE_PRESENT],
-  ["Albumin/Proteinuria", "g/dL", true, RUA_NIL_TRACE_PRESENT],
-  ["RBC/Haematuria", "million/µL", true, RUA_NIL_TRACE_PRESENT],
-  ["WBC/PUS/Pyuria", "/µL", true],
+  ["Sugar/Glycosuria", "", true],
+  ["Albumin/Proteinuria", "", true],
+  ["RBC/Haematuria", "", true],
+  ["WBC/PUS/Pyuria", "", true],
   ["Epithelial Cells", "", true],
   ["Gravity", "", true],
-  ["Ketone Bodies", "", true, RUA_NIL_TRACE_PRESENT],
-  ["Urine Colour", "", false, RUA_COLOUR],
-  ["Urine PH", ""],
-  ["Urine Quantity", ""],
-  ["Urine Appearance", "", false, RUA_APPEARANCE],
-  ["Urine Blood", "", false, RUA_NEGATIVE_POSITIVE],
-  ["Urine Nitrite", "", false, RUA_NEGATIVE_POSITIVE],
-  ["Urine Bile Salts", "", false, RUA_NEGATIVE_POSITIVE],
-  ["Urine Bile Pigment", "", false, RUA_NEGATIVE_POSITIVE],
-  ["Urine Bilirubin", "mg/dL", false, RUA_NEGATIVE_POSITIVE],
-  ["Urine Urobilinogen", "", false, RUA_NIL_TRACE_PRESENT],
-  ["Urine Bacteria", "", false, RUA_NIL_TRACE_PRESENT],
-  ["Urine Casts", "", false, RUA_NIL_TRACE_PRESENT],
-  ["Urine Crystal", "", false, RUA_NIL_TRACE_PRESENT],
-  ["Urine Deposit", "", false, RUA_NIL_TRACE_PRESENT],
+  ["Ketone Bodies", "", true],
+  ["Urine_Colour", ""],
+  ["Urine_PH", ""],
+  ["Urine_Quantity", ""],
+  ["Urine_Appearance", ""],
+  ["Urine_Blood", ""],
+  ["Urine_Nitrite", ""],
+  ["Urine_Bile_Salts", ""],
+  ["Urine_Bile_Pigment", ""],
+  ["Urine_Bilirubin", ""],
+  ["Urine_Urobilinogen", ""],
+  ["Urine_Bacteria", ""],
+  ["Urine_Casts", ""],
+  ["Urine_Crystal", ""],
+  ["Urine_Deposit", ""],
 ];
 
 export const MEDICAL_SERUM_COTININE_SECTION: MedicalSection = {
@@ -1077,34 +1078,36 @@ export const MEDICAL_SERUM_COTININE_SECTION: MedicalSection = {
   groupKey: "other_medical",
   title: "SERUM COTININE",
   cols: 3,
+  selectPlaceholder: "--Select--",
   tableFieldLabels: ["Value", "Lab Range Start", "Lab Range End", "Unit Value", "Findings"],
+  plainTextTableFieldLabels: ["Findings"],
   fields: MEDICAL_COT_FIELDS,
 };
 
 /** [parameter, unit, required?] */
 export const MEDICAL_SMA12_PARAMETERS: readonly MedicalParameterDef[] = [
-  ["SGPT/ALT", "U/L", true],
-  ["SGOT/AST", "U/L", true],
-  ["GGT", "U/L", true],
-  ["Serum Bilirubin-Total", "mg/dL", true],
-  ["Direct", "%", true],
-  ["Indirect=(Total-Direct)", "%", true],
-  ["Serum Protein-Total", "g/dL", true],
-  ["Albumin", "g/dL", true],
-  ["Globulin=(Total-Albumin)", "g/dL", true],
-  ["Albumin/Globulin_Ratio", "g/dL", true],
-  ["Alkaline Phosphate", "U/L", true],
-  ["Serum Creatinine", "mg/dL", true],
-  ["Serum Calcium", "%"],
-  ["Serum Uric Acid", "mg/dL"],
-  ["RBS", "mg/dL"],
-  ["FBS", "mg/dL"],
-  ["Total Cholesterol: TC", "mg/dL", true],
-  ["Triglycerides: TG", "mg/dL", true],
-  ["HDL", "mg/dL", true],
-  ["LDL", "mg/dL", true],
-  ["VLDL", "mg/dL"],
-  ["TC/HDL Ratio", "mg/dL", true],
+  ["SGPT/ALT", "", true],
+  ["SGOT/AST", "", true],
+  ["GGT", "", true],
+  ["Serum Bilirubin-Total", "", true],
+  ["Direct", "", true],
+  ["Indirect=(Total-Direct)", "", true],
+  ["Serum Protein-Total", "", true],
+  ["Albumin", "", true],
+  ["Globulin=(Total-Albumin)", "", true],
+  ["Albumin/Globulin_Ratio", "", true],
+  ["Alkaline Phosphate", "", true],
+  ["Serum Creatinine", "", true],
+  ["Serum Calcium", ""],
+  ["Serum Uric Acid", ""],
+  ["RBS", ""],
+  ["FBS", ""],
+  ["Total Cholesterol: TC", "", true],
+  ["Triglycerides: TG", "", true],
+  ["HDL", "", true],
+  ["LDL", "", true],
+  ["VLDL", ""],
+  ["TC/HDL Ratio", "", true],
 ];
 
 export const MEDICAL_SMA12_SECTION: MedicalSection = {
@@ -1112,6 +1115,7 @@ export const MEDICAL_SMA12_SECTION: MedicalSection = {
   groupKey: "other_medical",
   title: "SMA12 Group",
   cols: 3,
+  selectPlaceholder: "--Select--",
   parametersTitle: "SMA12 Test Parameters",
   parameters: MEDICAL_SMA12_PARAMETERS,
   fields: MEDICAL_CBC_FIELDS,
@@ -1119,9 +1123,9 @@ export const MEDICAL_SMA12_SECTION: MedicalSection = {
 
 /** [parameter, unit, required?] */
 export const MEDICAL_TFT_PARAMETERS: readonly MedicalParameterDef[] = [
-  ["Triiodothyronine-T3", "µIU/mL", true],
-  ["Thyroxin-T4", "µIU/mL", true],
-  ["Thyroid Stimulating - Tsh Harmones", "µIU/mL", true],
+  ["Triiodothyronine-T3", "", true],
+  ["Thyroxin-T4", "", true],
+  ["Thyroid Stimulating - Tsh Harmones", "", true],
 ];
 
 export const MEDICAL_TFT_SECTION: MedicalSection = {
@@ -1129,6 +1133,7 @@ export const MEDICAL_TFT_SECTION: MedicalSection = {
   groupKey: "other_medical",
   title: "TFT Group",
   cols: 3,
+  selectPlaceholder: "--Select--",
   parametersTitle: "TFT Test Parameters",
   parameters: MEDICAL_TFT_PARAMETERS,
   fields: MEDICAL_CBC_FIELDS,
@@ -1139,23 +1144,39 @@ export const MEDICAL_S13_SECTION: MedicalSection = {
   groupKey: "other_medical",
   title: "S13 Group",
   cols: 3,
+  selectPlaceholder: "--Select--",
   parametersTitle: "S13 Test Parameters",
   parameters: MEDICAL_SMA12_PARAMETERS,
   fields: MEDICAL_CBC_FIELDS,
 };
 
-/** Same layout as Blood Sugar Random, but the date field is labelled "Test Date". */
-export const MEDICAL_TEST_DATE_LAB_FIELDS: readonly MedicalFieldDef[] =
-  MEDICAL_BLOOD_SUGAR_FIELDS.map((field) =>
-    field[0] === "Date" ? (["Test Date", field[1]] as const) : field,
-  );
+/** Microalbuminuria and PSA: Findings is the entered numeric value, Result is auto populated. */
+export const MEDICAL_TEST_DATE_LAB_FIELDS: readonly MedicalFieldDef[] = [
+  ["Medical Type", ""],
+  ["Test Date", ""],
+  ["Examinee Name", "", true],
+  ["Examinee Age", ""],
+  ["Examinee Gender", ""],
+  ["Diagnostic Centre Name", ""],
+  ["Diagnostic Centre Address", ""],
+  ["Diagnostic Centre Pincode", ""],
+  ["Doctor Name", ""],
+  ["Doctor Registration No", ""],
+  ["Findings", "", true],
+  ["Lab Range Start", ""],
+  ["Lab Range End", ""],
+  ["Unit Value", ""],
+  ["Result", ""],
+];
 
 export const MEDICAL_MICROALBUMINURIA_SECTION: MedicalSection = {
   key: "microalbuminuria",
   groupKey: "other_medical",
   title: "MICROALBUMINURIA",
   cols: 3,
-  tableFieldLabels: ["Value", "Lab Range Start", "Lab Range End", "Unit Value", "Findings"],
+  selectPlaceholder: "--Select--",
+  tableFieldLabels: ["Findings", "Lab Range Start", "Lab Range End", "Unit Value", "Result"],
+  plainTextTableFieldLabels: ["Result"],
   fields: MEDICAL_TEST_DATE_LAB_FIELDS,
 };
 
@@ -1164,7 +1185,9 @@ export const MEDICAL_PSA_SECTION: MedicalSection = {
   groupKey: "other_medical",
   title: "PSA",
   cols: 3,
-  tableFieldLabels: ["Value", "Lab Range Start", "Lab Range End", "Unit Value", "Findings"],
+  selectPlaceholder: "--Select--",
+  tableFieldLabels: ["Findings", "Lab Range Start", "Lab Range End", "Unit Value", "Result"],
+  plainTextTableFieldLabels: ["Result"],
   fields: MEDICAL_TEST_DATE_LAB_FIELDS,
 };
 
@@ -1173,7 +1196,9 @@ export const MEDICAL_HIV_WESTERN_BLOT_SECTION: MedicalSection = {
   groupKey: "other_medical",
   title: "HIV Western Blot",
   cols: 3,
+  selectPlaceholder: "--Select--",
   tableFieldLabels: ["Value", "Lab Range Start", "Lab Range End", "Unit Value", "Findings"],
+  plainTextTableFieldLabels: ["Findings"],
   fields: MEDICAL_COT_FIELDS,
 };
 
@@ -1182,7 +1207,9 @@ export const MEDICAL_HCV_SECTION: MedicalSection = {
   groupKey: "other_medical",
   title: "HCV",
   cols: 3,
+  selectPlaceholder: "--Select--",
   tableFieldLabels: ["Value", "Lab Range Start", "Lab Range End", "Unit Value", "Findings"],
+  plainTextTableFieldLabels: ["Findings"],
   fields: MEDICAL_COT_FIELDS,
 };
 
@@ -1191,7 +1218,9 @@ export const MEDICAL_FBS_SECTION: MedicalSection = {
   groupKey: "other_medical",
   title: "FBS",
   cols: 3,
+  selectPlaceholder: "--Select--",
   tableFieldLabels: ["Value", "Lab Range Start", "Lab Range End", "Unit Value", "Findings"],
+  plainTextTableFieldLabels: ["Findings"],
   fields: MEDICAL_BLOOD_SUGAR_FIELDS,
 };
 
@@ -1200,6 +1229,7 @@ export const MEDICAL_RUA_SECTION: MedicalSection = {
   groupKey: "other_medical",
   title: "RUA Group",
   cols: 3,
+  selectPlaceholder: "--Select--",
   parametersTitle: "RUA Test Parameters",
   parameters: MEDICAL_RUA_PARAMETERS,
   fields: MEDICAL_CBC_FIELDS,
@@ -1210,7 +1240,7 @@ export const MEDICAL_RUA_SECTION: MedicalSection = {
 /* ------------------------------------------------------------------ */
 
 export const MEDICAL_BRE_DECISION_FIELDS: readonly MedicalFieldDef[] = [
-  ["Physical Medical Decision", "STP"],
+  ["Physical Medical Decision", ""],
   ["Tele/Video MER Decision", ""],
   ["MunichRe Medical Decision", ""],
   ["MunichRe Rating", ""],
@@ -1401,6 +1431,7 @@ export const MEDICAL_LOCKED_FIELDS: ReadonlySet<string> = new Set<string>([
   "Avg Systolic",
   "Avg Diastolic",
   "Ejection Result",
+  "ecg:Heart Rate Finding",
   "Heart Rate Result",
   "Physical Medical Decision",
   "Tele/Video MER Decision",
@@ -1420,8 +1451,6 @@ export const MEDICAL_LOCKED_FIELDS: ReadonlySet<string> = new Set<string>([
   "fbs:Findings",
   "hiv_western_blot:Findings",
   "hcv:Findings",
-  "microalbuminuria:Findings",
-  "psa:Findings",
   "Result",
   "Decision Date",
   "Underwriter Name",
@@ -1440,7 +1469,24 @@ export const MEDICAL_MESSAGES = {
   submitted: "Medical details submitted successfully.",
   sectionSaved: (title: string) => `${title} saved successfully.`,
   sectionNotFound: "No medical section found.",
+  validationFailed: "Please correct the highlighted fields.",
 } as const;
+
+const MEDICAL_FREE_TEXT_LAB_RANGE_SECTION_KEYS: readonly string[] = [
+  MEDICAL_BLOOD_SUGAR_SECTION.key,
+  MEDICAL_COT_SECTION.key,
+  MEDICAL_GHB_SECTION.key,
+  MEDICAL_HBA1C_SECTION.key,
+  MEDICAL_HBSAG_SECTION.key,
+  MEDICAL_HIV_ELISA_SECTION.key,
+  MEDICAL_PPBS_SECTION.key,
+  MEDICAL_SERUM_COTININE_SECTION.key,
+  MEDICAL_FBS_SECTION.key,
+  MEDICAL_HIV_WESTERN_BLOT_SECTION.key,
+  MEDICAL_HCV_SECTION.key,
+  MEDICAL_MICROALBUMINURIA_SECTION.key,
+  MEDICAL_PSA_SECTION.key,
+];
 
 export function resolveMedicalControlKind(
   sectionKey: string,
@@ -1456,6 +1502,22 @@ export function resolveMedicalControlKind(
   if (/^Unit Value$/i.test(label)) return "text";
   if (/^Place of Examination$/i.test(label)) return "placeOfExamination";
   if (/Medical Decision/i.test(label) || /^STP Decision$/i.test(label)) return "decision";
+  // Blood Urea, Microalbuminuria, PSA: Findings is a numeric value; Result is auto populated.
+  if (
+    (sectionKey === MEDICAL_BLOOD_UREA_SECTION.key ||
+      sectionKey === MEDICAL_MICROALBUMINURIA_SECTION.key ||
+      sectionKey === MEDICAL_PSA_SECTION.key) &&
+    label === "Findings"
+  ) {
+    return "number";
+  }
+  // Blood Sugar Random, COT, GHB, HBA1C: the lab range is free text.
+  if (
+    MEDICAL_FREE_TEXT_LAB_RANGE_SECTION_KEYS.includes(sectionKey) &&
+    /^Lab Range (Start|End)$/i.test(label)
+  ) {
+    return "text";
+  }
   if (/Findings|Result|Rejection Abnormality/i.test(label)) return "findings";
   if (/Medical Type/i.test(label)) return "medicalType";
   if (/^METS$/i.test(label)) return "mets";
