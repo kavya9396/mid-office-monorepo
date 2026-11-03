@@ -5,12 +5,8 @@ import Typography from "@mui/material/Typography";
 import { CustomDialog } from "@insurance-poc/ui";
 import { ApplicantBanner, type BannerRow } from "@insurance-poc/common/applicant-banner";
 import { CaseUwDecision } from "@insurance-poc/common/case-uw-decision";
-import {
-  fetchCaseDecisionOptions,
-  fetchGuwDrs,
-  type DropdownOption,
-  type GuwDrsRecord,
-} from "../../services/guwService";
+import { groupPaths, replaceUrl } from "@insurance-poc/routes";
+import { fetchGuwDrs, type GuwDrsRecord } from "../../services/guwService";
 
 /* ------------------------------------------------------------------ */
 /* Types                                                                */
@@ -129,19 +125,13 @@ export function GuwMemberSelection() {
 
   const [detailMember, setDetailMember] = useState<GuwMember | null>(null);
   const [record, setRecord] = useState<GuwDrsRecord | null>(null);
-  const [decisionOptions, setDecisionOptions] = useState<DropdownOption[]>([]);
-  const [caseDecision, setCaseDecision] = useState("");
 
   useEffect(() => {
+    if (!applicationNo) return;
     let active = true;
-    void fetchCaseDecisionOptions().then((opts) => {
-      if (active) setDecisionOptions(opts);
+    void fetchGuwDrs(applicationNo).then((r) => {
+      if (active) setRecord(r);
     });
-    if (applicationNo) {
-      void fetchGuwDrs(applicationNo).then((r) => {
-        if (active) setRecord(r);
-      });
-    }
     return () => { active = false; };
   }, [applicationNo]);
 
@@ -357,13 +347,19 @@ export function GuwMemberSelection() {
         </Box>
       </Box>
 
-      {/* Financial Decision, Medical Decision and Case UW Decision on one row */}
+      {/* Financial Decision, Medical Decision and Case UW Decision on one row (same flow as GuwUser) */}
       <CaseUwDecision
-        financialDecision={record?.sdtRow.financialDecision}
-        medicalDecision={record?.sdtRow.medicalDecision}
-        options={decisionOptions}
-        value={caseDecision}
-        onChange={setCaseDecision}
+        key={record ? "ready" : "loading"}
+        summaryFields={[
+          { label: "Financial Decision", value: record?.sdtRow.financialDecision },
+          { label: "Medical Decision", value: record?.sdtRow.medicalDecision },
+          { label: "LumiQ Decision", value: record?.sdtRow.lumiqDecision },
+        ]}
+        initialSubmittedDecision={record?.uwData?.submittedDecision}
+        onDecisionSubmit={(_decision: string, _remarks: string) => {
+          // Submit API handler to be wired
+        }}
+        onSubmitted={() => replaceUrl(groupPaths.inbox)}
       />
 
       {/* UW Decision detail dialog */}
