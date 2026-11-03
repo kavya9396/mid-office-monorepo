@@ -91,7 +91,7 @@ export const FINANCIAL_SECTIONS: readonly FinancialSection[] = [
       ["Imputed Income", ""],
       ["Digital Income", ""],
       ["PayU Income", ""],
-      ["Average Income", ""],
+      ["Average Bureau Income", ""],
     ],
   },
   {
