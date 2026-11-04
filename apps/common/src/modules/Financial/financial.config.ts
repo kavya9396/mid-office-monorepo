@@ -36,6 +36,8 @@ export interface FinancialMonthlyIncomeLayout {
 }
 
 export interface FinancialStatementLayout {
+  /** Columns of the statement's field grids (default 2). */
+  columns?: number;
   top?: readonly string[];
   monthly: readonly FinancialLabelRef[];
   calculated?: readonly string[];
@@ -806,6 +808,7 @@ export const FINANCIAL_MONTHLY_INCOME_LAYOUTS: Readonly<Partial<Record<string, F
 
 export const FINANCIAL_STATEMENT_LAYOUTS: Readonly<Partial<Record<string, FinancialStatementLayout>>> = {
   salary_slips: {
+    columns: 3,
     monthly: [
       "Gross Salary Pm1",
       "Gross Salary Pm2",
@@ -818,6 +821,7 @@ export const FINANCIAL_STATEMENT_LAYOUTS: Readonly<Partial<Record<string, Financ
     trailing: ["Company Name", "Life Assured Name", "Is Life Assured Name Same?", "PF / UAN No"],
   },
   bank_statement: {
+    columns: 3,
     top: [
       "Is Bank Statement in the name of LA/his Business",
       "Latest 6 months statements given",
@@ -843,6 +847,7 @@ export const FINANCIAL_STATEMENT_LAYOUTS: Readonly<Partial<Record<string, Financ
     ],
   },
   sip_statement: {
+    columns: 3,
     top: ["Latest 6 Months SIP Statements Given", "Is SIP Statements in the Name of LA"],
     monthly: [
       { label: "SIP of Month 1", fieldLabel: "SIP Per Month 1" },
@@ -925,6 +930,11 @@ export const FINANCIAL_NON_REVIEWABLE_SECTION_KEYS: readonly string[] = [
   "credit_bureau_details",
   "bre_financial_decision",
   "decision",
+];
+
+/** Non-reviewable sections that still have Edit / Reset / Save buttons (but no Agree / Disagree). */
+export const FINANCIAL_EDIT_ONLY_SECTION_KEYS: readonly string[] = [
+  "credit_bureau_details",
 ];
 
 export const FINANCIAL_MONTH_OPTIONS: FinancialOption[] = [

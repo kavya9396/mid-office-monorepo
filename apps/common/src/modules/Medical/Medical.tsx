@@ -45,6 +45,7 @@ import {
   type MedicalApplicantTab,
   type MedicalControlKind,
   type MedicalGroup,
+  type MedicalHistoryEntry,
   type MedicalOption,
   type MedicalSection,
   type MedicalSubmitPayload,
@@ -68,6 +69,11 @@ export interface MedicalProps {
   initialApplicantKey?: string;
   groups?: readonly MedicalGroup[];
   sections?: readonly MedicalSection[];
+  /**
+   * Past data per section key, shown by each section's History button as the
+   * same read-only form. Entry `values` use the same ids as the submit payload.
+   */
+  history?: Readonly<Record<string, readonly MedicalHistoryEntry[]>>;
   onApplicantChange?: (applicantKey: string) => void;
   onBack?: () => void;
   onViewDocuments?: () => void;
@@ -1288,6 +1294,7 @@ interface SectionCardProps {
   onEdit: (sectionKey: string) => void;
   onSave: (sectionKey: string) => void;
   onReset: (sectionKey: string) => void;
+  onHistory: (sectionKey: string) => void;
   registerRef: (sectionKey: string, element: HTMLElement | null) => void;
 }
 
@@ -1298,6 +1305,7 @@ const SectionCard = memo(function SectionCard({
   onEdit,
   onSave,
   onReset,
+  onHistory,
   registerRef,
 }: Readonly<SectionCardProps>) {
   const alwaysEditable = Boolean(section.alwaysEditable);
@@ -1345,6 +1353,13 @@ const SectionCard = memo(function SectionCard({
                 Edit
               </CustomButton>
             )}
+            <CustomButton
+              variant="outlined"
+              onClick={() => onHistory(section.key)}
+              sx={HEAD_BUTTON_SX}
+            >
+              History
+            </CustomButton>
           </Box>
         )}
       </Box>
@@ -1398,6 +1413,92 @@ const NavItem = memo(function NavItem({
 });
 
 /* ------------------------------------------------------------------ */
+/* History popup: the same section form, read-only, with past values    */
+/* ------------------------------------------------------------------ */
+
+const HISTORY_NOTICE_SX = {
+  p: "16px",
+  color: "#667085",
+  fontSize: 13,
+  textAlign: "center",
+} as const;
+
+const MedicalHistoryDialog = memo(function MedicalHistoryDialog({
+  section,
+  entries,
+  onClose,
+}: Readonly<{
+  section: MedicalSection;
+  entries: readonly MedicalHistoryEntry[];
+  onClose: () => void;
+}>) {
+  const [selectedId, setSelectedId] = useState(entries[0]?.id ?? "");
+  const entry = entries.find((item) => item.id === selectedId) ?? entries[0];
+
+  // A separate store, so the live form is never touched by past data.
+  const historyStore = useMemo(
+    () =>
+      createMedicalStore({
+        ...createInitialValues([section]),
+        ...(entry?.values ?? {}),
+      }),
+    [section, entry],
+  );
+  const entryOptions = useMemo(
+    () => entries.map(({ id, label }) => ({ label, value: id })),
+    [entries],
+  );
+
+  return (
+    <CustomDialog
+      open
+      onClose={onClose}
+      maxWidth="lg"
+      title={
+        <Typography component="span" sx={{ fontSize: 14, fontWeight: 700 }}>
+          {section.title} - History
+        </Typography>
+      }
+    >
+      {entry ? (
+        <>
+          {entries.length > 1 && (
+            <Box sx={{ mb: "12px", maxWidth: 280 }}>
+              <CustomSelect
+                options={entryOptions}
+                value={entry.id}
+                placeholder="Select"
+                onChange={setSelectedId}
+              />
+            </Box>
+          )}
+          <Box
+            sx={{
+              backgroundColor: "#F6F6F6",
+              borderRadius: 2,
+              p: 2,
+              minWidth: 0,
+            }}
+          >
+            <StoreContext.Provider value={historyStore}>
+              <EditingContext.Provider value={false}>
+                <ValidationAttemptedContext.Provider value={false}>
+                  <SectionBody section={section} />
+                </ValidationAttemptedContext.Provider>
+              </EditingContext.Provider>
+            </StoreContext.Provider>
+          </Box>
+        </>
+      ) : (
+        <Typography sx={HISTORY_NOTICE_SX}>
+          {MEDICAL_MESSAGES.noHistory}
+        </Typography>
+      )}
+    </CustomDialog>
+  );
+});
+
+/* ------------------------------------------------------------------ */
 /* Main Medical Module Component                                      */
 /* ------------------------------------------------------------------ */
 
@@ -1410,6 +1511,7 @@ export function Medical({
   onApplicantChange,
   onViewDocuments,
   onSubmit,
+  history,
 }: Readonly<MedicalProps>) {
   const [activeApplicantKey, setActiveApplicantKey] = useState(
     initialApplicantKey ?? applicants[0]?.key ?? "",
@@ -1491,6 +1593,7 @@ export function Medical({
     Record<string, boolean>
   >({});
   const [dialogKey, setDialogKey] = useState<string | null>(null);
+  const [historyKey, setHistoryKey] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [activeSectionKey, setActiveSectionKey] = useState(
     sections[0]?.key ?? "",
@@ -1624,6 +1727,10 @@ export function Medical({
   const dialogSection = useMemo(
     () => sections.find((section) => section.key === dialogKey),
     [sections, dialogKey],
+  );
+  const historySection = useMemo(
+    () => sections.find((section) => section.key === historyKey),
+    [sections, historyKey],
   );
 
   const startEditing = useCallback(
@@ -1962,6 +2069,7 @@ export function Medical({
                 onEdit={startEditing}
                 onSave={handleSave}
                 onReset={handleReset}
+                onHistory={setHistoryKey}
                 registerRef={registerRef}
               />
             ))}
@@ -2033,6 +2141,14 @@ export function Medical({
             </Box>
           )}
         </CustomDialog>
+
+        {historySection && (
+          <MedicalHistoryDialog
+            section={historySection}
+            entries={history?.[historySection.key] ?? []}
+            onClose={() => setHistoryKey(null)}
+          />
+        )}
 
         <ScrollToTop threshold={200} />
 

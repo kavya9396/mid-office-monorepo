@@ -8,8 +8,8 @@ export class RegexPatterns {
   static readonly numeric = /^\d+(\.\d+)?$/;
   /** Letters and spaces only (names). */
   static readonly alphabets = /^[A-Za-z]+(?: [A-Za-z]+)*$/;
-  /** Assessment year range in the form "AY XX - AY XX" (two digits each, e.g. "AY 23 - AY 24"). */
-  static readonly assessmentYear = /^AY \d{2} - AY \d{2}$/;
+  /** Assessment year range in the form "XXXX-XX" (four-digit year, hyphen, two digits, e.g. "2025-26"). */
+  static readonly assessmentYear = /^\d{4}-\d{2}$/;
   /** Four-digit year (YYYY). */
   static readonly year = /^\d{4}$/;
   /** Permanent Account Number: 5 capital letters, 4 digits, 1 capital letter (e.g. ABCDE1234F). */

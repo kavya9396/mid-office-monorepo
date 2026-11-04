@@ -31,6 +31,7 @@ import {
   FINANCIAL_DATE_FORMAT,
   FINANCIAL_DECISION_OPTIONS,
   FINANCIAL_DEFAULT_APPLICANTS,
+  FINANCIAL_EDIT_ONLY_SECTION_KEYS,
   FINANCIAL_LOCKED_FIELDS,
   FINANCIAL_MESSAGES,
   FINANCIAL_MONTH_OPTIONS,
@@ -370,24 +371,45 @@ const INCOME_DIVIDER_SX = {
   borderTop: "1px solid #E4E7EC",
 } as const;
 const INCOME_HEADER_SX = { fontSize: 12, fontWeight: 600, color: "#000" } as const;
-const STATEMENT_GRID_SX = {
-  display: "grid",
-  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-  gap: "6px 14px",
-  p: "7px",
-  border: "1px solid #E4E7EC",
-  borderRadius: "7px",
-  bgcolor: "#fff",
-  "@media (max-width: 520px)": { gridTemplateColumns: "1fr" },
-} as const;
-const STATEMENT_ROW_SX = {
-  minWidth: 0,
-  display: "grid",
-  gridTemplateColumns: "minmax(128px, 1fr) minmax(230px, 1.6fr)",
-  alignItems: "center",
-  gap: "8px",
-  "@media (max-width: 520px)": { gridTemplateColumns: "1fr", gap: "4px" },
-} as const;
+const statementGridSx = (columns: number) =>
+  ({
+    display: "grid",
+    gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+    gap: "6px 14px",
+    p: "7px",
+    border: "1px solid #E4E7EC",
+    borderRadius: "7px",
+    bgcolor: "#fff",
+    "@media (max-width: 800px)": { gridTemplateColumns: "1fr 1fr" },
+    "@media (max-width: 520px)": { gridTemplateColumns: "1fr" },
+  }) as const;
+/** With 3 columns the label sits above its month / value inputs so each cell stays narrow. */
+const statementRowSx = (columns: number) =>
+  ({
+    minWidth: 0,
+    display: "grid",
+    gridTemplateColumns:
+      columns > 2 ? "1fr" : "minmax(128px, 1fr) minmax(230px, 1.6fr)",
+    alignItems: columns > 2 ? "stretch" : "center",
+    gap: columns > 2 ? "4px" : "8px",
+    "@media (max-width: 520px)": { gridTemplateColumns: "1fr", gap: "4px" },
+  }) as const;
+const statementGridCache = new Map<number, ReturnType<typeof statementGridSx>>();
+const getStatementGridSx = (columns: number) => {
+  const cached = statementGridCache.get(columns);
+  if (cached) return cached;
+  const created = statementGridSx(columns);
+  statementGridCache.set(columns, created);
+  return created;
+};
+const statementRowCache = new Map<number, ReturnType<typeof statementRowSx>>();
+const getStatementRowSx = (columns: number) => {
+  const cached = statementRowCache.get(columns);
+  if (cached) return cached;
+  const created = statementRowSx(columns);
+  statementRowCache.set(columns, created);
+  return created;
+};
 const STATEMENT_INPUTS_SX = {
   minWidth: 0,
   display: "grid",
@@ -721,11 +743,6 @@ type YearTableColumnKey = "label" | "month" | "c1" | "c2" | "c3" | "c4" | "c5" |
 
 const YEAR_TABLE_VALUE_KEYS = ["c1", "c2", "c3", "c4", "c5", "c6"] as const;
 
-interface YearTableSummaryCell {
-  label: string;
-  index: number;
-}
-
 /** One table row; the string columns only provide the keys `CustomTable` needs, cells render from the other props. */
 interface YearTableRow extends Record<YearTableColumnKey, string> {
   id: string;
@@ -733,8 +750,6 @@ interface YearTableRow extends Record<YearTableColumnKey, string> {
   required: boolean;
   /** Field index per value column (-1 when the section has no such field). */
   indexes: readonly number[];
-  /** Set on the receipts summary row: label / read-only value pairs laid across the columns. */
-  summary: readonly YearTableSummaryCell[] | null;
 }
 
 const EMPTY_YEAR_ROW_CELLS: Record<YearTableColumnKey, string> = {
@@ -769,68 +784,40 @@ function YearTable({
   const monthWidth = isReceipts ? 12 : 0;
   const restWidth = `${(100 - firstWidth - monthWidth) / count}%`;
 
-  const rows = useMemo<YearTableRow[]>(() => {
-    const dataRows = layout.rows.map<YearTableRow>((rowLabel) => {
-      const indexes = Array.from({ length: count }, (_, column) => {
-        let fieldLabel = `${rowLabel} Year ${column + 1}`;
-        if (isReceipts) fieldLabel = `${rowLabel} Receipt${column + 1}`;
-        else if (column === 0) fieldLabel = rowLabel;
-        return findFieldIndex(section, fieldLabel);
-      });
-      return {
-        ...EMPTY_YEAR_ROW_CELLS,
-        id: rowLabel,
-        rowLabel,
-        required: indexes.some(
-          (index) => index >= 0 && section.fields[index][2],
-        ),
-        indexes,
-        summary: null,
-      };
-    });
-    if (isReceipts && layout.bottom) {
-      dataRows.push({
-        ...EMPTY_YEAR_ROW_CELLS,
-        id: "summary",
-        rowLabel: "",
-        required: false,
-        indexes: [],
-        summary: layout.bottom.map((item) => {
-          const { label, fieldLabel } = toLabelRef(item);
-          return { label, index: findFieldIndex(section, fieldLabel) };
-        }),
-      });
-    }
-    return dataRows;
-  }, [section, layout, count, isReceipts]);
+  const rows = useMemo<YearTableRow[]>(
+    () =>
+      layout.rows.map<YearTableRow>((rowLabel) => {
+        const indexes = Array.from({ length: count }, (_, column) => {
+          let fieldLabel = `${rowLabel} Year ${column + 1}`;
+          if (isReceipts) fieldLabel = `${rowLabel} Receipt${column + 1}`;
+          else if (column === 0) fieldLabel = rowLabel;
+          return findFieldIndex(section, fieldLabel);
+        });
+        return {
+          ...EMPTY_YEAR_ROW_CELLS,
+          id: rowLabel,
+          rowLabel,
+          required: indexes.some(
+            (index) => index >= 0 && section.fields[index][2],
+          ),
+          indexes,
+        };
+      }),
+    [section, layout, count, isReceipts],
+  );
 
   const columns = useMemo<Column<YearTableRow>[]>(() => {
-    /** Summary row: even positions hold a label, odd positions the read-only value. */
-    const renderSummaryCell = (row: YearTableRow, position: number) => {
-      const pair = row.summary?.[Math.floor(position / 2)];
-      if (!pair) return null;
-      if (position % 2 === 0) {
-        return <Box sx={YEAR_ROW_LABEL_SX}>{pair.label}</Box>;
-      }
-      return pair.index >= 0 ? (
-        <FieldBlock section={section} index={pair.index} forceReadOnly />
-      ) : null;
-    };
-
     const result: Column<YearTableRow>[] = [
       {
         key: "label",
         header: "",
         width: `${firstWidth}%`,
-        render: (_value, row) =>
-          row.summary ? (
-            renderSummaryCell(row, 0)
-          ) : (
-            <Box sx={YEAR_ROW_LABEL_SX}>
-              {row.rowLabel}
-              {row.required && !isReceipts && <RequiredMark />}
-            </Box>
-          ),
+        render: (_value, row) => (
+          <Box sx={YEAR_ROW_LABEL_SX}>
+            {row.rowLabel}
+            {row.required && !isReceipts && <RequiredMark />}
+          </Box>
+        ),
       },
     ];
 
@@ -839,20 +826,17 @@ function YearTable({
         key: "month",
         header: "",
         width: `${monthWidth}%`,
-        render: (_value, row) =>
-          row.summary ? (
-            renderSummaryCell(row, 1)
-          ) : (
-            <FinancialControl
-              id={`${section.key}-month-${row.rowLabel}`}
-              ariaLabel={`Select month for ${row.rowLabel}`}
-              kind="month"
-              readOnly={!editing}
-              validate={(value) =>
-                validateFinancialField(section.key, row.rowLabel, value)
-              }
-            />
-          ),
+        render: (_value, row) => (
+          <FinancialControl
+            id={`${section.key}-month-${row.rowLabel}`}
+            ariaLabel={`Select month for ${row.rowLabel}`}
+            kind="month"
+            readOnly={!editing}
+            validate={(value) =>
+              validateFinancialField(section.key, row.rowLabel, value)
+            }
+          />
+        ),
       });
     }
 
@@ -862,7 +846,6 @@ function YearTable({
         header: isReceipts ? `Receipt ${column + 1}` : `Year ${column + 1}`,
         width: restWidth,
         render: (_value, row) => {
-          if (row.summary) return renderSummaryCell(row, column + 2);
           const index = row.indexes[column];
           return index >= 0 ? (
             <FieldBlock section={section} index={index} />
@@ -874,18 +857,13 @@ function YearTable({
   }, [section, count, firstWidth, monthWidth, restWidth, isReceipts, editing]);
 
   return (
-    <>
-      {isReceipts && layout.top && layout.top.length > 0 && (
-        <FieldGrid section={section} labels={layout.top} columns={2} flush />
-      )}
-      <Box sx={YEAR_TABLE_ROWS_SX}>
-        <CustomTable<YearTableRow>
-          columns={columns}
-          data={rows}
-          getRowId={(row) => row.id}
-        />
-      </Box>
-    </>
+    <Box sx={YEAR_TABLE_ROWS_SX}>
+      <CustomTable<YearTableRow>
+        columns={columns}
+        data={rows}
+        getRowId={(row) => row.id}
+      />
+    </Box>
   );
 }
 
@@ -1010,13 +988,14 @@ function StatementBody({
   layout,
 }: Readonly<{ section: FinancialSection; layout: FinancialStatementLayout }>) {
   const editing = useContext(EditingContext);
+  const columns = layout.columns ?? 2;
 
   return (
     <Box sx={INCOME_BLOCK_SX}>
       {layout.top && layout.top.length > 0 && (
-        <FieldGrid section={section} labels={layout.top} columns={2} flush />
+        <FieldGrid section={section} labels={layout.top} columns={columns} flush />
       )}
-      <Box sx={STATEMENT_GRID_SX}>
+      <Box sx={getStatementGridSx(columns)}>
         {layout.monthly.map((item, position) => {
           const { label, fieldLabel } = toLabelRef(item);
           const index = findFieldIndex(section, fieldLabel);
@@ -1024,7 +1003,7 @@ function StatementBody({
           // The month dropdown beside a monthly value is validated as "Month <position>".
           const monthLabel = `Month ${position + 1}`;
           return (
-            <Box key={fieldLabel} sx={STATEMENT_ROW_SX}>
+            <Box key={fieldLabel} sx={getStatementRowSx(columns)}>
               <Box component="label" sx={STATEMENT_LABEL_SX}>
                 {label}
                 {(isFinancialFieldRequired(section.key, fieldLabel) ??
@@ -1051,7 +1030,7 @@ function StatementBody({
           <FieldGrid
             section={section}
             labels={layout.calculated}
-            columns={2}
+            columns={columns}
             flush
           />
         </Box>
@@ -1061,7 +1040,7 @@ function StatementBody({
           <FieldGrid
             section={section}
             labels={layout.trailing}
-            columns={2}
+            columns={columns}
             flush
           />
         </Box>
@@ -1093,14 +1072,15 @@ const SectionBody = memo(function SectionBody({
     );
   }
 
-  const showEdges = section.key !== "form_j";
+  // Receipts (Form J) lay the fields outside the table on the section's own grid, like Fixed Deposit Receipt.
+  const topColumns = layout.kind === "receipts" ? section.cols : 2;
   return (
     <Box sx={TABLE_AREA_SX}>
-      {showEdges && layout.top && layout.top.length > 0 && (
-        <FieldGrid section={section} labels={layout.top} columns={2} flush />
+      {layout.top && layout.top.length > 0 && (
+        <FieldGrid section={section} labels={layout.top} columns={topColumns} flush />
       )}
       <YearTable section={section} layout={layout} />
-      {showEdges && layout.bottom && layout.bottom.length > 0 && (
+      {layout.bottom && layout.bottom.length > 0 && (
         <FieldGrid section={section} labels={layout.bottom} flush />
       )}
     </Box>
@@ -1135,6 +1115,7 @@ const SectionCard = memo(function SectionCard({
   const hasReviewActions = !FINANCIAL_NON_REVIEWABLE_SECTION_KEYS.includes(
     section.key,
   );
+  const hasEditActions = FINANCIAL_EDIT_ONLY_SECTION_KEYS.includes(section.key);
   const setRef = useCallback(
     (element: HTMLElement | null) => registerRef(section.key, element),
     [registerRef, section.key],
@@ -1153,7 +1134,7 @@ const SectionCard = memo(function SectionCard({
           <Box component="h3" sx={CARD_TITLE_SX}>
             {section.title}
           </Box>
-          {hasReviewActions && (
+          {(hasReviewActions || hasEditActions) && (
             <Box sx={CARD_HEAD_ACTIONS_SX}>
               {editing ? (
                 <>

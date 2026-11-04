@@ -115,20 +115,20 @@ const requiredAlphabets = (fieldName: string) =>
 /** Required free text (any characters). */
 const requiredFreeText = (fieldName: string) => z.string().min(1, `${fieldName} is required.`);
 
-/** Required assessment year range, "AY XX - AY XX". */
+/** Required assessment year range, "XXXX-XX". */
 const requiredAssessmentYear = (fieldName: string) =>
   z
     .string()
-    .min(1, `${fieldName} is required. Please enter it in the format AY XX - AY XX.`)
-    .regex(RegexPatterns.assessmentYear, `${fieldName} must be in the format AY XX - AY XX (for example, AY 23 - AY 24).`);
+    .min(1, `${fieldName} is required. Please enter it in the format XXXX-XX.`)
+    .regex(RegexPatterns.assessmentYear, `${fieldName} must be in the format XXXX-XX (for example, 2025-26).`);
 
-/** Optional assessment year range: blank is accepted, anything entered must be "AY XX - AY XX". */
+/** Optional assessment year range: blank is accepted, anything entered must be "XXXX-XX". */
 const optionalAssessmentYear = (fieldName: string) =>
   z
     .string()
     .refine(
       (value) => value === "" || RegexPatterns.assessmentYear.test(value),
-      `${fieldName} must be in the format AY XX - AY XX (for example, AY 23 - AY 24).`,
+      `${fieldName} must be in the format XXXX-XX (for example, 2025-26).`,
     )
     .optional();
 
@@ -818,8 +818,25 @@ const gstIncomeSchema = z.object({
 
 export type GstIncomeValues = z.infer<typeof gstIncomeSchema>;
 
+/** Credit Bureau Details: every field is optional, and anything entered must be numeric. */
+export const creditBureauDetailsSchema = z.object({
+  experianIncome: optionalNumeric("Experian Income"),
+  experianScore: optionalNumeric("Experian Score"),
+  crifIncome: optionalNumeric("Crif Income"),
+  crifScore: optionalNumeric("Crif Score"),
+  cibilIncome: optionalNumeric("Cibil Income"),
+  cibilScore: optionalNumeric("Cibil Score"),
+  imputedIncome: optionalNumeric("Imputed Income"),
+  digitalIncome: optionalNumeric("Digital Income"),
+  payuIncome: optionalNumeric("PayU Income"),
+  averageBureauIncome: optionalNumeric("Average Bureau Income"),
+});
+
+export type CreditBureauDetailsValues = z.infer<typeof creditBureauDetailsSchema>;
+
 /** Section key (see `FINANCIAL_SECTIONS`) → section schema. */
 export const FINANCIAL_SECTION_SCHEMAS: Readonly<Record<string, z.ZodObject<z.ZodRawShape>>> = {
+  credit_bureau_details: creditBureauDetailsSchema,
   appointment_letter: appointmentLetterSchema,
   commission_statement: commissionStatementSchema,
   credit_card: creditCardSchema,
@@ -854,6 +871,18 @@ export const FINANCIAL_SECTION_SCHEMAS: Readonly<Record<string, z.ZodObject<z.Zo
 
 /** Section key → field label (as in `FINANCIAL_SECTIONS`) → schema property name. */
 export const FINANCIAL_FIELD_KEYS: Readonly<Record<string, Readonly<Record<string, string>>>> = {
+  credit_bureau_details: {
+    "Experian Income": "experianIncome",
+    "Experian Score": "experianScore",
+    "Crif Income": "crifIncome",
+    "Crif Score": "crifScore",
+    "Cibil Income": "cibilIncome",
+    "Cibil Score": "cibilScore",
+    "Imputed Income": "imputedIncome",
+    "Digital Income": "digitalIncome",
+    "PayU Income": "payuIncome",
+    "Average Bureau Income": "averageBureauIncome",
+  },
   appointment_letter: {
     "Name of the company": "nameOfTheCompany",
     "Name of the employee": "nameOfTheEmployee",

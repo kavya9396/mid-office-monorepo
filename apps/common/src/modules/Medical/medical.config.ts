@@ -112,6 +112,13 @@ export interface MedicalApplicantTab {
   label: string;
 }
 
+/** One past record of a section: `values` use the same ids as `MedicalSubmitPayload.values`. */
+export interface MedicalHistoryEntry {
+  id: string;
+  label: string;
+  values: Readonly<Record<string, string>>;
+}
+
 export type MedicalSubmitPayload = {
   applicantKey: string;
   values: Readonly<Record<string, string>>;
@@ -1470,6 +1477,7 @@ export const MEDICAL_MESSAGES = {
   sectionSaved: (title: string) => `${title} saved successfully.`,
   sectionNotFound: "No medical section found.",
   validationFailed: "Please correct the highlighted fields.",
+  noHistory: "No history available for this section.",
 } as const;
 
 const MEDICAL_FREE_TEXT_LAB_RANGE_SECTION_KEYS: readonly string[] = [
