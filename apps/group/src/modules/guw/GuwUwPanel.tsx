@@ -166,7 +166,6 @@ export function GuwUwPanel({
   };
 
   // Detailed Dynamic Form State
-  const [referralTarget, setReferralTarget] = useState<string>("");
   const [smokerFlag, setSmokerFlag] = useState<string>("");
   const [subStdReason, setSubStdReason] = useState<string[]>([]);
   const [postponementPeriod, setPostponementPeriod] = useState<string>("");
@@ -182,9 +181,22 @@ export function GuwUwPanel({
 
   // Referral states
   const [referralReason, setReferralReason] = useState<string>("");
-  const [referralFirstDecision, setReferralFirstDecision] = useState<string>("");
-  const [referralFirstReason, setReferralFirstReason] = useState<string>("");
-  const [referralPostponementPeriod, setReferralPostponementPeriod] = useState<string>("");
+  const [referralRows, setReferralRows] = useState<{
+    target: string;
+    label: string;
+    selected: boolean;
+    reason: string;
+    remarks: string;
+  }[]>(() =>
+    REFERRAL_TYPE_OPTIONS.map((opt) => ({
+      target: opt.value,
+      label: opt.label,
+      selected: false,
+      reason: "",
+      remarks: "",
+    }))
+  );
+  const [reinsurerEditOpen, setReinsurerEditOpen] = useState<boolean>(false);
 
   // Reconsideration states
   const [reconsiderPossible, setReconsiderPossible] = useState<"Yes" | "No" | "">("");
@@ -204,8 +216,7 @@ export function GuwUwPanel({
   // Counter Offer Grid
   const [counterOfferRows, setCounterOfferRows] = useState<CounterOfferRow[]>([]);
 
-  const effectiveDecision =
-    dialogDecision === "REFERRAL" && referralTarget ? referralTarget : dialogDecision;
+  const effectiveDecision = dialogDecision;
 
   // Initialize Counter Offer rows when dialog decision turns to CO, BOR_STD, or EP
   useEffect(() => {
@@ -250,12 +261,23 @@ export function GuwUwPanel({
     };
 
     if (dialogDecision === "REFERRAL") {
-      add("Refer To", REFERRAL_TYPE_OPTIONS.find((o) => o.value === referralTarget)?.label ?? referralTarget);
+      const selectedReferrals = referralRows.filter((r) => r.selected);
+      add("Refer To", selectedReferrals.map((r) => r.label).join(", "));
+      const reasons = selectedReferrals
+        .filter((r) => r.reason)
+        .map((r) => `${r.label}: ${r.reason}`)
+        .join("; ");
+      if (reasons) add("Referral Reason", reasons, true);
+      const rowRemarks = selectedReferrals
+        .filter((r) => r.remarks.trim())
+        .map((r) => `${r.label}: ${r.remarks.trim()}`)
+        .join("; ");
+      if (rowRemarks) add("Referral Remarks", rowRemarks, true);
     }
-    if (effectiveDecision) {
+    if (dialogDecision !== "REFERRAL" && effectiveDecision) {
       add("Decision Code", effectiveDecision);
     }
-    if (effectiveDecision && !["CO", "EP"].includes(effectiveDecision)) {
+    if (dialogDecision !== "REFERRAL" && effectiveDecision && !["CO", "EP"].includes(effectiveDecision)) {
       add("Smoker Flag", smokerFlag);
     }
     if (
@@ -267,13 +289,8 @@ export function GuwUwPanel({
     }
     if (effectiveDecision === "POSTP") add("Postponement Period", postponementPeriod);
     if (effectiveDecision === "HOLD") add("Hold Reasons", holdReason);
-    if (REFERRAL_REASON_OPTIONS[effectiveDecision]) add("Referral Reason", referralReason);
-
-    if (["REF_REINS", "REF_CMO", "REF_CMO_LOCAL", "REF_RISK", "REF_ACU"].includes(effectiveDecision)) {
-      add("1st UW Decision", decisionLabel(referralFirstDecision));
-      if (referralFirstDecision) add("1st UW Decision Code", referralFirstDecision);
-      if (referralFirstDecision) add(referralFirstDecision === "POSTP" ? "Postpone Reason" : "1st UW Decision Reason", referralFirstReason);
-      if (referralFirstDecision === "POSTP") add("Postponement Period", referralPostponementPeriod);
+    if (dialogDecision !== "REFERRAL" && REFERRAL_REASON_OPTIONS[effectiveDecision]) {
+      add("Referral Reason", referralReason);
     }
 
     if (effectiveDecision === "APPROVER") {
@@ -299,23 +316,32 @@ export function GuwUwPanel({
       }
     }
 
+    const isReinsurerSelected =
+      dialogDecision === "REFERRAL"
+        ? referralRows.some((r) => r.selected && r.target === "REF_REINS")
+        : effectiveDecision === "REF_REINS";
+
     return {
       fields,
       reconsiderationFields,
-      remarks: dialogRemarks,
+      remarks:
+        dialogDecision === "REFERRAL"
+          ? referralRows
+              .filter((r) => r.selected && r.remarks.trim())
+              .map((r) => `${r.label}: ${r.remarks.trim()}`)
+              .join("; ") || dialogRemarks
+          : dialogRemarks,
       counterOfferRows: counterOfferRows.map((r) => ({ ...r })),
       showBstdColumn: isBstdColumnVisible,
-      reinsurerRows:
-        effectiveDecision === "REF_REINS"
-          ? reinsurerRows.map((r) => ({ code: r.code, systemName: r.systemName, uwName: r.uwName }))
-          : [],
-      documentRows:
-        effectiveDecision === "REF_REINS"
-          ? REFERRAL_DOCUMENTS.map((name, rowIndex) => ({
-              name,
-              assigned: reinsurerRows.map((_, colIndex) => reinsurerDocChecks[rowIndex][colIndex]),
-            }))
-          : [],
+      reinsurerRows: isReinsurerSelected
+        ? reinsurerRows.map((r) => ({ code: r.code, systemName: r.systemName, uwName: r.uwName }))
+        : [],
+      documentRows: isReinsurerSelected
+        ? REFERRAL_DOCUMENTS.map((name, rowIndex) => ({
+            name,
+            assigned: reinsurerRows.map((_, colIndex) => reinsurerDocChecks[rowIndex][colIndex]),
+          }))
+        : [],
       guidelines: guidelines.map((g) => ({ ...g })),
     };
   };
@@ -325,6 +351,9 @@ export function GuwUwPanel({
     setDialogRemarks(remarks);
     setDialogStep(1);
     setGuidelines(INITIAL_GUIDELINES.map((g) => ({ ...g })));
+    if (code === "REFERRAL") {
+      setReinsurerEditOpen(false);
+    }
     setDialogOpen(true);
   };
 
@@ -342,10 +371,17 @@ export function GuwUwPanel({
 
   const handleDialogSubmit = () => {
     // Step 1 Validation
-    const isReinsurerReferral = dialogDecision === "REFERRAL" && referralTarget === "REF_REINS";
-    if (!isReinsurerReferral && !dialogRemarks.trim()) {
-      notify("Please enter UW Remarks", "error");
-      return;
+    if (dialogDecision === "REFERRAL") {
+      const selectedReferrals = referralRows.filter((r) => r.selected);
+      if (selectedReferrals.length === 0) {
+        notify("Please select at least one referral", "error");
+        return;
+      }
+    } else {
+      if (!dialogRemarks.trim()) {
+        notify("Please enter UW Remarks", "error");
+        return;
+      }
     }
 
     if (effectiveDecision === "APPROVER") {
@@ -361,11 +397,6 @@ export function GuwUwPanel({
         notify("Please select 1st UW Decision", "error");
         return;
       }
-    }
-
-    if (dialogDecision === "REFERRAL" && !referralTarget) {
-      notify("Please select a referral type", "error");
-      return;
     }
 
     // Advance to Step 2 (Guidelines checklist)
@@ -895,32 +926,403 @@ export function GuwUwPanel({
               </CustomBox>
             )}
 
-            {/* REFER TO - REFERRAL TYPE */}
+            {/* REFERRAL MULTISELECT TABLE */}
             {dialogDecision === "REFERRAL" && (
-              <CustomBox>
-                <CustomTypography
-                  component="span"
-                  sx={{
-                    display: "block",
-                    marginBottom: "5px",
-                    color: "#444",
-                    fontSize: "11px",
-                  }}
-                >
-                  Refer To
-                </CustomTypography>
-                <CustomSelect
-                  value={referralTarget}
-                  onChange={(val) => setReferralTarget(val)}
-                  options={REFERRAL_TYPE_OPTIONS}
-                  placeholder="Select referral type"
-                  fullWidth
-                />
+              <CustomBox sx={{ gridColumn: { xs: "auto", sm: "span 3" }, mt: 0.5 }}>
+                <CustomBox sx={{ overflowX: "auto" }}>
+                  <table
+                    style={{
+                      width: "100%",
+                      borderCollapse: "collapse",
+                      background: "#fff",
+                      fontSize: "11px",
+                    }}
+                  >
+                    <thead>
+                      <tr style={{ background: "#ffead7", color: "#5b261c" }}>
+                        <th style={{ padding: "8px 10px", border: "1px solid #ded9d6", textAlign: "center", width: "40px" }}>
+                          <input
+                            type="checkbox"
+                            disabled={referralRows.some((r) => r.target === "REF_REINS" && r.selected)}
+                            checked={
+                              referralRows.length > 0 &&
+                              !referralRows.some((r) => r.target === "REF_REINS" && r.selected) &&
+                              referralRows.filter((r) => r.target !== "REF_REINS").every((r) => r.selected)
+                            }
+                            onChange={(e) => {
+                              const checked = e.target.checked;
+                              setReferralRows((prev) =>
+                                prev.map((r) => ({
+                                  ...r,
+                                  selected: r.target === "REF_REINS" ? false : checked,
+                                }))
+                              );
+                            }}
+                            style={{
+                              cursor: referralRows.some((r) => r.target === "REF_REINS" && r.selected)
+                                ? "not-allowed"
+                                : "pointer",
+                              transform: "scale(1.1)",
+                            }}
+                          />
+                        </th>
+                        <th style={{ padding: "8px 12px", border: "1px solid #ded9d6", textAlign: "left", fontWeight: 800, width: "130px" }}>
+                          Refer To
+                        </th>
+                        <th style={{ padding: "8px 12px", border: "1px solid #ded9d6", textAlign: "left", fontWeight: 800, width: "200px" }}>
+                          Reason
+                        </th>
+                        <th style={{ padding: "8px 12px", border: "1px solid #ded9d6", textAlign: "left", fontWeight: 800 }}>
+                          UW Remarks
+                        </th>
+                        <th style={{ padding: "8px 12px", border: "1px solid #ded9d6", textAlign: "center", fontWeight: 800, width: "90px" }}>
+                          Action
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {referralRows.map((row, index) => {
+                        const isReinsurer = row.target === "REF_REINS";
+                        const isReinsurerSelected = referralRows.some(
+                          (r) => r.target === "REF_REINS" && r.selected
+                        );
+                        const isHoCmoSelected = referralRows.some(
+                          (r) => r.target === "REF_CMO" && r.selected
+                        );
+                        const isRowDisabled =
+                          (isReinsurerSelected && !isReinsurer) ||
+                          (row.target === "REF_CMO_LOCAL" && isHoCmoSelected);
+                        const reasonOptions = (REFERRAL_REASON_OPTIONS[row.target] ?? []).map((opt) => ({
+                          value: opt,
+                          label: opt,
+                        }));
+
+                        return (
+                          <tr
+                            key={row.target}
+                            style={{
+                              background: row.selected
+                                ? "#fffcf8"
+                                : isRowDisabled
+                                ? "#f9f9f9"
+                                : "#fff",
+                              color: isRowDisabled ? "#888" : "inherit",
+                            }}
+                          >
+                            <td style={{ padding: "8px 10px", border: "1px solid #ded9d6", textAlign: "center" }}>
+                              <input
+                                type="checkbox"
+                                checked={row.selected}
+                                disabled={isRowDisabled}
+                                onChange={(e) => {
+                                  const checked = e.target.checked;
+                                  setReferralRows((prev) => {
+                                    if (isReinsurer && checked) {
+                                      // If Reinsurer is checked, uncheck all other rows
+                                      return prev.map((r) => ({
+                                        ...r,
+                                        selected: r.target === "REF_REINS",
+                                      }));
+                                    }
+                                    if (row.target === "REF_CMO" && checked) {
+                                      // If HO CMO is checked, uncheck CMO
+                                      return prev.map((r) => {
+                                        if (r.target === "REF_CMO_LOCAL") {
+                                          return { ...r, selected: false };
+                                        }
+                                        if (r.target === "REF_CMO") {
+                                          return { ...r, selected: true };
+                                        }
+                                        return r;
+                                      });
+                                    }
+                                    const copy = [...prev];
+                                    copy[index] = { ...copy[index], selected: checked };
+                                    return copy;
+                                  });
+                                  if (isReinsurer && !checked) {
+                                    setReinsurerEditOpen(false);
+                                  }
+                                }}
+                                style={{
+                                  cursor: isRowDisabled ? "not-allowed" : "pointer",
+                                  transform: "scale(1.1)",
+                                }}
+                              />
+                            </td>
+                            <td style={{ padding: "8px 12px", border: "1px solid #ded9d6", fontWeight: 600 }}>
+                              {row.label}
+                            </td>
+                            <td style={{ padding: "6px 8px", border: "1px solid #ded9d6" }}>
+                              <CustomSelect
+                                value={row.reason}
+                                onChange={(val) => {
+                                  setReferralRows((prev) => {
+                                    const copy = [...prev];
+                                    copy[index] = { ...copy[index], reason: val };
+                                    return copy;
+                                  });
+                                }}
+                                options={reasonOptions}
+                                disabled={!row.selected || isRowDisabled}
+                                placeholder="Select reason"
+                                fullWidth
+                              />
+                            </td>
+                            <td style={{ padding: "6px 8px", border: "1px solid #ded9d6" }}>
+                              <CustomTextField
+                                value={row.remarks}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setReferralRows((prev) => {
+                                    const copy = [...prev];
+                                    copy[index] = { ...copy[index], remarks: val };
+                                    return copy;
+                                  });
+                                }}
+                                disabled={!row.selected || isRowDisabled}
+                                placeholder="Enter remarks"
+                                fullWidth
+                              />
+                            </td>
+                            <td style={{ padding: "6px 8px", border: "1px solid #ded9d6", textAlign: "center" }}>
+                              <CustomButton
+                                variant={reinsurerEditOpen && isReinsurer ? "contained" : "outlined"}
+                                disabled={!row.selected || !isReinsurer}
+                                onClick={() => {
+                                  if (isReinsurer && row.selected) {
+                                    setReinsurerEditOpen((prev) => !prev);
+                                  }
+                                }}
+                                sx={{
+                                  fontSize: "11px",
+                                  py: 0.5,
+                                  px: 1.5,
+                                  minWidth: "60px",
+                                  textTransform: "none",
+                                  ...(isReinsurer && row.selected
+                                    ? {
+                                        background: reinsurerEditOpen ? "#e45f14" : "transparent",
+                                        color: reinsurerEditOpen ? "#fff" : "#e45f14",
+                                        borderColor: "#e45f14",
+                                        "&:hover": {
+                                          background: reinsurerEditOpen ? "#c94f0d" : "#fff2e8",
+                                          borderColor: "#c94f0d",
+                                        },
+                                      }
+                                    : {
+                                        color: "#aaa",
+                                        borderColor: "#ddd",
+                                      }),
+                                }}
+                              >
+                                {isReinsurer && reinsurerEditOpen ? "Hide" : "Edit"}
+                              </CustomButton>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </CustomBox>
+
+                {/* REINSURER EDIT SECTION (OPENS AFTER REFERRAL TABLE) */}
+                {reinsurerEditOpen && referralRows.find((r) => r.target === "REF_REINS")?.selected && (
+                  <CustomBox
+                    sx={{
+                      p: 2,
+                      mt: 2,
+                      border: "1px solid #eadfd9",
+                      borderRadius: "8px",
+                      background: "#fffaf6",
+                    }}
+                  >
+                    <CustomTypography
+                      component="h3"
+                      sx={{
+                        fontSize: "14px",
+                        fontWeight: 700,
+                        color: "#5b261c",
+                        mb: 1.5,
+                      }}
+                    >
+                      Reinsurer Additional Data Entry
+                    </CustomTypography>
+
+                    <CustomBox
+                      sx={{
+                        display: "grid",
+                        gridTemplateColumns: { xs: "1fr", sm: "1.2fr 1.8fr" },
+                        gap: "20px",
+                      }}
+                    >
+                      {/* Reinsurer selects */}
+                      <CustomBox
+                        sx={{
+                          background: "#fff",
+                          p: 1.5,
+                          borderRadius: "8px",
+                          border: "1px solid #eadfd9",
+                        }}
+                      >
+                        <CustomTypography
+                          component="h4"
+                          sx={{
+                            fontSize: "13px",
+                            fontWeight: 600,
+                            color: "#302a27",
+                            mb: 1,
+                          }}
+                        >
+                          Reinsurer Details
+                        </CustomTypography>
+
+                        <CustomBox sx={{ overflowX: "auto" }}>
+                          <table
+                            style={{
+                              width: "100%",
+                              borderCollapse: "collapse",
+                              background: "#fff",
+                              fontSize: "11px",
+                            }}
+                          >
+                            <thead>
+                              <tr style={{ background: "#ffead7", color: "#5b261c" }}>
+                                <th style={{ padding: "8px 10px", border: "1px solid #ded9d6", textAlign: "left", fontWeight: 800 }}>Code</th>
+                                <th style={{ padding: "8px 10px", border: "1px solid #ded9d6", textAlign: "left", fontWeight: 800 }}>Reinsurer Name - System</th>
+                                <th style={{ padding: "8px 10px", border: "1px solid #ded9d6", textAlign: "left", fontWeight: 800 }}>Reinsurer Name - UW</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {reinsurerRows.map((row, index) => {
+                                const options = REINSURER_UW_OPTIONS.filter(
+                                  (name) => name.toLowerCase() !== row.systemName.toLowerCase()
+                                );
+                                return (
+                                  <tr key={row.code}>
+                                    <td style={{ padding: "8px 10px", border: "1px solid #ded9d6" }}>{row.code}</td>
+                                    <td style={{ padding: "8px 10px", border: "1px solid #ded9d6" }}>{row.systemName}</td>
+                                    <td style={{ padding: "6px 8px", border: "1px solid #ded9d6" }}>
+                                      <CustomSelect
+                                        value={row.uwName}
+                                        onChange={(val) => {
+                                          setReinsurerUwNames((prev) => {
+                                            const copy = [...prev];
+                                            copy[index] = val;
+                                            return copy;
+                                          });
+                                        }}
+                                        options={options.map((opt) => ({ value: opt, label: opt }))}
+                                        placeholder="Select"
+                                        fullWidth
+                                      />
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </CustomBox>
+                      </CustomBox>
+
+                      {/* Document assignment */}
+                      <CustomBox
+                        sx={{
+                          border: "1px solid #eadfd9",
+                          borderRadius: "8px",
+                          p: 1.5,
+                          background: "#fff",
+                        }}
+                      >
+                        <CustomTypography
+                          component="div"
+                          sx={{
+                            fontSize: "13px",
+                            fontWeight: 700,
+                            color: "#5b261c",
+                            mb: 1,
+                          }}
+                        >
+                          Assign Documents
+                        </CustomTypography>
+
+                        <CustomBox sx={{ overflowX: "auto" }}>
+                          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "11px" }}>
+                            <thead>
+                              <tr style={{ background: "#ffead7", color: "#5b261c" }}>
+                                <th style={{ padding: "8px 10px", border: "1px solid #ded9d6", textAlign: "left", fontWeight: 800 }}>Document name</th>
+                                {reinsurerRows.map((row, index) => (
+                                  <th
+                                    key={row.code}
+                                    style={{ padding: "8px 10px", border: "1px solid #ded9d6", textAlign: "center", fontWeight: 800 }}
+                                  >
+                                    <CustomTypography sx={{ fontSize: "11px", fontWeight: "bold", display: "block" }}>
+                                      {getEffectiveReinsurerName(index)}
+                                    </CustomTypography>
+                                    <CustomButton
+                                      onClick={() => handleSelectAllDocs(index)}
+                                      variant="text"
+                                      sx={{ fontSize: "9px", p: 0, textTransform: "none", color: "#e45f14" }}
+                                    >
+                                      (Select All)
+                                    </CustomButton>
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {REFERRAL_DOCUMENTS.map((docName, rowIndex) => (
+                                <tr key={docName}>
+                                  <td style={{ padding: "8px 10px", border: "1px solid #ded9d6" }}>{docName}</td>
+                                  {reinsurerRows.map((_, colIndex) => (
+                                    <td
+                                      key={colIndex}
+                                      style={{ padding: "8px 10px", border: "1px solid #ded9d6", textAlign: "center" }}
+                                    >
+                                      <input
+                                        type="checkbox"
+                                        checked={reinsurerDocChecks[rowIndex][colIndex]}
+                                        onChange={(e) =>
+                                          handleDocCheckChange(rowIndex, colIndex, e.target.checked)
+                                        }
+                                        style={{ cursor: "pointer", transform: "scale(1.1)" }}
+                                      />
+                                    </td>
+                                  ))}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </CustomBox>
+                      </CustomBox>
+                    </CustomBox>
+
+                    {/* Generate Referral Sheet trigger */}
+                    <CustomBox sx={{ display: "flex", gap: "22px", mt: "14px" }}>
+                      <CustomButton
+                        variant="outlined"
+                        onClick={() => alert("Referral sheet generated successfully")}
+                        sx={{
+                          borderColor: "#aa262a",
+                          color: "#aa262a",
+                          px: 3,
+                          py: 1,
+                          borderRadius: "28px",
+                          fontWeight: "bold",
+                          textTransform: "none",
+                          fontSize: "11px",
+                        }}
+                      >
+                        Generate Referral Sheet
+                      </CustomButton>
+                    </CustomBox>
+                  </CustomBox>
+                )}
               </CustomBox>
             )}
 
             {/* DECISION CODE - terminal decisions */}
-            {["STD", "BOR_STD", "REJ", "DC", "POSTP", "CO", "EP", "REF_IT", "REF_REINS", "REF_CMO", "REF_CMO_LOCAL", "REF_RISK", "REF_ACU", "REF_CUW_CLM"].includes(effectiveDecision) && (
+            {dialogDecision !== "REFERRAL" && ["STD", "BOR_STD", "REJ", "DC", "POSTP", "CO", "EP"].includes(effectiveDecision) && (
               <CustomBox>
                 <CustomTypography
                   component="span"
@@ -938,7 +1340,7 @@ export function GuwUwPanel({
             )}
 
             {/* SMOKER FLAG */}
-            {effectiveDecision && !["CO", "EP"].includes(effectiveDecision) && (
+            {dialogDecision !== "REFERRAL" && effectiveDecision && !["CO", "EP"].includes(effectiveDecision) && (
               <CustomBox>
                 <CustomTypography
                   component="span"
@@ -1034,8 +1436,8 @@ export function GuwUwPanel({
               </CustomBox>
             )}
 
-            {/* REFERRAL REASONS (IT, CMO, etc.) */}
-            {REFERRAL_REASON_OPTIONS[effectiveDecision] && (
+            {/* REFERRAL REASONS (non-referral modal decisions) */}
+            {dialogDecision !== "REFERRAL" && REFERRAL_REASON_OPTIONS[effectiveDecision] && (
               <CustomBox>
                 <CustomTypography
                   component="span"
@@ -1061,142 +1463,6 @@ export function GuwUwPanel({
               </CustomBox>
             )}
 
-            {/* FIRST UW DECISION for Reinsurer, HO CMO, CMO, Risk, Accuity */}
-            {["REF_REINS", "REF_CMO", "REF_CMO_LOCAL", "REF_RISK", "REF_ACU"].includes(effectiveDecision) && (
-              <>
-                <CustomBox>
-                  <CustomTypography
-                    component="span"
-                    sx={{
-                      display: "block",
-                      marginBottom: "5px",
-                      color: "#444",
-                      fontSize: "11px",
-                    }}
-                  >
-                    1st UW Decision
-                  </CustomTypography>
-                  <CustomSelect
-                    value={referralFirstDecision}
-                    onChange={(val) => {
-                      setReferralFirstDecision(val);
-                      setReferralFirstReason("");
-                      setReferralPostponementPeriod("");
-                    }}
-                    options={[
-                      { value: "STD", label: "Standard" },
-                      { value: "BOR_STD", label: "Borderline Standard" },
-                      { value: "REJ", label: "Reject" },
-                      { value: "DC", label: "Decline" },
-                      { value: "POSTP", label: "Postpone" },
-                      { value: "CO", label: "Counter Offer" },
-                      { value: "EP", label: "Extra Premium" },
-                    ]}
-                    placeholder="Select"
-                    fullWidth
-                  />
-                </CustomBox>
-
-                {referralFirstDecision && (
-                  <CustomBox>
-                    <CustomTypography
-                      component="span"
-                      sx={{
-                        display: "block",
-                        marginBottom: "5px",
-                        color: "#444",
-                        fontSize: "11px",
-                      }}
-                    >
-                      Decision Code
-                    </CustomTypography>
-                    <CustomTextField value={referralFirstDecision} disabled fullWidth />
-                  </CustomBox>
-                )}
-
-                {["REJ", "BOR_STD", "DC", "CO"].includes(referralFirstDecision) && (
-                  <CustomBox>
-                    <CustomTypography
-                      component="span"
-                      sx={{
-                        display: "block",
-                        marginBottom: "5px",
-                        color: "#444",
-                        fontSize: "11px",
-                      }}
-                    >
-                      1st UW Decision Reason
-                    </CustomTypography>
-                    <CustomSelect
-                      value={referralFirstReason}
-                      onChange={(val) => setReferralFirstReason(val)}
-                      options={[
-                        { value: "Medical", label: "Medical" },
-                        { value: "Financial", label: "Financial" },
-                        { value: "Non-medical", label: "Non-medical" },
-                        { value: "Other", label: "Other" },
-                      ]}
-                      placeholder="Select"
-                      fullWidth
-                    />
-                  </CustomBox>
-                )}
-
-                {referralFirstDecision === "POSTP" && (
-                  <>
-                    <CustomBox>
-                      <CustomTypography
-                        component="span"
-                        sx={{
-                          display: "block",
-                          marginBottom: "5px",
-                          color: "#444",
-                          fontSize: "11px",
-                        }}
-                      >
-                        Postpone Reason
-                      </CustomTypography>
-                      <CustomSelect
-                        value={referralFirstReason}
-                        onChange={(val) => setReferralFirstReason(val)}
-                        options={[
-                          { value: "Medical", label: "Medical" },
-                          { value: "Financial", label: "Financial" },
-                          { value: "Non-medical", label: "Non-medical" },
-                          { value: "Other", label: "Other" },
-                        ]}
-                        placeholder="Select"
-                        fullWidth
-                      />
-                    </CustomBox>
-                    <CustomBox>
-                      <CustomTypography
-                        component="span"
-                        sx={{
-                          display: "block",
-                          marginBottom: "5px",
-                          color: "#444",
-                          fontSize: "11px",
-                        }}
-                      >
-                        Postponement Period
-                      </CustomTypography>
-                      <CustomSelect
-                        value={referralPostponementPeriod}
-                        onChange={(val) => setReferralPostponementPeriod(val)}
-                        options={[
-                          { value: "3 months", label: "3 months" },
-                          { value: "6 months", label: "6 months" },
-                          { value: "12 months", label: "12 months" },
-                        ]}
-                        placeholder="Select"
-                        fullWidth
-                      />
-                    </CustomBox>
-                  </>
-                )}
-              </>
-            )}
 
             {/* APPROVER FIELDS (FOR REFER TO APPROVER) */}
             {effectiveDecision === "APPROVER" && (
@@ -1593,214 +1859,6 @@ export function GuwUwPanel({
             </CustomBox>
           )}
 
-          {/* REINSURER DETAILS SECTION (FOR REF_REINS REFERRAL) */}
-          {effectiveDecision === "REF_REINS" && (
-            <CustomBox
-              sx={{
-                p: 2,
-                mt: 2,
-                borderTop: "1px solid #eadfd9",
-                pt: "14px",
-              }}
-            >
-              <CustomBox
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: { xs: "1fr", sm: "1.2fr 1.8fr" },
-                  gap: "24px",
-                }}
-              >
-                {/* Reinsurer selects */}
-                <CustomBox
-                  sx={{
-                    background: "#f5f5f5",
-                    p: 2,
-                    borderRadius: "12px",
-                  }}
-                >
-                  <CustomTypography
-                    component="h3"
-                    sx={{
-                      fontSize: "15px",
-                      fontWeight: 600,
-                      color: "#302a27",
-                      mb: 1.5,
-                    }}
-                  >
-                    Reinsurer Details
-                  </CustomTypography>
-
-                  {/* Table mimicking prototype table */}
-                  <CustomBox sx={{ overflowX: "auto" }}>
-                    <table
-                      style={{
-                        width: "100%",
-                        borderCollapse: "collapse",
-                        background: "#fff",
-                        fontSize: "11px",
-                      }}
-                    >
-                      <thead>
-                        <tr style={{ background: "#ffead7", color: "#5b261c" }}>
-                          <th style={{ padding: "8px 12px", border: "1px solid #ded9d6", textAlign: "left", fontWeight: 800 }}>Code</th>
-                          <th style={{ padding: "8px 12px", border: "1px solid #ded9d6", textAlign: "left", fontWeight: 800 }}>Reinsurer Name - System</th>
-                          <th style={{ padding: "8px 12px", border: "1px solid #ded9d6", textAlign: "left", fontWeight: 800 }}>Reinsurer Name - UW</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {reinsurerRows.map((row, index) => {
-                          const options = REINSURER_UW_OPTIONS.filter(
-                            (name) => name.toLowerCase() !== row.systemName.toLowerCase()
-                          );
-                          return (
-                            <tr key={row.code}>
-                              <td style={{ padding: "8px 12px", border: "1px solid #ded9d6" }}>{row.code}</td>
-                              <td style={{ padding: "8px 12px", border: "1px solid #ded9d6" }}>{row.systemName}</td>
-                              <td style={{ padding: "8px 12px", border: "1px solid #ded9d6" }}>
-                                <CustomSelect
-                                  value={row.uwName}
-                                  onChange={(val) => {
-                                    setReinsurerUwNames((prev) => {
-                                      const copy = [...prev];
-                                      copy[index] = val;
-                                      return copy;
-                                    });
-                                  }}
-                                  options={options.map((opt) => ({ value: opt, label: opt }))}
-                                  placeholder="Select"
-                                  fullWidth
-                                />
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </CustomBox>
-                </CustomBox>
-
-                {/* Document assignment */}
-                <CustomBox
-                  sx={{
-                    border: "1px solid #eadfd9",
-                    borderRadius: "12px",
-                    p: 2,
-                    background: "#fff",
-                  }}
-                >
-                  <CustomTypography
-                    component="div"
-                    sx={{
-                      fontSize: "14px",
-                      fontWeight: 800,
-                      color: "#5b261c",
-                      mb: 1.5,
-                    }}
-                  >
-                    Assign Documents
-                  </CustomTypography>
-
-                  <CustomBox sx={{ overflowX: "auto" }}>
-                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "11px" }}>
-                      <thead>
-                        <tr style={{ background: "#ffead7", color: "#5b261c" }}>
-                          <th style={{ padding: "8px 12px", border: "1px solid #ded9d6", textAlign: "left", fontWeight: 800 }}>Document name</th>
-                          {reinsurerRows.map((row, index) => (
-                            <th
-                              key={row.code}
-                              style={{ padding: "8px 12px", border: "1px solid #ded9d6", textAlign: "center", fontWeight: 800 }}
-                            >
-                              <CustomTypography sx={{ fontSize: "11px", fontWeight: "bold", display: "block" }}>
-                                {getEffectiveReinsurerName(index)}
-                              </CustomTypography>
-                              <CustomButton
-                                onClick={() => handleSelectAllDocs(index)}
-                                variant="text"
-                                sx={{ fontSize: "9px", p: 0, textTransform: "none", color: "#e45f14" }}
-                              >
-                                (Select All)
-                              </CustomButton>
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {REFERRAL_DOCUMENTS.map((docName, rowIndex) => (
-                          <tr key={docName}>
-                            <td style={{ padding: "8px 12px", border: "1px solid #ded9d6" }}>{docName}</td>
-                            {reinsurerRows.map((_, colIndex) => (
-                              <td
-                                key={colIndex}
-                                style={{ padding: "8px 12px", border: "1px solid #ded9d6", textAlign: "center" }}
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={reinsurerDocChecks[rowIndex][colIndex]}
-                                  onChange={(e) =>
-                                    handleDocCheckChange(rowIndex, colIndex, e.target.checked)
-                                  }
-                                  style={{ cursor: "pointer", transform: "scale(1.1)" }}
-                                />
-                              </td>
-                            ))}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </CustomBox>
-                </CustomBox>
-              </CustomBox>
-
-              {/* Remarks input for reinsurer */}
-              <CustomBox sx={{ mt: 3, display: "block" }}>
-                <CustomTypography
-                  component="span"
-                  sx={{
-                    display: "block",
-                    marginBottom: "5px",
-                    color: "#444",
-                    fontSize: "11px",
-                  }}
-                >
-                  Remarks
-                </CustomTypography>
-                <CustomTextField
-                  value={dialogRemarks}
-                  onChange={(e) => setDialogRemarks(e.target.value)}
-                  placeholder="Add remarks..."
-                  multiline
-                  rows={4}
-                  fullWidth
-                  sx={{
-                    "& .MuiOutlinedInput-root.MuiInputBase-multiline": {
-                      height: "auto",
-                      minHeight: "72px",
-                      padding: "8px 14px",
-                    },
-                  }}
-                />
-              </CustomBox>
-
-              {/* Generate Referral Sheet trigger */}
-              <CustomBox sx={{ display: "flex", gap: "22px", mt: "18px" }}>
-                <CustomButton
-                  variant="outlined"
-                  onClick={() => alert("Referral sheet generated successfully")}
-                  sx={{
-                    borderColor: "#aa262a",
-                    color: "#aa262a",
-                    px: 4,
-                    py: 1.5,
-                    borderRadius: "28px",
-                    fontWeight: "bold",
-                    textTransform: "none",
-                  }}
-                >
-                  Generate Referral Sheet
-                </CustomButton>
-              </CustomBox>
-            </CustomBox>
-          )}
 
           {/* COUNTER OFFER DETAILS TABLE FOR CO / BOR_STD / EP */}
           {["CO", "BOR_STD", "EP"].includes(effectiveDecision) && (
@@ -2019,8 +2077,8 @@ export function GuwUwPanel({
             </CustomBox>
           )}
 
-          {/* UW REMARKS - last field before Submit (Reinsurer Referral has its own Remarks above) */}
-          {effectiveDecision !== "REF_REINS" && (
+          {/* UW REMARKS - last field before Submit (non-referral decisions) */}
+          {dialogDecision !== "REFERRAL" && (
             <CustomBox sx={{ mt: 3 }}>
               <CustomTypography
                 component="span"

@@ -49,6 +49,16 @@
       "import": "./src/components/DetailCard.tsx",
       "default": "./src/components/DetailCard.tsx"
     },
+    "./bre-card": {
+      "types": "./src/components/BreCard.tsx",
+      "import": "./src/components/BreCard.tsx",
+      "default": "./src/components/BreCard.tsx"
+    },
+    "./risk-cards": {
+      "types": "./src/components/RiskCards.tsx",
+      "import": "./src/components/RiskCards.tsx",
+      "default": "./src/components/RiskCards.tsx"
+    },
     "./requirement-mgmt": {
       "types": "./src/components/Requirement Mgmt/RequirementMgmt.tsx",
       "import": "./src/components/Requirement Mgmt/RequirementMgmt.tsx",
@@ -83,6 +93,11 @@
       "types": "./src/components/LifeAssured/LifeAssured.tsx",
       "import": "./src/components/LifeAssured/LifeAssured.tsx",
       "default": "./src/components/LifeAssured/LifeAssured.tsx"
+    },
+    "./case-uw-decision": {
+      "types": "./src/components/CaseUwDecision.tsx",
+      "import": "./src/components/CaseUwDecision.tsx",
+      "default": "./src/components/CaseUwDecision.tsx"
     },
     "./decision-section": {
       "types": "./src/components/DecisionSection.tsx",

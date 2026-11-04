@@ -9,14 +9,13 @@ import { AuthNavigation } from "../app/AuthNavigation";
 import { GroupInboxPage } from "../modules/inbox/GroupInboxPage";
 import { GroupAppLayout } from "./GroupAppLayout";
 import { RequireSession } from "./RequireSession";
-import GroupDrsPage from "../modules/drs/GroupDrsPage";
 import { GroupAuditTrailPage } from "../modules/auditTrail/GroupAuditTrailPage";
 // import { GroupApplicantProfilePage } from "../modules/applicantProfile/GroupApplicantProfilePage";
 import { GroupOpenTasksPage } from "../modules/openTasks/GroupOpenTasksPage";
 import { GroupPreviousPolicyPage } from "../modules/previousPolicy/GroupPreviousPolicyPage";
-import { GuwDrsPage } from "../modules/guw/GuwDrsPage";
 import { GroupRiskDetailsPage } from "../modules/riskDetails/GroupRiskDetailsPage";
-import DvtUser from "../modules/drs/DvtUser";
+import GroupDrsRouter from "../modules/drs/GroupDrsRouter";
+import { GuwMemberSelection } from "../modules/guw/GuwMemberSelection";
 
 export function AppRoutes() {
   return (
@@ -32,9 +31,9 @@ export function AppRoutes() {
         >
           <Route index element={<Navigate to="/inbox" replace />} />
           <Route path="/inbox" element={<GroupInboxPage />} />
-          <Route path="/drs" element={<DvtUser />} />
-          <Route path="/drs" element={<GuwDrsPage />} />
-          <Route path="/drs" element={<GroupDrsPage />} />
+          {/* <Route path="/drs" element={<GroupDrsRouter />} /> */}
+          <Route path="/guw/member-selection" element={<GuwMemberSelection />} />
+          <Route path="/guw/drs" element={<GroupDrsRouter />} />
           {/* <Route path="/applicant-profile" element={<GroupApplicantProfilePage />} /> */}
           <Route path="/previous-policy" element={<GroupPreviousPolicyPage />} />
           <Route path="/open-tasks" element={<GroupOpenTasksPage />} />

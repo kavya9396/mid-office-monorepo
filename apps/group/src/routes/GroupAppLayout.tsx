@@ -21,12 +21,31 @@ function stripTrailingSlashes(pathname: string): string {
 export function GroupAppLayout() {
   const location = useLocation();
   const [params] = useSearchParams();
-  const normalizedPath = stripTrailingSlashes(location.pathname);
-  const isInbox = normalizedPath.toLowerCase() === INBOX_PATH;
+  const normalizedPath = stripTrailingSlashes(location.pathname).toLowerCase();
+  const isInbox = normalizedPath === INBOX_PATH;
   const role = isInbox ? undefined : readQueryValue(params.get("role"));
   const applicationNo = isInbox
     ? undefined
     : readQueryValue(params.get("applicationNo"));
+
+  /**
+   * On the GUW informal DRS page (/guw/drs), back button behaviour depends on
+   * member count encoded in the URL:
+   *   memberCount > 1  →  back to /guw/member-selection (same applicationNo + roleType)
+   *   memberCount <= 1 →  back to /inbox (default Header behaviour)
+   */
+  const isGuwDrs = normalizedPath === "/guw/drs";
+  const memberCount = parseInt(params.get("memberCount") ?? "0", 10);
+  const guwBackPath: string | undefined = (() => {
+    if (!isGuwDrs || memberCount <= 1) return undefined;
+    const backParams = new URLSearchParams({
+      applicationNo: params.get("applicationNo") ?? "",
+      roleType: params.get("roleType") ?? "",
+    });
+    const roleVal = params.get("role") ?? "";
+    if (roleVal) backParams.set("role", roleVal);
+    return `/guw/member-selection?${backParams.toString()}`;
+  })();
 
   return (
     <Box
@@ -41,6 +60,7 @@ export function GroupAppLayout() {
         inboxPath={INBOX_PATH}
         role={role}
         applicationNo={applicationNo}
+        backPath={guwBackPath}
       />
       <Box component="main" sx={{ flex: 1, minWidth: 0, minHeight: 0, overflow: isInbox ? "hidden" : "auto" }}>
         <Outlet />

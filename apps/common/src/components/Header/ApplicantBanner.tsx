@@ -88,6 +88,8 @@ export function ApplicantBanner({
           top: sticky ? stickyTop : undefined,
           zIndex: 20,
           background: "#fff8f3",
+          px: 2,
+          pt: 1.5,
         },
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}

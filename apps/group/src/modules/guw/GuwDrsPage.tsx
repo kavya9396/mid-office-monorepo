@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import Box from "@mui/material/Box";
-import { AppHeader } from "@insurance-poc/common/app-header";
-import { ApplicantBanner } from "@insurance-poc/common/applicant-banner";
+import { ApplicantBanner, type BannerRow } from "@insurance-poc/common/applicant-banner";
 import { BreCard } from "@insurance-poc/common/bre-card";
 import { GrievanceHistory } from "@insurance-poc/common/grievance-history";
 import { ClaimAudit, type ClaimAuditRow } from "@insurance-poc/common/claim-audit";
@@ -11,26 +10,18 @@ import { UwGuidelines, type UwGuidelineRow } from "@insurance-poc/common/uw-guid
 import { GuwRiskCards } from "./GuwRiskCards";
 import { GuwSdtRow } from "./GuwSdtRow";
 import { GuwUwPanel, INITIAL_GUIDELINES } from "./GuwUwPanel";
-import { commonPaths, groupPaths, replaceUrl } from "@insurance-poc/routes";
 import {
   CustomDialog,
-  LogoutIcon,
   CustomSnackbar,
 } from "@insurance-poc/ui";
-import { clearToken, getSessionUser } from "@insurance-poc/utils";
 import { fetchGuwDrs, type GuwDrsRecord } from "../../services/guwService";
-import  QuickLinks  from "@insurance-poc/common/quick-links";
+import   { QuickLinksModule }  from "@insurance-poc/common/quick-links";
 
 type PageState =
   | { kind: "loading" }
   | { kind: "missing-id" }
   | { kind: "not-found" }
   | { kind: "ready"; record: GuwDrsRecord };
-
-function signOut(): void {
-  clearToken();
-  replaceUrl(commonPaths.login);
-}
 
 /**
  * GUW Informal DRS page generated from CUW-updated-16-10.html
@@ -43,14 +34,12 @@ function signOut(): void {
  */
 export function GuwDrsPage() {
   const [params] = useSearchParams();
-  const userName = getSessionUser()?.displayName ?? "";
   const applicationNo = params.get("applicationNo")?.trim() ?? "";
   const [page, setPage] = useState<PageState>(
     applicationNo ? { kind: "loading" } : { kind: "missing-id" },
   );
   const [historyOpen, setHistoryOpen] = useState(false);
   const [breDetailOpen, setBreDetailOpen] = useState(false);
-  const [activeStatus, setActiveStatus] = useState("All");
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
 
@@ -177,37 +166,24 @@ export function GuwDrsPage() {
 
   return (
     <Box
+      data-testid="guw-drs-main"
       sx={{
-        height: "100vh",
-        display: "flex",
-        flexDirection: "column",
+        minHeight: "100%",
         background: "#fff8f3",
+        pb: 8,
       }}
     >
-      <AppHeader
-        showBack
-        onBack={() => replaceUrl(groupPaths.inbox)}
-        userName={userName}
-        menuItems={[
-          { label: "Logout", icon: <LogoutIcon />, onSelect: signOut },
-        ]}
-      />
-
-      <Box
-        component="main"
-        data-testid="guw-drs-main"
-        sx={{
-          height: "calc(100dvh - 57px)",
-          overflowY: "auto",
-        }}
-      >
+      <Box>
         {page.kind === "ready" ? (
           <>
             {/* Banner Shell */}
             <ApplicantBanner
-              applicantName={page.record.applicantName}
-              applicationLabel={page.record.applicationLabel}
-              lines={page.record.lines}
+              name={page.record.applicantName}
+              applicationNo={page.record.applicationNo}
+              rows={page.record.lines.map<BannerRow>((line, i) => ({
+                id: String(i),
+                fields: [{ id: String(i), value: line.text }],
+              }))}
             />
 
             {/* .content > .summary-wrap */}
@@ -260,16 +236,16 @@ export function GuwDrsPage() {
 
                   {/* .bre-card */}
                   <BreCard
-                    breCode={page.record.breData.breCode}
-                    initialDiscrepancy={page.record.breData.initialDiscrepancy}
-                    finalDiscrepancy={page.record.breData.finalDiscrepancy}
-                    statusChips={page.record.breData.statusChips}
-                    activeStatus={activeStatus}
-                    onStatusFilter={setActiveStatus}
+                    decision={page.record.breData.breCode}
+                    initialDiscrepancies={page.record.breData.initialDiscrepancy}
+                    finalDiscrepancies={page.record.breData.finalDiscrepancy}
+                    statusChips={page.record.breData.statusChips.map((c) => ({
+                      key: c.label,
+                      label: c.label,
+                      count: c.count,
+                    }))}
                     onViewDetail={() => setBreDetailOpen(true)}
-                    onRetrigger={() => {
-                      /* retrigger API TBD */
-                    }}
+                    onRefresh={() => { /* retrigger API TBD */ }}
                   />
                 </Box>
 
@@ -297,7 +273,7 @@ export function GuwDrsPage() {
             />
 
             {/* Quick Links Floating Action Button */}
-            <QuickLinks items={linkItems} title="Quick Links" />
+            <QuickLinksModule items={linkItems} title="Quick Links" />
           </>
         ) : null}
 

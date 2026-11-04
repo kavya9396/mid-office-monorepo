@@ -1,8 +1,10 @@
 import type { DetailAttribute, DetailTable } from "@insurance-poc/common/detail-card";
 import type { LifeAssuredApplicant } from "@insurance-poc/common/life-assured";
 import type { RequirementItem } from "@insurance-poc/common/requirement-mgmt";
+import type { RiskCardData } from "@insurance-poc/common/risk-cards";
 import { mapApplicants, type LifeAssuredSource } from "../modules/drs/lifeAssuredData";
 import { mapRequirements, type RawRequirement } from "../modules/drs/requirementData";
+import { mapRiskCards } from "../modules/drs/riskCardsData";
 
 export const GROUP_DRS_PATH = "/drs";
 
@@ -29,8 +31,10 @@ export type GroupDrsData = {
   applicationNo: string;
   cardDetails: CardDetail[];
   breDecision: BreDecision;
+  latestBreDecision?: BreDecision;
   requirements: RequirementItem[];
   applicants: LifeAssuredApplicant[];
+  riskCards: RiskCardData[];
 };
 
 const CARD_TYPES: readonly CardType[] = ["APPLICATION", "SOURCE", "GROUP", "RISK"];
@@ -222,6 +226,7 @@ export function mapGroupDrsPayload(value: unknown): GroupDrsData {
 
   const sections = data.sections;
   const breSection = findSection(sections, "breDecision");
+  const latestBreSection = findSection(sections, "latestBreDecision");
   const summarySection = findSection(sections, "summary");
   const requirementSection = findSection(sections, "requirementManagement");
   const appOverviewSection = findSection(sections, "applicationOverview");
@@ -230,7 +235,9 @@ export function mapGroupDrsPayload(value: unknown): GroupDrsData {
     applicationNo,
     cardDetails: readCards(data.cardDetails),
     breDecision: readBre(breSection),
+    latestBreDecision: latestBreSection != null ? readBre(latestBreSection) : undefined,
     requirements: mapRequirements(readRequirements(requirementSection)),
     applicants: mapApplicants(readLifeAssured(summarySection, appOverviewSection)),
+    riskCards: mapRiskCards(summarySection),
   };
 }
