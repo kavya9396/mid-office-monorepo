@@ -98,7 +98,7 @@ export function GuwSdtRow({
     <CustomBox
       sx={{
         display: "grid",
-        gridTemplateColumns: "minmax(130px, .65fr) minmax(0, 2fr) auto",
+        gridTemplateColumns: "repeat(3, minmax(130px, 1fr)) auto",
         background: "#fcfaf9",
         border: "1px solid #e4dedb",
         borderLeft: "4px solid #e45f14",
@@ -109,6 +109,7 @@ export function GuwSdtRow({
     >
       <DecisionCell label="Financial Decision" value={data.financialDecision} />
       <DecisionCell label="Medical Decision" value={data.medicalDecision} borderLeft />
+      <DecisionCell label="LumiQ Decision" value={data.lumiqDecision} borderLeft />
 
       {/* action buttons */}
       <CustomBox

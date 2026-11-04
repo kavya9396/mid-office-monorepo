@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import {
   CustomBox,
   CustomButton,
@@ -9,16 +9,19 @@ import {
   CustomTextField,
   CustomTypography,
   CustomSnackbar,
+  EditIcon,
 } from "@insurance-poc/ui";
-import { groupPaths, replaceUrl } from "@insurance-poc/routes";
 import eyeIconSrc from "../../assets/eye.svg";
 import type { GuwSubmittedDecision } from "../../services/guwService";
+import { GuwReferralSection } from "./GuwReferralSection";
 
 export interface GuwUwPanelProps {
   breOverallDecision?: string;
   breOverallRemarks?: string;
   initialSubmittedDecision?: GuwSubmittedDecision;
   onDecisionSubmit: (decision: string, remarks: string) => void;
+  /** Called when the main Submit button is clicked (e.g. to navigate to the inbox). */
+  onSubmit?: () => void;
 }
 
 interface CounterOfferRow {
@@ -108,6 +111,45 @@ const LOADING_REASON_OPTIONS: Record<string, string[]> = {
 const REINSURER_UW_OPTIONS = ["Swiss Re", "Munich Re", "Scor Re", "Gen Re", "RGA Re", "Hannover Re"];
 const REFERRAL_DOCUMENTS = ["Application Form", "PhotoId Proof", "Address Proof"];
 
+const POSTPONEMENT_PERIOD_OPTIONS = [
+  { value: "3 months", label: "3 months" },
+  { value: "6 months", label: "6 months" },
+  { value: "12 months", label: "12 months" },
+];
+
+const APPROVER_REASON_OPTIONS = [
+  { value: "Medical", label: "Medical" },
+  { value: "Financial", label: "Financial" },
+  { value: "Non-medical", label: "Non-medical" },
+  { value: "Other", label: "Other" },
+];
+
+/** Label above a form control; `span` makes it cover several grid columns. */
+function LabeledField({
+  label,
+  span = 1,
+  children,
+}: Readonly<{ label: string; span?: number; children: ReactNode }>) {
+  return (
+    <CustomBox
+      sx={{
+        minWidth: 0,
+        gridColumn: { xs: "auto", sm: `span ${span}` },
+        "& .MuiOutlinedInput-root.MuiInputBase-root": { height: "32px", minHeight: "32px" },
+        "& .MuiSelect-select": { py: "2px !important" },
+      }}
+    >
+      <CustomTypography
+        component="span"
+        sx={{ display: "block", mb: "3px", color: "#444", fontSize: "11px", fontWeight: 600 }}
+      >
+        {label}
+      </CustomTypography>
+      {children}
+    </CustomBox>
+  );
+}
+
 const DEFAULT_PRODUCTS = [
   { name: "iProtect Smart", sa: "₹50,00,000", pt: "20", isRider: false },
   { name: "Accidental Death Rider", sa: "₹10,00,000", pt: "20", isRider: true },
@@ -137,6 +179,7 @@ export function GuwUwPanel({
   breOverallRemarks,
   initialSubmittedDecision,
   onDecisionSubmit,
+  onSubmit,
 }: Readonly<GuwUwPanelProps>) {
   const [selectedDecision, setSelectedDecision] = useState<string>(
     initialSubmittedDecision?.decisionCode ?? "",
@@ -166,7 +209,6 @@ export function GuwUwPanel({
   };
 
   // Detailed Dynamic Form State
-  const [referralTarget, setReferralTarget] = useState<string>("");
   const [smokerFlag, setSmokerFlag] = useState<string>("");
   const [subStdReason, setSubStdReason] = useState<string[]>([]);
   const [postponementPeriod, setPostponementPeriod] = useState<string>("");
@@ -182,9 +224,22 @@ export function GuwUwPanel({
 
   // Referral states
   const [referralReason, setReferralReason] = useState<string>("");
-  const [referralFirstDecision, setReferralFirstDecision] = useState<string>("");
-  const [referralFirstReason, setReferralFirstReason] = useState<string>("");
-  const [referralPostponementPeriod, setReferralPostponementPeriod] = useState<string>("");
+  const [referralRows, setReferralRows] = useState<{
+    target: string;
+    label: string;
+    selected: boolean;
+    reason: string;
+    remarks: string;
+  }[]>(() =>
+    REFERRAL_TYPE_OPTIONS.map((opt) => ({
+      target: opt.value,
+      label: opt.label,
+      selected: false,
+      reason: "",
+      remarks: "",
+    }))
+  );
+  const [reinsurerEditOpen, setReinsurerEditOpen] = useState<boolean>(false);
 
   // Reconsideration states
   const [reconsiderPossible, setReconsiderPossible] = useState<"Yes" | "No" | "">("");
@@ -204,8 +259,7 @@ export function GuwUwPanel({
   // Counter Offer Grid
   const [counterOfferRows, setCounterOfferRows] = useState<CounterOfferRow[]>([]);
 
-  const effectiveDecision =
-    dialogDecision === "REFERRAL" && referralTarget ? referralTarget : dialogDecision;
+  const effectiveDecision = dialogDecision;
 
   // Initialize Counter Offer rows when dialog decision turns to CO, BOR_STD, or EP
   useEffect(() => {
@@ -250,12 +304,23 @@ export function GuwUwPanel({
     };
 
     if (dialogDecision === "REFERRAL") {
-      add("Refer To", REFERRAL_TYPE_OPTIONS.find((o) => o.value === referralTarget)?.label ?? referralTarget);
+      const selectedReferrals = referralRows.filter((r) => r.selected);
+      add("Refer To", selectedReferrals.map((r) => r.label).join(", "));
+      const reasons = selectedReferrals
+        .filter((r) => r.reason)
+        .map((r) => `${r.label}: ${r.reason}`)
+        .join("; ");
+      if (reasons) add("Referral Reason", reasons, true);
+      const rowRemarks = selectedReferrals
+        .filter((r) => r.remarks.trim())
+        .map((r) => `${r.label}: ${r.remarks.trim()}`)
+        .join("; ");
+      if (rowRemarks) add("Referral Remarks", rowRemarks, true);
     }
-    if (effectiveDecision) {
+    if (dialogDecision !== "REFERRAL" && effectiveDecision) {
       add("Decision Code", effectiveDecision);
     }
-    if (effectiveDecision && !["CO", "EP"].includes(effectiveDecision)) {
+    if (effectiveDecision === "STD") {
       add("Smoker Flag", smokerFlag);
     }
     if (
@@ -267,13 +332,8 @@ export function GuwUwPanel({
     }
     if (effectiveDecision === "POSTP") add("Postponement Period", postponementPeriod);
     if (effectiveDecision === "HOLD") add("Hold Reasons", holdReason);
-    if (REFERRAL_REASON_OPTIONS[effectiveDecision]) add("Referral Reason", referralReason);
-
-    if (["REF_REINS", "REF_CMO", "REF_CMO_LOCAL", "REF_RISK", "REF_ACU"].includes(effectiveDecision)) {
-      add("1st UW Decision", decisionLabel(referralFirstDecision));
-      if (referralFirstDecision) add("1st UW Decision Code", referralFirstDecision);
-      if (referralFirstDecision) add(referralFirstDecision === "POSTP" ? "Postpone Reason" : "1st UW Decision Reason", referralFirstReason);
-      if (referralFirstDecision === "POSTP") add("Postponement Period", referralPostponementPeriod);
+    if (dialogDecision !== "REFERRAL" && REFERRAL_REASON_OPTIONS[effectiveDecision]) {
+      add("Referral Reason", referralReason);
     }
 
     if (effectiveDecision === "APPROVER") {
@@ -299,23 +359,32 @@ export function GuwUwPanel({
       }
     }
 
+    const isReinsurerSelected =
+      dialogDecision === "REFERRAL"
+        ? referralRows.some((r) => r.selected && r.target === "REF_REINS")
+        : effectiveDecision === "REF_REINS";
+
     return {
       fields,
       reconsiderationFields,
-      remarks: dialogRemarks,
+      remarks:
+        dialogDecision === "REFERRAL"
+          ? referralRows
+              .filter((r) => r.selected && r.remarks.trim())
+              .map((r) => `${r.label}: ${r.remarks.trim()}`)
+              .join("; ") || dialogRemarks
+          : dialogRemarks,
       counterOfferRows: counterOfferRows.map((r) => ({ ...r })),
       showBstdColumn: isBstdColumnVisible,
-      reinsurerRows:
-        effectiveDecision === "REF_REINS"
-          ? reinsurerRows.map((r) => ({ code: r.code, systemName: r.systemName, uwName: r.uwName }))
-          : [],
-      documentRows:
-        effectiveDecision === "REF_REINS"
-          ? REFERRAL_DOCUMENTS.map((name, rowIndex) => ({
-              name,
-              assigned: reinsurerRows.map((_, colIndex) => reinsurerDocChecks[rowIndex][colIndex]),
-            }))
-          : [],
+      reinsurerRows: isReinsurerSelected
+        ? reinsurerRows.map((r) => ({ code: r.code, systemName: r.systemName, uwName: r.uwName }))
+        : [],
+      documentRows: isReinsurerSelected
+        ? REFERRAL_DOCUMENTS.map((name, rowIndex) => ({
+            name,
+            assigned: reinsurerRows.map((_, colIndex) => reinsurerDocChecks[rowIndex][colIndex]),
+          }))
+        : [],
       guidelines: guidelines.map((g) => ({ ...g })),
     };
   };
@@ -325,6 +394,9 @@ export function GuwUwPanel({
     setDialogRemarks(remarks);
     setDialogStep(1);
     setGuidelines(INITIAL_GUIDELINES.map((g) => ({ ...g })));
+    if (code === "REFERRAL") {
+      setReinsurerEditOpen(false);
+    }
     setDialogOpen(true);
   };
 
@@ -342,10 +414,17 @@ export function GuwUwPanel({
 
   const handleDialogSubmit = () => {
     // Step 1 Validation
-    const isReinsurerReferral = dialogDecision === "REFERRAL" && referralTarget === "REF_REINS";
-    if (!isReinsurerReferral && !dialogRemarks.trim()) {
-      notify("Please enter UW Remarks", "error");
-      return;
+    if (dialogDecision === "REFERRAL") {
+      const selectedReferrals = referralRows.filter((r) => r.selected);
+      if (selectedReferrals.length === 0) {
+        notify("Please select at least one referral", "error");
+        return;
+      }
+    } else {
+      if (!dialogRemarks.trim()) {
+        notify("Please enter UW Remarks", "error");
+        return;
+      }
     }
 
     if (effectiveDecision === "APPROVER") {
@@ -361,11 +440,6 @@ export function GuwUwPanel({
         notify("Please select 1st UW Decision", "error");
         return;
       }
-    }
-
-    if (dialogDecision === "REFERRAL" && !referralTarget) {
-      notify("Please select a referral type", "error");
-      return;
     }
 
     // Advance to Step 2 (Guidelines checklist)
@@ -388,12 +462,7 @@ export function GuwUwPanel({
     setRemarks(dialogRemarks);
     onDecisionSubmit(dialogDecision, dialogRemarks);
     setDialogOpen(false);
-    notify("Decision submitted successfully", "success");
-
-    // Redirect to inbox after 700ms delay
-    setTimeout(() => {
-      replaceUrl(groupPaths.inbox);
-    }, 700);
+    notify("Decision saved successfully", "success");
   };
 
   const handleDialogClose = () => {
@@ -662,6 +731,20 @@ export function GuwUwPanel({
                 />
               </CustomButton>
             )}
+            {submittedDecision && (
+              <CustomButton
+                variant="outlined"
+                aria-label="Edit decision"
+                title="Edit decision"
+                onClick={(e) => {
+                  e.preventDefault();
+                  openDecisionDialog(selectedDecision);
+                }}
+                sx={{ width: 30, minWidth: 30, minHeight: 28, p: 0.5, borderRadius: "6px", flexShrink: 0 }}
+              >
+                <EditIcon width={18} height={18} />
+              </CustomButton>
+            )}
           </CustomBox>
         </CustomBox>
 
@@ -684,6 +767,7 @@ export function GuwUwPanel({
           ))}
           <CustomButton
             variant="contained"
+            onClick={onSubmit}
             sx={{
               background: "#e45f14",
               color: "#fff",
@@ -862,551 +946,249 @@ export function GuwUwPanel({
               </CustomBox>
 
               {/* DECISION + DEPENDENT FIELDS GRID - Case UW Decision leads, UW Remarks is last */}
-          <CustomBox
-            sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr 1fr" },
-              gap: "6px 10px",
-              mt: "6px",
-            }}
-          >
-            {/* Dialog Decision select - hidden for Reinsurer Referral and for Raise Referral / Hold / Raise Requirement */}
-            {effectiveDecision !== "REF_REINS" && !["REFERRAL", "HOLD", "AMR"].includes(dialogDecision) && (
-              <CustomBox>
-                <CustomTypography
-                  component="span"
-                  sx={{
-                    display: "block",
-                    marginBottom: "5px",
-                    color: "#444",
-                    fontSize: "11px",
-                  }}
-                >
-                  Case UW Decision
-                </CustomTypography>
-                <CustomSelect
-                  value={dialogDecision}
-                  onChange={(val) => setDialogDecision(val)}
-                  options={isActionDecision ? ACTION_DECISION_OPTIONS : DECISION_OPTIONS}
-                  disabled={isActionDecision}
-                  placeholder="Select"
-                  fullWidth
-                />
-              </CustomBox>
-            )}
+              <CustomBox
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: { xs: "1fr", sm: "repeat(4, minmax(0, 1fr))" },
+                  gap: "6px 10px",
+                  mt: "6px",
+                  alignItems: "start",
+                }}
+              >
+                {/* Dialog Decision select - hidden for Reinsurer Referral and for Raise Referral / Hold / Raise Requirement */}
+                {effectiveDecision !== "REF_REINS" && !["REFERRAL", "HOLD", "AMR"].includes(dialogDecision) && (
+                  <LabeledField label="Case UW Decision">
+                    <CustomSelect
+                      value={dialogDecision}
+                      onChange={(val) => setDialogDecision(val)}
+                      options={isActionDecision ? ACTION_DECISION_OPTIONS : DECISION_OPTIONS}
+                      disabled={isActionDecision}
+                      placeholder="Select"
+                      fullWidth
+                    />
+                  </LabeledField>
+                )}
 
-            {/* REFER TO - REFERRAL TYPE */}
-            {dialogDecision === "REFERRAL" && (
-              <CustomBox>
-                <CustomTypography
-                  component="span"
-                  sx={{
-                    display: "block",
-                    marginBottom: "5px",
-                    color: "#444",
-                    fontSize: "11px",
-                  }}
-                >
-                  Refer To
-                </CustomTypography>
-                <CustomSelect
-                  value={referralTarget}
-                  onChange={(val) => setReferralTarget(val)}
-                  options={REFERRAL_TYPE_OPTIONS}
-                  placeholder="Select referral type"
-                  fullWidth
-                />
-              </CustomBox>
-            )}
-
-            {/* DECISION CODE - terminal decisions */}
-            {["STD", "BOR_STD", "REJ", "DC", "POSTP", "CO", "EP", "REF_IT", "REF_REINS", "REF_CMO", "REF_CMO_LOCAL", "REF_RISK", "REF_ACU", "REF_CUW_CLM"].includes(effectiveDecision) && (
-              <CustomBox>
-                <CustomTypography
-                  component="span"
-                  sx={{
-                    display: "block",
-                    marginBottom: "5px",
-                    color: "#444",
-                    fontSize: "11px",
-                  }}
-                >
-                  Decision Code
-                </CustomTypography>
-                <CustomTextField value={effectiveDecision} disabled fullWidth />
-              </CustomBox>
-            )}
-
-            {/* SMOKER FLAG */}
-            {effectiveDecision && !["CO", "EP"].includes(effectiveDecision) && (
-              <CustomBox>
-                <CustomTypography
-                  component="span"
-                  sx={{
-                    display: "block",
-                    marginBottom: "5px",
-                    color: "#444",
-                    fontSize: "11px",
-                  }}
-                >
-                  Smoker Flag
-                </CustomTypography>
-                <CustomSelect
-                  value={smokerFlag}
-                  onChange={(val) => setSmokerFlag(val)}
-                  options={[
-                    { value: "Smoker", label: "Smoker" },
-                    { value: "Non Smoker", label: "Non Smoker" },
-                  ]}
-                  placeholder="Select"
-                  fullWidth
-                />
-              </CustomBox>
-            )}
-
-            {/* REASONS - SUBSTANDARD & REJECT */}
-            {effectiveDecision && !["STD", "HOLD", "APPROVER", "REFERRAL", "AMR"].includes(effectiveDecision) && !effectiveDecision.startsWith("REF_") && (
-              <CustomBox sx={{ gridColumn: "span 2" }}>
-                <CustomMultiSelect
-                  label="Reasons"
-                  value={subStdReason}
-                  onChange={(val) => setSubStdReason(val)}
-                  options={effectiveDecision === "REJ" ? rejectReasonOptions : allReasonOptions}
-                  placeholder="Select reasons"
-                  showSelectAll
-                />
-              </CustomBox>
-            )}
-
-            {/* POSTPONEMENT PERIOD */}
-            {effectiveDecision === "POSTP" && (
-              <CustomBox>
-                <CustomTypography
-                  component="span"
-                  sx={{
-                    display: "block",
-                    marginBottom: "5px",
-                    color: "#444",
-                    fontSize: "11px",
-                  }}
-                >
-                  Postponement Period
-                </CustomTypography>
-                <CustomSelect
-                  value={postponementPeriod}
-                  onChange={(val) => setPostponementPeriod(val)}
-                  options={[
-                    { value: "3 months", label: "3 months" },
-                    { value: "6 months", label: "6 months" },
-                    { value: "12 months", label: "12 months" },
-                  ]}
-                  placeholder="Select"
-                  fullWidth
-                />
-              </CustomBox>
-            )}
-
-            {/* HOLD REASON */}
-            {effectiveDecision === "HOLD" && (
-              <CustomBox>
-                <CustomTypography
-                  component="span"
-                  sx={{
-                    display: "block",
-                    marginBottom: "5px",
-                    color: "#444",
-                    fontSize: "11px",
-                  }}
-                >
-                  Hold Reasons
-                </CustomTypography>
-                <CustomSelect
-                  value={holdReason}
-                  onChange={(val) => setHoldReason(val)}
-                  options={[
-                    { value: "Medical", label: "Medical" },
-                    { value: "Financial", label: "Financial" },
-                    { value: "Other", label: "Other" },
-                  ]}
-                  placeholder="Select"
-                  fullWidth
-                />
-              </CustomBox>
-            )}
-
-            {/* REFERRAL REASONS (IT, CMO, etc.) */}
-            {REFERRAL_REASON_OPTIONS[effectiveDecision] && (
-              <CustomBox>
-                <CustomTypography
-                  component="span"
-                  sx={{
-                    display: "block",
-                    marginBottom: "5px",
-                    color: "#444",
-                    fontSize: "11px",
-                  }}
-                >
-                  Referral Reason
-                </CustomTypography>
-                <CustomSelect
-                  value={referralReason}
-                  onChange={(val) => setReferralReason(val)}
-                  options={REFERRAL_REASON_OPTIONS[effectiveDecision].map((opt) => ({
-                    value: opt,
-                    label: opt,
-                  }))}
-                  placeholder="Select reason"
-                  fullWidth
-                />
-              </CustomBox>
-            )}
-
-            {/* FIRST UW DECISION for Reinsurer, HO CMO, CMO, Risk, Accuity */}
-            {["REF_REINS", "REF_CMO", "REF_CMO_LOCAL", "REF_RISK", "REF_ACU"].includes(effectiveDecision) && (
-              <>
-                <CustomBox>
-                  <CustomTypography
-                    component="span"
-                    sx={{
-                      display: "block",
-                      marginBottom: "5px",
-                      color: "#444",
-                      fontSize: "11px",
-                    }}
-                  >
-                    1st UW Decision
-                  </CustomTypography>
-                  <CustomSelect
-                    value={referralFirstDecision}
-                    onChange={(val) => {
-                      setReferralFirstDecision(val);
-                      setReferralFirstReason("");
-                      setReferralPostponementPeriod("");
-                    }}
-                    options={[
-                      { value: "STD", label: "Standard" },
-                      { value: "BOR_STD", label: "Borderline Standard" },
-                      { value: "REJ", label: "Reject" },
-                      { value: "DC", label: "Decline" },
-                      { value: "POSTP", label: "Postpone" },
-                      { value: "CO", label: "Counter Offer" },
-                      { value: "EP", label: "Extra Premium" },
-                    ]}
-                    placeholder="Select"
-                    fullWidth
+                {/* REFERRAL MULTISELECT TABLE */}
+                {dialogDecision === "REFERRAL" && (
+                  <GuwReferralSection
+                    rows={referralRows}
+                    setRows={setReferralRows}
+                    reasonOptions={REFERRAL_REASON_OPTIONS}
+                    reinsurerEditOpen={reinsurerEditOpen}
+                    setReinsurerEditOpen={setReinsurerEditOpen}
+                    reinsurerRows={reinsurerRows}
+                    reinsurerUwOptions={REINSURER_UW_OPTIONS}
+                    onReinsurerUwChange={(index, value) =>
+                      setReinsurerUwNames((prev) => {
+                        const copy = [...prev];
+                        copy[index] = value;
+                        return copy;
+                      })
+                    }
+                    documents={REFERRAL_DOCUMENTS}
+                    docChecks={reinsurerDocChecks}
+                    onSelectAllDocs={handleSelectAllDocs}
+                    onDocCheckChange={handleDocCheckChange}
+                    getReinsurerName={getEffectiveReinsurerName}
+                    onGenerateSheet={() => notify("Referral sheet generated successfully", "success")}
                   />
-                </CustomBox>
+                )}
 
-                {referralFirstDecision && (
-                  <CustomBox>
-                    <CustomTypography
-                      component="span"
-                      sx={{
-                        display: "block",
-                        marginBottom: "5px",
-                        color: "#444",
-                        fontSize: "11px",
-                      }}
-                    >
-                      Decision Code
-                    </CustomTypography>
-                    <CustomTextField value={referralFirstDecision} disabled fullWidth />
+                {/* DECISION CODE - terminal decisions */}
+                {dialogDecision !== "REFERRAL" && ["STD", "BOR_STD", "REJ", "DC", "POSTP", "CO", "EP"].includes(effectiveDecision) && (
+                  <LabeledField label="Decision Code">
+                    <CustomTextField value={effectiveDecision} disabled fullWidth />
+                  </LabeledField>
+                )}
+
+                {/* SMOKER FLAG - Standard decision only */}
+                {effectiveDecision === "STD" && (
+                  <LabeledField label="Smoker Flag">
+                    <CustomSelect
+                      value={smokerFlag}
+                      onChange={(val) => setSmokerFlag(val)}
+                      options={[
+                        { value: "Smoker", label: "Smoker" },
+                        { value: "Non Smoker", label: "Non Smoker" },
+                      ]}
+                      placeholder="Select"
+                      fullWidth
+                    />
+                  </LabeledField>
+                )}
+
+                {/* REASONS - SUBSTANDARD & REJECT */}
+                {effectiveDecision && !["STD", "HOLD", "APPROVER", "REFERRAL", "AMR"].includes(effectiveDecision) && !effectiveDecision.startsWith("REF_") && (
+                  <CustomBox sx={{ minWidth: 0, gridColumn: { xs: "auto", sm: "span 2" } }}>
+                    <CustomMultiSelect
+                      label="Reasons"
+                      value={subStdReason}
+                      onChange={(val) => setSubStdReason(val)}
+                      options={effectiveDecision === "REJ" ? rejectReasonOptions : allReasonOptions}
+                      placeholder="Select reasons"
+                      showSelectAll
+                    />
                   </CustomBox>
                 )}
 
-                {["REJ", "BOR_STD", "DC", "CO"].includes(referralFirstDecision) && (
-                  <CustomBox>
-                    <CustomTypography
-                      component="span"
-                      sx={{
-                        display: "block",
-                        marginBottom: "5px",
-                        color: "#444",
-                        fontSize: "11px",
-                      }}
-                    >
-                      1st UW Decision Reason
-                    </CustomTypography>
+                {/* POSTPONEMENT PERIOD */}
+                {effectiveDecision === "POSTP" && (
+                  <LabeledField label="Postponement Period">
                     <CustomSelect
-                      value={referralFirstReason}
-                      onChange={(val) => setReferralFirstReason(val)}
+                      value={postponementPeriod}
+                      onChange={(val) => setPostponementPeriod(val)}
+                      options={POSTPONEMENT_PERIOD_OPTIONS}
+                      placeholder="Select"
+                      fullWidth
+                    />
+                  </LabeledField>
+                )}
+
+                {/* HOLD REASON */}
+                {effectiveDecision === "HOLD" && (
+                  <LabeledField label="Hold Reasons">
+                    <CustomSelect
+                      value={holdReason}
+                      onChange={(val) => setHoldReason(val)}
                       options={[
                         { value: "Medical", label: "Medical" },
                         { value: "Financial", label: "Financial" },
-                        { value: "Non-medical", label: "Non-medical" },
                         { value: "Other", label: "Other" },
                       ]}
                       placeholder="Select"
                       fullWidth
                     />
-                  </CustomBox>
+                  </LabeledField>
                 )}
 
-                {referralFirstDecision === "POSTP" && (
-                  <>
-                    <CustomBox>
-                      <CustomTypography
-                        component="span"
-                        sx={{
-                          display: "block",
-                          marginBottom: "5px",
-                          color: "#444",
-                          fontSize: "11px",
-                        }}
-                      >
-                        Postpone Reason
-                      </CustomTypography>
-                      <CustomSelect
-                        value={referralFirstReason}
-                        onChange={(val) => setReferralFirstReason(val)}
-                        options={[
-                          { value: "Medical", label: "Medical" },
-                          { value: "Financial", label: "Financial" },
-                          { value: "Non-medical", label: "Non-medical" },
-                          { value: "Other", label: "Other" },
-                        ]}
-                        placeholder="Select"
-                        fullWidth
-                      />
-                    </CustomBox>
-                    <CustomBox>
-                      <CustomTypography
-                        component="span"
-                        sx={{
-                          display: "block",
-                          marginBottom: "5px",
-                          color: "#444",
-                          fontSize: "11px",
-                        }}
-                      >
-                        Postponement Period
-                      </CustomTypography>
-                      <CustomSelect
-                        value={referralPostponementPeriod}
-                        onChange={(val) => setReferralPostponementPeriod(val)}
-                        options={[
-                          { value: "3 months", label: "3 months" },
-                          { value: "6 months", label: "6 months" },
-                          { value: "12 months", label: "12 months" },
-                        ]}
-                        placeholder="Select"
-                        fullWidth
-                      />
-                    </CustomBox>
-                  </>
+                {/* REFERRAL REASONS (non-referral modal decisions) */}
+                {dialogDecision !== "REFERRAL" && REFERRAL_REASON_OPTIONS[effectiveDecision] && (
+                  <LabeledField label="Referral Reason">
+                    <CustomSelect
+                      value={referralReason}
+                      onChange={(val) => setReferralReason(val)}
+                      options={REFERRAL_REASON_OPTIONS[effectiveDecision].map((opt) => ({
+                        value: opt,
+                        label: opt,
+                      }))}
+                      placeholder="Select reason"
+                      fullWidth
+                    />
+                  </LabeledField>
                 )}
-              </>
-            )}
 
-            {/* APPROVER FIELDS (FOR REFER TO APPROVER) */}
-            {effectiveDecision === "APPROVER" && (
-              <>
-                <CustomBox sx={{ gridColumn: "span 2" }}>
-                  <CustomRadioGroup
-                    label="Referral purpose"
-                    row
-                    value={approverPurpose}
-                    onChange={(e) => {
-                      setApproverPurpose(e.target.value as "counterSign" | "opinion");
-                      setApproverReason("");
-                    }}
-                    options={[
-                      { label: "Counter Sign", value: "counterSign" },
-                      { label: "Opinion", value: "opinion" },
-                    ]}
-                  />
-                </CustomBox>
-
-                <CustomBox>
-                  <CustomTypography
-                    component="span"
-                    sx={{
-                      display: "block",
-                      marginBottom: "5px",
-                      color: "#444",
-                      fontSize: "11px",
-                    }}
-                  >
-                    Refer To
-                  </CustomTypography>
-                  <CustomSelect
-                    value={approverTarget}
-                    onChange={(val) => {
-                      setApproverTarget(val);
-                      setApproverReason("");
-                      setApproverFirstDecision("");
-                    }}
-                    options={[
-                      { value: "HOD", label: "HOD" },
-                      { value: "Sr UW", label: "Sr UW" },
-                    ]}
-                    placeholder="Select HOD or Sr UW"
-                    fullWidth
-                  />
-                </CustomBox>
-
-                {approverTarget && (
+                {/* COUNTER SIGN (REFER TO APPROVER) FIELDS */}
+                {effectiveDecision === "APPROVER" && (
                   <>
-                    <CustomBox>
-                      <CustomTypography
-                        component="span"
-                        sx={{
-                          display: "block",
-                          marginBottom: "5px",
-                          color: "#444",
-                          fontSize: "11px",
-                        }}
-                      >
-                        {approverTarget === "Sr UW" ? "Sr UW Reasons" : "HOD Reasons"}
-                      </CustomTypography>
-                      <CustomSelect
-                        value={approverReason}
-                        onChange={(val) => setApproverReason(val)}
-                        options={(approverPurpose === "opinion"
-                          ? ["Medical opinion", "Financial opinion", "Other"]
-                          : ["Counter signing", "Medical assessment", "Financial assessment", "Other"]
-                        ).map((v) => ({ value: v, label: v }))}
-                        placeholder={`Select ${approverTarget === "Sr UW" ? "Sr UW" : "HOD"} Reasons`}
-                        fullWidth
-                      />
-                    </CustomBox>
+                    <LabeledField label="Referral purpose" span={2}>
+                      <CustomBox sx={{ display: "flex", alignItems: "center", minHeight: "32px" }}>
+                        <CustomRadioGroup
+                          row
+                          value={approverPurpose}
+                          onChange={(e) => {
+                            setApproverPurpose(e.target.value as "counterSign" | "opinion");
+                            setApproverReason("");
+                          }}
+                          options={[
+                            { label: "Counter Sign", value: "counterSign" },
+                            { label: "Opinion", value: "opinion" },
+                          ]}
+                        />
+                      </CustomBox>
+                    </LabeledField>
 
-                    <CustomBox>
-                      <CustomTypography
-                        component="span"
-                        sx={{
-                          display: "block",
-                          marginBottom: "5px",
-                          color: "#444",
-                          fontSize: "11px",
-                        }}
-                      >
-                        1st UW Decision
-                      </CustomTypography>
+                    <LabeledField label="Refer To">
                       <CustomSelect
-                        value={approverFirstDecision}
+                        value={approverTarget}
                         onChange={(val) => {
-                          setApproverFirstDecision(val);
-                          setApproverFirstDecisionReason("");
-                          setApproverFirstPostponementPeriod("");
+                          setApproverTarget(val);
+                          setApproverReason("");
+                          setApproverFirstDecision("");
                         }}
                         options={[
-                          { value: "STD", label: "Standard" },
-                          { value: "BOR_STD", label: "Borderline Standard" },
-                          { value: "REJ", label: "Reject" },
-                          { value: "DC", label: "Decline" },
-                          { value: "POSTP", label: "Postpone" },
-                          { value: "CO", label: "Counter Offer" },
-                          { value: "EP", label: "Extra Premium" },
+                          { value: "HOD", label: "HOD" },
+                          { value: "Sr UW", label: "Sr UW" },
                         ]}
-                        placeholder="Select"
+                        placeholder="Select HOD or Sr UW"
                         fullWidth
                       />
-                    </CustomBox>
+                    </LabeledField>
+
+                    {approverTarget && (
+                      <>
+                        <LabeledField label={approverTarget === "Sr UW" ? "Sr UW Reasons" : "HOD Reasons"}>
+                          <CustomSelect
+                            value={approverReason}
+                            onChange={(val) => setApproverReason(val)}
+                            options={(approverPurpose === "opinion"
+                              ? ["Medical opinion", "Financial opinion", "Other"]
+                              : ["Counter signing", "Medical assessment", "Financial assessment", "Other"]
+                            ).map((v) => ({ value: v, label: v }))}
+                            placeholder={`Select ${approverTarget === "Sr UW" ? "Sr UW" : "HOD"} Reasons`}
+                            fullWidth
+                          />
+                        </LabeledField>
+
+                        <LabeledField label="1st UW Decision">
+                          <CustomSelect
+                            value={approverFirstDecision}
+                            onChange={(val) => {
+                              setApproverFirstDecision(val);
+                              setApproverFirstDecisionReason("");
+                              setApproverFirstPostponementPeriod("");
+                            }}
+                            options={DECISION_OPTIONS}
+                            placeholder="Select"
+                            fullWidth
+                          />
+                        </LabeledField>
+                      </>
+                    )}
+
+                    {approverFirstDecision && (
+                      <LabeledField label="Decision Code">
+                        <CustomTextField value={approverFirstDecision} disabled fullWidth />
+                      </LabeledField>
+                    )}
+
+                    {["REJ", "BOR_STD", "DC", "CO"].includes(approverFirstDecision) && (
+                      <LabeledField label="1st UW Decision Reason">
+                        <CustomSelect
+                          value={approverFirstDecisionReason}
+                          onChange={(val) => setApproverFirstDecisionReason(val)}
+                          options={APPROVER_REASON_OPTIONS}
+                          placeholder="Select"
+                          fullWidth
+                        />
+                      </LabeledField>
+                    )}
+
+                    {approverFirstDecision === "POSTP" && (
+                      <>
+                        <LabeledField label="Postpone Reason">
+                          <CustomSelect
+                            value={approverFirstDecisionReason}
+                            onChange={(val) => setApproverFirstDecisionReason(val)}
+                            options={APPROVER_REASON_OPTIONS}
+                            placeholder="Select"
+                            fullWidth
+                          />
+                        </LabeledField>
+                        <LabeledField label="Postponement Period">
+                          <CustomSelect
+                            value={approverFirstPostponementPeriod}
+                            onChange={(val) => setApproverFirstPostponementPeriod(val)}
+                            options={POSTPONEMENT_PERIOD_OPTIONS}
+                            placeholder="Select"
+                            fullWidth
+                          />
+                        </LabeledField>
+                      </>
+                    )}
                   </>
                 )}
-
-                {approverFirstDecision && (
-                  <CustomBox>
-                    <CustomTypography
-                      component="span"
-                      sx={{
-                        display: "block",
-                        marginBottom: "5px",
-                        color: "#444",
-                        fontSize: "11px",
-                      }}
-                    >
-                      Decision Code
-                    </CustomTypography>
-                    <CustomTextField value={approverFirstDecision} disabled fullWidth />
-                  </CustomBox>
-                )}
-
-                {["REJ", "BOR_STD", "DC", "CO"].includes(approverFirstDecision) && (
-                  <CustomBox>
-                    <CustomTypography
-                      component="span"
-                      sx={{
-                        display: "block",
-                        marginBottom: "5px",
-                        color: "#444",
-                        fontSize: "11px",
-                      }}
-                    >
-                      1st UW Decision Reason
-                    </CustomTypography>
-                    <CustomSelect
-                      value={approverFirstDecisionReason}
-                      onChange={(val) => setApproverFirstDecisionReason(val)}
-                      options={[
-                        { value: "Medical", label: "Medical" },
-                        { value: "Financial", label: "Financial" },
-                        { value: "Non-medical", label: "Non-medical" },
-                        { value: "Other", label: "Other" },
-                      ]}
-                      placeholder="Select"
-                      fullWidth
-                    />
-                  </CustomBox>
-                )}
-
-                {approverFirstDecision === "POSTP" && (
-                  <>
-                    <CustomBox>
-                      <CustomTypography
-                        component="span"
-                        sx={{
-                          display: "block",
-                          marginBottom: "5px",
-                          color: "#444",
-                          fontSize: "11px",
-                        }}
-                      >
-                        Postpone Reason
-                      </CustomTypography>
-                      <CustomSelect
-                        value={approverFirstDecisionReason}
-                        onChange={(val) => setApproverFirstDecisionReason(val)}
-                        options={[
-                          { value: "Medical", label: "Medical" },
-                          { value: "Financial", label: "Financial" },
-                          { value: "Non-medical", label: "Non-medical" },
-                          { value: "Other", label: "Other" },
-                        ]}
-                        placeholder="Select"
-                        fullWidth
-                      />
-                    </CustomBox>
-                    <CustomBox>
-                      <CustomTypography
-                        component="span"
-                        sx={{
-                          display: "block",
-                          marginBottom: "5px",
-                          color: "#444",
-                          fontSize: "11px",
-                        }}
-                      >
-                        Postponement Period
-                      </CustomTypography>
-                      <CustomSelect
-                        value={approverFirstPostponementPeriod}
-                        onChange={(val) => setApproverFirstPostponementPeriod(val)}
-                        options={[
-                          { value: "3 months", label: "3 months" },
-                          { value: "6 months", label: "6 months" },
-                          { value: "12 months", label: "12 months" },
-                        ]}
-                        placeholder="Select"
-                        fullWidth
-                      />
-                    </CustomBox>
-                  </>
-                )}
-              </>
-            )}
-          </CustomBox>
+              </CustomBox>
 
           {/* RECONSIDERATION CARD FOR DC, POSTP, REJ */}
           {["DC", "POSTP", "REJ"].includes(effectiveDecision) && (
@@ -1593,214 +1375,6 @@ export function GuwUwPanel({
             </CustomBox>
           )}
 
-          {/* REINSURER DETAILS SECTION (FOR REF_REINS REFERRAL) */}
-          {effectiveDecision === "REF_REINS" && (
-            <CustomBox
-              sx={{
-                p: 2,
-                mt: 2,
-                borderTop: "1px solid #eadfd9",
-                pt: "14px",
-              }}
-            >
-              <CustomBox
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: { xs: "1fr", sm: "1.2fr 1.8fr" },
-                  gap: "24px",
-                }}
-              >
-                {/* Reinsurer selects */}
-                <CustomBox
-                  sx={{
-                    background: "#f5f5f5",
-                    p: 2,
-                    borderRadius: "12px",
-                  }}
-                >
-                  <CustomTypography
-                    component="h3"
-                    sx={{
-                      fontSize: "15px",
-                      fontWeight: 600,
-                      color: "#302a27",
-                      mb: 1.5,
-                    }}
-                  >
-                    Reinsurer Details
-                  </CustomTypography>
-
-                  {/* Table mimicking prototype table */}
-                  <CustomBox sx={{ overflowX: "auto" }}>
-                    <table
-                      style={{
-                        width: "100%",
-                        borderCollapse: "collapse",
-                        background: "#fff",
-                        fontSize: "11px",
-                      }}
-                    >
-                      <thead>
-                        <tr style={{ background: "#ffead7", color: "#5b261c" }}>
-                          <th style={{ padding: "8px 12px", border: "1px solid #ded9d6", textAlign: "left", fontWeight: 800 }}>Code</th>
-                          <th style={{ padding: "8px 12px", border: "1px solid #ded9d6", textAlign: "left", fontWeight: 800 }}>Reinsurer Name - System</th>
-                          <th style={{ padding: "8px 12px", border: "1px solid #ded9d6", textAlign: "left", fontWeight: 800 }}>Reinsurer Name - UW</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {reinsurerRows.map((row, index) => {
-                          const options = REINSURER_UW_OPTIONS.filter(
-                            (name) => name.toLowerCase() !== row.systemName.toLowerCase()
-                          );
-                          return (
-                            <tr key={row.code}>
-                              <td style={{ padding: "8px 12px", border: "1px solid #ded9d6" }}>{row.code}</td>
-                              <td style={{ padding: "8px 12px", border: "1px solid #ded9d6" }}>{row.systemName}</td>
-                              <td style={{ padding: "8px 12px", border: "1px solid #ded9d6" }}>
-                                <CustomSelect
-                                  value={row.uwName}
-                                  onChange={(val) => {
-                                    setReinsurerUwNames((prev) => {
-                                      const copy = [...prev];
-                                      copy[index] = val;
-                                      return copy;
-                                    });
-                                  }}
-                                  options={options.map((opt) => ({ value: opt, label: opt }))}
-                                  placeholder="Select"
-                                  fullWidth
-                                />
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </CustomBox>
-                </CustomBox>
-
-                {/* Document assignment */}
-                <CustomBox
-                  sx={{
-                    border: "1px solid #eadfd9",
-                    borderRadius: "12px",
-                    p: 2,
-                    background: "#fff",
-                  }}
-                >
-                  <CustomTypography
-                    component="div"
-                    sx={{
-                      fontSize: "14px",
-                      fontWeight: 800,
-                      color: "#5b261c",
-                      mb: 1.5,
-                    }}
-                  >
-                    Assign Documents
-                  </CustomTypography>
-
-                  <CustomBox sx={{ overflowX: "auto" }}>
-                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "11px" }}>
-                      <thead>
-                        <tr style={{ background: "#ffead7", color: "#5b261c" }}>
-                          <th style={{ padding: "8px 12px", border: "1px solid #ded9d6", textAlign: "left", fontWeight: 800 }}>Document name</th>
-                          {reinsurerRows.map((row, index) => (
-                            <th
-                              key={row.code}
-                              style={{ padding: "8px 12px", border: "1px solid #ded9d6", textAlign: "center", fontWeight: 800 }}
-                            >
-                              <CustomTypography sx={{ fontSize: "11px", fontWeight: "bold", display: "block" }}>
-                                {getEffectiveReinsurerName(index)}
-                              </CustomTypography>
-                              <CustomButton
-                                onClick={() => handleSelectAllDocs(index)}
-                                variant="text"
-                                sx={{ fontSize: "9px", p: 0, textTransform: "none", color: "#e45f14" }}
-                              >
-                                (Select All)
-                              </CustomButton>
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {REFERRAL_DOCUMENTS.map((docName, rowIndex) => (
-                          <tr key={docName}>
-                            <td style={{ padding: "8px 12px", border: "1px solid #ded9d6" }}>{docName}</td>
-                            {reinsurerRows.map((_, colIndex) => (
-                              <td
-                                key={colIndex}
-                                style={{ padding: "8px 12px", border: "1px solid #ded9d6", textAlign: "center" }}
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={reinsurerDocChecks[rowIndex][colIndex]}
-                                  onChange={(e) =>
-                                    handleDocCheckChange(rowIndex, colIndex, e.target.checked)
-                                  }
-                                  style={{ cursor: "pointer", transform: "scale(1.1)" }}
-                                />
-                              </td>
-                            ))}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </CustomBox>
-                </CustomBox>
-              </CustomBox>
-
-              {/* Remarks input for reinsurer */}
-              <CustomBox sx={{ mt: 3, display: "block" }}>
-                <CustomTypography
-                  component="span"
-                  sx={{
-                    display: "block",
-                    marginBottom: "5px",
-                    color: "#444",
-                    fontSize: "11px",
-                  }}
-                >
-                  Remarks
-                </CustomTypography>
-                <CustomTextField
-                  value={dialogRemarks}
-                  onChange={(e) => setDialogRemarks(e.target.value)}
-                  placeholder="Add remarks..."
-                  multiline
-                  rows={4}
-                  fullWidth
-                  sx={{
-                    "& .MuiOutlinedInput-root.MuiInputBase-multiline": {
-                      height: "auto",
-                      minHeight: "72px",
-                      padding: "8px 14px",
-                    },
-                  }}
-                />
-              </CustomBox>
-
-              {/* Generate Referral Sheet trigger */}
-              <CustomBox sx={{ display: "flex", gap: "22px", mt: "18px" }}>
-                <CustomButton
-                  variant="outlined"
-                  onClick={() => alert("Referral sheet generated successfully")}
-                  sx={{
-                    borderColor: "#aa262a",
-                    color: "#aa262a",
-                    px: 4,
-                    py: 1.5,
-                    borderRadius: "28px",
-                    fontWeight: "bold",
-                    textTransform: "none",
-                  }}
-                >
-                  Generate Referral Sheet
-                </CustomButton>
-              </CustomBox>
-            </CustomBox>
-          )}
 
           {/* COUNTER OFFER DETAILS TABLE FOR CO / BOR_STD / EP */}
           {["CO", "BOR_STD", "EP"].includes(effectiveDecision) && (
@@ -2019,8 +1593,8 @@ export function GuwUwPanel({
             </CustomBox>
           )}
 
-          {/* UW REMARKS - last field before Submit (Reinsurer Referral has its own Remarks above) */}
-          {effectiveDecision !== "REF_REINS" && (
+          {/* UW REMARKS - last field before Submit (non-referral decisions) */}
+          {dialogDecision !== "REFERRAL" && (
             <CustomBox sx={{ mt: 3 }}>
               <CustomTypography
                 component="span"

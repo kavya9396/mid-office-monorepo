@@ -24,6 +24,8 @@ export interface GuwRiskCard {
 export interface GuwSdtRow {
   financialDecision: string;
   medicalDecision: string;
+  /** LumiQ decision — source field in the DRS payload is not yet confirmed (see mapSdtRow). */
+  lumiqDecision: string;
   grievanceHistoryCount: number;
   claimAuditCount: number;
   uwGuidelinesCount: number;
@@ -227,6 +229,7 @@ function mapSdtRow(summary: unknown): GuwSdtRow {
   const defaultRow: GuwSdtRow = {
     financialDecision: "",
     medicalDecision: "",
+    lumiqDecision: "",
     grievanceHistoryCount: 0,
     claimAuditCount: 0,
     uwGuidelinesCount: 0,
@@ -245,6 +248,8 @@ function mapSdtRow(summary: unknown): GuwSdtRow {
   return {
     financialDecision: str(financial.breFinancialDecision),
     medicalDecision: str(medical.brePhysicalMedicalDecision),
+    // TODO: map once the LumiQ decision field name in the DRS payload is confirmed.
+    lumiqDecision: "",
     grievanceHistoryCount: 0,
     claimAuditCount: 0,
     uwGuidelinesCount: 0,
