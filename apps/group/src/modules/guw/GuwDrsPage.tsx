@@ -264,6 +264,7 @@ export function GuwDrsPage() {
 
             {/* .uw-panel */}
             <GuwUwPanel
+              applicationNo={applicationNo}
               breOverallDecision={page.record.uwData?.breOverallDecision}
               breOverallRemarks={page.record.uwData?.breOverallRemarks}
               initialSubmittedDecision={page.record.uwData?.submittedDecision}

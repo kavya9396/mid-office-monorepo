@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   CustomBox,
   CustomButton,
@@ -12,9 +12,15 @@ import {
 } from "@insurance-poc/ui";
 import { groupPaths, replaceUrl } from "@insurance-poc/routes";
 import eyeIconSrc from "../../assets/eye.svg";
-import type { GuwSubmittedDecision } from "../../services/guwService";
+import {
+  clearGuwSubmittedDecision,
+  saveGuwSubmittedDecision,
+  type GuwSubmittedDecision,
+} from "../../services/guwService";
 
 export interface GuwUwPanelProps {
+  /** Used to hold the submitted decision (and UW guidelines) in the browser session. */
+  applicationNo?: string;
   breOverallDecision?: string;
   breOverallRemarks?: string;
   initialSubmittedDecision?: GuwSubmittedDecision;
@@ -67,15 +73,22 @@ const DECISION_OPTIONS = [
 const ACTION_DECISION_OPTIONS = [
   { value: "REFERRAL", label: "Raise Referral" },
   { value: "HOLD", label: "Hold" },
-  { value: "AMR", label: "Raise Requirement" },
   { value: "APPROVER", label: "Counter Sign" },
 ];
 
 const ALL_DECISION_OPTIONS = [...DECISION_OPTIONS, ...ACTION_DECISION_OPTIONS];
 
+// Placeholder assignee list (mock login user ids) until a user-lookup API is specified
+const APPROVER_ASSIGNEE_OPTIONS = ["UW001", "UW002", "UW003"].map((id) => ({
+  value: id,
+  label: id,
+}));
+
 const REFERRAL_TYPE_OPTIONS = [
   { value: "REF_IT", label: "IT" },
   { value: "REF_REINS", label: "Reinsurer" },
+  { value: "REF_SR_UW", label: "Sr UW" },
+  { value: "REF_HOD", label: "HOD" },
   { value: "REF_CMO", label: "HO CMO" },
   { value: "REF_CMO_LOCAL", label: "CMO" },
   { value: "REF_RISK", label: "Risk" },
@@ -86,6 +99,8 @@ const REFERRAL_TYPE_OPTIONS = [
 const REFERRAL_REASON_OPTIONS: Record<string, string[]> = {
   REF_IT: ["System issue", "Data correction", "Other"],
   REF_REINS: ["High sum assured", "Medical risk", "Other"],
+  REF_SR_UW: ["Medical opinion", "Financial opinion", "High SA", "Policy exception", "Other"],
+  REF_HOD: ["Medical opinion", "Financial opinion", "High SA", "Policy exception", "Counter signing", "Other"],
   REF_CMO: ["Medical review", "Specialist opinion", "Other"],
   REF_CMO_LOCAL: ["Medical review", "Specialist opinion", "Other"],
   REF_RISK: ["Risk assessment", "Policy exception", "Other"],
@@ -133,6 +148,7 @@ export const INITIAL_GUIDELINES: GuidelineRow[] = [
 ];
 
 export function GuwUwPanel({
+  applicationNo = "",
   breOverallDecision,
   breOverallRemarks,
   initialSubmittedDecision,
@@ -148,6 +164,14 @@ export function GuwUwPanel({
     initialSubmittedDecision ?? null,
   );
   const [dialogDecision, setDialogDecision] = useState<string>("");
+  // Case UW Decision chosen before switching to Counter Sign / Raise Referral from the UW Guidelines step
+  const [approverBaseDecision, setApproverBaseDecision] = useState<string>("");
+  // Keeps Counter Offer rows when moving between steps (the decision code changes but the data must stay)
+  const keepCounterOfferRowsRef = useRef(false);
+  // Decision shown before moving to Counter Sign / Raise Referral (used by Back)
+  const previousDecisionRef = useRef("");
+  // True once the guidelines step was confirmed, so Counter Sign submits without repeating it
+  const [guidelinesConfirmed, setGuidelinesConfirmed] = useState<boolean>(false);
   const [dialogRemarks, setDialogRemarks] = useState<string>("");
 
   // Dialog multi-step & guidelines states
@@ -166,18 +190,14 @@ export function GuwUwPanel({
   };
 
   // Detailed Dynamic Form State
-  const [smokerFlag, setSmokerFlag] = useState<string>("");
   const [subStdReason, setSubStdReason] = useState<string[]>([]);
   const [postponementPeriod, setPostponementPeriod] = useState<string>("");
   const [holdReason, setHoldReason] = useState<string>("");
 
   // Approver states
-  const [approverPurpose, setApproverPurpose] = useState<"counterSign" | "opinion">("counterSign");
   const [approverTarget, setApproverTarget] = useState<string>(""); // HOD or Sr UW
   const [approverReason, setApproverReason] = useState<string>("");
-  const [approverFirstDecision, setApproverFirstDecision] = useState<string>("");
-  const [approverFirstDecisionReason, setApproverFirstDecisionReason] = useState<string>("");
-  const [approverFirstPostponementPeriod, setApproverFirstPostponementPeriod] = useState<string>("");
+  const [approverAssignedTo, setApproverAssignedTo] = useState<string>("");
 
   // Referral states
   const [referralReason, setReferralReason] = useState<string>("");
@@ -197,6 +217,55 @@ export function GuwUwPanel({
     }))
   );
   const [reinsurerEditOpen, setReinsurerEditOpen] = useState<boolean>(false);
+  const reinsurerSectionRef = useRef<HTMLDivElement | null>(null);
+
+  const scrollToReinsurerSection = () => {
+    const el = reinsurerSectionRef.current;
+    if (!el) return;
+
+    // Direct scroll into view
+    el.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
+
+    // Explicitly scroll dialog container / paper / content
+    const dialogContent =
+      el.closest(".MuiDialogContent-root") ||
+      el.closest(".MuiDialog-paper") ||
+      el.closest(".MuiPaper-root") ||
+      el.closest("[role='dialog']") ||
+      document.querySelector(".MuiDialogContent-root");
+
+    if (dialogContent) {
+      const topPos = el.offsetTop - 15;
+      dialogContent.scrollTo({
+        top: topPos > 0 ? topPos : dialogContent.scrollHeight,
+        behavior: "smooth",
+      });
+    }
+
+    // Move active focus to the first interactive field inside the Reinsurer panel
+    const firstFocusable =
+      el.querySelector<HTMLElement>(".MuiSelect-select") ||
+      el.querySelector<HTMLElement>("input, select, button") ||
+      el;
+
+    if (firstFocusable) {
+      firstFocusable.focus();
+    }
+  };
+
+  // Auto-focus and scroll to Reinsurer edit section when opened
+  useEffect(() => {
+    if (reinsurerEditOpen && dialogDecision === "REFERRAL") {
+      const t1 = setTimeout(scrollToReinsurerSection, 50);
+      const t2 = setTimeout(scrollToReinsurerSection, 150);
+      const t3 = setTimeout(scrollToReinsurerSection, 300);
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+        clearTimeout(t3);
+      };
+    }
+  }, [reinsurerEditOpen, dialogDecision]);
 
   // Reconsideration states
   const [reconsiderPossible, setReconsiderPossible] = useState<"Yes" | "No" | "">("");
@@ -220,6 +289,10 @@ export function GuwUwPanel({
 
   // Initialize Counter Offer rows when dialog decision turns to CO, BOR_STD, or EP
   useEffect(() => {
+    if (keepCounterOfferRowsRef.current) {
+      keepCounterOfferRowsRef.current = false;
+      return;
+    }
     if (["CO", "BOR_STD", "EP"].includes(effectiveDecision)) {
       setCounterOfferRows(
         DEFAULT_PRODUCTS.map((prod, idx) => ({
@@ -246,6 +319,9 @@ export function GuwUwPanel({
 
   const isActionDecision = ACTION_DECISION_OPTIONS.some((o) => o.value === dialogDecision);
 
+  // The Case UW Decision the user picked (kept while Counter Sign / Raise Referral is open)
+  const caseDecision = approverBaseDecision || dialogDecision;
+
   // Keep a previously submitted action decision visible in the dropdown (not selectable)
   const mainSelectOptions =
     selectedDecision && !DECISION_OPTIONS.some((o) => o.value === selectedDecision)
@@ -254,7 +330,7 @@ export function GuwUwPanel({
 
   const buildSubmittedDecision = (): SubmittedDecision => {
     const fields: SubmittedField[] = [
-      { label: "Case UW Decision", value: decisionLabel(dialogDecision) },
+      { label: "Case UW Decision", value: decisionLabel(caseDecision) },
     ];
     const add = (label: string, value: string, wide?: boolean) => {
       fields.push({ label, value, wide });
@@ -277,12 +353,9 @@ export function GuwUwPanel({
     if (dialogDecision !== "REFERRAL" && effectiveDecision) {
       add("Decision Code", effectiveDecision);
     }
-    if (dialogDecision !== "REFERRAL" && effectiveDecision && !["CO", "EP"].includes(effectiveDecision)) {
-      add("Smoker Flag", smokerFlag);
-    }
     if (
       effectiveDecision &&
-      !["STD", "HOLD", "APPROVER", "REFERRAL", "AMR"].includes(effectiveDecision) &&
+      !["STD", "HOLD", "APPROVER", "REFERRAL"].includes(effectiveDecision) &&
       !effectiveDecision.startsWith("REF_")
     ) {
       add("Reasons", subStdReason.join(", "), true);
@@ -294,13 +367,9 @@ export function GuwUwPanel({
     }
 
     if (effectiveDecision === "APPROVER") {
-      add("Referral purpose", approverPurpose === "opinion" ? "Opinion" : "Counter Sign", true);
+      add("Reason", approverReason);
       add("Refer To", approverTarget);
-      add(approverTarget === "Sr UW" ? "Sr UW Reasons" : "HOD Reasons", approverReason);
-      add("1st UW Decision", decisionLabel(approverFirstDecision));
-      if (approverFirstDecision) add("1st UW Decision Code", approverFirstDecision);
-      if (approverFirstDecision) add(approverFirstDecision === "POSTP" ? "Postpone Reason" : "1st UW Decision Reason", approverFirstDecisionReason);
-      if (approverFirstDecision === "POSTP") add("Postponement Period", approverFirstPostponementPeriod);
+      add("Assigned To", approverAssignedTo);
     }
 
     const reconsiderationFields: SubmittedField[] = [];
@@ -331,7 +400,9 @@ export function GuwUwPanel({
               .map((r) => `${r.label}: ${r.remarks.trim()}`)
               .join("; ") || dialogRemarks
           : dialogRemarks,
-      counterOfferRows: counterOfferRows.map((r) => ({ ...r })),
+      counterOfferRows: ["CO", "BOR_STD", "EP"].includes(caseDecision)
+        ? counterOfferRows.map((r) => ({ ...r }))
+        : [],
       showBstdColumn: isBstdColumnVisible,
       reinsurerRows: isReinsurerSelected
         ? reinsurerRows.map((r) => ({ code: r.code, systemName: r.systemName, uwName: r.uwName }))
@@ -348,9 +419,12 @@ export function GuwUwPanel({
 
   const openDecisionDialog = (code: string) => {
     setDialogDecision(code);
+    setApproverBaseDecision("");
+    setGuidelinesConfirmed(false);
     setDialogRemarks(remarks);
     setDialogStep(1);
-    setGuidelines(INITIAL_GUIDELINES.map((g) => ({ ...g })));
+    // Re-open with the guidelines already populated in a previous submit
+    setGuidelines((submittedDecision?.guidelines ?? INITIAL_GUIDELINES).map((g) => ({ ...g })));
     if (code === "REFERRAL") {
       setReinsurerEditOpen(false);
     }
@@ -363,6 +437,7 @@ export function GuwUwPanel({
       setSelectedDecision("");
       setSubmittedDecision(null);
       setRemarks("");
+      clearGuwSubmittedDecision(applicationNo);
       onDecisionSubmit("", "");
       return;
     }
@@ -385,21 +460,68 @@ export function GuwUwPanel({
     }
 
     if (effectiveDecision === "APPROVER") {
+      if (!approverReason) {
+        notify("Please select Reason", "error");
+        return;
+      }
       if (!approverTarget) {
         notify("Please select Refer To", "error");
         return;
       }
-      if (!approverReason) {
-        notify(`Please select ${approverTarget === "Sr UW" ? "Sr UW" : "HOD"} Reasons`, "error");
-        return;
-      }
-      if (!approverFirstDecision) {
-        notify("Please select 1st UW Decision", "error");
+      if (!approverAssignedTo) {
+        notify("Please select Assigned To", "error");
         return;
       }
     }
 
+    // Guidelines already confirmed (system-action flow): Counter Sign / Raise Referral is the final step
+    if (guidelinesConfirmed && ["APPROVER", "REFERRAL"].includes(effectiveDecision)) {
+      finalizeSubmit();
+      return;
+    }
+
+    // Save point: decision details are held and linked to the main Case UW Decision
+    saveDraft();
+
     // Advance to Step 2 (Guidelines checklist)
+    setDialogStep(2);
+  };
+
+  // Hold the current decision (and guidelines) in state + session, and link the main dropdown
+  const saveDraft = () => {
+    const draft = buildSubmittedDecision();
+    setSubmittedDecision(draft);
+    setSelectedDecision(caseDecision);
+    setRemarks(dialogRemarks);
+    saveGuwSubmittedDecision(applicationNo, {
+      ...draft,
+      decisionCode: caseDecision,
+      remarks: dialogRemarks,
+    });
+  };
+
+  // System-action driven rules for the UW Guidelines step
+  const hasCounterSignAction = guidelines.some((g) => g.systemAction === "REFER_TO_CS");
+  const hasOtherReferralAction = guidelines.some(
+    (g) => g.systemAction.startsWith("REFER_TO_") && g.systemAction !== "REFER_TO_CS",
+  );
+
+  // Go back to step 1 for the chosen action, keeping the guideline entries
+  const switchToActionDecision = (code: "APPROVER" | "REFERRAL") => {
+    if (!isActionDecision) setApproverBaseDecision(dialogDecision);
+    previousDecisionRef.current = dialogDecision;
+    keepCounterOfferRowsRef.current = true;
+    setDialogDecision(code);
+    if (code === "REFERRAL") setReinsurerEditOpen(false);
+    setDialogStep(1);
+  };
+
+  // Back from Counter Sign / Raise Referral to the UW Guidelines step
+  const backToGuidelines = () => {
+    keepCounterOfferRowsRef.current = true;
+    setDialogDecision(approverBaseDecision || previousDecisionRef.current);
+    setApproverBaseDecision("");
+    setGuidelinesConfirmed(false);
     setDialogStep(2);
   };
 
@@ -413,11 +535,36 @@ export function GuwUwPanel({
       return;
     }
 
+    // REFER_TO_CS returned: open the Counter Sign screen next; final submit happens from there.
+    // Otherwise any other REFER_TO_* opens the Raise Referral screen.
+    const nextAction = hasCounterSignAction
+      ? "APPROVER"
+      : hasOtherReferralAction
+        ? "REFERRAL"
+        : null;
+    if (nextAction && dialogDecision !== nextAction) {
+      // Save point: guidelines are held before moving to Counter Sign / Raise Referral
+      saveDraft();
+      setGuidelinesConfirmed(true);
+      switchToActionDecision(nextAction);
+      return;
+    }
+
+    finalizeSubmit();
+  };
+
+  const finalizeSubmit = () => {
     // Success - Final commit
-    setSubmittedDecision(buildSubmittedDecision());
-    setSelectedDecision(dialogDecision);
+    const submitted = buildSubmittedDecision();
+    setSubmittedDecision(submitted);
+    saveGuwSubmittedDecision(applicationNo, {
+      ...submitted,
+      decisionCode: caseDecision,
+      remarks: dialogRemarks,
+    });
+    setSelectedDecision(caseDecision);
     setRemarks(dialogRemarks);
-    onDecisionSubmit(dialogDecision, dialogRemarks);
+    onDecisionSubmit(caseDecision, dialogRemarks);
     setDialogOpen(false);
     notify("Decision submitted successfully", "success");
 
@@ -736,6 +883,15 @@ export function GuwUwPanel({
         showCloseIcon={dialogStep === 2}
         maxWidth="lg"
         fullWidth
+        contentSx={{
+          maxHeight: "82vh",
+          overflowY: "auto",
+          scrollBehavior: "smooth",
+        }}
+        paperSx={{
+          maxHeight: "90vh",
+          overflow: "hidden",
+        }}
       >
         <CustomBox sx={{ p: 1 }}>
           {dialogStep === 2 ? (
@@ -782,7 +938,9 @@ export function GuwUwPanel({
                         "Counter signing",
                         "Other",
                       ];
-                      const isEnabled = Boolean(row.justificationReason);
+                      // A system action on the row locks its justification fields
+                      const hasSystemAction = Boolean(row.systemAction);
+                      const isEnabled = Boolean(row.justificationReason) && !hasSystemAction;
 
                       return (
                         <tr key={idx}>
@@ -807,6 +965,7 @@ export function GuwUwPanel({
                               }}
                               options={reasons.map((r) => ({ value: r, label: r || "Select reason" }))}
                               placeholder="Select reason"
+                              disabled={hasSystemAction}
                               fullWidth
                             />
                           </td>
@@ -820,7 +979,13 @@ export function GuwUwPanel({
                                   )
                                 );
                               }}
-                              placeholder={isEnabled ? "Add remarks (required)" : "Select a reason first"}
+                              placeholder={
+                                hasSystemAction
+                                  ? "Not applicable"
+                                  : isEnabled
+                                    ? "Add remarks (required)"
+                                    : "Select a reason first"
+                              }
                               disabled={!isEnabled}
                               fullWidth
                               size="small"
@@ -901,8 +1066,8 @@ export function GuwUwPanel({
               mt: "6px",
             }}
           >
-            {/* Dialog Decision select - hidden for Reinsurer Referral and for Raise Referral / Hold / Raise Requirement */}
-            {effectiveDecision !== "REF_REINS" && !["REFERRAL", "HOLD", "AMR"].includes(dialogDecision) && (
+            {/* Dialog Decision select - hidden for Reinsurer Referral and for Raise Referral / Hold */}
+            {effectiveDecision !== "REF_REINS" && !["REFERRAL", "HOLD"].includes(dialogDecision) && (
               <CustomBox>
                 <CustomTypography
                   component="span"
@@ -915,14 +1080,48 @@ export function GuwUwPanel({
                 >
                   Case UW Decision
                 </CustomTypography>
-                <CustomSelect
-                  value={dialogDecision}
-                  onChange={(val) => setDialogDecision(val)}
-                  options={isActionDecision ? ACTION_DECISION_OPTIONS : DECISION_OPTIONS}
-                  disabled={isActionDecision}
-                  placeholder="Select"
-                  fullWidth
-                />
+                <CustomBox sx={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <CustomBox sx={{ flex: 1, minWidth: 0 }}>
+                    <CustomSelect
+                      value={
+                        dialogDecision === "APPROVER"
+                          ? approverBaseDecision || selectedDecision
+                          : dialogDecision
+                      }
+                      onChange={(val) => setDialogDecision(val)}
+                      options={
+                        dialogDecision === "APPROVER"
+                          ? mainSelectOptions
+                          : isActionDecision
+                            ? ACTION_DECISION_OPTIONS
+                            : DECISION_OPTIONS
+                      }
+                      disabled={isActionDecision}
+                      placeholder="Select"
+                      fullWidth
+                    />
+                  </CustomBox>
+                  {dialogDecision === "APPROVER" && submittedDecision && (
+                    <CustomButton
+                      variant="outlined"
+                      aria-label="View decision details"
+                      title="View decision details"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setViewDialogOpen(true);
+                      }}
+                      sx={{ width: 30, minWidth: 30, minHeight: 28, p: 0.5, borderRadius: "6px", flexShrink: 0 }}
+                    >
+                      <img
+                        src={eyeIconSrc}
+                        alt=""
+                        width={20}
+                        height={20}
+                        style={{ display: "block" }}
+                      />
+                    </CustomButton>
+                  )}
+                </CustomBox>
               </CustomBox>
             )}
 
@@ -943,23 +1142,23 @@ export function GuwUwPanel({
                         <th style={{ padding: "8px 10px", border: "1px solid #ded9d6", textAlign: "center", width: "40px" }}>
                           <input
                             type="checkbox"
-                            disabled={referralRows.some((r) => r.target === "REF_REINS" && r.selected)}
+                            disabled={referralRows.some((r) => ["REF_REINS", "REF_SR_UW", "REF_HOD"].includes(r.target) && r.selected)}
                             checked={
                               referralRows.length > 0 &&
-                              !referralRows.some((r) => r.target === "REF_REINS" && r.selected) &&
-                              referralRows.filter((r) => r.target !== "REF_REINS").every((r) => r.selected)
+                              !referralRows.some((r) => ["REF_REINS", "REF_SR_UW", "REF_HOD"].includes(r.target) && r.selected) &&
+                              referralRows.filter((r) => !["REF_REINS", "REF_SR_UW", "REF_HOD"].includes(r.target)).every((r) => r.selected)
                             }
                             onChange={(e) => {
                               const checked = e.target.checked;
                               setReferralRows((prev) =>
                                 prev.map((r) => ({
                                   ...r,
-                                  selected: r.target === "REF_REINS" ? false : checked,
+                                  selected: ["REF_REINS", "REF_SR_UW", "REF_HOD"].includes(r.target) ? false : checked,
                                 }))
                               );
                             }}
                             style={{
-                              cursor: referralRows.some((r) => r.target === "REF_REINS" && r.selected)
+                              cursor: referralRows.some((r) => ["REF_REINS", "REF_SR_UW", "REF_HOD"].includes(r.target) && r.selected)
                                 ? "not-allowed"
                                 : "pointer",
                               transform: "scale(1.1)",
@@ -983,14 +1182,15 @@ export function GuwUwPanel({
                     <tbody>
                       {referralRows.map((row, index) => {
                         const isReinsurer = row.target === "REF_REINS";
-                        const isReinsurerSelected = referralRows.some(
-                          (r) => r.target === "REF_REINS" && r.selected
+                        const isExclusive = ["REF_REINS", "REF_SR_UW", "REF_HOD"].includes(row.target);
+                        const isExclusiveSelected = referralRows.some(
+                          (r) => ["REF_REINS", "REF_SR_UW", "REF_HOD"].includes(r.target) && r.selected
                         );
                         const isHoCmoSelected = referralRows.some(
                           (r) => r.target === "REF_CMO" && r.selected
                         );
                         const isRowDisabled =
-                          (isReinsurerSelected && !isReinsurer) ||
+                          (isExclusiveSelected && !row.selected) ||
                           (row.target === "REF_CMO_LOCAL" && isHoCmoSelected);
                         const reasonOptions = (REFERRAL_REASON_OPTIONS[row.target] ?? []).map((opt) => ({
                           value: opt,
@@ -1017,11 +1217,11 @@ export function GuwUwPanel({
                                 onChange={(e) => {
                                   const checked = e.target.checked;
                                   setReferralRows((prev) => {
-                                    if (isReinsurer && checked) {
-                                      // If Reinsurer is checked, uncheck all other rows
+                                    if (isExclusive && checked) {
+                                      // If Reinsurer, Sr UW, or HOD is checked, uncheck all other rows
                                       return prev.map((r) => ({
                                         ...r,
-                                        selected: r.target === "REF_REINS",
+                                        selected: r.target === row.target,
                                       }));
                                     }
                                     if (row.target === "REF_CMO" && checked) {
@@ -1040,8 +1240,14 @@ export function GuwUwPanel({
                                     copy[index] = { ...copy[index], selected: checked };
                                     return copy;
                                   });
-                                  if (isReinsurer && !checked) {
-                                    setReinsurerEditOpen(false);
+                                  if (isReinsurer) {
+                                    if (checked) {
+                                      setReinsurerEditOpen(true);
+                                      setTimeout(scrollToReinsurerSection, 60);
+                                      setTimeout(scrollToReinsurerSection, 200);
+                                    } else {
+                                      setReinsurerEditOpen(false);
+                                    }
                                   }
                                 }}
                                 style={{
@@ -1091,7 +1297,14 @@ export function GuwUwPanel({
                                 disabled={!row.selected || !isReinsurer}
                                 onClick={() => {
                                   if (isReinsurer && row.selected) {
-                                    setReinsurerEditOpen((prev) => !prev);
+                                    setReinsurerEditOpen((prev) => {
+                                      const next = !prev;
+                                      if (next) {
+                                        setTimeout(scrollToReinsurerSection, 60);
+                                        setTimeout(scrollToReinsurerSection, 200);
+                                      }
+                                      return next;
+                                    });
                                   }
                                 }}
                                 sx={{
@@ -1129,49 +1342,53 @@ export function GuwUwPanel({
                 {/* REINSURER EDIT SECTION (OPENS AFTER REFERRAL TABLE) */}
                 {reinsurerEditOpen && referralRows.find((r) => r.target === "REF_REINS")?.selected && (
                   <CustomBox
+                    ref={reinsurerSectionRef}
+                    tabIndex={-1}
                     sx={{
-                      p: 2,
+                      p: 2.5,
                       mt: 2,
                       border: "1px solid #eadfd9",
-                      borderRadius: "8px",
+                      borderRadius: "14px",
                       background: "#fffaf6",
+                      outline: "none",
                     }}
                   >
                     <CustomTypography
                       component="h3"
                       sx={{
-                        fontSize: "14px",
-                        fontWeight: 700,
+                        fontSize: "15px",
+                        fontWeight: 800,
                         color: "#5b261c",
-                        mb: 1.5,
+                        mb: 2,
                       }}
                     >
-                      Reinsurer Additional Data Entry
+                      Reinsurer Referral Sheet
                     </CustomTypography>
 
                     <CustomBox
                       sx={{
                         display: "grid",
-                        gridTemplateColumns: { xs: "1fr", sm: "1.2fr 1.8fr" },
-                        gap: "20px",
+                        gridTemplateColumns: { xs: "1fr", md: "1.1fr 1.9fr" },
+                        gap: "24px",
+                        alignItems: "start",
                       }}
                     >
-                      {/* Reinsurer selects */}
+                      {/* Reinsurer selects panel */}
                       <CustomBox
                         sx={{
                           background: "#fff",
-                          p: 1.5,
-                          borderRadius: "8px",
-                          border: "1px solid #eadfd9",
+                          p: 2,
+                          borderRadius: "14px",
+                          border: "1px solid #ddd5d0",
                         }}
                       >
                         <CustomTypography
                           component="h4"
                           sx={{
-                            fontSize: "13px",
-                            fontWeight: 600,
+                            fontSize: "14px",
+                            fontWeight: 700,
                             color: "#302a27",
-                            mb: 1,
+                            mb: 1.5,
                           }}
                         >
                           Reinsurer Details
@@ -1188,9 +1405,9 @@ export function GuwUwPanel({
                           >
                             <thead>
                               <tr style={{ background: "#ffead7", color: "#5b261c" }}>
-                                <th style={{ padding: "8px 10px", border: "1px solid #ded9d6", textAlign: "left", fontWeight: 800 }}>Code</th>
-                                <th style={{ padding: "8px 10px", border: "1px solid #ded9d6", textAlign: "left", fontWeight: 800 }}>Reinsurer Name - System</th>
-                                <th style={{ padding: "8px 10px", border: "1px solid #ded9d6", textAlign: "left", fontWeight: 800 }}>Reinsurer Name - UW</th>
+                                <th style={{ padding: "8px 10px", border: "1px solid #ded9d6", textAlign: "left", fontWeight: 800, width: "16%" }}>Code</th>
+                                <th style={{ padding: "8px 10px", border: "1px solid #ded9d6", textAlign: "left", fontWeight: 800, width: "38%" }}>Reinsurer Name - System</th>
+                                <th style={{ padding: "8px 10px", border: "1px solid #ded9d6", textAlign: "left", fontWeight: 800, width: "46%" }}>Reinsurer Name - UW</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -1200,7 +1417,7 @@ export function GuwUwPanel({
                                 );
                                 return (
                                   <tr key={row.code}>
-                                    <td style={{ padding: "8px 10px", border: "1px solid #ded9d6" }}>{row.code}</td>
+                                    <td style={{ padding: "8px 10px", border: "1px solid #ded9d6", fontWeight: 600 }}>{row.code}</td>
                                     <td style={{ padding: "8px 10px", border: "1px solid #ded9d6" }}>{row.systemName}</td>
                                     <td style={{ padding: "6px 8px", border: "1px solid #ded9d6" }}>
                                       <CustomSelect
@@ -1225,47 +1442,66 @@ export function GuwUwPanel({
                         </CustomBox>
                       </CustomBox>
 
-                      {/* Document assignment */}
+                      {/* Document assignment card */}
                       <CustomBox
                         sx={{
-                          border: "1px solid #eadfd9",
-                          borderRadius: "8px",
-                          p: 1.5,
+                          border: "1px solid #ddd5d0",
+                          borderRadius: "14px",
+                          overflow: "hidden",
                           background: "#fff",
                         }}
                       >
-                        <CustomTypography
-                          component="div"
+                        <CustomBox
                           sx={{
-                            fontSize: "13px",
-                            fontWeight: 700,
-                            color: "#5b261c",
-                            mb: 1,
+                            padding: "12px 24px",
+                            background: "#e95d08",
+                            color: "#fff",
+                            fontSize: "14px",
+                            fontWeight: 800,
                           }}
                         >
                           Assign Documents
-                        </CustomTypography>
+                        </CustomBox>
 
                         <CustomBox sx={{ overflowX: "auto" }}>
-                          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "11px" }}>
+                          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px" }}>
                             <thead>
-                              <tr style={{ background: "#ffead7", color: "#5b261c" }}>
-                                <th style={{ padding: "8px 10px", border: "1px solid #ded9d6", textAlign: "left", fontWeight: 800 }}>Document name</th>
+                              <tr style={{ background: "#ffead7", color: "#302a27" }}>
+                                <th style={{ padding: "10px 12px", borderBottom: "1px solid #ded9d6", textAlign: "left", fontWeight: 700, width: "30%" }}>
+                                  Document name
+                                </th>
                                 {reinsurerRows.map((row, index) => (
                                   <th
                                     key={row.code}
-                                    style={{ padding: "8px 10px", border: "1px solid #ded9d6", textAlign: "center", fontWeight: 800 }}
+                                    style={{
+                                      padding: "10px 12px",
+                                      borderBottom: "1px solid #ded9d6",
+                                      textAlign: "center",
+                                      fontWeight: 700,
+                                      width: "35%",
+                                    }}
                                   >
-                                    <CustomTypography sx={{ fontSize: "11px", fontWeight: "bold", display: "block" }}>
+                                    <CustomTypography sx={{ fontSize: "12px", fontWeight: "bold", display: "block" }}>
                                       {getEffectiveReinsurerName(index)}
                                     </CustomTypography>
-                                    <CustomButton
+                                    <button
+                                      type="button"
                                       onClick={() => handleSelectAllDocs(index)}
-                                      variant="text"
-                                      sx={{ fontSize: "9px", p: 0, textTransform: "none", color: "#e45f14" }}
+                                      style={{
+                                        display: "block",
+                                        margin: "3px auto 0",
+                                        padding: 0,
+                                        border: 0,
+                                        outline: 0,
+                                        background: "transparent",
+                                        color: "#e95d08",
+                                        fontSize: "11px",
+                                        textDecoration: "underline",
+                                        cursor: "pointer",
+                                      }}
                                     >
                                       (Select All)
-                                    </CustomButton>
+                                    </button>
                                   </th>
                                 ))}
                               </tr>
@@ -1273,11 +1509,15 @@ export function GuwUwPanel({
                             <tbody>
                               {REFERRAL_DOCUMENTS.map((docName, rowIndex) => (
                                 <tr key={docName}>
-                                  <td style={{ padding: "8px 10px", border: "1px solid #ded9d6" }}>{docName}</td>
+                                  <td style={{ padding: "10px 12px", borderBottom: "1px solid #ded9d6" }}>{docName}</td>
                                   {reinsurerRows.map((_, colIndex) => (
                                     <td
                                       key={colIndex}
-                                      style={{ padding: "8px 10px", border: "1px solid #ded9d6", textAlign: "center" }}
+                                      style={{
+                                        padding: "10px 12px",
+                                        borderBottom: "1px solid #ded9d6",
+                                        textAlign: "center",
+                                      }}
                                     >
                                       <input
                                         type="checkbox"
@@ -1285,7 +1525,12 @@ export function GuwUwPanel({
                                         onChange={(e) =>
                                           handleDocCheckChange(rowIndex, colIndex, e.target.checked)
                                         }
-                                        style={{ cursor: "pointer", transform: "scale(1.1)" }}
+                                        style={{
+                                          width: "18px",
+                                          height: "18px",
+                                          cursor: "pointer",
+                                          accentColor: "#e95d08",
+                                        }}
                                       />
                                     </td>
                                   ))}
@@ -1297,20 +1542,33 @@ export function GuwUwPanel({
                       </CustomBox>
                     </CustomBox>
 
-                    {/* Generate Referral Sheet trigger */}
-                    <CustomBox sx={{ display: "flex", gap: "22px", mt: "14px" }}>
+                    {/* Generate Referral Sheet action trigger */}
+                    <CustomBox sx={{ display: "flex", gap: "20px", mt: 2.5 }}>
                       <CustomButton
                         variant="outlined"
-                        onClick={() => alert("Referral sheet generated successfully")}
+                        onClick={() => {
+                          const reinsurerRow = referralRows.find((r) => r.target === "REF_REINS");
+                          const remarks = reinsurerRow?.remarks.trim() || dialogRemarks.trim();
+                          if (!remarks) {
+                            notify("Please add remarks before generating the referral sheet", "error");
+                            return;
+                          }
+                          notify("Referral sheet generated successfully", "success");
+                        }}
                         sx={{
                           borderColor: "#aa262a",
                           color: "#aa262a",
-                          px: 3,
-                          py: 1,
+                          px: 3.5,
+                          py: 1.2,
+                          minWidth: "220px",
                           borderRadius: "28px",
                           fontWeight: "bold",
                           textTransform: "none",
-                          fontSize: "11px",
+                          fontSize: "12px",
+                          "&:hover": {
+                            borderColor: "#8f1f24",
+                            background: "#fff2f2",
+                          },
                         }}
                       >
                         Generate Referral Sheet
@@ -1339,35 +1597,8 @@ export function GuwUwPanel({
               </CustomBox>
             )}
 
-            {/* SMOKER FLAG */}
-            {dialogDecision !== "REFERRAL" && effectiveDecision && !["CO", "EP"].includes(effectiveDecision) && (
-              <CustomBox>
-                <CustomTypography
-                  component="span"
-                  sx={{
-                    display: "block",
-                    marginBottom: "5px",
-                    color: "#444",
-                    fontSize: "11px",
-                  }}
-                >
-                  Smoker Flag
-                </CustomTypography>
-                <CustomSelect
-                  value={smokerFlag}
-                  onChange={(val) => setSmokerFlag(val)}
-                  options={[
-                    { value: "Smoker", label: "Smoker" },
-                    { value: "Non Smoker", label: "Non Smoker" },
-                  ]}
-                  placeholder="Select"
-                  fullWidth
-                />
-              </CustomBox>
-            )}
-
             {/* REASONS - SUBSTANDARD & REJECT */}
-            {effectiveDecision && !["STD", "HOLD", "APPROVER", "REFERRAL", "AMR"].includes(effectiveDecision) && !effectiveDecision.startsWith("REF_") && (
+            {effectiveDecision && !["STD", "HOLD", "APPROVER", "REFERRAL"].includes(effectiveDecision) && !effectiveDecision.startsWith("REF_") && (
               <CustomBox sx={{ gridColumn: "span 2" }}>
                 <CustomMultiSelect
                   label="Reasons"
@@ -1467,19 +1698,26 @@ export function GuwUwPanel({
             {/* APPROVER FIELDS (FOR REFER TO APPROVER) */}
             {effectiveDecision === "APPROVER" && (
               <>
-                <CustomBox sx={{ gridColumn: "span 2" }}>
-                  <CustomRadioGroup
-                    label="Referral purpose"
-                    row
-                    value={approverPurpose}
-                    onChange={(e) => {
-                      setApproverPurpose(e.target.value as "counterSign" | "opinion");
-                      setApproverReason("");
+                <CustomBox>
+                  <CustomTypography
+                    component="span"
+                    sx={{
+                      display: "block",
+                      marginBottom: "5px",
+                      color: "#444",
+                      fontSize: "11px",
                     }}
-                    options={[
-                      { label: "Counter Sign", value: "counterSign" },
-                      { label: "Opinion", value: "opinion" },
-                    ]}
+                  >
+                    Reason
+                  </CustomTypography>
+                  <CustomSelect
+                    value={approverReason}
+                    onChange={(val) => setApproverReason(val)}
+                    options={["Counter signing", "Medical assessment", "Financial assessment", "Other"].map(
+                      (v) => ({ value: v, label: v })
+                    )}
+                    placeholder="Select Reason"
+                    fullWidth
                   />
                 </CustomBox>
 
@@ -1497,11 +1735,7 @@ export function GuwUwPanel({
                   </CustomTypography>
                   <CustomSelect
                     value={approverTarget}
-                    onChange={(val) => {
-                      setApproverTarget(val);
-                      setApproverReason("");
-                      setApproverFirstDecision("");
-                    }}
+                    onChange={(val) => setApproverTarget(val)}
                     options={[
                       { value: "HOD", label: "HOD" },
                       { value: "Sr UW", label: "Sr UW" },
@@ -1511,165 +1745,26 @@ export function GuwUwPanel({
                   />
                 </CustomBox>
 
-                {approverTarget && (
-                  <>
-                    <CustomBox>
-                      <CustomTypography
-                        component="span"
-                        sx={{
-                          display: "block",
-                          marginBottom: "5px",
-                          color: "#444",
-                          fontSize: "11px",
-                        }}
-                      >
-                        {approverTarget === "Sr UW" ? "Sr UW Reasons" : "HOD Reasons"}
-                      </CustomTypography>
-                      <CustomSelect
-                        value={approverReason}
-                        onChange={(val) => setApproverReason(val)}
-                        options={(approverPurpose === "opinion"
-                          ? ["Medical opinion", "Financial opinion", "Other"]
-                          : ["Counter signing", "Medical assessment", "Financial assessment", "Other"]
-                        ).map((v) => ({ value: v, label: v }))}
-                        placeholder={`Select ${approverTarget === "Sr UW" ? "Sr UW" : "HOD"} Reasons`}
-                        fullWidth
-                      />
-                    </CustomBox>
-
-                    <CustomBox>
-                      <CustomTypography
-                        component="span"
-                        sx={{
-                          display: "block",
-                          marginBottom: "5px",
-                          color: "#444",
-                          fontSize: "11px",
-                        }}
-                      >
-                        1st UW Decision
-                      </CustomTypography>
-                      <CustomSelect
-                        value={approverFirstDecision}
-                        onChange={(val) => {
-                          setApproverFirstDecision(val);
-                          setApproverFirstDecisionReason("");
-                          setApproverFirstPostponementPeriod("");
-                        }}
-                        options={[
-                          { value: "STD", label: "Standard" },
-                          { value: "BOR_STD", label: "Borderline Standard" },
-                          { value: "REJ", label: "Reject" },
-                          { value: "DC", label: "Decline" },
-                          { value: "POSTP", label: "Postpone" },
-                          { value: "CO", label: "Counter Offer" },
-                          { value: "EP", label: "Extra Premium" },
-                        ]}
-                        placeholder="Select"
-                        fullWidth
-                      />
-                    </CustomBox>
-                  </>
-                )}
-
-                {approverFirstDecision && (
-                  <CustomBox>
-                    <CustomTypography
-                      component="span"
-                      sx={{
-                        display: "block",
-                        marginBottom: "5px",
-                        color: "#444",
-                        fontSize: "11px",
-                      }}
-                    >
-                      Decision Code
-                    </CustomTypography>
-                    <CustomTextField value={approverFirstDecision} disabled fullWidth />
-                  </CustomBox>
-                )}
-
-                {["REJ", "BOR_STD", "DC", "CO"].includes(approverFirstDecision) && (
-                  <CustomBox>
-                    <CustomTypography
-                      component="span"
-                      sx={{
-                        display: "block",
-                        marginBottom: "5px",
-                        color: "#444",
-                        fontSize: "11px",
-                      }}
-                    >
-                      1st UW Decision Reason
-                    </CustomTypography>
-                    <CustomSelect
-                      value={approverFirstDecisionReason}
-                      onChange={(val) => setApproverFirstDecisionReason(val)}
-                      options={[
-                        { value: "Medical", label: "Medical" },
-                        { value: "Financial", label: "Financial" },
-                        { value: "Non-medical", label: "Non-medical" },
-                        { value: "Other", label: "Other" },
-                      ]}
-                      placeholder="Select"
-                      fullWidth
-                    />
-                  </CustomBox>
-                )}
-
-                {approverFirstDecision === "POSTP" && (
-                  <>
-                    <CustomBox>
-                      <CustomTypography
-                        component="span"
-                        sx={{
-                          display: "block",
-                          marginBottom: "5px",
-                          color: "#444",
-                          fontSize: "11px",
-                        }}
-                      >
-                        Postpone Reason
-                      </CustomTypography>
-                      <CustomSelect
-                        value={approverFirstDecisionReason}
-                        onChange={(val) => setApproverFirstDecisionReason(val)}
-                        options={[
-                          { value: "Medical", label: "Medical" },
-                          { value: "Financial", label: "Financial" },
-                          { value: "Non-medical", label: "Non-medical" },
-                          { value: "Other", label: "Other" },
-                        ]}
-                        placeholder="Select"
-                        fullWidth
-                      />
-                    </CustomBox>
-                    <CustomBox>
-                      <CustomTypography
-                        component="span"
-                        sx={{
-                          display: "block",
-                          marginBottom: "5px",
-                          color: "#444",
-                          fontSize: "11px",
-                        }}
-                      >
-                        Postponement Period
-                      </CustomTypography>
-                      <CustomSelect
-                        value={approverFirstPostponementPeriod}
-                        onChange={(val) => setApproverFirstPostponementPeriod(val)}
-                        options={[
-                          { value: "3 months", label: "3 months" },
-                          { value: "6 months", label: "6 months" },
-                          { value: "12 months", label: "12 months" },
-                        ]}
-                        placeholder="Select"
-                        fullWidth
-                      />
-                    </CustomBox>
-                  </>
-                )}
+                <CustomBox>
+                  <CustomTypography
+                    component="span"
+                    sx={{
+                      display: "block",
+                      marginBottom: "5px",
+                      color: "#444",
+                      fontSize: "11px",
+                    }}
+                  >
+                    Assigned To
+                  </CustomTypography>
+                  <CustomSelect
+                    value={approverAssignedTo}
+                    onChange={(val) => setApproverAssignedTo(val)}
+                    options={APPROVER_ASSIGNEE_OPTIONS}
+                    placeholder="Select User ID"
+                    fullWidth
+                  />
+                </CustomBox>
               </>
             )}
           </CustomBox>
@@ -2120,8 +2215,20 @@ export function GuwUwPanel({
             </CustomBox>
           )}
 
-          {/* SUBMIT BUTTON */}
-          <CustomBox sx={{ display: "flex", justifyContent: "flex-end", mt: 4 }}>
+          {/* BACK + SUBMIT BUTTONS */}
+          <CustomBox sx={{ display: "flex", justifyContent: "flex-end", gap: 2, mt: 4 }}>
+            <CustomButton
+              variant="outlined"
+              onClick={guidelinesConfirmed ? backToGuidelines : handleDialogClose}
+              sx={{
+                borderColor: "#eadfd9",
+                color: "#7b716c",
+                fontWeight: "bold",
+                px: 4,
+              }}
+            >
+              Back
+            </CustomButton>
             <CustomButton
               variant="contained"
               onClick={handleDialogSubmit}

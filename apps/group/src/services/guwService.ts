@@ -1,3 +1,4 @@
+import { getSessionValue, removeSessionValue, setSessionValue } from "@insurance-poc/utils";
 import type { DetailAttribute } from "@insurance-poc/common/detail-card";
 import type { RequirementItem } from "@insurance-poc/common/requirement-mgmt";
 import { mapRequirements, type RawRequirement } from "../modules/drs/requirementData";
@@ -327,14 +328,67 @@ function wait(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+/* ------------------------------------------------------------------ */
+/* Submitted decision kept in the browser session (per application)      */
+/* ------------------------------------------------------------------ */
+
+const submittedDecisionKey = (applicationNo: string) => `guwSubmittedDecision:${applicationNo}`;
+
+function isSubmittedDecision(v: unknown): v is GuwSubmittedDecision {
+  return (
+    isRecord(v) &&
+    typeof v.decisionCode === "string" &&
+    typeof v.remarks === "string" &&
+    Array.isArray(v.fields) &&
+    Array.isArray(v.guidelines)
+  );
+}
+
+export function loadGuwSubmittedDecision(applicationNo: string): GuwSubmittedDecision | null {
+  if (!applicationNo) return null;
+  const raw = getSessionValue(submittedDecisionKey(applicationNo));
+  if (!raw) return null;
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    return isSubmittedDecision(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+export function saveGuwSubmittedDecision(
+  applicationNo: string,
+  decision: GuwSubmittedDecision,
+): void {
+  if (!applicationNo) return;
+  setSessionValue(submittedDecisionKey(applicationNo), JSON.stringify(decision));
+}
+
+export function clearGuwSubmittedDecision(applicationNo: string): void {
+  if (!applicationNo) return;
+  removeSessionValue(submittedDecisionKey(applicationNo));
+}
+
 export async function fetchGuwDrs(applicationNo: string): Promise<GuwDrsRecord | null> {
   await wait(250);
   // The mock file is now a single API response object (not a records array).
   // We serve it for any applicationNo to allow local dev with any inbox task.
   const payload = guwDrsMock as unknown;
   const record = mapGuwDrsPayload(payload);
+  const submittedDecision = loadGuwSubmittedDecision(applicationNo) ?? undefined;
   // Patch the applicationNo to match what was requested so the banner is correct.
-  return { ...record, applicationNo, applicationLabel: `App No. - ${applicationNo}` };
+  return {
+    ...record,
+    applicationNo,
+    applicationLabel: `App No. - ${applicationNo}`,
+    uwData: submittedDecision
+      ? {
+          breOverallDecision: record.uwData?.breOverallDecision ?? "",
+          breOverallRemarks: record.uwData?.breOverallRemarks ?? "",
+          submittedDecision,
+        }
+      : record.uwData,
+  };
 }
 
 /* ------------------------------------------------------------------ */

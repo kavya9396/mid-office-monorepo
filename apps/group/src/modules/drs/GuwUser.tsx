@@ -260,6 +260,7 @@ const GuwUser = () => {
 
             {/* UW panel: BRE overall decision + case UW decision */}
             <GuwUwPanel
+              applicationNo={applicationNo}
               breOverallDecision={page.record.uwData?.breOverallDecision}
               breOverallRemarks={page.record.uwData?.breOverallRemarks}
               initialSubmittedDecision={page.record.uwData?.submittedDecision}
