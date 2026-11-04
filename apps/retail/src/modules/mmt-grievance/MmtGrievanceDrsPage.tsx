@@ -1,11 +1,8 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { AppHeader } from "@insurance-poc/common/app-header";
-import { ApplicantBanner } from "@insurance-poc/common/applicant-banner";
+import { useSearchParams } from "react-router-dom";
+import { ApplicantBanner, type BannerRow } from "@insurance-poc/common/applicant-banner";
 import { GrievanceHistory } from "@insurance-poc/common/grievance-history";
-import { commonPaths, replaceUrl } from "@insurance-poc/routes";
-import { CustomBox, LogoutIcon } from "@insurance-poc/ui";
-import { clearToken, getSessionUser } from "@insurance-poc/utils";
+import { CustomBox } from "@insurance-poc/ui";
 import { MmtGrievanceDecision } from "./MmtGrievanceDecision";
 import {
   fetchMmtGrievanceDrs,
@@ -19,19 +16,13 @@ type PageState =
   | { kind: "error"; message: string }
   | { kind: "ready"; data: MmtGrievanceDrsData };
 
-function signOut(): void {
-  clearToken();
-  replaceUrl(commonPaths.login);
-}
-
 /**
- * MMT Grievance DRS — header, applicant banner, Grievance History and the
- * Grievance Decision grid. Submit is validation-only until the submit API is built.
+ * MMT Grievance DRS — applicant banner, Grievance History and the
+ * Grievance Decision grid. The Retail layout header supplies back and logout.
+ * Submit is validation-only until the submit API is built.
  */
 export function MmtGrievanceDrsPage() {
-  const navigate = useNavigate();
   const [params] = useSearchParams();
-  const userName = getSessionUser()?.displayName ?? "";
   const applicationNo = params.get("applicationNo")?.trim() ?? "";
   const [state, setState] = useState<PageState>(
     applicationNo ? { kind: "loading" } : { kind: "missing-id" },
@@ -68,32 +59,19 @@ export function MmtGrievanceDrsPage() {
 
   return (
     <CustomBox
-      sx={{
-        height: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        background: "#fff8f3",
-      }}
+      component="main"
+      data-testid="mmt-grievance-drs-main"
+      sx={{ minHeight: "100%", background: "#fff8f3" }}
     >
-      <AppHeader
-        showBack
-        onBack={() => navigate("/inbox")}
-        userName={userName}
-        menuItems={[
-          { label: "Logout", icon: <LogoutIcon />, onSelect: signOut },
-        ]}
-      />
-      <CustomBox
-        component="main"
-        data-testid="mmt-grievance-drs-main"
-        sx={{ height: "calc(100dvh - 57px)", overflowY: "auto" }}
-      >
         {state.kind === "ready" ? (
           <>
             <ApplicantBanner
-              applicantName={state.data.record.applicantName}
-              applicationLabel={state.data.record.applicationLabel}
-              lines={state.data.record.lines}
+              name={state.data.record.applicantName}
+              applicationNo={state.data.record.applicationNo}
+              rows={state.data.record.lines.map<BannerRow>((line, index) => ({
+                id: String(index),
+                fields: [{ id: String(index), value: line.text }],
+              }))}
             />
             <CustomBox
               sx={{ px: 0.5, pb: 1.5, display: "grid", gap: 1.25 }}
@@ -120,7 +98,6 @@ export function MmtGrievanceDrsPage() {
             {state.message}
           </CustomBox>
         ) : null}
-      </CustomBox>
     </CustomBox>
   );
 }

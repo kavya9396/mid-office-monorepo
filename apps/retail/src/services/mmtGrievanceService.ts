@@ -111,17 +111,23 @@ export async function fetchMmtGrievanceDrs(
 ): Promise<MmtGrievanceDrsData | null> {
   await wait(250);
 
-  const banner = mmtGrievanceDrsMock.records.find(
+  const matched = mmtGrievanceDrsMock.records.find(
     (item) => item.applicationNo === applicationNo,
   );
+  // Inbox cases use their own application number. The mock file has one sample,
+  // so mock mode shows that sample for any requested application.
+  const banner = matched ?? (useMock ? mmtGrievanceDrsMock.records[0] : undefined);
   if (!banner) {
     return null;
   }
 
+  const rowApplicationNo = matched ? applicationNo : banner.applicationNo;
   const [grievanceHistory, grievanceDecision] = await Promise.all([
-    fetchGrievanceHistory(applicationNo),
-    fetchGrievanceDecision(applicationNo),
+    fetchGrievanceHistory(rowApplicationNo),
+    fetchGrievanceDecision(rowApplicationNo),
   ]);
 
-  return { record: { ...banner, grievanceHistory, grievanceDecision } };
+  return {
+    record: { ...banner, applicationNo, grievanceHistory, grievanceDecision },
+  };
 }
