@@ -160,7 +160,7 @@ describe("role-list inbox contract", () => {
     expect(data.poolData.GUW_FORMAL?.[0]?.fields.policyNo).toBe("POL-900002");
   });
 
-  it("reads the user id and keeps every 19 known pools when the API sends them", () => {
+  it("reads the user id and keeps every known pool when the API sends them", () => {
     const pools = Object.fromEntries(ROLE_POOL_KEYS.map((pool) => [pool, []])) as Partial<
       Record<RolePoolKey, unknown[]>
     >;
@@ -313,6 +313,7 @@ describe("landing labels", () => {
     expect(formatColumnName("appliedSa")).toBe("Applied SA");
     expect(formatColumnName("drc")).toBe("DRC");
     expect(formatColumnName("hniFlag")).toBe("HNI Flags");
+    expect(formatColumnName("hniShni")).toBe("HNI SHNI");
     expect(formatColumnName("ptlr")).toBe("PTLR");
     expect(formatColumnName("productCode")).toBe("Product Code");
     expect(formatColumnName("masterPlanNo")).toBe("Master Plan No");

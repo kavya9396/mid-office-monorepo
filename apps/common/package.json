@@ -129,6 +129,11 @@
       "import": "./src/components/Header/ApplicantBanner.tsx",
       "default": "./src/components/Header/ApplicantBanner.tsx"
     },
+    "./tpa": {
+      "types": "./src/components/TPA/index.ts",
+      "import": "./src/components/TPA/index.ts",
+      "default": "./src/components/TPA/index.ts"
+    },
     "./header": {
       "types": "./src/components/layout/Header.tsx",
       "import": "./src/components/layout/Header.tsx",
