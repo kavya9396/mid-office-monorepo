@@ -9,12 +9,13 @@ import { GrievanceHistory } from "@insurance-poc/common/grievance-history";
 import { ClaimAudit, type ClaimAuditRow } from "@insurance-poc/common/claim-audit";
 import { SpecialRemarks, type SpecialRemarksRow } from "@insurance-poc/common/special-remarks";
 import { UwGuidelines, type UwGuidelineRow } from "@insurance-poc/common/uw-guidelines";
-import { CaseUwDecision, INITIAL_GUIDELINES } from "@insurance-poc/common/case-uw-decision";
+import { INITIAL_GUIDELINES } from "@insurance-poc/common/case-uw-decision";
 import { groupPaths, replaceUrl } from "@insurance-poc/routes";
 import { QuickLinksModule } from "@insurance-poc/common/quick-links";
 import { RequirementMgmt } from "@insurance-poc/common/requirement-mgmt";
 import { GuwRiskCards } from "../guw/GuwRiskCards";
 import { GuwSdtRow } from "../guw/GuwSdtRow";
+import { GuwUwPanel } from "../guw/GuwUwPanel";
 import {
   requirementStatusVariants,
   requirementStatusOrder,
@@ -260,14 +261,14 @@ const GuwUser = () => {
             </Box>
 
             {/* UW panel: BRE overall decision + case UW decision */}
-            <CaseUwDecision
+            <GuwUwPanel
               breOverallDecision={page.record.uwData?.breOverallDecision}
               breOverallRemarks={page.record.uwData?.breOverallRemarks}
               initialSubmittedDecision={page.record.uwData?.submittedDecision}
               onDecisionSubmit={(_decision: string, _remarks: string) => {
                 // Submit API handler to be wired
               }}
-              onSubmitted={() => replaceUrl(groupPaths.inbox)}
+              onSubmit={() => replaceUrl(groupPaths.inbox)}
             />
 
             {/* Quick Links */}
