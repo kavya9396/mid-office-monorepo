@@ -19,7 +19,7 @@ import {
 } from "@insurance-poc/ui";
 import { clearToken, getSessionUser } from "@insurance-poc/utils";
 import { fetchGuwDrs, type GuwDrsRecord } from "../../services/guwService";
-import { QuickLinks } from "@insurance-poc/common/quick-links";
+import  QuickLinks  from "@insurance-poc/common/quick-links";
 
 type PageState =
   | { kind: "loading" }
