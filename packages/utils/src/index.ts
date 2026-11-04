@@ -1,4 +1,4 @@
-export { authUrls, useMock } from "./config";
+export { absoluteApiBaseUrl, authUrls, landingUrls, useMock } from "./config";
 export {
   authReducer,
   clearSession,
@@ -23,6 +23,9 @@ export {
   type SessionUser,
 } from "./auth";
 export {
+  apigeeBasicAuthorization,
+  applyBusinessApiAuthHeaders,
+  buildJsonAuthPostHeaders,
   createBusinessBaseQuery,
   decryptPayload,
   encodeBase64,
@@ -31,4 +34,10 @@ export {
   type BusinessRequest,
 } from "./api";
 export { formatIndianCurrency, default } from "./format";
-export { RegexPatterns } from "./validation";
+export {
+  isLikelyEmail,
+  isValidEmailAddress,
+  meetsPasswordPolicy,
+  PASSWORD_POLICY_MESSAGE,
+  RegexPatterns,
+} from "./validation";

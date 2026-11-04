@@ -1,8 +1,8 @@
+import { PASSWORD_POLICY_MESSAGE } from "@insurance-poc/utils";
 import { describe, expect, it } from "vitest";
 import { changePasswordSchema } from "./changePasswordSchema";
 
-const passwordMessage =
-  "Password must be at least 8 characters and include uppercase, lowercase, a number, and a special character";
+const passwordMessage = PASSWORD_POLICY_MESSAGE;
 
 describe("changePasswordSchema", () => {
   it("accepts matching new and confirm passwords", () => {

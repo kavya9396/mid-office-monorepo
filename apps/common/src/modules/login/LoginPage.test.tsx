@@ -77,8 +77,14 @@ describe("LoginPage", () => {
     renderAuth(<LoginPage />);
 
     await user.type(screen.getByPlaceholderText("Enter your User ID"), "user-1");
+    expect(screen.getByRole("button", { name: "Log In" })).toBeDisabled();
+
+    await user.type(screen.getByPlaceholderText("Enter your Password"), "any");
+    expect(screen.getByRole("button", { name: "Log In" })).toBeEnabled();
+
+    await user.clear(screen.getByPlaceholderText("Enter your Password"));
     await user.tab();
-    expect(await screen.findByText("User ID must be letters followed by numbers")).toBeInTheDocument();
+    expect(await screen.findByText("Password is required")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Log In" })).toBeDisabled();
 
     await user.clear(screen.getByPlaceholderText("Enter your User ID"));

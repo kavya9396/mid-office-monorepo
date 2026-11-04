@@ -1,22 +1,18 @@
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { createApi } from "@reduxjs/toolkit/query/react";
-import { createBusinessBaseQuery, getSessionUser, useMock } from "@insurance-poc/utils";
+import {
+  absoluteApiBaseUrl,
+  createBusinessBaseQuery,
+  getSessionUser,
+  landingUrls,
+  mustChangePassword,
+  useMock,
+} from "@insurance-poc/utils";
 import groupInboxMock from "../modules/inbox/mock/groupInbox.json";
 import { rememberPoolColumns, storedPoolColumns, type InboxData } from "@insurance-poc/common/inbox";
 import groupColumnConfigFetchMock from "../modules/inbox/mock/columnConfigFetch.json";
 import groupColumnConfigSaveMock from "../modules/inbox/mock/columnConfigSave.json";
-import {
-  createGroupRoleListRequest,
-  GROUP_POOL_COLUMNS_PATH,
-  GROUP_POOL_COLUMNS_SAVE_PATH,
-  GROUP_ROLE_LIST_PATH,
-  mapGroupInboxPayload,
-} from "./inboxService";
-
-function groupApiUrl(): string {
-  const value = import.meta.env.VITE_GROUP_API_URL;
-  return typeof value === "string" ? value.trim() : "";
-}
+import { createGroupRoleListRequest, mapGroupInboxPayload } from "./inboxService";
 
 function readError(reason: unknown): string {
   return reason instanceof Error ? reason.message : "Unable to load the Group inbox.";
@@ -28,15 +24,18 @@ function customError(error: string): FetchBaseQueryError {
 
 export const groupInboxApi = createApi({
   reducerPath: "groupInboxApi",
-  baseQuery: createBusinessBaseQuery(groupApiUrl()),
+  baseQuery: createBusinessBaseQuery(absoluteApiBaseUrl),
   endpoints: (build) => ({
     getGroupInbox: build.query<InboxData, void>({
       async queryFn(_request, _api, _extra, baseQuery) {
         if (useMock) {
           return { data: mapGroupInboxPayload(groupInboxMock) };
         }
-        if (groupApiUrl().length === 0) {
-          return { error: customError("Group API URL is not configured.") };
+        if (landingUrls.groupRoleList.length === 0) {
+          return { error: customError("VITE_GROUP_ROLE_LIST_API is not configured.") };
+        }
+        if (mustChangePassword()) {
+          return { error: customError("Change your password before loading the Group inbox.") };
         }
         const username = getSessionUser()?.userId ?? "";
         if (username.length === 0) {
@@ -44,9 +43,9 @@ export const groupInboxApi = createApi({
         }
 
         const result = await baseQuery({
-          url: GROUP_ROLE_LIST_PATH,
+          url: landingUrls.groupRoleList,
           method: "POST",
-          body: createGroupRoleListRequest(username),
+          body: createGroupRoleListRequest(),
           headers: { accept: "*/*", "Content-Type": "application/json" },
           encryptRequest: false,
           decryptResponse: false,
@@ -65,15 +64,15 @@ export const groupInboxApi = createApi({
         if (useMock) {
           return { data: storedPoolColumns("group", poolKey, groupColumnConfigFetchMock) };
         }
-        if (groupApiUrl().length === 0) {
-          return { error: customError("Group API URL is not configured.") };
+        if (landingUrls.groupPoolColumns.length === 0) {
+          return { error: customError("VITE_GROUP_POOL_COLUMNS_API is not configured.") };
         }
         const username = getSessionUser()?.userId ?? "";
         if (username.length === 0) {
           return { error: customError("Sign in before loading column configuration.") };
         }
         const result = await baseQuery({
-          url: GROUP_POOL_COLUMNS_PATH,
+          url: landingUrls.groupPoolColumns,
           method: "GET",
           params: { username, poolKey },
           encryptRequest: false,
@@ -92,15 +91,22 @@ export const groupInboxApi = createApi({
           rememberPoolColumns("group", request.poolKey, request.selectedFields);
           return { data: storedPoolColumns("group", request.poolKey, groupColumnConfigFetchMock) };
         }
-        if (groupApiUrl().length === 0) {
-          return { error: customError("Group API URL is not configured.") };
+        if (
+          landingUrls.groupPoolColumnsSave.length === 0 ||
+          landingUrls.groupPoolColumns.length === 0
+        ) {
+          return {
+            error: customError(
+              "VITE_GROUP_POOL_COLUMNS_SAVE_API or VITE_GROUP_POOL_COLUMNS_API is not configured.",
+            ),
+          };
         }
         const username = getSessionUser()?.userId ?? "";
         if (username.length === 0) {
           return { error: customError("Sign in before saving column configuration.") };
         }
         const saved = await baseQuery({
-          url: GROUP_POOL_COLUMNS_SAVE_PATH,
+          url: landingUrls.groupPoolColumnsSave,
           method: "POST",
           body: { username, poolKey: request.poolKey, selectedFields: request.selectedFields },
           headers: { accept: "*/*", "Content-Type": "application/json" },
@@ -109,7 +115,7 @@ export const groupInboxApi = createApi({
         });
         if (saved.error) return { error: saved.error };
         const fetched = await baseQuery({
-          url: GROUP_POOL_COLUMNS_PATH,
+          url: landingUrls.groupPoolColumns,
           method: "GET",
           params: { username, poolKey: request.poolKey },
           encryptRequest: false,
