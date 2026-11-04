@@ -15,7 +15,7 @@ import {
   CustomSnackbar,
 } from "@insurance-poc/ui";
 import { fetchGuwDrs, type GuwDrsRecord } from "../../services/guwService";
-import { QuickLinksModule } from "@insurance-poc/common/quick-links";
+import   { QuickLinksModule }  from "@insurance-poc/common/quick-links";
 
 type PageState =
   | { kind: "loading" }
