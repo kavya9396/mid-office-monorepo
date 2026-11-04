@@ -40,3 +40,32 @@ export const authUrls = {
     return requiredUrl(import.meta.env.VITE_AUTH_LOGOUT_API, "VITE_AUTH_LOGOUT_API");
   },
 };
+
+function configuredUrl(value: string | undefined): string {
+  return value?.trim() ?? "";
+}
+
+/** Full landing-service URLs from .env (role-list, pool columns). Empty when unset — mock mode skips them. */
+export const landingUrls = {
+  get retailRoleList(): string {
+    return configuredUrl(import.meta.env.VITE_RETAIL_ROLE_LIST_API);
+  },
+  get groupRoleList(): string {
+    return configuredUrl(import.meta.env.VITE_GROUP_ROLE_LIST_API);
+  },
+  get retailPoolColumns(): string {
+    return configuredUrl(import.meta.env.VITE_RETAIL_POOL_COLUMNS_API);
+  },
+  get retailPoolColumnsSave(): string {
+    return configuredUrl(import.meta.env.VITE_RETAIL_POOL_COLUMNS_SAVE_API);
+  },
+  get groupPoolColumns(): string {
+    return configuredUrl(import.meta.env.VITE_GROUP_POOL_COLUMNS_API);
+  },
+  get groupPoolColumnsSave(): string {
+    return configuredUrl(import.meta.env.VITE_GROUP_POOL_COLUMNS_SAVE_API);
+  },
+};
+
+/** RTK base URL when each request uses a full URL from `landingUrls` or `authUrls`. */
+export const absoluteApiBaseUrl = "";

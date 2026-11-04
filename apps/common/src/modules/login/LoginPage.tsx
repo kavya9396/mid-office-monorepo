@@ -3,18 +3,9 @@ import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import InputAdornment from "@mui/material/InputAdornment";
 import Link from "@mui/material/Link";
-import Typography from "@mui/material/Typography";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { assignUrl, businessInboxUrl, commonPaths } from "@insurance-poc/routes";
-import {
-  CustomButton,
-  CustomSnackbar,
-  CustomTabs,
-  CustomTextField,
-  EyeIcon,
-  EyeSlashIcon,
-  type TabItem,
-} from "@insurance-poc/ui";
+import { CustomButton, CustomSnackbar, CustomTextField, EyeIcon, EyeSlashIcon } from "@insurance-poc/ui";
 import {
   clearSession,
   setLastLoginAt,
@@ -28,6 +19,7 @@ import { Controller, useForm, type Control } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useLoginMutation } from "../../services/authApi";
 import type { BusinessType } from "../../services/loginService";
+import { BusinessTypeTabs } from "./BusinessTypeTabs";
 import { AuthShell, authCompactLaptop, authShortLaptop } from "./AuthShell";
 import {
   authSnackbar,
@@ -54,11 +46,6 @@ type CredentialsFormProps = {
   onSubmit: FormEventHandler<HTMLFormElement>;
   onForgotPassword: () => void;
 };
-
-const businessTabs: TabItem<BusinessType>[] = [
-  { key: "RETAIL", label: "Retail" },
-  { key: "GROUP", label: "Group" },
-];
 
 function readResetMessage(state: unknown): string {
   if (typeof state !== "object" || state === null) return "";
@@ -134,23 +121,7 @@ function CredentialsForm({
         [authShortLaptop]: { gap: 1 },
       }}
     >
-      <Box>
-        <Typography sx={{ fontSize: "12px", fontWeight: 600, mb: 0.75 }}>
-          Business type
-        </Typography>
-        <CustomTabs
-          tabs={businessTabs}
-          value={businessType}
-          onChange={onBusinessTypeChange}
-          sx={{
-            [authCompactLaptop]: { p: 0.5, gap: 0.5 },
-            "& button": {
-              [authCompactLaptop]: { py: 0.75 },
-              [authShortLaptop]: { py: 0.5 },
-            },
-          }}
-        />
-      </Box>
+      <BusinessTypeTabs value={businessType} onChange={onBusinessTypeChange} />
 
       <Controller
         name="username"

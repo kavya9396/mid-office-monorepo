@@ -6,8 +6,9 @@ function parse(userId: string) {
 }
 
 describe("forgotPasswordSchema", () => {
-  it("accepts an alphanumeric User ID", () => {
+  it("accepts any non-empty user id without format checks", () => {
     expect(parse("User123").success).toBe(true);
+    expect(parse("user-1").success).toBe(true);
   });
 
   it("accepts a valid email address", () => {
@@ -27,7 +28,6 @@ describe("forgotPasswordSchema", () => {
   });
 
   it.each([
-    "user-1",
     "john@",
     "@example.com",
     "john@@example.com",
@@ -35,11 +35,11 @@ describe("forgotPasswordSchema", () => {
     "john@.com",
     "john@example.",
     "jo hn@example.com",
-  ])("rejects an invalid User ID or email: %s", (value) => {
+  ])("rejects an invalid email when @ is present: %s", (value) => {
     const result = parse(value);
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues[0]?.message).toBe("Enter a valid user ID or email");
+      expect(result.error.issues[0]?.message).toBe("Enter a valid email address");
     }
   });
 });

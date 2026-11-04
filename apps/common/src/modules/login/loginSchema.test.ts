@@ -6,17 +6,13 @@ function firstMessage(input: unknown): string | undefined {
   return result.success ? undefined : result.error.issues[0]?.message;
 }
 
-const validPassword = "NewerPass@1234";
-
 describe("loginSchema", () => {
-  it("accepts a valid alphanumeric User ID and a password", () => {
-    expect(
-      loginSchema.safeParse({ username: "LDAP12345", password: validPassword }).success,
-    ).toBe(true);
+  it("accepts any non-empty user id and password", () => {
+    expect(loginSchema.safeParse({ username: "user-1", password: "x" }).success).toBe(true);
   });
 
   it("trims surrounding whitespace from the User ID", () => {
-    const result = loginSchema.safeParse({ username: "  LDAP12345  ", password: validPassword });
+    const result = loginSchema.safeParse({ username: "  LDAP12345  ", password: "secret" });
     expect(result.success).toBe(true);
     if (result.success) expect(result.data.username).toBe("LDAP12345");
   });
@@ -29,27 +25,17 @@ describe("loginSchema", () => {
     expect(firstMessage({ username: "   ", password: "secret" })).toBe("User ID is required");
   });
 
-  it.each(["user-1", "user_1", "user 1", "user@1", "user.1"])(
-    "rejects User ID with special characters: %s",
-    (username) => {
-      expect(firstMessage({ username, password: validPassword })).toBe(
-        "User ID must be letters followed by numbers",
-      );
-    },
-  );
-
   it("rejects an empty password", () => {
-    expect(firstMessage({ username: "LDAP12345", password: "" })).toBe(
-      "Password must be at least 8 characters and include uppercase, lowercase, a number, and a special character",
-    );
+    expect(firstMessage({ username: "LDAP12345", password: "" })).toBe("Password is required");
   });
 
   it("does not trim the password", () => {
     const result = loginSchema.safeParse({
       username: "LDAP12345",
-      password: `  ${validPassword}  `,
+      password: "  secret  ",
     });
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.password).toBe("  secret  ");
   });
 
   it("rejects missing fields", () => {
