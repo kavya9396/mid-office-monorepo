@@ -25,6 +25,15 @@ const LABEL_ACRONYMS = new Set([
   "UW",
 ]);
 
+export const DASHBOARD_TASK_KEYS = new Set([
+  "AMR_MEDICAL_TASK",
+  "AMR_NON_MEDICAL_TASK",
+  "ACCUITY_TASK",
+  "RISK_TASK",
+  "IIFL_TASK",
+  "PAYATS_TASK",
+]);
+
 export const HIDDEN_COLUMNS = new Set([
   "id",
   "taskId",
@@ -40,73 +49,7 @@ export const HIDDEN_COLUMNS = new Set([
   "poolKey",
 ]);
 
-export const MAX_VISIBLE_COLUMNS = 8;
-
-const SHARED_DEFAULT_COLUMNS = [
-  "channelCode",
-  "channel",
-  "product",
-  "sumAssured",
-  "premium",
-  "clientType",
-  "caseType",
-];
-
-const POOL_DEFAULT_COLUMNS: Partial<Record<string, string[]>> = {
-  CPT_POOL: ["medicalReceivedDate", "financialReceivedDate", "poolTAT"],
-  PIVV_POOL: ["pivvRaisedDate"],
-  EXCEPTIONAL_POOL: ["lastPool"],
-  SYSTEM_WAIT_POOL_NON_MEDICAL: ["lastPool", "requirementRaisedDate", "userId"],
-  AMR_NON_MEDICAL: ["lastPool", "requirementRaisedDate", "userId"],
-  RECONSIDERATION_POOL: ["lastPool", "userId", "uwDecisionDate", "poolTAT"],
-  CUW: [
-    "appliedSa",
-    "annualPremium",
-    "productType",
-    "drc",
-    "hniFlag",
-    "isMedical",
-    "munichReMedicalDecision",
-    "ptlr",
-  ],
-  PRE_LOGIN: ["poolTAT"],
-  POST_ISSUANCE_SERVICING: ["ct", "st", "source", "outliers"],
-  REINSTATEMENT: ["ct", "st", "source", "outliers"],
-  MMT: [
-    "nameOfProposer",
-    "nameOfLifeAssured",
-    "productOpted",
-    "plan",
-    "medicalRaisedDate",
-  ],
-  GRIEVANCE: ["nameOfProposer", "nameOfLifeAssured", "grievanceRaisedDate"],
-  GUW: [
-    "productCode",
-    "masterPlanNo",
-    "poolTAT",
-    "productType",
-    "typeOfGroupBusiness",
-    "caseReceivedDate",
-  ],
-  DVT_POOL: [
-    "productCode",
-    "masterPlanNo",
-    "poolTAT",
-    "productType",
-    "typeOfGroupBusiness",
-    "caseReceivedDate",
-  ],
-  GOPS_DVT: [
-    "productCode",
-    "masterPlanNo",
-    "poolTAT",
-    "productType",
-    "typeOfGroupBusiness",
-    "caseReceivedDate",
-  ],
-  DVT_FORMAL: ["policyNo", "productCode", "memberName", "poolTAT", "appliedCover"],
-  GUW_FORMAL: ["policyNo", "productCode", "memberName", "poolTAT", "appliedCover"],
-};
+const MAX_VISIBLE_COLUMNS = 8;
 
 export function toDisplayLabel(value: string): string {
   return value
@@ -122,36 +65,26 @@ export function toDisplayLabel(value: string): string {
 }
 
 export function taskDetailsTitle(taskKey: string): string {
-  return `${taskKey.replaceAll("_", " ")} Details`;
-}
-
-const COLUMN_LABELS: Record<string, string> = {
-  isMedical: "Medical",
-  appliedSa: "Applied SA",
-  drc: "DRC",
-  hniFlag: "HNI Flags",
-  ptlr: "PTLR",
-};
-
-function splitCamelCase(value: string): string {
-  let result = "";
-  for (let index = 0; index < value.length; index += 1) {
-    const current = value.charAt(index);
-    const previous = value.charAt(index - 1);
-    const needsSpace = previous >= "a" && previous <= "z" && current >= "A" && current <= "Z";
-    result += needsSpace ? ` ${current}` : current;
-  }
-  return result;
+  return `${taskKey.split("_").join(" ")} Details`;
 }
 
 export function formatColumnName(key: string): string {
-  const mapped = COLUMN_LABELS[key];
-  if (mapped) return mapped;
-  const spaced = splitCamelCase(key.replaceAll("_", " "));
+  let spaced = "";
+  for (const char of key) {
+    const isUpper = char >= "A" && char <= "Z";
+    if (isUpper && spaced.length > 0 && spaced.charAt(spaced.length - 1) !== " ") {
+      spaced += " ";
+    }
+    spaced += char === "_" ? " " : char;
+  }
+
   return spaced
     .split(" ")
     .filter((part) => part.length > 0)
-    .map((part) => `${part.charAt(0).toUpperCase()}${part.slice(1)}`)
+    .map((part) => {
+      const lower = part.toLowerCase();
+      return `${lower.charAt(0).toUpperCase()}${lower.slice(1)}`;
+    })
     .join(" ");
 }
 
@@ -166,42 +99,19 @@ export function initials(value: string): string {
 }
 
 export function isApplicationColumn(column: string): boolean {
-  const normalized = column.replaceAll("_", "").replaceAll(" ", "").toLowerCase();
+  const normalized = column.split("_").join("").split(" ").join("").toLowerCase();
   return normalized === "applicationno" || normalized === "applicationnumber";
 }
 
-/** Column order follows fields that are actually present on the pool rows. */
-export function columnsForPool(columns: string[], poolKey?: string): string[] {
+export function defaultVisibleColumns(columns: string[]): string[] {
   const applicationColumn = columns.find(isApplicationColumn);
-  const poolColumns = (POOL_DEFAULT_COLUMNS[poolKey ?? ""] ?? []).filter(
-    (column) => columns.includes(column) && column !== applicationColumn,
-  );
-  const rest = columns.filter((column) => column !== applicationColumn && !poolColumns.includes(column));
-  return [...new Set([...(applicationColumn ? [applicationColumn] : []), ...poolColumns, ...rest])];
+  const rest = columns.filter((column) => column !== applicationColumn);
+  const ordered = applicationColumn ? [applicationColumn, ...rest] : rest;
+  return ordered.slice(0, MAX_VISIBLE_COLUMNS);
 }
 
-export function defaultVisibleColumns(columns: string[], poolKey?: string): string[] {
-  const ordered = columnsForPool(columns, poolKey);
-  const applicationColumn = ordered.find(isApplicationColumn);
-  const poolColumns = (POOL_DEFAULT_COLUMNS[poolKey ?? ""] ?? []).filter(
-    (column) => ordered.includes(column) && column !== applicationColumn,
-  );
-  const shared = SHARED_DEFAULT_COLUMNS.filter(
-    (column) => ordered.includes(column) && column !== applicationColumn && !poolColumns.includes(column),
-  );
-  const rest = ordered.filter(
-    (column) => column !== applicationColumn && !poolColumns.includes(column) && !shared.includes(column),
-  );
-  const unique = [...poolColumns, ...shared, ...rest];
-  return applicationColumn
-    ? [applicationColumn, ...unique].slice(0, MAX_VISIBLE_COLUMNS)
-    : unique.slice(0, MAX_VISIBLE_COLUMNS);
-}
-
-export function formatLastLogin(value: Date | string): string {
-  const parsed = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(parsed.getTime())) return "";
-  const day = parsed.getDate();
+export function formatLastLogin(value: Date): string {
+  const day = value.getDate();
   const teen = day % 100;
   let suffix = "th";
   if (teen < 11 || teen > 13) {
@@ -209,9 +119,9 @@ export function formatLastLogin(value: Date | string): string {
     if (day % 10 === 2) suffix = "nd";
     if (day % 10 === 3) suffix = "rd";
   }
-  const month = parsed.toLocaleString("en-US", { month: "long" });
-  const year = parsed.getFullYear().toString().slice(-2);
-  const time = parsed
+  const month = value.toLocaleString("en-US", { month: "long" });
+  const year = value.getFullYear().toString().slice(-2);
+  const time = value
     .toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })
     .toLowerCase();
   return `Last login: ${day}${suffix} ${month} '${year} ; ${time}`;

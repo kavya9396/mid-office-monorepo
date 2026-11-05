@@ -1,10 +1,5 @@
-import { useCallback } from "react";
 import { InboxScreen } from "@insurance-poc/common/inbox-screen";
-import {
-  useGetGroupInboxQuery,
-  useLazyFetchGroupPoolColumnsQuery,
-  useSaveGroupPoolColumnsMutation,
-} from "../../services/inboxApi";
+import { useGetGroupInboxQuery } from "../../services/inboxApi";
 
 function readQueryError(error: unknown): string {
   if (typeof error === "object" && error !== null) {
@@ -20,16 +15,6 @@ function readQueryError(error: unknown): string {
 
 export function GroupInboxPage() {
   const inbox = useGetGroupInboxQuery();
-  const [loadColumns] = useLazyFetchGroupPoolColumnsQuery();
-  const [saveColumns] = useSaveGroupPoolColumnsMutation();
-  const onLoadColumns = useCallback(
-    (poolKey: string) => loadColumns(poolKey).unwrap(),
-    [loadColumns],
-  );
-  const onSaveColumns = useCallback(
-    (poolKey: string, selectedFields: string[]) => saveColumns({ poolKey, selectedFields }).unwrap(),
-    [saveColumns],
-  );
 
   return (
     <InboxScreen
@@ -40,8 +25,6 @@ export function GroupInboxPage() {
       onRetry={() => {
         void inbox.refetch();
       }}
-      onLoadColumns={onLoadColumns}
-      onSaveColumns={onSaveColumns}
     />
   );
 }

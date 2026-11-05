@@ -1,32 +1,8 @@
 export type InboxFieldValue = string | number | boolean | null;
 
-export const ROLE_POOL_KEYS = [
-  "CVT_POOL",
-  "CPT_POOL",
-  "PIVV_POOL",
-  "PRE_ISSUANCE_SERVICING_POOL",
-  "EXCEPTIONAL_POOL",
-  "SYSTEM_WAIT_POOL_NON_MEDICAL",
-  "AMR_NON_MEDICAL",
-  "RECONSIDERATION_POOL",
-  "CUW",
-  "PRE_LOGIN",
-  "POST_ISSUANCE_SERVICING",
-  "REINSTATEMENT",
-  "MMT",
-  "GRIEVANCE",
-  "GUW",
-  "DVT_POOL",
-  "GOPS_DVT",
-  "DVT_FORMAL",
-  "GUW_FORMAL",
-] as const;
-
-export type RolePoolKey = (typeof ROLE_POOL_KEYS)[number];
-
 export interface InboxCase {
   rowId: string;
-  poolName: RolePoolKey;
+  poolName: string;
   applicationNo: string;
   fields: Record<string, InboxFieldValue>;
 }
@@ -127,9 +103,9 @@ export function mapRoleListPayload(value: unknown): InboxData {
 
 export function casesForTask(data: InboxData, taskKey: string): InboxCase[] {
   if (taskKey === "ALL_CASES") {
-    return ROLE_POOL_KEYS.flatMap((poolName) => data.poolData[poolName] ?? []);
+    return Object.entries(data.poolData).flatMap(([poolName, cases]) =>
+      cases.map((item) => ({ ...item, poolName })),
+    );
   }
-  return ROLE_POOL_KEYS.includes(taskKey as RolePoolKey)
-    ? data.poolData[taskKey as RolePoolKey] ?? []
-    : [];
+  return data.poolData[taskKey] ?? [];
 }

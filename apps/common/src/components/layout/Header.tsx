@@ -13,7 +13,6 @@ import Typography from "@mui/material/Typography";
 import { useLocation, useNavigate } from "react-router-dom";
 import { assignUrl, businessInboxUrl, commonPaths } from "@insurance-poc/routes";
 import {
-  CustomSnackbar,
   CustomTooltip,
   KeyDownArrowIcon,
   KeyLeftArrowIcon,
@@ -197,8 +196,6 @@ function formatDateTime(date: Date): string {
     hour12: false,
   }).format(date);
 }
-
-const LOGOUT_NOTICE_MS = 1800;
 
 function formatSessionTime(remainingMs: number): string {
   const totalSeconds = Math.max(0, Math.ceil(remainingMs / 1000));
@@ -436,10 +433,7 @@ function SessionClock({
 }
 
 function UserMenu({ username }: Readonly<{ username: string }>) {
-  const [logout] = useLogoutMutation();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [loggingOut, setLoggingOut] = useState(false);
-  const [snackbar, setSnackbar] = useState<AuthSnackbarState>(closedAuthSnackbar);
   const [userMenuAnchor, setUserMenuAnchor] = useState<HTMLElement | null>(null);
   const isUserMenuOpen = Boolean(userMenuAnchor);
 
@@ -457,24 +451,9 @@ function UserMenu({ username }: Readonly<{ username: string }>) {
   };
 
   const handleLogout = () => {
-    if (loggingOut) return;
     handleUserMenuClose();
-    setLoggingOut(true);
-    void logout()
-      .unwrap()
-      .then((result) => {
-        const message = apiResultMessage(result.message, "Logged out");
-        setSnackbar(authSnackbar(message, "success"));
-        window.setTimeout(() => {
-          clearSession();
-          assignUrl(commonPaths.login);
-        }, LOGOUT_NOTICE_MS);
-      })
-      .catch((reason: unknown) => {
-        const message = readApiMessage(reason, "Unable to log out.");
-        setSnackbar(authSnackbar(message, "error"));
-        setLoggingOut(false);
-      });
+    clearToken();
+    assignUrl(commonPaths.login);
   };
 
   return (
@@ -567,13 +546,7 @@ function UserMenu({ username }: Readonly<{ username: string }>) {
           </Box>
         </Box>
         <Divider />
-        <Box
-          component="button"
-          type="button"
-          onClick={handleLogout}
-          disabled={loggingOut}
-          sx={menuActionSx}
-        >
+        <Box component="button" type="button" onClick={handleLogout} sx={menuActionSx}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, color: "#9A2529" }}>
             <LogoutIcon />
             <Typography sx={{ color: "#323232", fontSize: 14 }}>Logout</Typography>
@@ -581,12 +554,6 @@ function UserMenu({ username }: Readonly<{ username: string }>) {
         </Box>
       </Menu>
       <BreakTime dialogOpen={dialogOpen} setDialogOpen={setDialogOpen} />
-      <CustomSnackbar
-        open={snackbar.open}
-        message={snackbar.message}
-        severity={snackbar.severity}
-        onClose={() => setSnackbar(closedAuthSnackbar)}
-      />
     </>
   );
 }
@@ -611,7 +578,7 @@ export function Header({
   const visibleRole = showTaskIdentity ? presentText(role) : undefined;
   const visibleApplicationNo = showTaskIdentity ? presentText(applicationNo) : undefined;
   const sessionUser = getSessionUser();
-  const username = sessionUser?.userId ?? "";
+  const username = sessionUser?.displayName ?? sessionUser?.userId ?? "";
 
   const isDrsSubPage =
     normalizedPathname === "/previous-policy" ||

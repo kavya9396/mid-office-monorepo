@@ -29,20 +29,13 @@ export function GroupAppLayout() {
     : readQueryValue(params.get("applicationNo"));
 
   return (
-    <Box
-      sx={{
-        height: "100dvh",
-        display: "flex",
-        flexDirection: "column",
-        overflow: isInbox ? "hidden" : "auto",
-      }}
-    >
+    <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Header
         inboxPath={INBOX_PATH}
         role={role}
         applicationNo={applicationNo}
       />
-      <Box component="main" sx={{ flex: 1, minWidth: 0, minHeight: 0, overflow: isInbox ? "hidden" : "auto" }}>
+      <Box component="main" sx={{ flex: 1, minWidth: 0 }}>
         <Outlet />
       </Box>
     </Box>

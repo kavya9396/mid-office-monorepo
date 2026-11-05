@@ -48,10 +48,10 @@ const inputStyles: TextFieldProps["sx"] = {
       opacity: 1,
     },
 
-    // Keep multiline fields at the same height
+    // Multiline fields start at the standard height and grow with their content
     "&.MuiInputBase-multiline": {
-      height: "40px",
-      padding: "0 14px",
+      height: "auto",
+      minHeight: "40px",
     },
 
     "& .MuiInputBase-inputMultiline": {

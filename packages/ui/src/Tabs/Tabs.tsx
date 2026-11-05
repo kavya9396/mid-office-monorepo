@@ -26,6 +26,7 @@ const containerStyles: SxProps<Theme> = {
   borderRadius: "50px",
   border: "1px solid #E3E3E3",
   width: "fit-content",
+  backgroundColor: "#fff",
 };
 
 const BRAND_ACTIVE_TAB_BG = "#9A2529";

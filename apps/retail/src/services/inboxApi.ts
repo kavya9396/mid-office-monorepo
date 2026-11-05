@@ -37,10 +37,6 @@ export const retailInboxApi = createApi({
         if (mustChangePassword()) {
           return { error: customError("Change your password before loading the Retail inbox.") };
         }
-        const username = getSessionUser()?.userId ?? "";
-        if (username.length === 0) {
-          return { error: customError("Sign in before loading the Retail inbox.") };
-        }
 
         const result = await baseQuery({
           url: landingUrls.retailRoleList,
@@ -129,8 +125,4 @@ export const retailInboxApi = createApi({
   }),
 });
 
-export const {
-  useGetRetailInboxQuery,
-  useLazyFetchRetailPoolColumnsQuery,
-  useSaveRetailPoolColumnsMutation,
-} = retailInboxApi;
+export const { useGetRetailInboxQuery } = retailInboxApi;

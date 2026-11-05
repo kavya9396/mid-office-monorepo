@@ -21,8 +21,6 @@ export function appBasename(base: string): string {
 export const commonPaths = {
   home: "/",
   login: "/login",
-  resetPassword: "/reset-password",
-  changePassword: "/change-password",
 } as const;
 
 const retailBase = appBasename(viteBase.retail);

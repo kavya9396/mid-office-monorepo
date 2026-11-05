@@ -1,5 +1,4 @@
 import { configureStore, createListenerMiddleware } from "@reduxjs/toolkit";
-import { authApi } from "@insurance-poc/common/auth-api";
 import { authReducer, sessionExpired } from "@insurance-poc/utils";
 import { groupDrsApi } from "../services/drsApi";
 import { groupInboxApi } from "../services/inboxApi";
@@ -17,14 +16,13 @@ listenerMiddleware.startListening({
 export const store = configureStore({
   reducer: {
     auth: authReducer,
-    [authApi.reducerPath]: authApi.reducer,
     [groupInboxApi.reducerPath]: groupInboxApi.reducer,
     [groupDrsApi.reducerPath]: groupDrsApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
       .prepend(listenerMiddleware.middleware)
-      .concat(authApi.middleware, groupInboxApi.middleware, groupDrsApi.middleware),
+      .concat(groupInboxApi.middleware, groupDrsApi.middleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

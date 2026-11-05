@@ -19,15 +19,15 @@
       "import": "./src/services/loginService.ts",
       "default": "./src/services/loginService.ts"
     },
-    "./auth-api": {
-      "types": "./src/services/authApi.ts",
-      "import": "./src/services/authApi.ts",
-      "default": "./src/services/authApi.ts"
-    },
     "./decision-bar": {
       "types": "./src/components/DecisionBar.tsx",
       "import": "./src/components/DecisionBar.tsx",
       "default": "./src/components/DecisionBar.tsx"
+    },
+    "./route-scroll-reset": {
+      "types": "./src/components/RouteScrollReset.tsx",
+      "import": "./src/components/RouteScrollReset.tsx",
+      "default": "./src/components/RouteScrollReset.tsx"
     },
     "./detail-card": {
       "types": "./src/components/DetailCard.tsx",
@@ -64,7 +64,17 @@
       "import": "./src/components/Quick Links/AuditTrail.tsx",
       "default": "./src/components/Quick Links/AuditTrail.tsx"
     },
-    "./life-assured": {
+    "./financial": {
+      "types": "./src/modules/Financial/Financial.tsx",
+      "import": "./src/modules/Financial/Financial.tsx",
+      "default": "./src/modules/Financial/Financial.tsx"
+  },
+  "./medical": {
+    "types": "./src/modules/Medical/Medical.tsx",
+    "import": "./src/modules/Medical/Medical.tsx",
+    "default": "./src/modules/Medical/Medical.tsx"
+  },
+  "./life-assured": {
       "types": "./src/components/LifeAssured/LifeAssured.tsx",
       "import": "./src/components/LifeAssured/LifeAssured.tsx",
       "default": "./src/components/LifeAssured/LifeAssured.tsx"
@@ -98,8 +108,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -119,16 +128,10 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^7.0.1",
-    "@testing-library/react": "^16.3.3",
-    "@testing-library/user-event": "^14.6.8",
-    "@vitest/coverage-v8": "^5.0.5",
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react": "^4.5.2",
-    "happy-dom": "^21.0.4",
     "typescript": "^5.8.3",
-    "vite": "^6.3.5",
-    "vitest": "^5.0.5"
+    "vite": "^6.3.5"
   }
 }

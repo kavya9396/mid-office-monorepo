@@ -52,8 +52,8 @@ export function DecisionBar({
       <Typography
         sx={{
           pr: 2,
-          fontSize: 13,
-          fontWeight: 700,
+          fontSize: 12,
+          fontWeight: 800,
           color: (theme) => `${theme.palette.primary.main}`,
           borderRight: `1px solid ${colors.borderBrand}`,
         }}

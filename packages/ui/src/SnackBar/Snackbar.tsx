@@ -24,10 +24,6 @@ const CustomSnackbar = ({
         vertical: "top",
         horizontal: "center",
       }}
-      sx={{
-        // Above MUI Modal/Dialog (1300) so messages stay visible over popups.
-        zIndex: (theme) => theme.zIndex.modal + 100,
-      }}
     >
       <Alert
         onClose={onClose}

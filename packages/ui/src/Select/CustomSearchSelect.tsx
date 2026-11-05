@@ -75,6 +75,7 @@ export default function CustomSearchSelect({
                 fullWidth={fullWidth}
                 size="small"
                 openOnFocus
+                blurOnSelect
                 noOptionsText={noOptionsText}
                 slotProps={{
                     paper: { sx: { mt: 0.5 } },
