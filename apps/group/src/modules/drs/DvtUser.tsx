@@ -292,8 +292,8 @@ const DvtUser = () => {
       <LifeAssured
         applicants={applicants}
         onEdit={handleApplicantAction("Edit")}
-        onViewMedical={handleApplicantAction("View Medical")}
-        onViewFinancial={handleApplicantAction("View Financial")}
+        onViewMedical={openMedical}
+        onViewFinancial={openFinancial}
       />
 
       <DecisionSection
@@ -312,7 +312,6 @@ const DvtUser = () => {
           </Typography>
         }
         maxWidth="lg"
-        contentSx={{ p: { xs: 1, sm: 1.5 } }}
       >
         <DecisionComparisonTable
           headers={{ label: "BRE", initial: "Initial BRE", final: "Final BRE" }}
