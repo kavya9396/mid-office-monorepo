@@ -37,6 +37,10 @@ export const groupInboxApi = createApi({
         if (mustChangePassword()) {
           return { error: customError("Change your password before loading the Group inbox.") };
         }
+        const username = getSessionUser()?.userId ?? "";
+        if (username.length === 0) {
+          return { error: customError("Sign in before loading the Group inbox.") };
+        }
 
         const result = await baseQuery({
           url: landingUrls.groupRoleList,
@@ -125,4 +129,8 @@ export const groupInboxApi = createApi({
   }),
 });
 
-export const { useGetGroupInboxQuery } = groupInboxApi;
+export const {
+  useGetGroupInboxQuery,
+  useLazyFetchGroupPoolColumnsQuery,
+  useSaveGroupPoolColumnsMutation,
+} = groupInboxApi;

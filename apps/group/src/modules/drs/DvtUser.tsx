@@ -208,7 +208,23 @@ const DvtUser = () => {
 
   return (
     <Box sx={{ position: "relative", minHeight: "100%", p:2, display: "flex", gap:2, flexDirection: "column" }}>
-      {detailCards}
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+          gap: 2,
+        }}
+      >
+        {cardDetails.map((card) => (
+          <DetailCard
+            key={card.type}
+            title={CARD_TITLES[card.type]}
+            attributes={card.attributes}
+            expandedAttributes={card.expandedAttributes}
+            tables={card.tables}
+          />
+        ))}
+      </Box>
 
       <QuickLinksModule
         items={quickLinksConfig.items}
@@ -276,8 +292,8 @@ const DvtUser = () => {
       <LifeAssured
         applicants={applicants}
         onEdit={handleApplicantAction("Edit")}
-        onViewMedical={openMedical}
-        onViewFinancial={openFinancial}
+        onViewMedical={handleApplicantAction("View Medical")}
+        onViewFinancial={handleApplicantAction("View Financial")}
       />
 
       <DecisionSection
@@ -290,12 +306,13 @@ const DvtUser = () => {
         title={
           <Typography
             component="span"
-            sx={{ fontSize: 16, fontWeight: 700 }}
+            sx={{ fontSize: 12, fontWeight: 800 }}
           >
             BRE Decision
           </Typography>
         }
         maxWidth="lg"
+        contentSx={{ p: { xs: 1, sm: 1.5 } }}
       >
         <DecisionComparisonTable
           headers={{ label: "BRE", initial: "Initial BRE", final: "Final BRE" }}

@@ -137,7 +137,7 @@ export function DetailCard({
             >
               <Typography
                 component="span"
-                sx={{ fontWeight: 700 }}
+                sx={{ fontSize: 12, fontWeight: 800 }}
               >
                 {dialogTitle ?? title}
               </Typography>

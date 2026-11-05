@@ -12,8 +12,25 @@ import {
 import changePasswordMock from "../modules/login/mock/changePassword.json";
 import forgotPasswordMock from "../modules/login/mock/forgotPassword.json";
 import loginMock from "../modules/login/mock/login.json";
+import logoutMock from "../modules/login/mock/logout.json";
+import resetPasswordMock from "../modules/login/mock/resetPassword.json";
 
 export type BusinessType = "RETAIL" | "GROUP";
+
+/**
+ * Mock-only in-memory flag so first-login → change-password → second-login works
+ * without a server. Never written to sessionStorage; real API uses server flags.
+ */
+const mockPasswordChangedUserIds = new Set<string>();
+
+function markMockPasswordChanged(userId: string): void {
+  const normalized = userId.trim();
+  if (normalized.length > 0) mockPasswordChangedUserIds.add(normalized);
+}
+
+function hasMockPasswordChanged(userId: string): boolean {
+  return mockPasswordChangedUserIds.has(userId.trim());
+}
 
 export interface AuthenticatedUser {
   userId: string;
@@ -27,6 +44,9 @@ export type LoginSuccess = {
   message: string;
   accessToken: string;
   refreshToken: string;
+  firstLogin: boolean;
+  mustChangePassword: boolean;
+  lastLoginAt: string;
   businessType: BusinessType;
   user: AuthenticatedUser;
 };
@@ -45,7 +65,47 @@ export type LoginRequest = {
   businessType: BusinessType;
 };
 
-const LOGIN_PATH = "/v1/auth/login";
+/** Wire shape shared by mock JSON and the real Apigee login API. */
+export type LoginApiEnvelope = {
+  response_code: number;
+  error: boolean;
+  message: string;
+  data: {
+    token: string;
+    expiresIn?: number;
+    refreshToken?: string | null;
+    refreshExpiresIn?: number;
+    username: string;
+    displayName?: string;
+    firstLogin?: boolean;
+    firstLoginAt?: string | null;
+    lastLoginAt?: string | null;
+    mustChangePassword?: boolean;
+    roles?: string[];
+    authorizedBusinessTypes?: BusinessType[];
+  } | null;
+};
+
+export type AuthActionResponse = {
+  response_code: number;
+  error: boolean;
+  message: string;
+  data: null;
+};
+
+export type ForgotPasswordRequest = {
+  userId: string;
+};
+
+export type ResetPasswordRequest = {
+  token: string;
+  newPassword: string;
+};
+
+export type ChangePasswordRequest = {
+  oldPassword: string;
+  newPassword: string;
+};
 
 function wait(ms: number): Promise<void> {
   return new Promise((resolve) => {
@@ -65,10 +125,6 @@ function readText(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
-function readEnv(value: unknown): string {
-  return typeof value === "string" ? value.trim() : "";
-}
-
 function failure(message: string): LoginResult {
   return { status: "FAILURE", message, user: null };
 }
@@ -76,43 +132,85 @@ function failure(message: string): LoginResult {
 function messageFromPayload(value: unknown): string {
   if (!isRecord(value)) return "";
 
-  const direct = [
-    value.message,
-    value.errorMessage,
-    value.error_description,
-    value.error,
-  ].map(readText).find((item) => item.length > 0);
+  const direct = [value.message, value.errorMessage, value.error_description, value.error]
+    .map(readText)
+    .find((item) => item.length > 0);
   if (direct) return direct;
 
   if (isRecord(value.error)) {
     const nested = messageFromPayload(value.error);
     if (nested.length > 0) return nested;
   }
-  if (isRecord(value.data)) {
-    return messageFromPayload(value.data);
-  }
-  if (isRecord(value.fault)) {
-    return readText(value.fault.faultstring);
-  }
+  if (isRecord(value.data)) return messageFromPayload(value.data);
+  if (isRecord(value.fault)) return readText(value.fault.faultstring);
   return "";
 }
 
-async function readApiFailure(response: Response): Promise<LoginResult> {
-  const fallback = "Unable to sign in.";
-  try {
-    const text = (await response.text()).trim();
-    if (text.length === 0) return failure(fallback);
-    if (!text.startsWith("{") && !text.startsWith("[")) return failure(text);
-
-    const payload: unknown = JSON.parse(text);
-    const message = messageFromPayload(payload);
-    return failure(message.length > 0 ? message : fallback);
-  } catch {
-    return failure(fallback);
-  }
+function isFailedAuthEnvelope(error: unknown, responseCode: number): boolean {
+  if (error === true) return true;
+  if (responseCode === 0) return false;
+  return responseCode < 200 || responseCode >= 300;
 }
 
-function readLoginResponse(value: unknown, businessType: BusinessType): LoginSuccess {
+function readStringRoles(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((role): role is string => typeof role === "string");
+}
+
+function readAuthorizedBusinessTypes(
+  value: unknown,
+  fallback: BusinessType,
+): BusinessType[] {
+  if (!Array.isArray(value)) return [fallback];
+  const fromApi = value.filter(
+    (item): item is BusinessType => typeof item === "string" && isBusinessType(item),
+  );
+  return fromApi.length > 0 ? fromApi : [fallback];
+}
+
+function buildLoginSuccess(
+  data: Record<string, unknown>,
+  message: string,
+  businessType: BusinessType,
+): LoginResult {
+  const accessToken = readText(data.token);
+  const username = readText(data.username);
+  if (accessToken.length === 0 || username.length === 0) {
+    throw new Error("Authentication token was not returned.");
+  }
+
+  const authorizedBusinessTypes = readAuthorizedBusinessTypes(
+    data.authorizedBusinessTypes,
+    businessType,
+  );
+  if (!authorizedBusinessTypes.includes(businessType)) {
+    authorizedBusinessTypes.push(businessType);
+  }
+
+  return {
+    status: "SUCCESS",
+    message: message.length > 0 ? message : "Login successful",
+    accessToken,
+    refreshToken: readText(data.refreshToken),
+    firstLogin: data.firstLogin === true,
+    mustChangePassword: data.mustChangePassword === true,
+    lastLoginAt: readText(data.lastLoginAt),
+    businessType,
+    user: {
+      userId: username,
+      displayName: readText(data.displayName) || username,
+      authorizedBusinessTypes,
+      roles: readStringRoles(data.roles),
+    },
+  };
+}
+
+/**
+ * Single parser for mock and real login responses.
+ * Expected wire shape:
+ * { response_code, error, message, data: { token, username, refreshToken?, mustChangePassword?, roles?, ... } }
+ */
+function readLoginResponse(value: unknown, businessType: BusinessType): LoginResult {
   if (!isRecord(value)) {
     throw new Error("Login response is not in the expected format.");
   }
@@ -451,57 +549,20 @@ function authorizeFromSession(
     return failure("Session expired. Please sign in again.");
   }
 
-  const displayName = readText(value.displayName);
   return {
     status: "SUCCESS",
-    message: "Login successful.",
-    accessToken,
-    refreshToken,
+    message: "Authorized",
+    accessToken: token,
+    refreshToken: getRefreshToken()?.trim() ?? "",
+    firstLogin: false,
+    mustChangePassword: false,
+    lastLoginAt: getLastLoginAt()?.trim() ?? "",
     businessType,
     user: {
-      userId,
-      displayName: displayName.length > 0 ? displayName : userId,
+      userId: user.userId,
+      displayName: user.displayName,
       authorizedBusinessTypes: [businessType],
       roles: [],
     },
   };
-}
-
-async function realLogin(request: LoginRequest): Promise<LoginResult> {
-  const response = await fetch(loginUrl(), {
-    method: "POST",
-    headers: {
-      Authorization: basicAuthorization(),
-      Accept: "application/json",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      userId: request.userId,
-      password: request.password,
-      businessType: request.businessType,
-    }),
-  });
-
-  if (!response.ok) {
-    return readApiFailure(response);
-  }
-
-  const payload: unknown = await response.json();
-  return readLoginResponse(payload, request.businessType);
-}
-
-export async function fetchLogin(request: LoginRequest): Promise<LoginResult> {
-  if (useMock) {
-    await wait(200);
-    return mockLogin(request.userId, request.businessType);
-  }
-  return realLogin(request);
-}
-
-export async function authorizeBusiness(
-  userId: string,
-  businessType: BusinessType,
-): Promise<LoginResult> {
-  await wait(200);
-  return mockLogin(userId, businessType);
 }
