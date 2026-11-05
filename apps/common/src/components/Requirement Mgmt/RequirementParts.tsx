@@ -42,11 +42,11 @@ export function RequirementHeader({ title, headerActions, addButton }: Readonly<
         justifyContent: "space-between",
         gap: 1,
         borderBottom: `1px solid ${colors.borderBrand}`,
-        bgcolor: colors.background,
+        bgcolor: colors.white,
       }}
     >
       {typeof title === "string" ? (
-        <Typography sx={{ fontSize: 13, fontWeight: 800, color: colors.primary }}>{title}</Typography>
+        <Typography sx={{ fontSize: 12, fontWeight: 800, color: colors.primary }}>{title}</Typography>
       ) : (
         title
       )}
