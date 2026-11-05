@@ -1,30 +1,34 @@
 import type { FieldData, LifeAssuredApplicant } from "@insurance-poc/common/life-assured";
 
 type Address = {
-  type: string;
   addressLine1: string;
   addressLine2: string;
   addressLine3: string;
   landmark: string;
   city: string;
   state: string;
-  pinCode: string;
-  residingCountry: string;
+  country: string;
+  pincode: string;
+  topCity?: string;
+  negativePinCode?: string;
 };
 
 type SummaryMember = {
   memberType: string;
   proposerSummary: Record<string, string | number | boolean | { years: number; days?: number } | null>;
   kycDetails: Record<string, string>;
-  address: Address[];
+  communicationAddressDetails?: Address;
+  permanentAddressDetails?: Address;
   contactDetails: Record<string, string>;
-  healthDetail: { height: string; weight: string; bmi: string };
+  healthDetail: { height: string; weight: string; bmi: string; hazardousOccupation?: string };
   nominee: {
     firstName: string;
     lastName: string;
     dob: string;
     gender: string;
     percentage: number;
+    relationWithLA?: string;
+    relationship?: string;
     proposerNomineeRelation?: string;
     accountNumber?: string;
     ifsc?: string;
@@ -88,8 +92,8 @@ const addressFields = (address?: Address): FieldData[] => [
   { label: "Landmark", value: address?.landmark },
   { label: "City", value: address?.city },
   { label: "State", value: address?.state },
-  { label: "Country", value: address?.residingCountry },
-  { label: "Pincode", value: address?.pinCode },
+  { label: "Country", value: address?.country },
+  { label: "Pincode", value: address?.pincode },
 ];
 
 const fullName = (first: string, last: string) => [first, last].filter(Boolean).join(" ") || "-";
@@ -109,6 +113,7 @@ const toApplicant = (
   const kyc = member.kycDetails;
   const contact = member.contactDetails;
   const years = (summary.age as { years: number } | null)?.years;
+  const communicationAddress = member.communicationAddressDetails;
 
   return {
     id: member.memberType,
@@ -149,12 +154,8 @@ const toApplicant = (
       { label: "PEP", value: kyc.pep },
       { label: "Criminal Proceedings", value: kyc.criminalProceedings },
     ],
-    communicationAddress: addressFields(
-      member.address.find((a) => a.type.trim().toLowerCase() === "communication"),
-    ),
-    permanentAddress: addressFields(
-      member.address.find((a) => a.type.trim().toLowerCase() === "permanent"),
-    ),
+    communicationAddress: addressFields(communicationAddress),
+    permanentAddress: addressFields(member.permanentAddressDetails),
     contactDetails: [
       { label: "Mobile No.", value: contact.mobileNo },
       { label: "Email ID", value: contact.emailId },
@@ -163,7 +164,7 @@ const toApplicant = (
       { label: "Landline Number", value: contact.landlineNo },
       { label: "Email Pref", value: contact.emailPref },
       { label: "SMS Pref", value: contact.smsPref },
-      { label: "Negative Pincode", value: undefined },
+      { label: "Negative Pincode", value: communicationAddress?.negativePinCode },
     ],
     productFields: [
       { label: "Product Code", value: productDetail.code },
@@ -175,7 +176,7 @@ const toApplicant = (
       nomineeName: fullName(n.firstName, n.lastName),
       nomineeDOB: formatDate(n.dob) || "-",
       gender: n.gender || "-",
-      relationship: "-",
+      relationship: n.proposerNomineeRelation || n.relationWithLA || n.relationship || "-",
       sharePercentage: n.percentage,
       isLASame: "-",
       relationShipWithJL: "-",
@@ -211,7 +212,7 @@ const toApplicant = (
       { label: "Alcohol", value: undefined },
       { label: "Any Narcotics Question ticked Positive", value: undefined },
       { label: "Any Medical Question ticked Positive", value: undefined },
-      { label: "Is Occupation Hazardous?", value: undefined },
+      { label: "Is Occupation Hazardous?", value: member.healthDetail.hazardousOccupation },
       { label: "Illness Impairment", value: undefined },
       { label: "Is Family Medical History? if yes please provide details", value: undefined },
     ],
