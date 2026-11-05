@@ -1112,38 +1112,89 @@
     .counter-offer-table input[disabled] { background: #f1f1f1; color: #6b7280; }
     .counter-offer-title { margin: 16px 0 8px; color: #5b261c; font-size: 14px; font-weight: 800; }
     .dialog-save { display: block; min-width: 150px; margin: 12px auto 2px; }
-    .reinsurer-section { margin-top: 16px; border-top: 1px solid #eadfd9; padding-top: 14px; }
-    .reinsurer-section h3 { margin: 0 0 10px; color: #302a27; font-size: 15px; font-weight: 600; }
-    .reinsurer-select-panel { padding: 14px 12px 12px; border-radius: 0 0 12px 12px; background: #f5f5f5; }
-    .reinsurer-table { width: 100%; table-layout: fixed; border-collapse: collapse; background: #fff; }
-    .reinsurer-table th, .reinsurer-table td { padding: 8px 12px; border: 1px solid #ded9d6; text-align: left; overflow-wrap: anywhere; }
+    .reinsurer-section { margin-top: 16px; padding: 20px; border: 1px solid #eadfd9; border-radius: 14px; background: #fffaf6; outline: none; }
+    .reinsurer-section h3 { margin: 0 0 16px; color: #5b261c; font-size: 15px; font-weight: 800; }
+    .reinsurer-grid { display: grid; grid-template-columns: 1.1fr 1.9fr; gap: 24px; align-items: start; }
+    .reinsurer-select-panel { padding: 16px; border: 1px solid #ddd5d0; border-radius: 14px; background: #fff; }
+    .reinsurer-select-panel h4 { margin: 0 0 12px; color: #302a27; font-size: 14px; font-weight: 700; }
+    .reinsurer-table { width: 100%; table-layout: fixed; border-collapse: collapse; background: #fff; font-size: 11px; }
+    .reinsurer-table th, .reinsurer-table td { padding: 8px 10px; border: 1px solid #ded9d6; text-align: left; overflow-wrap: anywhere; }
     .reinsurer-table th { background: #ffead7; color: #5b261c; font-weight: 800; }
-    .reinsurer-table th:first-child { width: 14%; }
+    .reinsurer-table td:first-child { font-weight: 600; }
+    .reinsurer-table th:first-child { width: 16%; }
     .reinsurer-table th:nth-child(2) { width: 38%; }
-    .reinsurer-table th:last-child { width: 48%; }
+    .reinsurer-table th:last-child { width: 46%; }
     .reinsurer-table .mui-select-trigger { width: 100%; min-width: 0; }
-    .reinsurer-table select, .reinsurer-section textarea { width: 100%; min-height: 34px; padding: 7px 9px; border: 1px solid #d9d1cc; border-radius: 8px; background: #fff; color: #302a27; }
-    .assignment-card { display: block; width: 100%; margin-top: 24px; overflow: hidden; border: 1px solid #ddd5d0; border-radius: 18px; }
-    .assignment-title { margin: 0; padding: 14px 36px; background: #e95d08; color: #fff; font-size: 14px; font-weight: 800; }
+    .assignment-card { display: block; width: 100%; overflow: hidden; border: 1px solid #ddd5d0; border-radius: 14px; background: #fff; }
+    .assignment-title { margin: 0; padding: 12px 24px; background: #e95d08; color: #fff; font-size: 14px; font-weight: 800; }
     .assignment-table { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 12px; }
-    .assignment-table th, .assignment-table td { height: 42px; padding: 7px 10px; border-bottom: 1px solid #ded9d6; text-align: center; }
-    .assignment-table th { height: 62px; background: #ffead7; color: #302a27; font-size: 13px; font-weight: 700; vertical-align: middle; }
-    .assignment-table th:first-child, .assignment-table td:first-child { text-align: left; }
-    .assignment-table th:first-child, .assignment-table td:first-child { width: 26%; }
-    .assignment-table th:not(:first-child), .assignment-table td:not(:first-child) { width: 37%; }
+    .assignment-table th, .assignment-table td { padding: 10px 12px; border-bottom: 1px solid #ded9d6; text-align: center; }
+    .assignment-table th { background: #ffead7; color: #302a27; font-weight: 700; vertical-align: middle; }
+    .assignment-table th:first-child, .assignment-table td:first-child { width: 30%; text-align: left; }
+    .assignment-table th:not(:first-child), .assignment-table td:not(:first-child) { width: 35%; }
     .assignment-table tr:last-child td { border-bottom: 0; }
-    .assignment-table input { width: 22px; height: 22px; accent-color: #e95d08; cursor: pointer; }
-    .select-all { display: block; margin: 3px auto 0; padding: 0; border: 0; outline: 0; background: transparent; color: #e95d08; font: inherit; font-size: 12px; font-weight: 400; line-height: 1.2; text-decoration: underline; cursor: pointer; }
+    .assignment-table input { width: 18px; height: 18px; accent-color: #e95d08; cursor: pointer; }
+    .select-all { display: block; margin: 3px auto 0; padding: 0; border: 0; outline: 0; background: transparent; color: #e95d08; font: inherit; font-size: 11px; font-weight: 400; line-height: 1.2; text-decoration: underline; cursor: pointer; }
     .select-all:hover { color: #b7460c; background: transparent; }
     .upload-disabled { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 82px; margin-top: 0; border-radius: 0 0 18px 18px; background: #f0f0f0; color: #6c6c6c; cursor: not-allowed; }
     .upload-disabled b { display: grid; place-items: center; width: 27px; height: 27px; border-radius: 50%; background: #e3e3e3; font-size: 19px; line-height: 1; }
-    .reinsurer-section textarea { min-height: 128px; margin-top: 8px; resize: vertical; }
-    .reinsurer-actions { display: flex; gap: 22px; margin-top: 18px; }
-    .reinsurer-actions button { min-width: 260px; min-height: 48px; border-radius: 28px; }
-    .reinsurer-actions .contained { background: #aa262a; }
-    .reinsurer-actions .contained:hover { background: #8f1f24; }
+    .reinsurer-actions { display: flex; gap: 20px; margin-top: 20px; }
+    .reinsurer-actions .outline-pill { min-width: 220px; padding: 9px 28px; border: 1px solid #aa262a; border-radius: 28px; background: transparent; color: #aa262a; font-size: 12px; font-weight: 700; }
+    .reinsurer-actions .outline-pill:hover { border-color: #8f1f24; background: #fff2f2; color: #aa262a; }
     .email-viewer { display: grid; place-items: center; min-height: 430px; border-radius: 10px; background: #d9d9d9; color: #8c8c8c; font-size: 26px; text-transform: uppercase; }
-    @media (max-width: 760px) { .reinsurer-table th, .reinsurer-table td { padding: 7px 6px; } .reinsurer-actions { flex-wrap: wrap; gap: 10px; } .reinsurer-actions button { min-width: 0; flex: 1 1 200px; } }
+    @media (max-width: 899px) { .reinsurer-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 760px) { .reinsurer-table th, .reinsurer-table td { padding: 7px 6px; } .reinsurer-actions { flex-wrap: wrap; gap: 10px; } .reinsurer-actions .outline-pill { min-width: 0; flex: 1 1 200px; } }
+
+    /* Case UW Decision panel + decision dialog (GuwUwPanel.tsx) */
+    .uw-case-label { display: block; padding-right: 70px; }
+    .uw-select-row { display: flex; align-items: center; gap: 8px; }
+    .uw-select-cell { display: block; flex: 1; min-width: 0; }
+    .uw-select-main .mui-select-trigger { border: 2px solid #e45f14; padding-left: 9px; }
+    .uw-select-main .mui-select-trigger:hover, .uw-select-main .mui-select-trigger[aria-expanded="true"], .uw-select-main .mui-select-trigger:focus-visible { border-color: #e45f14; }
+    .uw-eye-btn { display: grid; place-items: center; flex: none; width: 30px; min-width: 30px; height: 28px; padding: 4px; border: 1px solid #e45f14; border-radius: 6px; background: #fff; cursor: pointer; }
+    .uw-eye-btn:hover { background: rgba(228, 95, 20, .06); }
+    .uw-eye-btn svg { display: block; width: 20px; height: 20px; }
+    .uw-actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; padding-right: 70px; }
+    .outline-action { min-height: 28px; padding: 4px 14px; border: 1px solid #e45f14; border-radius: 6px; background: transparent; color: #e45f14; font-size: 11px; font-weight: 700; }
+    .outline-action:hover { border-color: #c94f0d; background: rgba(228, 95, 20, .06); }
+    .uw-step-actions { display: flex; justify-content: flex-end; gap: 16px; margin-top: 24px; }
+    .uw-step-actions .contained { min-height: 36px; padding: 6px 40px; }
+    .uw-back-btn { min-height: 36px; padding: 6px 32px; border: 1px solid #eadfd9; border-radius: 6px; background: transparent; color: #7b716c; font-size: 11px; font-weight: 700; }
+    .uw-referral-block { grid-column: 1 / -1; min-width: 0; margin-top: 2px; }
+    .uw-referral-table { width: 100%; border-collapse: collapse; background: #fff; font-size: 11px; }
+    .uw-referral-table th, .uw-referral-table td { padding: 6px 8px; border: 1px solid #ded9d6; text-align: left; vertical-align: middle; }
+    .uw-referral-table th { padding: 8px 12px; background: #ffead7; color: #5b261c; font-weight: 800; }
+    .uw-referral-table th.center, .uw-referral-table td.center { text-align: center; }
+    .uw-referral-table td.refer-to { padding: 8px 12px; font-weight: 600; }
+    .uw-referral-table tr.selected td { background: #fffcf8; }
+    .uw-referral-table tr.disabled td { background: #f9f9f9; color: #888; }
+    .uw-referral-table input[type="checkbox"] { transform: scale(1.1); cursor: pointer; }
+    .uw-referral-table input[type="checkbox"]:disabled { cursor: not-allowed; }
+    .uw-ref-edit { min-width: 60px; padding: 4px 12px; border: 1px solid #ddd; border-radius: 6px; background: transparent; color: #aaa; font-size: 11px; }
+    .uw-ref-edit:not(:disabled) { border-color: #e45f14; color: #e45f14; cursor: pointer; }
+    .uw-ref-edit:not(:disabled):hover { border-color: #c94f0d; background: #fff2e8; }
+    .uw-ref-edit.open:not(:disabled) { background: #e45f14; color: #fff; }
+    .uw-ref-edit.open:not(:disabled):hover { background: #c94f0d; }
+    .uw-dialog-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px 10px; margin-top: 6px; }
+    .uw-details { display: contents; }
+    .uw-recon-card { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px 10px; margin-top: 18px; padding: 16px; border: 1px solid #eadfd9; border-radius: 10px; background: #fcfaf9; }
+    .uw-recon-card .span-3 { grid-column: span 3; }
+    .uw-view-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px 10px; }
+    .uw-view-grid.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .uw-view-label { display: block; margin-bottom: 3px; color: #7b716c; font-size: 11px; font-weight: 600; }
+    .uw-view-value { display: block; color: #302a27; font-size: 12px; font-weight: 700; white-space: pre-wrap; word-break: break-word; }
+    .uw-view-card { margin-top: 24px; padding: 16px; border: 1px solid #eadfd9; border-radius: 10px; background: #fcfaf9; }
+    .uw-view-section { margin-top: 24px; }
+    .uw-view-section h3 { margin: 0 0 12px; color: #5b261c; font-size: 14px; font-weight: 800; }
+    .uw-view-section h3.sub { margin-top: 16px; }
+    .uw-view-table-wrap { overflow-x: auto; border: 1px solid #eadfd9; border-radius: 10px; }
+    .uw-view-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .uw-view-table.wide { min-width: 860px; }
+    .uw-view-table th { padding: 8px 10px; border-right: 1px solid #eadfd9; border-bottom: 1px solid #eadfd9; background: #ffead7; color: #5b261c; font-weight: 800; text-align: left; }
+    .uw-view-table td { padding: 8px 10px; border-right: 1px solid #eadfd9; border-bottom: 1px solid #eadfd9; }
+    .uw-view-table th:last-child, .uw-view-table td:last-child { border-right: 0; }
+    .uw-view-table .center { text-align: center; }
+    @media (max-width: 899px) { .uw-dialog-grid, .uw-view-grid, .uw-view-grid.four, .uw-recon-card { grid-template-columns: 1fr; } .uw-recon-card .span-3 { grid-column: auto; } }
 
     .requirement-dialog .dialog-title {
       background: #fff3e9;
@@ -2489,20 +2540,22 @@
         <div class="uw-readonly">
           <div><b>BRE Overall Decision</b><span id="financial-decision">-</span></div>
           <div><b>BRE Overall Remarks</b><span id="medical-decision">-</span></div>
-        </div><label><span class="field-label">Case UW Decision</span><select class="select" id="uw-select" required>
-            <option value="" disabled selected>Select</option>
-            <option value="STD">Standard</option>
-            <option value="BOR_STD">Borderline Standard</option>
-            <option value="REJ">Reject</option>
-            <option value="DC">Decline</option>
-            <option value="POSTP">Postpone</option>
-            <option value="CO">Counter Offer</option>
-            <option value="EP">Extra Premium</option>
-            <option value="HOLD">Hold</option>
-            <option value="REFERRAL">Refer To</option>
-            <option value="AMR">Raise Requirement</option>
-            <option value="APPROVER">Refer to Approver</option>
-          </select></label>
+        </div><label class="uw-case-label"><span class="field-label">Case UW Decision</span><span class="uw-select-row uw-select-main"><span class="uw-select-cell"><select class="select" id="uw-select" required>
+              <option value="" disabled selected>Select</option>
+              <option value="STD">Standard</option>
+              <option value="BOR_STD">Borderline Standard</option>
+              <option value="REJ">Reject</option>
+              <option value="DC">Decline</option>
+              <option value="POSTP">Postpone</option>
+              <option value="CO">Counter Offer</option>
+              <option value="EP">Extra Premium</option>
+            </select></span><button id="uw-view-main" class="uw-eye-btn" type="button" aria-label="View decision details" title="View decision details" hidden><svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M1.5 10s3.1-5 8.5-5 8.5 5 8.5 5-3.1 5-8.5 5-8.5-5-8.5-5Z" stroke="#e45f14" stroke-width="1.5"/><circle cx="10" cy="10" r="2.4" stroke="#e45f14" stroke-width="1.5"/></svg></button></span></label>
+        <div class="uw-actions">
+          <button class="outline-action" type="button" data-uw-action="REFERRAL">Raise Referral</button>
+          <button class="outline-action" type="button" data-uw-action="HOLD">Hold</button>
+          <button class="outline-action" type="button" data-uw-action="APPROVER">Counter Sign</button>
+          <button class="contained" type="button" style="padding: 6px 32px">Submit</button>
+        </div>
       </div>
     </section>
   </main>
@@ -2536,6 +2589,24 @@
               fill="currentColor" />
           </svg></button></div>
       <div id="dialog-content" class="dialog-content"></div>
+    </div>
+  </div>
+  <div id="view-modal-root" class="modal-backdrop" style="z-index: 210" hidden>
+    <div id="view-dialog" class="dialog" role="dialog" aria-modal="true" aria-label="Case UW Decision Details">
+      <div class="dialog-title"><span>Case UW Decision Details</span><button id="view-dialog-close" class="dialog-close"
+          type="button" aria-label="Close dialog"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+            aria-hidden="true">
+            <path
+              d="M12 22.75C6.07 22.75 1.25 17.93 1.25 12C1.25 6.07 6.07 1.25 12 1.25C17.93 1.25 22.75 6.07 22.75 12C22.75 17.93 17.93 22.75 12 22.75ZM12 2.75C6.9 2.75 2.75 6.9 2.75 12C2.75 17.1 6.9 21.25 12 21.25C17.1 21.25 21.25 17.1 21.25 12C21.25 6.9 17.1 2.75 12 2.75Z"
+              fill="currentColor" />
+            <path
+              d="M9.17 15.58C8.98 15.58 8.79 15.51 8.64 15.36C8.35 15.07 8.35 14.59 8.64 14.3L14.3 8.64C14.59 8.35 15.07 8.35 15.36 8.64C15.65 8.93 15.65 9.41 15.36 9.7L9.7 15.36C9.56 15.51 9.36 15.58 9.17 15.58Z"
+              fill="currentColor" />
+            <path
+              d="M14.83 15.58C14.64 15.58 14.45 15.51 14.3 15.36L8.64 9.7C8.35 9.41 8.35 8.93 8.64 8.64C8.93 8.35 9.41 8.35 9.7 8.64L15.36 14.3C15.65 14.59 15.65 15.07 15.36 15.36C15.21 15.51 15.02 15.58 14.83 15.58Z"
+              fill="currentColor" />
+          </svg></button></div>
+      <div id="view-dialog-content" class="dialog-content"></div>
     </div>
   </div>
   <div id="toast" class="toast" role="status" hidden></div>
@@ -2793,7 +2864,7 @@
     function closeDialog() { if (returnToRequirements) { returnToRequirements = false; openRequirements(); return; } closeSelectMenu(); $("#modal-root").hidden = true; document.body.style.overflow = ""; }
     $("#dialog-close").addEventListener("click", closeDialog);
     $("#modal-root").addEventListener("click", (event) => { if (event.target.id === "modal-root") closeDialog(); });
-    document.addEventListener("keydown", (event) => { if (event.key === "Escape") { if (activeSelectMenu) { closeSelectMenu(); return; } closeDialog(); $("#quick-panel").hidden = true; $("#quick-fab").classList.remove("open"); } });
+    document.addEventListener("keydown", (event) => { if (event.key === "Escape") { if (!$("#view-modal-root").hidden) { closeViewDialog(); return; } if (activeSelectMenu) { closeSelectMenu(); return; } closeDialog(); $("#quick-panel").hidden = true; $("#quick-fab").classList.remove("open"); } });
     enhanceSelects(document);
 
     const grievanceState = { selected: new Set(), remarks: {} };
@@ -3172,24 +3243,25 @@
       });
     }
     function reinsurerHtml() {
-      return `<div class="reinsurer-layout"><div class="reinsurer-section">
-        <div class="reinsurer-select-panel"><h3>Reinsurer Details</h3>
-          <table class="reinsurer-table" aria-label="Reinsurer Details"><thead><tr>
-            <th scope="col">Code</th><th scope="col">Reinsurer Name - System</th><th scope="col">Reinsurer Name - UW</th>
-          </tr></thead><tbody>${reinsurerRows.map((row, index) => `<tr>
-            <td>${escapeHtml(row.code)}</td><td>${escapeHtml(row.systemName)}</td>
-            <td><select class="select" id="reinsurer-uw-${index}" data-reinsurer-row="${index}" aria-label="Reinsurer Name - UW for ${escapeHtml(row.code)}">
-              <option value="">Select</option>${reinsurerOptions.filter(name => name.toLowerCase() !== row.systemName.toLowerCase()).map(name => `<option value="${escapeHtml(name)}" ${row.uwName === name ? "selected" : ""}>${escapeHtml(name)}</option>`).join("")}
-            </select></td>
-          </tr>`).join("")}</tbody></table>
+      return `<div id="reinsurer-sheet" class="reinsurer-section" tabindex="-1"><h3>Reinsurer Referral Sheet</h3>
+        <div class="reinsurer-grid">
+          <div class="reinsurer-select-panel"><h4>Reinsurer Details</h4>
+            <table class="reinsurer-table" aria-label="Reinsurer Details"><thead><tr>
+              <th scope="col">Code</th><th scope="col">Reinsurer Name - System</th><th scope="col">Reinsurer Name - UW</th>
+            </tr></thead><tbody>${reinsurerRows.map((row, index) => `<tr>
+              <td>${escapeHtml(row.code)}</td><td>${escapeHtml(row.systemName)}</td>
+              <td><select class="select" id="reinsurer-uw-${index}" data-reinsurer-row="${index}" aria-label="Reinsurer Name - UW for ${escapeHtml(row.code)}">
+                <option value="">Select</option>${reinsurerOptions.filter(name => name.toLowerCase() !== row.systemName.toLowerCase()).map(name => `<option value="${escapeHtml(name)}" ${row.uwName === name ? "selected" : ""}>${escapeHtml(name)}</option>`).join("")}
+              </select></td>
+            </tr>`).join("")}</tbody></table>
+          </div>
+          <div class="assignment-card"><div class="assignment-title">Assign Documents</div>
+            <table class="assignment-table"><thead><tr><th scope="col">Document name</th>${reinsurerRows.map((row, index) => `<th scope="col"><span data-reinsurer-heading="${index}">${escapeHtml(effectiveReinsurerName(row))}</span><button class="select-all" type="button" data-select-all="${index}" aria-label="Select all documents for ${escapeHtml(effectiveReinsurerName(row))}">(Select All)</button></th>`).join("")}</tr></thead>
+            <tbody>${referralDocuments.map((documentName, row) => `<tr><td>${escapeHtml(documentName)}</td>${reinsurerRows.map((reinsurer, column) => `<td><input type="checkbox" data-doc-row="${row}" data-doc-column="${column}" aria-label="Assign ${escapeHtml(documentName)} to ${escapeHtml(effectiveReinsurerName(reinsurer))}" ${reinsurerDocumentState[row][column] ? "checked" : ""}></td>`).join("")}</tr>`).join("")}</tbody></table>
+          </div>
         </div>
-        <div class="assignment-card"><div class="assignment-title">Assign Documents</div>
-          <table class="assignment-table"><thead><tr><th scope="col">Document name</th>${reinsurerRows.map((row, index) => `<th scope="col"><span data-reinsurer-heading="${index}">${escapeHtml(effectiveReinsurerName(row))}</span><button class="select-all" type="button" data-select-all="${index}" aria-label="Select all documents for ${escapeHtml(effectiveReinsurerName(row))}">(Select All)</button></th>`).join("")}</tr></thead>
-          <tbody>${referralDocuments.map((documentName, row) => `<tr><td>${escapeHtml(documentName)}</td>${reinsurerRows.map((reinsurer, column) => `<td><input type="checkbox" data-doc-row="${row}" data-doc-column="${column}" aria-label="Assign ${escapeHtml(documentName)} to ${escapeHtml(effectiveReinsurerName(reinsurer))}" ${reinsurerDocumentState[row][column] ? "checked" : ""}></td>`).join("")}</tr>`).join("")}</tbody></table>
-        </div>
-        <label style="display:block;margin-top:20px"><span class="field-label">Remarks</span><textarea id="reinsurer-remarks" rows="3" placeholder="Add remarks...">${escapeHtml(reinsurerRemarks)}</textarea></label>
         <div class="reinsurer-actions"><button id="generate-referral" class="outline-pill" type="button">Generate Referral Sheet</button></div>
-      </div></div>`;
+      </div>`;
     }
     $("#dialog-content").addEventListener("change", (event) => {
       if (event.target.dataset.reinsurerRow !== undefined) {
@@ -3203,34 +3275,124 @@
         reinsurerDocumentState[Number(event.target.dataset.docRow)][Number(event.target.dataset.docColumn)] = event.target.checked;
       }
     });
-    $("#dialog-content").addEventListener("input", (event) => {
-      if (event.target.id === "reinsurer-remarks") reinsurerRemarks = event.target.value;
-    });
-    // State is kept outside the dialog markup because the dependent approver fields
-    // are redrawn whenever the referral purpose, approver role or 1st UW decision changes.
-    const approverDecisionState = { purpose: "counterSign", approver: "", reason: "", firstDecision: "" };
-    const referralDecisionState = { firstDecision: "" };
-    const reconsiderState = { possible: "", after: "", reqType: "", reqTypeOther: "", reqDetails: "" };
-    function renderUwDialogFields() {
-      closeMultiSelect();
-      const decision = $("#dialog-uw-select").value;
-      const referralTarget = $("#uwReferralTarget")?.value || "";
-      const effectiveDecision = decision === "REFERRAL" && referralTarget ? referralTarget : decision;
-      const terminal = new Set(["STD", "BOR_STD", "REJ", "DC", "POSTP", "CO", "EP"]);
-      const field = (label, input) => `<div><label class="field-label">${label}</label>${input}</div>`;
-      const textInput = (id, placeholder, disabled = false) => `<input class="text-input" id="${id}" placeholder="${placeholder}" ${disabled ? "disabled" : ""}>`;
-      const selectInput = (id, options) => `<select class="select" id="${id}"><option value="">Select</option>${options.map(value => `<option>${value}</option>`).join("")}</select>`;
-      const multiSelect = (id, options) => `<div class="uw-multiselect" id="${id}" data-options="${options.map(o => o.replace(/"/g, '&quot;')).join('|')}"><button type="button" class="uw-multiselect-trigger"><span class="uw-multiselect-label">Select</span>${chevronSvg}</button></div>`;
-      let fields = "";
-      if (decision === "REFERRAL") {
-        fields += field("Refer To", `<select class="select" id="uwReferralTarget"><option value="">Select referral type</option>${[
-          ["REF_IT", "IT"], ["REF_REINS", "Reinsurer"], ["REF_CMO", "HO CMO"], ["REF_CMO_LOCAL", "CMO"], ["REF_RISK", "Risk"], ["REF_ACU", "Accuity"], ["REF_CUW_CLM", "CUW Claim"],
-        ].map(([value, label]) => `<option value="${value}" ${referralTarget === value ? "selected" : ""}>${label}</option>`).join("")}</select>`);
+    // ---------------------------------------------------------------------------
+    // Case UW Decision flow — mirrors apps/group/src/modules/guw/GuwUwPanel.tsx
+    // Dialog panes: base (decision fields) -> guidelines (UW Guidelines) -> action (Counter Sign / Raise Referral)
+    // ---------------------------------------------------------------------------
+    const UW_DECISION_OPTIONS = [["STD", "Standard"], ["BOR_STD", "Borderline Standard"], ["REJ", "Reject"], ["DC", "Decline"], ["POSTP", "Postpone"], ["CO", "Counter Offer"], ["EP", "Extra Premium"]];
+    const UW_ACTION_OPTIONS = [["REFERRAL", "Raise Referral"], ["HOLD", "Hold"], ["APPROVER", "Counter Sign"]];
+    const UW_REFERRAL_TYPES = [["REF_IT", "IT"], ["REF_REINS", "Reinsurer"], ["REF_SR_UW", "Sr UW Opinion"], ["REF_HOD", "HOD Opinion"], ["REF_CMO", "HO CMO"], ["REF_CMO_LOCAL", "CMO"], ["REF_RISK", "Risk"], ["REF_ACU", "Accuity"], ["REF_CUW_CLM", "CUW Claim"], ["REF_TELE_MER", "Tele MER"], ["REF_VIDEO_MER", "Video MER"]];
+    const UW_REFERRAL_REASONS = {
+      REF_IT: ["System issue", "Data correction", "Other"],
+      REF_REINS: ["High sum assured", "Medical risk", "Other"],
+      REF_SR_UW: ["Medical opinion", "Financial opinion", "High SA", "Policy exception", "Other"],
+      REF_HOD: ["Medical opinion", "Financial opinion", "High SA", "Policy exception", "Counter signing", "Other"],
+      REF_CMO: ["Medical review", "Specialist opinion", "Other"],
+      REF_CMO_LOCAL: ["Medical review", "Specialist opinion", "Other"],
+      REF_RISK: ["Risk assessment", "Policy exception", "Other"],
+      REF_ACU: ["Screening review", "Match review", "Other"],
+      REF_CUW_CLM: ["Claim history", "Investigation", "Other"],
+      REF_TELE_MER: ["Medical review", "Other"],
+      REF_VIDEO_MER: ["Medical review", "Other"],
+    };
+    // Reinsurer, Sr UW and HOD referrals cannot be combined with any other referral
+    const UW_EXCLUSIVE_REFERRALS = ["REF_REINS", "REF_SR_UW", "REF_HOD"];
+    // Tele MER and Video MER cannot both be selected; select-all leaves them unchanged
+    const UW_MER_REFERRALS = ["REF_TELE_MER", "REF_VIDEO_MER"];
+    // Assigned To is enabled only for these referral rows
+    const UW_ASSIGNABLE_REFERRALS = ["REF_SR_UW", "REF_HOD"];
+    // Placeholder assignee list (mock login user ids) until a user-lookup API is specified
+    const UW_APPROVER_ASSIGNEES = ["UW001", "UW002", "UW003"];
+    const UW_GUIDELINE_REASONS = ["", "Requirement waived", "Document pending", "Financial assessment", "Medical assessment", "Counter signing", "Other"];
+    const UW_INITIAL_GUIDELINES = [
+      ["Income document waived or not received", "Income document waived or not raised. Please provide justification", ""],
+      ["Medical requirement waived or not received", "Medical document waived or not raised. Please provide justification", ""],
+      ["Financially not viable", "Justification required as financial eligibility is less than TFSA", ""],
+      ["DRC Risk Blank or Null Risk", "DRC Risk value is Blank or Null Risk — kindly take counter signing", "REFER_TO_CS"],
+      ["TSA above your UW limit", "Case above your underwriting limit, please take counter signing", "REFER_TO_CS"],
+      ["Application form validity expired", "Please call for fresh medical questionnaire", "REFER_TO_HOD"],
+      ["BIU model response field is blank", "BIU models predict response is blank — cannot take STD, XRT or COF decision. Kindly get the BIU response", ""],
+    ].map(([reason, remark, systemAction]) => ({ reason, remark, systemAction, justificationReason: "", justificationRemark: "" }));
+    const uwEyeSvg = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M1.5 10s3.1-5 8.5-5 8.5 5 8.5 5-3.1 5-8.5 5-8.5-5-8.5-5Z" stroke="#e45f14" stroke-width="1.5"/><circle cx="10" cy="10" r="2.4" stroke="#e45f14" stroke-width="1.5"/></svg>';
+    const uwDecisionLabel = (code) => [...UW_DECISION_OPTIONS, ...UW_ACTION_OPTIONS].find(([value]) => value === code)?.[1] ?? code;
+    const isUwActionCode = (code) => UW_ACTION_OPTIONS.some(([value]) => value === code);
+    const newReferralRows = () => UW_REFERRAL_TYPES.map(([target, label]) => ({ target, label, selected: false, reason: "", remarks: "", assignedTo: "" }));
+    const blankRecon = () => ({ possible: "", after: "", reqType: "", reqTypeOther: "", reqDetails: "" });
+    const reconsiderState = blankRecon();
+    // State is kept outside the dialog markup because panes are redrawn when the decision, referral rows or step change.
+    const uwState = {
+      selected: "",            // value shown in the main Case UW Decision dropdown (set by a saved draft / final submit)
+      submitted: null,         // snapshot behind the eye icon (view decision details)
+      committedRemarks: "",    // UW Remarks of the last saved draft / final submit
+      remarks: "",
+      decision: "",            // decision of the open dialog (may be an action code)
+      baseDecision: "",        // Case UW Decision chosen before moving to Counter Sign / Raise Referral
+      previous: "",            // decision shown before moving to Counter Sign / Raise Referral (used by Back)
+      confirmed: false,        // true once the guidelines step was confirmed
+      approver: { reason: "", target: "", assignedTo: "" },
+      referralRows: newReferralRows(),
+      reinsurerEditOpen: false,
+      guidelines: [],
+    };
+
+    const uwLabel = (text) => `<label class="field-label">${text}</label>`;
+    const uwField = (label, input, style = "") => `<div${style ? ` style="${style}"` : ""}>${uwLabel(label)}${input}</div>`;
+    const uwSelect = (attrs, options, value = "", placeholder = "Select") => `<select class="select" ${attrs}><option value="">${escapeHtml(placeholder)}</option>${options.map((option) => `<option${option === value ? " selected" : ""}>${escapeHtml(option)}</option>`).join("")}</select>`;
+    const uwMultiSelect = (id, options) => `<div class="uw-multiselect" id="${id}" data-options="${options.map(o => o.replace(/"/g, '&quot;')).join('|')}"><button type="button" class="uw-multiselect-trigger"><span class="uw-multiselect-label">Select</span>${chevronSvg}</button></div>`;
+
+    function uwReconHtml() {
+      const afterOpts = ["Immediately", "15 days", "1 Month", "2 Months", "3 Months", "4 Months", "5 Months", "6 Months", "7 Months", "8 Months", "9 Months", "10 Months", "11 Months", "1 Year"];
+      const reqTypes = ["Repeat Medical", "Specific Test", "Doctor Report", "Documents", "Investigation Reports", "Additional Surrogate Income", "Other"];
+      const yesNo = `<div style="display:flex;gap:16px;align-items:center;padding:5px 0">
+        <label style="font-size:12px;display:flex;align-items:center;gap:5px"><input type="radio" name="uwReconsiderPossible" value="Yes" ${reconsiderState.possible === "Yes" ? "checked" : ""}> Yes</label>
+        <label style="font-size:12px;display:flex;align-items:center;gap:5px"><input type="radio" name="uwReconsiderPossible" value="No" ${reconsiderState.possible === "No" ? "checked" : ""}> No</label>
+      </div>`;
+      let cells = uwField("Reconsideration Possible?", yesNo);
+      cells += `<div class="span-3">${uwLabel("Requirement Details")}<textarea class="text-input" id="uwReqDetails" rows="3" maxlength="4000" placeholder="Enter details... (max 4000 characters)">${escapeHtml(reconsiderState.reqDetails)}</textarea><small data-recon-count style="display:block;text-align:right;font-size:10px;color:#938883;margin-top:4px">${reconsiderState.reqDetails.length}/4000</small></div>`;
+      if (reconsiderState.possible === "Yes") {
+        cells += uwField("Reconsider After", uwSelect('id="uwReconsiderAfter"', afterOpts, reconsiderState.after));
+        cells += uwField("Requirement Type", uwSelect('id="uwReqType"', reqTypes, reconsiderState.reqType));
+        if (reconsiderState.reqType === "Other") {
+          cells += uwField("Other Requirement Type", `<input class="text-input" id="uwReqTypeOther" placeholder="Enter requirement type" value="${escapeHtml(reconsiderState.reqTypeOther)}">`);
+        }
       }
-      if (terminal.has(effectiveDecision)) fields += field("Decision Code", `<input class="text-input" value="${effectiveDecision}" disabled>`);
-      if (effectiveDecision && !["CO", "EP"].includes(effectiveDecision)) fields += field("Smoker Flag", selectInput("uwSmokerFlag", ["Smoker", "Non Smoker"]));
-//      if (effectiveDecision === "STD") fields += field("Smoker Status", `<input class="text-input" value="Non Smoker" disabled>`);
-      if (effectiveDecision && !["STD", "HOLD", "APPROVER", "REFERRAL", "AMR"].includes(effectiveDecision) && !effectiveDecision.startsWith("REF_")) {
+      return `<div class="uw-recon-card">${cells}</div>`;
+    }
+
+    function uwReferralInnerHtml() {
+      const rows = uwState.referralRows;
+      const isExclusive = (row) => UW_EXCLUSIVE_REFERRALS.includes(row.target);
+      const exclusiveSelected = rows.some((row) => isExclusive(row) && row.selected);
+      const hoCmoSelected = rows.some((row) => row.target === "REF_CMO" && row.selected);
+      const allChecked = rows.length > 0 && !exclusiveSelected && rows.filter((row) => !isExclusive(row) && !UW_MER_REFERRALS.includes(row.target)).every((row) => row.selected);
+      const body = rows.map((row, index) => {
+        const isReinsurer = row.target === "REF_REINS";
+        const otherMer = UW_MER_REFERRALS.find((target) => target !== row.target);
+        const disabled = (exclusiveSelected && !row.selected) || (row.target === "REF_CMO_LOCAL" && hoCmoSelected) || (UW_MER_REFERRALS.includes(row.target) && rows.some((r) => r.target === otherMer && r.selected));
+        const inactive = !row.selected || disabled;
+        const assignInactive = inactive || !UW_ASSIGNABLE_REFERRALS.includes(row.target);
+        const editOpen = isReinsurer && uwState.reinsurerEditOpen;
+        return `<tr class="${row.selected ? "selected" : disabled ? "disabled" : ""}">
+          <td class="center"><input type="checkbox" data-ref-check="${index}" aria-label="Select ${escapeHtml(row.label)}" ${row.selected ? "checked" : ""} ${disabled ? "disabled" : ""}></td>
+          <td class="refer-to">${escapeHtml(row.label)}</td>
+          <td>${uwSelect(`data-ref-reason="${index}" ${inactive ? "disabled" : ""}`, UW_REFERRAL_REASONS[row.target] ?? [], row.reason, "Select reason")}</td>
+          <td><input class="text-input" data-ref-remarks="${index}" placeholder="Enter remarks" value="${escapeHtml(row.remarks)}" ${inactive ? "disabled" : ""}></td>
+          <td>${uwSelect(`data-ref-assigned="${index}" ${assignInactive ? "disabled" : ""}`, UW_APPROVER_ASSIGNEES, row.assignedTo, "Select User ID")}</td>
+          <td class="center"><button type="button" class="uw-ref-edit${editOpen ? " open" : ""}" data-ref-edit="${index}" ${row.selected && isReinsurer ? "" : "disabled"}>${editOpen ? "Hide" : "Edit"}</button></td>
+        </tr>`;
+      }).join("");
+      const sheet = uwState.reinsurerEditOpen && rows.find((row) => row.target === "REF_REINS")?.selected ? reinsurerHtml() : "";
+      return `<div style="overflow-x:auto"><table class="uw-referral-table"><thead><tr>
+        <th class="center" style="width:40px"><input type="checkbox" data-ref-all aria-label="Select all referrals" ${exclusiveSelected ? "disabled" : ""} ${allChecked ? "checked" : ""}></th>
+        <th style="width:130px">Refer To</th><th style="width:200px">Reason</th><th>UW Remarks</th><th style="width:140px">Assigned To</th><th class="center" style="width:90px">Action</th>
+      </tr></thead><tbody>${body}</tbody></table></div>${sheet}`;
+    }
+
+    function uwDetailsHtml(code) {
+      let html = "";
+      if (code === "REFERRAL") html += `<div class="uw-referral-block" data-uw-referral>${uwReferralInnerHtml()}</div>`;
+      if (["STD", "BOR_STD", "REJ", "DC", "POSTP", "CO", "EP"].includes(code)) html += uwField("Decision Code", `<input class="text-input" value="${code}" disabled>`);
+      if (code && !["STD", "HOLD", "APPROVER", "REFERRAL"].includes(code)) {
         const allReasonOptions = [
           "Medical conditions that affect mood",
           "Financially Not Eligible",
@@ -3242,141 +3404,391 @@
           "Previous policy found as repudiated / Death claim",
           "Financially Not Eligible"
         ];
-        fields += field("Reasons", multiSelect("uwSubStdReason", effectiveDecision === "REJ" ? rejectReasonOptions : allReasonOptions));
+        html += uwField("Reasons", uwMultiSelect("uwSubStdReason", code === "REJ" ? rejectReasonOptions : allReasonOptions), "grid-column: span 2");
       }
-      if (effectiveDecision === "POSTP") fields += field("Postponement Period", selectInput("uwPostponementPeriod", ["3 months", "6 months", "12 months"]));
-      if (effectiveDecision === "CO") fields += counterOfferHtml("CO");
-      if (effectiveDecision === "BOR_STD") fields += counterOfferHtml("BOR_STD");
-      if (effectiveDecision === "EP") fields += counterOfferHtml("EP");
-      if (effectiveDecision === "HOLD") fields += field("Hold Reasons", selectInput("uwReason", ["Medical", "Financial", "Other"]));
-      if (effectiveDecision === "APPROVER") {
-        const isHod = approverDecisionState.approver === "HOD";
-        const isSrUw = approverDecisionState.approver === "Sr UW";
-        const reasonLabel = isSrUw ? "Sr UW Reasons" : "HOD Reasons";
-        const firstDecision = approverDecisionState.firstDecision;
-        const firstDecisionLabels = { STD: "Standard", BOR_STD: "Borderline Standard", REJ: "Reject", DC: "Decline", POSTP: "Postpone", CO: "Counter Offer", EP: "Extra Premium" };
-        const reasonOptions = approverDecisionState.purpose === "opinion"
-          ? ["Medical opinion", "Financial opinion", "Other"]
-          : ["Counter signing", "Medical assessment", "Financial assessment", "Other"];
-        const selectedOptions = (options, selected, placeholder = "Select") => `<select class="select" id="${selected.id}"><option value="">${placeholder}</option>${options.map(({ value, label }) => `<option value="${value}" ${selected.value === value ? "selected" : ""}>${label}</option>`).join("")}</select>`;
-        fields += field("Referral purpose", `<label style="font-size:11px"><input type="radio" name="referralPurpose" value="counterSign" ${approverDecisionState.purpose === "counterSign" ? "checked" : ""}> Counter Sign</label> <label style="font-size:11px"><input type="radio" name="referralPurpose" value="opinion" ${approverDecisionState.purpose === "opinion" ? "checked" : ""}> Opinion</label>`);
-        fields += field("Refer To", selectedOptions(["HOD", "Sr UW"].map(value => ({ value, label: value })), { id: "uwApprover", value: approverDecisionState.approver }, "Select HOD or Sr UW"));
-        if (isHod || isSrUw) {
-          fields += field(reasonLabel, selectedOptions(reasonOptions.map(value => ({ value, label: value })), { id: "uwApproverReason", value: approverDecisionState.reason }, `Select ${reasonLabel}`));
-          fields += field("1st UW Decision", selectedOptions(Object.entries(firstDecisionLabels).map(([value, label]) => ({ value, label })), { id: "uwFirstDecision", value: firstDecision }, "Select"));
-          if (firstDecision) fields += field("Decision Code", `<input class="text-input" value="${firstDecision}" disabled>`);
-//      if (firstDecision === "STD") fields += field("Smoker Status", `<input class="text-input" value="Non Smoker" disabled>`);
-          if (["REJ", "BOR_STD", "DC", "CO"].includes(firstDecision)) fields += field(`${firstDecisionLabels[firstDecision]} Reason`, selectInput("uwFirstDecisionReason", ["Medical", "Financial", "Non-medical", "Other"]));
-          if (firstDecision === "POSTP") fields += field("Postpone Reason", selectInput("uwFirstDecisionReason", ["Medical", "Financial", "Non-medical", "Other"])) + field("Postponement Period", selectInput("uwFirstPostponementPeriod", ["3 months", "6 months", "12 months"]));
-        }
-      }
-      const referralFields = {
-        REF_IT: ["IT Referral Reason", ["System issue", "Data correction", "Other"]],
-        REF_REINS: ["Reinsurer Referral Reason", ["High sum assured", "Medical risk", "Other"]],
-        REF_CMO: ["HO CMO Referral Reason", ["Medical review", "Specialist opinion", "Other"]],
-        REF_CMO_LOCAL: ["CMO Referral Reason", ["Medical review", "Specialist opinion", "Other"]],
-        REF_RISK: ["Risk Referral Reason", ["Risk assessment", "Policy exception", "Other"]],
-        REF_ACU: ["Accuity Referral Reason", ["Screening review", "Match review", "Other"]],
-        REF_CUW_CLM: ["CUW Claim Referral Reason", ["Claim history", "Investigation", "Other"]],
-      };
-      if (referralFields[effectiveDecision]) fields += field(referralFields[effectiveDecision][0], selectInput("uwReferralReason", referralFields[effectiveDecision][1]));
-      if (["REF_REINS", "REF_CMO", "REF_CMO_LOCAL", "REF_RISK", "REF_ACU"].includes(effectiveDecision)) {
-        const options = [["STD", "Standard"], ["BOR_STD", "Borderline Standard"], ["REJ", "Reject"], ["DC", "Decline"], ["POSTP", "Postpone"], ["CO", "Counter Offer"], ["EP", "Extra Premium"]];
-        fields += field("1st UW Decision", `<select class="select" id="uwReferralFirstDecision"><option value="">Select</option>${options.map(([value, label]) => `<option value="${value}" ${referralDecisionState.firstDecision === value ? "selected" : ""}>${label}</option>`).join("")}</select>`);
-        if (referralDecisionState.firstDecision) fields += field("Decision Code", `<input class="text-input" value="${referralDecisionState.firstDecision}" disabled>`);
-//        if (referralDecisionState.firstDecision === "STD") fields += field("Smoker Status", `<input class="text-input" value="Non Smoker" disabled>`);
-        if (["REJ", "BOR_STD", "DC", "CO"].includes(referralDecisionState.firstDecision)) fields += field("1st UW Decision Reason", selectInput("uwReferralFirstReason", ["Medical", "Financial", "Non-medical", "Other"]));
-        if (referralDecisionState.firstDecision === "POSTP") fields += field("Postpone Reason", selectInput("uwReferralFirstReason", ["Medical", "Financial", "Non-medical", "Other"])) + field("Postponement Period", selectInput("uwReferralPostponementPeriod", ["3 months", "6 months", "12 months"]));
+      if (code === "POSTP") html += uwField("Postponement Period", uwSelect('id="uwPostponementPeriod"', ["3 months", "6 months", "12 months"]));
+      if (code === "HOLD") html += uwField("Hold Reasons", uwSelect('id="uwReason"', ["Medical", "Financial", "Other"]));
+      if (code === "APPROVER") {
+        const a = uwState.approver;
+        html += uwField("Reason", uwSelect('data-uw-approver="reason"', ["Counter signing", "Medical assessment", "Financial assessment", "Other"], a.reason, "Select Reason"));
+        html += uwField("Refer To", uwSelect('data-uw-approver="target"', ["HOD", "Sr UW"], a.target, "Select HOD or Sr UW"));
+        html += uwField("Assigned To", uwSelect('data-uw-approver="assignedTo"', UW_APPROVER_ASSIGNEES, a.assignedTo, "Select User ID"));
       }
       // Reconsideration fields — shown for DC / POSTP / REJ only
-      if (["DC", "POSTP", "REJ"].includes(effectiveDecision)) {
-        const rcYesNo = `<div style="display:flex;gap:16px;align-items:center;padding:5px 0">
-          <label style="font-size:12px;display:flex;align-items:center;gap:5px"><input type="radio" name="uwReconsiderPossible" value="Yes" ${reconsiderState.possible === "Yes" ? "checked" : ""}> Yes</label>
-          <label style="font-size:12px;display:flex;align-items:center;gap:5px"><input type="radio" name="uwReconsiderPossible" value="No"  ${reconsiderState.possible === "No"  ? "checked" : ""}> No</label>
-        </div>`;
-        fields += field("Reconsideration Possible?", rcYesNo);
-        if (reconsiderState.possible === "Yes") {
-          const afterOpts = ["Immediately","15 days","1 Month","2 Months","3 Months","4 Months","5 Months","6 Months","7 Months","8 Months","9 Months","10 Months","11 Months","1 Year"];
-          fields += field("Reconsider After", selectInput("uwReconsiderAfter", afterOpts));
-          const reqTypes = ["Repeat Medical","Specific Test","Doctor Report","Documents","Investigation Reports","Additional Surrogate Income","Other"];
-          fields += field("Requirement Type", selectInput("uwReqType", reqTypes));
-          if (reconsiderState.reqType === "Other") {
-            fields += field("Other Requirement Type", `<input class="text-input" id="uwReqTypeOther" placeholder="Enter requirement type" value="${escapeHtml(reconsiderState.reqTypeOther)}">`);
-          }
-        }
-        fields += field("Requirement Details", `<textarea class="text-input" id="uwReqDetails" rows="3" maxlength="4000" placeholder="Enter details... (max 4000 characters)">${escapeHtml(reconsiderState.reqDetails)}</textarea>`);
-      }
-      if (effectiveDecision === "REF_REINS") fields += reinsurerHtml();
-      $("#uw-dialog-details").innerHTML = fields;
-      const isReinsurerReferral = effectiveDecision === "REF_REINS";
-      $("#uw-remarks-field")?.toggleAttribute("hidden", isReinsurerReferral);
-      $("#case-uw-decision-field")?.toggleAttribute("hidden", isReinsurerReferral);
-      enhanceSelects($("#uw-dialog-details"));
+      if (["DC", "POSTP", "REJ"].includes(code)) html += `<div class="uw-details" data-uw-recon>${uwReconHtml()}</div>`;
+      if (["CO", "BOR_STD", "EP"].includes(code)) html += counterOfferHtml(code);
+      return html;
     }
+
+    function uwCaseSelectHtml(code) {
+      // Hidden for Raise Referral / Hold
+      if (["REFERRAL", "HOLD"].includes(code)) return "";
+      const value = code === "APPROVER" ? (uwState.baseDecision || uwState.selected) : code;
+      const options = UW_DECISION_OPTIONS.map(([optionValue, label]) => ({ value: optionValue, label, disabled: false }));
+      // Keep a previously submitted action decision visible in the dropdown (not selectable)
+      if (value && !options.some((option) => option.value === value)) options.push({ value, label: uwDecisionLabel(value), disabled: true });
+      const eye = code === "APPROVER" && uwState.submitted ? `<button class="uw-eye-btn" type="button" data-uw-view aria-label="View decision details" title="View decision details">${uwEyeSvg}</button>` : "";
+      return `<div>${uwLabel("Case UW Decision")}<div class="uw-select-row"><div class="uw-select-cell"><select class="select" data-uw-case ${isUwActionCode(code) ? "disabled" : ""}><option value="">Select</option>${options.map((option) => `<option value="${option.value}" ${option.value === value ? "selected" : ""} ${option.disabled ? "disabled" : ""}>${escapeHtml(option.label)}</option>`).join("")}</select></div>${eye}</div></div>`;
+    }
+
+    function uwPaneHtml(code) {
+      const remarks = code === "REFERRAL" ? "" : `<div style="margin-top:24px">${uwLabel("UW Remarks")}<textarea class="text-input" data-uw-remarks rows="3" maxlength="10000" placeholder="Enter remarks...">${escapeHtml(uwState.remarks)}</textarea><small data-uw-remarks-count style="display:block;text-align:right;font-size:10px;color:#938883;margin-top:4px">${uwState.remarks.length}/10000</small></div>`;
+      return `<div class="uw-dialog-grid">${uwCaseSelectHtml(code)}<div class="uw-details" data-uw-details>${uwDetailsHtml(code)}</div></div>${remarks}<div class="uw-step-actions"><button class="uw-back-btn" type="button" data-uw-back>Back</button><button class="contained" type="button" data-uw-submit>Submit</button></div>`;
+    }
+
+    function uwGuidelinesPaneHtml() {
+      const rows = uwState.guidelines.map((row, index) => {
+        // A system action on the row locks its justification fields
+        const locked = Boolean(row.systemAction);
+        const enabled = Boolean(row.justificationReason) && !locked;
+        return `<tr><td>${escapeHtml(row.reason)}</td><td>${escapeHtml(row.remark)}</td><td>${escapeHtml(row.systemAction || "—")}</td><td><select class="select" data-gl-reason="${index}" ${locked ? "disabled" : ""}>${UW_GUIDELINE_REASONS.map((reason) => `<option value="${escapeHtml(reason)}" ${row.justificationReason === reason ? "selected" : ""}>${reason ? escapeHtml(reason) : "Select reason"}</option>`).join("")}</select></td><td><input class="text-input" data-gl-remark="${index}" placeholder="${locked ? "Not applicable" : enabled ? "Add remarks (required)" : "Select a reason first"}" value="${escapeHtml(row.justificationRemark)}" ${enabled ? "" : "disabled"}></td></tr>`;
+      }).join("");
+      return `<p class="uw-guideline-intro">Select a justification reason to enable its remarks field. Remarks are mandatory for every selected reason.</p><div class="uw-guideline-table-wrap"><table class="uw-guideline-table"><thead><tr><th>Reason</th><th>Remark</th><th>System Action</th><th>Justification Reason</th><th>Justification Remarks</th></tr></thead><tbody>${rows}</tbody></table></div><div class="uw-guideline-actions"><button id="uw-gl-back" class="uw-back-btn" type="button">Back</button><button id="uw-gl-confirm" class="contained" type="button">Confirm &amp; Submit</button></div>`;
+    }
+
+    const uwPane = (name) => $(`#uw-pane-${name}`);
+    function showUwPane(name) {
+      closeSelectMenu();
+      closeMultiSelect();
+      const guidelines = name === "guidelines";
+      $("#dialog").classList.toggle("uw-dialog", !guidelines);
+      $("#dialog").classList.toggle("uw-guideline-dialog", guidelines);
+      $("#dialog-title").textContent = guidelines ? "UW Guidelines" : "";
+      document.querySelectorAll("#dialog-content [data-uw-pane]").forEach((pane) => { pane.hidden = pane.id !== `uw-pane-${name}`; });
+      // UW Remarks is shared between panes
+      document.querySelectorAll("#dialog-content [data-uw-remarks]").forEach((area) => {
+        area.value = uwState.remarks;
+        const count = area.parentElement.querySelector("[data-uw-remarks-count]");
+        if (count) count.textContent = `${uwState.remarks.length}/10000`;
+      });
+    }
+    function showUwGuidelines() {
+      const pane = uwPane("guidelines");
+      pane.innerHTML = uwGuidelinesPaneHtml();
+      enhanceSelects(pane);
+      showUwPane("guidelines");
+    }
+    function showUwActionPane(code) {
+      const pane = uwPane("action");
+      pane.innerHTML = uwPaneHtml(code);
+      enhanceSelects(pane);
+      showUwPane("action");
+    }
+    function renderUwDetails(pane) {
+      closeMultiSelect();
+      const host = pane.querySelector("[data-uw-details]");
+      host.innerHTML = uwDetailsHtml(uwState.decision);
+      enhanceSelects(host);
+    }
+    function renderUwRecon(pane) {
+      const slot = pane.querySelector("[data-uw-recon]");
+      slot.innerHTML = uwReconHtml();
+      enhanceSelects(slot);
+    }
+    function renderUwReferral(pane, scrollToSheet = false) {
+      closeSelectMenu();
+      const host = pane.querySelector("[data-uw-referral]");
+      host.innerHTML = uwReferralInnerHtml();
+      enhanceSelects(host);
+      if (scrollToSheet) {
+        window.setTimeout(() => {
+          const sheet = $("#reinsurer-sheet");
+          sheet?.scrollIntoView({ behavior: "smooth", block: "start" });
+          sheet?.focus({ preventScroll: true });
+        }, 60);
+      }
+    }
+
+    // Main Case UW Decision dropdown only shows a decision once a draft / final submit saved it
     let syncingUwDecision = false;
+    function setMainDecision(code) {
+      const select = $("#uw-select");
+      uwState.selected = code;
+      select.querySelectorAll("option[data-injected]").forEach((option) => option.remove());
+      if (code && ![...select.options].some((option) => option.value === code)) {
+        const option = new Option(uwDecisionLabel(code), code);
+        option.disabled = true;
+        option.dataset.injected = "1";
+        select.add(option);
+      }
+      syncingUwDecision = true;
+      select.value = code;
+      select.dispatchEvent(new Event("change"));
+      syncingUwDecision = false;
+      updateClearUwOption();
+      $("#uw-view-main").hidden = !uwState.submitted;
+    }
+    function clearUwDecision() {
+      uwState.submitted = null;
+      uwState.committedRemarks = "";
+      uwState.remarks = "";
+      setMainDecision("");
+    }
+
+    function openUwDecisionDialog(code) {
+      Object.assign(uwState, {
+        decision: code,
+        baseDecision: "",
+        previous: "",
+        confirmed: false,
+        remarks: uwState.committedRemarks,
+        approver: { reason: "", target: "", assignedTo: "" },
+        referralRows: newReferralRows(),
+        reinsurerEditOpen: false,
+        // Re-open with the guidelines already populated in a previous submit
+        guidelines: (uwState.submitted?.guidelines ?? UW_INITIAL_GUIDELINES).map((row) => ({ ...row })),
+      });
+      resetReinsurerState();
+      Object.assign(reconsiderState, blankRecon());
+      openDialog("", `<div id="uw-pane-base" data-uw-pane>${uwPaneHtml(code)}</div><div id="uw-pane-guidelines" data-uw-pane hidden></div><div id="uw-pane-action" data-uw-pane hidden></div>`);
+    }
+
+    function readUwCounterOfferRows(root) {
+      return [...root.querySelectorAll(".counter-offer-table tbody tr")].map((tr) => {
+        const value = (selector) => tr.querySelector(selector)?.value || "";
+        const userRow = tr.dataset.ddUser !== undefined;
+        return {
+          productName: userRow ? value(".dd-product") : tr.querySelector('[data-col="product"]')?.textContent.trim() || "",
+          type: value(".dd-type"),
+          bstdCode: value(".dd-bstd-code"),
+          sa: userRow ? value(".dd-sa-display") : tr.querySelector('[data-col="sa"] input')?.value || "",
+          changedSa: value(".dd-changed-sa"),
+          pt: userRow ? value(".dd-pt-display") : tr.querySelector('[data-col="pt"] input')?.value || "",
+          changedPt: value(".dd-changed-pt"),
+          loadingClass: value(".dd-loading-class"),
+          loadingReason: value(".dd-loading-reason"),
+        };
+      });
+    }
+
+    function buildUwSnapshot() {
+      const code = uwState.decision;
+      const caseCode = uwState.baseDecision || code;
+      const base = uwPane("base");
+      const fields = [{ label: "Case UW Decision", value: uwDecisionLabel(caseCode) }];
+      const add = (label, value, wide) => fields.push({ label, value, wide });
+      const selectedRefs = uwState.referralRows.filter((row) => row.selected);
+      if (code === "REFERRAL") {
+        add("Refer To", selectedRefs.map((row) => row.label).join(", "));
+        const reasons = selectedRefs.filter((row) => row.reason).map((row) => `${row.label}: ${row.reason}`).join("; ");
+        if (reasons) add("Referral Reason", reasons, true);
+        const rowRemarks = selectedRefs.filter((row) => row.remarks.trim()).map((row) => `${row.label}: ${row.remarks.trim()}`).join("; ");
+        if (rowRemarks) add("Referral Remarks", rowRemarks, true);
+        const rowAssignees = selectedRefs.filter((row) => row.assignedTo).map((row) => `${row.label}: ${row.assignedTo}`).join("; ");
+        if (rowAssignees) add("Assigned To", rowAssignees, true);
+      }
+      if (code !== "REFERRAL" && code) add("Decision Code", code);
+      if (code && !["STD", "HOLD", "APPROVER", "REFERRAL"].includes(code)) {
+        add("Reasons", [...base.querySelectorAll("#uwSubStdReason input[data-opt]:checked")].map((input) => input.dataset.opt).join(", "), true);
+      }
+      if (code === "POSTP") add("Postponement Period", base.querySelector("#uwPostponementPeriod")?.value || "");
+      if (code === "HOLD") add("Hold Reasons", base.querySelector("#uwReason")?.value || "");
+      if (code === "APPROVER") {
+        add("Reason", uwState.approver.reason);
+        add("Refer To", uwState.approver.target);
+        add("Assigned To", uwState.approver.assignedTo);
+      }
+      const reconsiderationFields = [];
+      if (["DC", "POSTP", "REJ"].includes(code)) {
+        reconsiderationFields.push({ label: "Reconsideration Possible?", value: reconsiderState.possible });
+        reconsiderationFields.push({ label: "Requirement Details", value: reconsiderState.reqDetails, wide: true });
+        if (reconsiderState.possible === "Yes") {
+          reconsiderationFields.push({ label: "Reconsider After", value: reconsiderState.after });
+          reconsiderationFields.push({ label: "Requirement Type", value: reconsiderState.reqType });
+          if (reconsiderState.reqType === "Other") reconsiderationFields.push({ label: "Other Requirement Type", value: reconsiderState.reqTypeOther });
+        }
+      }
+      const reinsurerSelected = code === "REFERRAL" && selectedRefs.some((row) => row.target === "REF_REINS");
+      const counterOfferRows = ["CO", "BOR_STD", "EP"].includes(caseCode) ? readUwCounterOfferRows(base) : [];
+      const referralRemarks = selectedRefs.filter((row) => row.remarks.trim()).map((row) => `${row.label}: ${row.remarks.trim()}`).join("; ");
+      return {
+        fields,
+        reconsiderationFields,
+        remarks: code === "REFERRAL" ? referralRemarks || uwState.remarks : uwState.remarks,
+        counterOfferRows,
+        showBstdColumn: counterOfferRows.some((row) => row.type === "Borderline Standard"),
+        reinsurerRows: reinsurerSelected ? reinsurerRows.map((row) => ({ code: row.code, systemName: row.systemName, uwName: row.uwName })) : [],
+        documentRows: reinsurerSelected ? referralDocuments.map((name, row) => ({ name, assigned: reinsurerRows.map((_, column) => reinsurerDocumentState[row][column]) })) : [],
+        guidelines: uwState.guidelines.map((row) => ({ ...row })),
+      };
+    }
+
+    // Hold the current decision (and guidelines), and link the main dropdown to the Case UW Decision
+    function saveUwDraft() {
+      uwState.submitted = buildUwSnapshot();
+      uwState.committedRemarks = uwState.remarks;
+      setMainDecision(uwState.baseDecision || uwState.decision);
+    }
+    function finalizeUwSubmit() {
+      saveUwDraft();
+      closeDialog();
+      notify("Decision submitted successfully");
+      window.setTimeout(() => { window.location.href = "./landing-prototype.html"; }, 700);
+    }
+    function handleUwSubmit() {
+      const code = uwState.decision;
+      if (code === "REFERRAL") {
+        if (!uwState.referralRows.some((row) => row.selected)) { notify("Please select at least one referral"); return; }
+      } else if (!uwState.remarks.trim()) { notify("Please enter UW Remarks"); return; }
+      if (code === "APPROVER") {
+        const a = uwState.approver;
+        if (!a.reason) { notify("Please select Reason"); return; }
+        if (!a.target) { notify("Please select Refer To"); return; }
+        if (!a.assignedTo) { notify("Please select Assigned To"); return; }
+      }
+      // Guidelines already confirmed (system-action flow): Counter Sign / Raise Referral is the final step
+      if (uwState.confirmed && ["APPROVER", "REFERRAL"].includes(code)) { finalizeUwSubmit(); return; }
+      saveUwDraft();
+      showUwGuidelines();
+    }
+    // Back from Counter Sign / Raise Referral to the UW Guidelines step
+    function backToUwGuidelines() {
+      uwState.decision = uwState.baseDecision || uwState.previous;
+      uwState.baseDecision = "";
+      uwState.confirmed = false;
+      showUwGuidelines();
+    }
+    function handleUwGuidelinesConfirm() {
+      const incomplete = uwState.guidelines.some((row) => Boolean(row.justificationReason) !== Boolean(row.justificationRemark.trim()));
+      if (incomplete) { notify("Please complete both justification fields for each applicable guideline"); return; }
+      // REFER_TO_CS returned: open the Counter Sign screen next; final submit happens from there.
+      // Otherwise any other REFER_TO_* opens the Raise Referral screen.
+      const hasCounterSign = uwState.guidelines.some((row) => row.systemAction === "REFER_TO_CS");
+      const hasOtherReferral = uwState.guidelines.some((row) => row.systemAction.startsWith("REFER_TO_") && row.systemAction !== "REFER_TO_CS");
+      const nextAction = hasCounterSign ? "APPROVER" : hasOtherReferral ? "REFERRAL" : null;
+      if (nextAction && uwState.decision !== nextAction) {
+        saveUwDraft();
+        uwState.confirmed = true;
+        if (!isUwActionCode(uwState.decision)) uwState.baseDecision = uwState.decision;
+        uwState.previous = uwState.decision;
+        uwState.decision = nextAction;
+        if (nextAction === "REFERRAL") uwState.reinsurerEditOpen = false;
+        showUwActionPane(nextAction);
+        return;
+      }
+      finalizeUwSubmit();
+    }
+
+    // Read-only view of the saved decision (eye icon)
+    function uwViewHtml(d) {
+      const value = (text) => escapeHtml(text || "-");
+      const cells = (list, wideSpan) => list.map((f) => `<div${f.wide ? ` style="grid-column: span ${wideSpan}"` : ""}><span class="uw-view-label">${escapeHtml(f.label)}</span><span class="uw-view-value">${value(f.value)}</span></div>`).join("");
+      const th = (text, center = false) => `<th${center ? ' class="center"' : ""}>${escapeHtml(text)}</th>`;
+      let html = `<div class="uw-view-grid">${cells(d.fields, 2)}</div>`;
+      if (d.reconsiderationFields.length) html += `<div class="uw-view-card"><div class="uw-view-grid four">${cells(d.reconsiderationFields, 3)}</div></div>`;
+      if (d.reinsurerRows.length) {
+        html += `<div class="uw-view-section"><h3>Reinsurer Details</h3><div class="uw-view-table-wrap"><table class="uw-view-table"><thead><tr>${th("Code")}${th("Reinsurer Name - System")}${th("Reinsurer Name - UW")}</tr></thead><tbody>${d.reinsurerRows.map((row) => `<tr><td>${escapeHtml(row.code)}</td><td>${escapeHtml(row.systemName)}</td><td>${value(row.uwName)}</td></tr>`).join("")}</tbody></table></div>`;
+        html += `<h3 class="sub">Assign Documents</h3><div class="uw-view-table-wrap"><table class="uw-view-table"><thead><tr>${th("Document name")}${d.reinsurerRows.map((row) => th(row.uwName || row.systemName, true)).join("")}</tr></thead><tbody>${d.documentRows.map((doc) => `<tr><td>${escapeHtml(doc.name)}</td>${doc.assigned.map((assigned) => `<td class="center">${assigned ? "Yes" : "No"}</td>`).join("")}</tr>`).join("")}</tbody></table></div></div>`;
+      }
+      if (d.counterOfferRows.length) {
+        html += `<div class="uw-view-section"><h3>Decision Details</h3><div class="uw-view-table-wrap"><table class="uw-view-table wide"><thead><tr>${th("Product")}${th("Type")}${d.showBstdColumn ? th("BSTD Code") : ""}${th("SA")}${th("Changed SA")}${th("PT")}${th("Changed PT")}${th("Loading Class")}${th("Loading Reason Code")}</tr></thead><tbody>${d.counterOfferRows.map((row) => `<tr><td style="font-weight:700">${value(row.productName)}</td><td>${value(row.type)}</td>${d.showBstdColumn ? `<td>${value(row.bstdCode)}</td>` : ""}<td>${value(row.sa)}</td><td>${value(row.changedSa)}</td><td>${value(row.pt)}</td><td>${value(row.changedPt)}</td><td>${value(row.loadingClass)}</td><td>${value(row.loadingReason)}</td></tr>`).join("")}</tbody></table></div></div>`;
+      }
+      html += `<div class="uw-view-section"><span class="uw-view-label">${d.reinsurerRows.length ? "Remarks" : "UW Remarks"}</span><span class="uw-view-value">${value(d.remarks)}</span></div>`;
+      html += `<div class="uw-view-section"><h3>UW Guidelines</h3><div class="uw-view-table-wrap"><table class="uw-view-table"><thead><tr>${th("Reason")}${th("Remark")}${th("System Action")}${th("Justification Reason")}${th("Justification Remarks")}</tr></thead><tbody>${d.guidelines.map((row) => `<tr><td>${escapeHtml(row.reason)}</td><td>${escapeHtml(row.remark)}</td><td>${escapeHtml(row.systemAction || "—")}</td><td>${escapeHtml(row.justificationReason || "—")}</td><td>${escapeHtml(row.justificationRemark || "—")}</td></tr>`).join("")}</tbody></table></div></div>`;
+      return html;
+    }
+    function openUwViewDialog() {
+      if (!uwState.submitted) return;
+      closeSelectMenu();
+      $("#view-dialog-content").innerHTML = uwViewHtml(uwState.submitted);
+      $("#view-modal-root").hidden = false;
+      document.body.style.overflow = "hidden";
+      $("#view-dialog-close").focus();
+    }
+    function closeViewDialog() {
+      $("#view-modal-root").hidden = true;
+      if ($("#modal-root").hidden) document.body.style.overflow = "";
+    }
+    $("#view-dialog-close").addEventListener("click", closeViewDialog);
+    $("#view-modal-root").addEventListener("click", (event) => { if (event.target.id === "view-modal-root") closeViewDialog(); });
+    $("#uw-view-main").addEventListener("click", openUwViewDialog);
+    document.querySelectorAll("[data-uw-action]").forEach((button) => button.addEventListener("click", () => openUwDecisionDialog(button.dataset.uwAction)));
+
     $("#uw-select").addEventListener("change", (event) => {
       if (syncingUwDecision) return;
-      if (event.target.value === "CLEAR") { event.target.value = ""; updateClearUwOption(); return; }
       const decision = event.target.value;
+      if (decision === "CLEAR") { clearUwDecision(); return; }
       if (!decision) return;
-      resetReinsurerState();
-      approverDecisionState.purpose = "counterSign";
-      approverDecisionState.approver = "";
-      approverDecisionState.reason = "";
-      approverDecisionState.firstDecision = "";
-      referralDecisionState.firstDecision = "";
-      reconsiderState.possible = ""; reconsiderState.after = ""; reconsiderState.reqType = ""; reconsiderState.reqTypeOther = ""; reconsiderState.reqDetails = "";
-      updateClearUwOption();
-      openDialog("", `<div id="uw-main-fields" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px"><label id="uw-remarks-field"><span class="field-label">UW Remarks</span><textarea id="uw-remarks" class="text-input" rows="3" maxlength="10000" placeholder="Enter remarks..."></textarea><small id="remarks-count">0/10000</small></label><label id="case-uw-decision-field"><span class="field-label">Case UW Decision</span><select class="select" id="dialog-uw-select">${event.target.innerHTML}</select></label></div><div id="uw-dialog-details" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:12px"></div><div style="text-align:center;margin-top:16px"><button id="uw-submit" class="contained" type="button">Submit</button></div>`);
-      $("#dialog-uw-select").value = decision;
-      $("#dialog-uw-select").dispatchEvent(new Event("change", { bubbles: true }));
+      // The dropdown keeps its saved value until a draft / final submit links it to the dialog decision
+      setMainDecision(uwState.selected);
+      openUwDecisionDialog(decision);
     });
+
+    function handleUwReferralChange(target) {
+      const rows = uwState.referralRows;
+      const pane = target.closest("[data-uw-pane]");
+      if (target.dataset.refAll !== undefined) {
+        rows.forEach((row) => { if (UW_EXCLUSIVE_REFERRALS.includes(row.target)) row.selected = false; else if (!UW_MER_REFERRALS.includes(row.target)) row.selected = target.checked; });
+        renderUwReferral(pane);
+        return;
+      }
+      const row = rows[Number(target.dataset.refCheck)];
+      if (UW_EXCLUSIVE_REFERRALS.includes(row.target) && target.checked) {
+        // Reinsurer, Sr UW or HOD unchecks every other row
+        rows.forEach((r) => { r.selected = r.target === row.target; });
+      } else if (row.target === "REF_CMO" && target.checked) {
+        // HO CMO unchecks CMO
+        rows.forEach((r) => { if (r.target === "REF_CMO_LOCAL") r.selected = false; });
+        row.selected = true;
+      } else {
+        row.selected = target.checked;
+      }
+      if (row.target === "REF_REINS") uwState.reinsurerEditOpen = target.checked;
+      renderUwReferral(pane, row.target === "REF_REINS" && target.checked);
+    }
+
+    $("#dialog-content").addEventListener("click", (event) => {
+      if (event.target.closest("[data-uw-submit]")) { handleUwSubmit(); return; }
+      if (event.target.closest("[data-uw-back]")) { if (uwState.confirmed) backToUwGuidelines(); else closeDialog(); return; }
+      if (event.target.closest("[data-uw-view]")) { openUwViewDialog(); return; }
+      if (event.target.id === "uw-gl-back") { showUwPane("base"); return; }
+      if (event.target.id === "uw-gl-confirm") { handleUwGuidelinesConfirm(); return; }
+      const edit = event.target.closest("[data-ref-edit]");
+      if (edit && !edit.disabled) {
+        uwState.reinsurerEditOpen = !uwState.reinsurerEditOpen;
+        renderUwReferral(edit.closest("[data-uw-pane]"), uwState.reinsurerEditOpen);
+      }
+    });
+
     $("#dialog-content").addEventListener("change", (event) => {
-      if (event.target.name === "referralPurpose") {
-        approverDecisionState.purpose = event.target.value;
-        approverDecisionState.reason = "";
-        renderUwDialogFields();
+      const target = event.target;
+      if (target.dataset.uwCase !== undefined) {
+        uwState.decision = target.value;
+        renderUwDetails(target.closest("[data-uw-pane]"));
         return;
       }
-      if (event.target.id === "uwApprover") {
-        approverDecisionState.approver = event.target.value;
-        approverDecisionState.reason = "";
-        approverDecisionState.firstDecision = "";
-        renderUwDialogFields();
+      if (target.dataset.uwApprover) { uwState.approver[target.dataset.uwApprover] = target.value; return; }
+      if (target.dataset.refAll !== undefined || target.dataset.refCheck !== undefined) { handleUwReferralChange(target); return; }
+      if (target.dataset.refAssigned !== undefined) { uwState.referralRows[Number(target.dataset.refAssigned)].assignedTo = target.value; return; }
+      if (target.dataset.refReason !== undefined) { uwState.referralRows[Number(target.dataset.refReason)].reason = target.value; return; }
+      if (target.dataset.glReason !== undefined) {
+        const row = uwState.guidelines[Number(target.dataset.glReason)];
+        row.justificationReason = target.value;
+        if (!target.value) row.justificationRemark = "";
+        const remark = target.closest("tr").querySelector("[data-gl-remark]");
+        remark.disabled = !target.value;
+        remark.placeholder = target.value ? "Add remarks (required)" : "Select a reason first";
+        if (!target.value) remark.value = "";
         return;
       }
-      if (event.target.id === "uwApproverReason") {
-        approverDecisionState.reason = event.target.value;
-        return;
-      }
-      if (event.target.id === "uwFirstDecision") {
-        approverDecisionState.firstDecision = event.target.value;
-        renderUwDialogFields();
-        return;
-      }
-      if (event.target.id === "uwReferralFirstDecision") {
-        referralDecisionState.firstDecision = event.target.value;
-        renderUwDialogFields();
-        return;
-      }
-      if (event.target.name === "uwReconsiderPossible") {
-        reconsiderState.possible = event.target.value;
+      if (target.name === "uwReconsiderPossible") {
+        reconsiderState.possible = target.value;
         reconsiderState.after = ""; reconsiderState.reqType = ""; reconsiderState.reqTypeOther = "";
-        renderUwDialogFields();
+        renderUwRecon(target.closest("[data-uw-pane]"));
         return;
       }
-      if (event.target.id === "uwReconsiderAfter") { reconsiderState.after = event.target.value; return; }
-      if (event.target.id === "uwReqType") {
-        reconsiderState.reqType = event.target.value;
+      if (target.id === "uwReconsiderAfter") { reconsiderState.after = target.value; return; }
+      if (target.id === "uwReqType") {
+        reconsiderState.reqType = target.value;
         reconsiderState.reqTypeOther = "";
-        renderUwDialogFields();
+        renderUwRecon(target.closest("[data-uw-pane]"));
         return;
       }
-      if (event.target.classList.contains("dd-type")) { updateDecisionDetailRow(event.target); return; }
-      if (event.target.classList.contains("dd-product")) {
-        const ri = event.target.dataset.row;
-        const tbl = event.target.closest("table");
-        const selected = event.target.options[event.target.selectedIndex];
+      if (target.classList.contains("dd-type")) { updateDecisionDetailRow(target); return; }
+      if (target.classList.contains("dd-product")) {
+        const ri = target.dataset.row;
+        const tbl = target.closest("table");
+        const selected = target.options[target.selectedIndex];
         const saEl  = tbl?.querySelector(`.dd-sa-display[data-row="${ri}"]`);
         const ptEl  = tbl?.querySelector(`.dd-pt-display[data-row="${ri}"]`);
         const typeEl = tbl?.querySelector(`.dd-type[data-row="${ri}"]`);
@@ -3389,22 +3801,10 @@
           const base = ["Standard", "Borderline Standard", "Reduce Cover", "Reduce PT", "Medical Loading", "FE Loading", "Smoker Loading"];
           if (isRider) base.push("Deny Rider");
           typeEl.innerHTML = opt(base);
-          typeEl.disabled = !event.target.value;
+          typeEl.disabled = !target.value;
           reEnhanceSelect(typeEl);
         }
-        return;
       }
-      if (event.target.id === "uwReferralTarget") { renderUwDialogFields(); return; }
-      if (event.target.id !== "dialog-uw-select") return;
-      const clear = event.target.value === "CLEAR";
-      $("#uw-select").value = clear ? "" : event.target.value;
-      updateClearUwOption();
-      if (clear) { closeDialog(); return; }
-      approverDecisionState.approver = "";
-      approverDecisionState.reason = "";
-      approverDecisionState.firstDecision = "";
-      referralDecisionState.firstDecision = "";
-      renderUwDialogFields();
     });
     $("#dialog-content").addEventListener("click", (event) => {
       const selectAllColumn = event.target.dataset.selectAll;
@@ -3446,8 +3846,8 @@
       }
       if (event.target.id === "counter-offer-save") { notify("Decision details saved successfully"); return; }
       if (event.target.id === "generate-referral") {
-        const remarks = $("#reinsurer-remarks")?.value.trim();
-        if (!remarks) { notify("Please add remarks before generating the referral sheet"); return; }
+        const referralRemarks = uwState.referralRows.find((row) => row.target === "REF_REINS")?.remarks.trim() || uwState.remarks.trim();
+        if (!referralRemarks) { notify("Please add remarks before generating the referral sheet"); return; }
         notify("Referral sheet generated successfully");
         return;
       }
@@ -3479,9 +3879,21 @@
       openDialog("Special Remarks", table);
     });
     $("#dialog-content").addEventListener("input", (event) => {
-      if (event.target.id === "uw-remarks") { $("#remarks-count").textContent = `${event.target.value.length}/10000`; return; }
-      if (event.target.id === "uwReqTypeOther") { reconsiderState.reqTypeOther = event.target.value; return; }
-      if (event.target.id === "uwReqDetails")   { reconsiderState.reqDetails   = event.target.value; return; }
+      const target = event.target;
+      if (target.matches("[data-uw-remarks]")) {
+        uwState.remarks = target.value;
+        const count = target.parentElement.querySelector("[data-uw-remarks-count]");
+        if (count) count.textContent = `${target.value.length}/10000`;
+        return;
+      }
+      if (target.dataset.refRemarks !== undefined) { uwState.referralRows[Number(target.dataset.refRemarks)].remarks = target.value; return; }
+      if (target.dataset.glRemark !== undefined) { uwState.guidelines[Number(target.dataset.glRemark)].justificationRemark = target.value; return; }
+      if (target.id === "uwReqTypeOther") { reconsiderState.reqTypeOther = target.value; return; }
+      if (target.id === "uwReqDetails") {
+        reconsiderState.reqDetails = target.value;
+        const count = target.parentElement.querySelector("[data-recon-count]");
+        if (count) count.textContent = `${target.value.length}/4000`;
+      }
     });
     function uwGuidelinesHtml() {
       const rows = [
@@ -3496,17 +3908,6 @@
       const reasons = ["", "Requirement waived", "Document pending", "Financial assessment", "Medical assessment", "Counter signing", "Other"];
       return `<p class="uw-guideline-intro">Select a justification reason to enable its remarks field. Remarks are mandatory for every selected reason.</p><div class="uw-guideline-table-wrap"><table class="uw-guideline-table"><thead><tr><th>Reason</th><th>Remark</th><th>System Action</th><th>Justification Reason</th><th>Justification Remarks</th></tr></thead><tbody>${rows.map((row, index) => `<tr><td>${escapeHtml(row[0])}</td><td>${escapeHtml(row[1])}</td><td>${escapeHtml(row[2] || "—")}</td><td><select class="select" data-guideline-reason="${index}">${reasons.map(reason => `<option value="${escapeHtml(reason)}">${reason ? escapeHtml(reason) : "Select reason"}</option>`).join("")}</select></td><td><input class="text-input" data-guideline-remark="${index}" placeholder="Select a reason first" disabled></td></tr>`).join("")}</tbody></table></div><div class="uw-guideline-actions"><button id="uw-guideline-back" class="outline-pill" type="button">Back</button><button id="uw-guideline-confirm" class="contained" type="button">Confirm & Submit</button></div>`;
     }
-    $("#dialog-content").addEventListener("click", (event) => {
-      if (event.target.id !== "uw-submit") return;
-      const isReinsurerReferral = $("#uw-select").value === "REFERRAL" && $("#uwReferralTarget")?.value === "REF_REINS";
-      const remarksField = $("#uw-remarks");
-      if (!isReinsurerReferral && !remarksField?.value.trim()) { notify("Please enter UW Remarks"); return; }
-      if ($("#uw-select").value === "APPROVER" && !$("#uwApprover")?.value) { notify("Please select Refer To"); return; }
-      if ($("#uw-select").value === "APPROVER" && !approverDecisionState.reason) { notify(`Please select ${approverDecisionState.approver === "Sr UW" ? "Sr UW" : "HOD"} Reasons`); return; }
-      if ($("#uw-select").value === "APPROVER" && !approverDecisionState.firstDecision) { notify("Please select 1st UW Decision"); return; }
-      if ($("#uw-select").value === "REFERRAL" && !$("#uwReferralTarget")?.value) { notify("Please select a referral type"); return; }
-      openDialog("UW Guidelines", uwGuidelinesHtml());
-    });
     $("#dialog-content").addEventListener("click", (event) => {
       if (event.target.id === "uw-guideline-back") { closeDialog(); return; }
       if (event.target.id !== "uw-guideline-confirm") return;

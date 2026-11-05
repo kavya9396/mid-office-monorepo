@@ -31,7 +31,7 @@ export function AppRoutes() {
         >
           <Route index element={<Navigate to="/inbox" replace />} />
           <Route path="/inbox" element={<GroupInboxPage />} />
-          {/* <Route path="/drs" element={<GroupDrsRouter />} /> */}
+          <Route path="/drs" element={<GroupDrsRouter />} />
           <Route path="/guw/member-selection" element={<GuwMemberSelection />} />
           <Route path="/guw/drs" element={<GroupDrsRouter />} />
           {/* <Route path="/applicant-profile" element={<GroupApplicantProfilePage />} /> */}

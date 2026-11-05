@@ -87,14 +87,19 @@ const APPROVER_ASSIGNEE_OPTIONS = ["UW001", "UW002", "UW003"].map((id) => ({
 const REFERRAL_TYPE_OPTIONS = [
   { value: "REF_IT", label: "IT" },
   { value: "REF_REINS", label: "Reinsurer" },
-  { value: "REF_SR_UW", label: "Sr UW" },
-  { value: "REF_HOD", label: "HOD" },
+  { value: "REF_SR_UW", label: "Sr UW Opinion" },
+  { value: "REF_HOD", label: "HOD Opinion" },
   { value: "REF_CMO", label: "HO CMO" },
   { value: "REF_CMO_LOCAL", label: "CMO" },
   { value: "REF_RISK", label: "Risk" },
   { value: "REF_ACU", label: "Accuity" },
   { value: "REF_CUW_CLM", label: "CUW Claim" },
+  { value: "REF_TELE_MER", label: "Tele MER" },
+  { value: "REF_VIDEO_MER", label: "Video MER" },
 ];
+
+// Assigned To is enabled only for these referral rows
+const ASSIGNABLE_REFERRALS = ["REF_SR_UW", "REF_HOD"];
 
 const REFERRAL_REASON_OPTIONS: Record<string, string[]> = {
   REF_IT: ["System issue", "Data correction", "Other"],
@@ -106,6 +111,8 @@ const REFERRAL_REASON_OPTIONS: Record<string, string[]> = {
   REF_RISK: ["Risk assessment", "Policy exception", "Other"],
   REF_ACU: ["Screening review", "Match review", "Other"],
   REF_CUW_CLM: ["Claim history", "Investigation", "Other"],
+  REF_TELE_MER: ["Medical review", "Other"],
+  REF_VIDEO_MER: ["Medical review", "Other"],
 };
 
 const LOADING_CLASS_OPTIONS: Record<string, string[]> = {
@@ -207,6 +214,7 @@ export function GuwUwPanel({
     selected: boolean;
     reason: string;
     remarks: string;
+    assignedTo: string;
   }[]>(() =>
     REFERRAL_TYPE_OPTIONS.map((opt) => ({
       target: opt.value,
@@ -214,6 +222,7 @@ export function GuwUwPanel({
       selected: false,
       reason: "",
       remarks: "",
+      assignedTo: "",
     }))
   );
   const [reinsurerEditOpen, setReinsurerEditOpen] = useState<boolean>(false);
@@ -349,6 +358,11 @@ export function GuwUwPanel({
         .map((r) => `${r.label}: ${r.remarks.trim()}`)
         .join("; ");
       if (rowRemarks) add("Referral Remarks", rowRemarks, true);
+      const rowAssignees = selectedReferrals
+        .filter((r) => r.assignedTo)
+        .map((r) => `${r.label}: ${r.assignedTo}`)
+        .join("; ");
+      if (rowAssignees) add("Assigned To", rowAssignees, true);
     }
     if (dialogDecision !== "REFERRAL" && effectiveDecision) {
       add("Decision Code", effectiveDecision);
@@ -1146,14 +1160,21 @@ export function GuwUwPanel({
                             checked={
                               referralRows.length > 0 &&
                               !referralRows.some((r) => ["REF_REINS", "REF_SR_UW", "REF_HOD"].includes(r.target) && r.selected) &&
-                              referralRows.filter((r) => !["REF_REINS", "REF_SR_UW", "REF_HOD"].includes(r.target)).every((r) => r.selected)
+                              referralRows
+                                .filter((r) => !["REF_REINS", "REF_SR_UW", "REF_HOD", "REF_TELE_MER", "REF_VIDEO_MER"].includes(r.target))
+                                .every((r) => r.selected)
                             }
                             onChange={(e) => {
                               const checked = e.target.checked;
                               setReferralRows((prev) =>
                                 prev.map((r) => ({
                                   ...r,
-                                  selected: ["REF_REINS", "REF_SR_UW", "REF_HOD"].includes(r.target) ? false : checked,
+                                  // Tele MER / Video MER are mutually exclusive, so select-all leaves them unchanged
+                                  selected: ["REF_REINS", "REF_SR_UW", "REF_HOD"].includes(r.target)
+                                    ? false
+                                    : ["REF_TELE_MER", "REF_VIDEO_MER"].includes(r.target)
+                                    ? r.selected
+                                    : checked,
                                 }))
                               );
                             }}
@@ -1174,6 +1195,9 @@ export function GuwUwPanel({
                         <th style={{ padding: "8px 12px", border: "1px solid #ded9d6", textAlign: "left", fontWeight: 800 }}>
                           UW Remarks
                         </th>
+                        <th style={{ padding: "8px 12px", border: "1px solid #ded9d6", textAlign: "left", fontWeight: 800, width: "140px" }}>
+                          Assigned To
+                        </th>
                         <th style={{ padding: "8px 12px", border: "1px solid #ded9d6", textAlign: "center", fontWeight: 800, width: "90px" }}>
                           Action
                         </th>
@@ -1189,9 +1213,14 @@ export function GuwUwPanel({
                         const isHoCmoSelected = referralRows.some(
                           (r) => r.target === "REF_CMO" && r.selected
                         );
+                        const isTeleMerSelected = referralRows.some((r) => r.target === "REF_TELE_MER" && r.selected);
+                        const isVideoMerSelected = referralRows.some((r) => r.target === "REF_VIDEO_MER" && r.selected);
                         const isRowDisabled =
                           (isExclusiveSelected && !row.selected) ||
-                          (row.target === "REF_CMO_LOCAL" && isHoCmoSelected);
+                          (row.target === "REF_CMO_LOCAL" && isHoCmoSelected) ||
+                          (row.target === "REF_VIDEO_MER" && isTeleMerSelected) ||
+                          (row.target === "REF_TELE_MER" && isVideoMerSelected);
+                        const canAssign = ASSIGNABLE_REFERRALS.includes(row.target);
                         const reasonOptions = (REFERRAL_REASON_OPTIONS[row.target] ?? []).map((opt) => ({
                           value: opt,
                           label: opt,
@@ -1288,6 +1317,22 @@ export function GuwUwPanel({
                                 }}
                                 disabled={!row.selected || isRowDisabled}
                                 placeholder="Enter remarks"
+                                fullWidth
+                              />
+                            </td>
+                            <td style={{ padding: "6px 8px", border: "1px solid #ded9d6" }}>
+                              <CustomSelect
+                                value={row.assignedTo}
+                                onChange={(val) => {
+                                  setReferralRows((prev) => {
+                                    const copy = [...prev];
+                                    copy[index] = { ...copy[index], assignedTo: val };
+                                    return copy;
+                                  });
+                                }}
+                                options={APPROVER_ASSIGNEE_OPTIONS}
+                                disabled={!canAssign || !row.selected || isRowDisabled}
+                                placeholder="Select User ID"
                                 fullWidth
                               />
                             </td>
