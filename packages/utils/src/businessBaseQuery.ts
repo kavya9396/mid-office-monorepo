@@ -4,7 +4,9 @@ import {
   type FetchArgs,
   type FetchBaseQueryError,
 } from "@reduxjs/toolkit/query";
-import { sessionExpired } from "./authSlice";
+import { sessionExpired } from "../auth/authSlice";
+import { clearToken } from "../auth/session";
+import { applyBusinessApiAuthHeaders } from "./httpAuthHeaders";
 import { decryptPayload, encryptPayload } from "./payloadCrypto";
 import { clearToken, getToken } from "./session";
 
@@ -55,9 +57,8 @@ export function createBusinessBaseQuery(baseUrl: string): BaseQueryFn<
   const rawBaseQuery = fetchBaseQuery({
     baseUrl,
     prepareHeaders: (headers) => {
-      const token = getToken();
-      if (token) headers.set("Authorization", `Bearer ${token}`);
-      headers.set("Accept", "application/json");
+      applyBusinessApiAuthHeaders(headers);
+      if (!headers.has("Accept")) headers.set("Accept", "application/json");
       return headers;
     },
   });

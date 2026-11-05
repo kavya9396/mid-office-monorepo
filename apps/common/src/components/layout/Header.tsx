@@ -11,7 +11,7 @@ import Divider from "@mui/material/Divider";
 import Menu from "@mui/material/Menu";
 import Typography from "@mui/material/Typography";
 import { useLocation, useNavigate } from "react-router-dom";
-import { assignUrl, commonPaths } from "@insurance-poc/routes";
+import { assignUrl, businessInboxUrl, commonPaths } from "@insurance-poc/routes";
 import {
   CustomTooltip,
   KeyDownArrowIcon,
@@ -22,12 +22,61 @@ import {
   TimerPauseIcon,
   UserProfileIcon,
 } from "@insurance-poc/ui";
-import { clearToken, getSessionUser } from "@insurance-poc/utils";
+import {
+  clearSession,
+  clearToken,
+  getSessionBusinessType,
+  getSessionUser,
+  setSessionBusinessType,
+  type SessionBusinessType,
+} from "@insurance-poc/utils";
+import { BusinessTypeTabs } from "../../modules/login/BusinessTypeTabs";
+import {
+  apiResultMessage,
+  authSnackbar,
+  closedAuthSnackbar,
+  readApiMessage,
+  type AuthSnackbarState,
+} from "../../modules/login/authFeedback";
+import { useLogoutMutation } from "../../services/authApi";
 import Logo from "../../assets/ICICI_Logo.svg";
 import { BreakTime } from "./BreakTime";
 
 const HEADER_HEIGHT = 57;
 const FALLBACK_SESSION_TIMEOUT_MINUTES = 15;
+
+function readHeaderBusinessType(): SessionBusinessType {
+  return getSessionBusinessType() ?? "RETAIL";
+}
+
+function switchBusinessType(next: SessionBusinessType): void {
+  const current = readHeaderBusinessType();
+  if (next === current) return;
+  setSessionBusinessType(next);
+  const destination = businessInboxUrl(next);
+  if (destination) assignUrl(destination);
+}
+
+function HeaderBusinessToggle() {
+  return (
+    <Box
+      sx={{
+        ml: 1,
+        display: "flex",
+        alignItems: "center",
+        flexShrink: 0,
+        alignSelf: "center",
+      }}
+    >
+      <BusinessTypeTabs
+        showLabel={false}
+        surface="brandHeader"
+        value={readHeaderBusinessType()}
+        onChange={switchBusinessType}
+      />
+    </Box>
+  );
+}
 const MASTER_DATA_STORAGE_KEY = "masterData";
 const HIDDEN_TASK_PATHS = new Set(["/login", "/inbox"]);
 
@@ -637,6 +686,7 @@ export function Header({
           alt="ICICI Life Logo"
           sx={{ height: "100%", width: "150px", display: "block", objectFit: "cover" }}
         />
+        <HeaderBusinessToggle />
       </Box>
 
       <Box

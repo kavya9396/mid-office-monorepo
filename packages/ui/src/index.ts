@@ -34,7 +34,11 @@ export { default as CustomMultiSelect } from "./Select/MultiSelect";
 export { default as CustomSelect } from "./Select/Select";
 export { default as CustomSnackbar } from "./SnackBar/Snackbar";
 export { default as CustomTable, type Column } from "./Table/Table";
-export { default as CustomTabs, type TabItem } from "./Tabs/Tabs";
+export {
+  default as CustomTabs,
+  type CustomTabsSurface,
+  type TabItem,
+} from "./Tabs/Tabs";
 export { default as CustomTextField } from "./TextField/TextField";
 export { default as CustomTooltip } from "./Tooltip/Tooltip";
 export {

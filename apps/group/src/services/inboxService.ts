@@ -4,41 +4,8 @@ import type {
   InboxFieldValue,
 } from "@insurance-poc/common/inbox";
 
-export const GROUP_INBOX_PATH = "/inbox";
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function readField(value: unknown): InboxFieldValue | undefined {
-  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
-    return value;
-  }
-  return value === null ? null : undefined;
-}
-
-function readText(value: unknown): string {
-  return typeof value === "string" ? value.trim() : "";
-}
-
-function mapGroupCase(value: unknown, poolName: string, index: number): InboxCase | null {
-  if (!isRecord(value)) return null;
-
-  const fields: Record<string, InboxFieldValue> = {};
-  for (const [key, field] of Object.entries(value)) {
-    const parsed = readField(field);
-    if (parsed !== undefined) fields[key] = parsed;
-  }
-
-  const applicationNo = readText(fields.applicationNo);
-  const taskId = readText(fields.taskId);
-  const id = fields.id === undefined || fields.id === null ? "" : String(fields.id);
-  return {
-    rowId: `${poolName}-${id}-${taskId}-${index}`,
-    poolName,
-    applicationNo,
-    fields,
-  };
+export function createGroupRoleListRequest(): RoleListRequest {
+  return {};
 }
 
 export function mapGroupInboxPayload(value: unknown): InboxData {
@@ -60,4 +27,3 @@ export function mapGroupInboxPayload(value: unknown): InboxData {
     poolData,
   };
 }
-

@@ -4,18 +4,9 @@ import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
 import InputAdornment from "@mui/material/InputAdornment";
 import Link from "@mui/material/Link";
-import Typography from "@mui/material/Typography";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { assignUrl, businessInboxUrl } from "@insurance-poc/routes";
-import {
-  CustomButton,
-  CustomSnackbar,
-  CustomTabs,
-  CustomTextField,
-  EyeIcon,
-  EyeSlashIcon,
-  type TabItem,
-} from "@insurance-poc/ui";
+import { assignUrl, businessInboxUrl, commonPaths } from "@insurance-poc/routes";
+import { CustomButton, CustomSnackbar, CustomTextField, EyeIcon, EyeSlashIcon } from "@insurance-poc/ui";
 import {
   clearToken,
   setRefreshToken,
@@ -29,6 +20,16 @@ import IPRULogo from "../../assets/ICICI_Logo_BG.svg";
 import LoginImage from "../../assets/Login-Image.svg";
 import { useLoginMutation } from "../../services/authApi";
 import type { BusinessType } from "../../services/loginService";
+import { BusinessTypeTabs } from "./BusinessTypeTabs";
+import { AuthShell, authCompactLaptop, authShortLaptop } from "./AuthShell";
+import {
+  authSnackbar,
+  closedAuthSnackbar,
+  readApiMessage,
+  type AuthSnackbarState,
+  type SnackbarSeverity,
+} from "./authFeedback";
+import { ForgotPasswordDialog } from "./ForgotPasswordDialog";
 import { loginSchema, type LoginForm } from "./loginSchema";
 
 type SnackbarState = {
@@ -51,14 +52,21 @@ type CredentialsFormProps = {
   onSubmit: FormEventHandler<HTMLFormElement>;
 };
 
-const businessTabs: TabItem<BusinessType>[] = [
-  { key: "RETAIL", label: "Retail" },
-  { key: "GROUP", label: "Group" },
-];
+function readResetMessage(state: unknown): string {
+  if (typeof state !== "object" || state === null) return "";
+  const message = (state as Record<string, unknown>).resetMessage;
+  return typeof message === "string" ? message.trim() : "";
+}
 
-const initialSnackbar: SnackbarState = {
-  open: false,
-  message: "",
+type LoginSuccessHandlerArgs = {
+  accessToken: string;
+  refreshToken: string;
+  user: Parameters<typeof setSessionUser>[0];
+  firstLogin: boolean;
+  mustChangePassword: boolean;
+  lastLoginAt: string;
+  businessType: BusinessType;
+  navigateToChangePassword: () => void;
 };
 
 const inlineLinkSx = {
@@ -159,23 +167,7 @@ function CredentialsForm({
         [shortLaptop]: { gap: 1 },
       }}
     >
-      <Box>
-        <Typography sx={{ fontSize: "12px", fontWeight: 600, mb: 0.75 }}>
-          Business type
-        </Typography>
-        <CustomTabs
-          tabs={businessTabs}
-          value={businessType}
-          onChange={onBusinessTypeChange}
-          sx={{
-            [compactLaptop]: { p: 0.5, gap: 0.5 },
-            "& button": {
-              [compactLaptop]: { py: 0.75 },
-              [shortLaptop]: { py: 0.5 },
-            },
-          }}
-        />
-      </Box>
+      <BusinessTypeTabs value={businessType} onChange={onBusinessTypeChange} />
 
       <Controller
         name="username"
