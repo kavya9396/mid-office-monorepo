@@ -191,10 +191,12 @@ describe("login module", () => {
       expect(first.accessToken).toBe(loginMock.token.restricted);
       expect(first.refreshToken).toBe("");
       expect(first.lastLoginAt).toBe("");
+      expect(first.sessionId).toBe("VpAjFOyn9DuNUtpoRr0okyukre6_AZy0vwRpBL6b9H8");
 
       setSessionUser({ userId: "LDAP12345", displayName: "LDAP12345" });
       const changed = await runMock(() =>
         fetchChangePassword({
+          username: "LDAP12345",
           oldPassword: POLICY_OLD_PASSWORD,
           newPassword: POLICY_NEW_PASSWORD,
         }),
@@ -458,7 +460,11 @@ describe("login module", () => {
     it("rejects a new password that is too short", async () => {
       const { fetchChangePassword } = await loadLogin();
       const result = await runMock(() =>
-        fetchChangePassword({ oldPassword: POLICY_OLD_PASSWORD, newPassword: "short" }),
+        fetchChangePassword({
+          username: "UW001",
+          oldPassword: POLICY_OLD_PASSWORD,
+          newPassword: "short",
+        }),
       );
 
       expect(result).toEqual({
@@ -473,6 +479,7 @@ describe("login module", () => {
       const { fetchChangePassword } = await loadLogin();
       const result = await runMock(() =>
         fetchChangePassword({
+          username: "UW001",
           oldPassword: POLICY_OLD_PASSWORD,
           newPassword: POLICY_NEW_PASSWORD,
         }),
@@ -495,6 +502,7 @@ describe("login module", () => {
 
       await expect(
         fetchChangePassword({
+          username: "UW001",
           oldPassword: POLICY_OLD_PASSWORD,
           newPassword: POLICY_NEW_PASSWORD,
         }),
@@ -510,10 +518,11 @@ describe("login module", () => {
       );
       vi.stubGlobal("fetch", fetchMock);
       const { fetchChangePassword } = await loadLogin();
-      const { setToken } = await import("@insurance-poc/utils");
+      const { setSessionUser, setToken } = await import("@insurance-poc/utils");
       setToken("user-jwt");
-
+      setSessionUser({ userId: "UW001", displayName: "Retail Underwriter" });
       const result = await fetchChangePassword({
+        username: "UW001",
         oldPassword: POLICY_OLD_PASSWORD,
         newPassword: POLICY_NEW_PASSWORD,
       });
@@ -526,6 +535,7 @@ describe("login module", () => {
       expect(posted.headers.get("X-Apigee-Authorization")).toBe(
         `Basic ${btoa(`${BASIC_USER}:${BASIC_PASSWORD}`)}`,
       );
+      expect(readString(posted.body, "username")).toBe("UW001");
       expect(readString(posted.body, "oldPassword")).toBe(POLICY_OLD_PASSWORD);
       expect(readString(posted.body, "newPassword")).toBe(POLICY_NEW_PASSWORD);
     });

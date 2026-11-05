@@ -36,6 +36,7 @@ function loginSuccess(overrides: Record<string, unknown> = {}) {
         message: "Logged in",
         accessToken: "access-token",
         refreshToken: "refresh-token",
+        sessionId: "mock-session-id",
         firstLogin: false,
         mustChangePassword: false,
         lastLoginAt: "2026-10-06T14:10:20",
@@ -122,7 +123,7 @@ describe("LoginPage", () => {
   });
 
   it("sends a first-login user to change password", async () => {
-    auth.login.mockReturnValue(loginSuccess({ firstLogin: true, mustChangePassword: true }));
+    auth.login.mockReturnValue(loginSuccess({ firstLogin: true }));
     renderUi(
       <MemoryRouter initialEntries={["/login"]}>
         <Routes>

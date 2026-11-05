@@ -7,6 +7,7 @@ const passwordMessage = PASSWORD_POLICY_MESSAGE;
 describe("changePasswordSchema", () => {
   it("accepts matching new and confirm passwords", () => {
     const result = changePasswordSchema.safeParse({
+      username: "LDAP12345",
       oldPassword: "OldPass@1234",
       newPassword: "NewerPass@1234",
       confirmPassword: "NewerPass@1234",
@@ -16,6 +17,7 @@ describe("changePasswordSchema", () => {
 
   it("requires the current password", () => {
     const result = changePasswordSchema.safeParse({
+      username: "LDAP12345",
       oldPassword: "",
       newPassword: "NewerPass@1234",
       confirmPassword: "NewerPass@1234",
@@ -28,6 +30,7 @@ describe("changePasswordSchema", () => {
 
   it("requires the new password", () => {
     const result = changePasswordSchema.safeParse({
+      username: "LDAP12345",
       oldPassword: "OldPass@1234",
       newPassword: "",
       confirmPassword: "NewerPass@1234",
@@ -40,6 +43,7 @@ describe("changePasswordSchema", () => {
 
   it("requires the confirm password", () => {
     const result = changePasswordSchema.safeParse({
+      username: "LDAP12345",
       oldPassword: "OldPass@1234",
       newPassword: "NewerPass@1234",
       confirmPassword: "",
@@ -52,6 +56,7 @@ describe("changePasswordSchema", () => {
 
   it("reports a mismatch on the confirmPassword field", () => {
     const result = changePasswordSchema.safeParse({
+      username: "LDAP12345",
       oldPassword: "OldPass@1234",
       newPassword: "NewerPass@1234",
       confirmPassword: "NewerPass@1235",
@@ -66,6 +71,7 @@ describe("changePasswordSchema", () => {
 
   it("is case sensitive when comparing passwords", () => {
     const result = changePasswordSchema.safeParse({
+      username: "LDAP12345",
       oldPassword: "OldPass@1234",
       newPassword: "NewerPass@1234",
       confirmPassword: "newerPass@1234",

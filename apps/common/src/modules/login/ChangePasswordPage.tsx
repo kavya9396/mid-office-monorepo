@@ -1,11 +1,10 @@
 import { useState } from "react";
 import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { commonPaths } from "@insurance-poc/routes";
-import { CustomButton, CustomSnackbar } from "@insurance-poc/ui";
-import { getToken, clearSession } from "@insurance-poc/utils";
-import { useForm } from "react-hook-form";
+import { CustomButton, CustomSnackbar, CustomTextField } from "@insurance-poc/ui";
+import { clearSession, getSessionUser } from "@insurance-poc/utils";
+import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useChangePasswordMutation } from "../../services/authApi";
 import { AuthPasswordField } from "./AuthPasswordField";
@@ -26,11 +25,13 @@ export function ChangePasswordPage() {
   const [changePassword] = useChangePasswordMutation();
   const [snackbar, setSnackbar] = useState<AuthSnackbarState>(closedAuthSnackbar);
   const [redirecting, setRedirecting] = useState(false);
-  const hasToken = (getToken()?.trim().length ?? 0) > 0;
+  const sessionUsername = getSessionUser()?.userId ?? "";
+
   const { control, handleSubmit, formState } = useForm<ChangePasswordForm>({
     resolver: zodResolver(changePasswordSchema),
     mode: "onChange",
     defaultValues: {
+      username: sessionUsername,
       oldPassword: "",
       newPassword: "",
       confirmPassword: "",
@@ -41,6 +42,7 @@ export function ChangePasswordPage() {
     setSnackbar(closedAuthSnackbar);
     try {
       const result = await changePassword({
+        username: values.username,
         oldPassword: values.oldPassword,
         newPassword: values.newPassword,
       }).unwrap();
@@ -60,49 +62,65 @@ export function ChangePasswordPage() {
   return (
     <>
       <AuthShell subtitle="Change your password">
-        {hasToken || redirecting ? (
-          <Box
-            component="form"
-            onSubmit={handleSubmit(onSubmit)}
-            sx={{ display: "flex", flexDirection: "column", gap: 2 }}
-          >
-            <AuthPasswordField
-              name="oldPassword"
-              control={control}
-              label="Current password"
-              placeholder="Enter your current password"
-              autoComplete="current-password"
-            />
-            <AuthPasswordField
-              name="newPassword"
-              control={control}
-              label="New password"
-              placeholder="Enter your new password"
-              autoComplete="new-password"
-            />
-            <AuthPasswordField
-              name="confirmPassword"
-              control={control}
-              label="Confirm password"
-              placeholder="Re-enter your new password"
-              autoComplete="new-password"
-            />
+        <Box
+          component="form"
+          onSubmit={handleSubmit(onSubmit)}
+          sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+        >
+          <Controller
+            name="username"
+            control={control}
+            render={({ field }) => (
+              <CustomTextField
+                fullWidth
+                name={field.name}
+                value={field.value}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                labelText="User ID"
+                mandatory
+                disabled
+                slotProps={{
+                  input: {
+                    readOnly: true,
+                    autoComplete: "username",
+                  },
+                }}
+              />
+            )}
+          />
+          <AuthPasswordField
+            name="oldPassword"
+            control={control}
+            label="Current password"
+            placeholder="Enter your current password"
+            autoComplete="current-password"
+          />
+          <AuthPasswordField
+            name="newPassword"
+            control={control}
+            label="New password"
+            placeholder="Enter your new password"
+            autoComplete="new-password"
+          />
+          <AuthPasswordField
+            name="confirmPassword"
+            control={control}
+            label="Confirm password"
+            placeholder="Re-enter your new password"
+            autoComplete="new-password"
+          />
 
-            <CustomButton
-              fullWidth
-              variant="contained"
-              type="submit"
-              disabled={!formState.isValid || formState.isSubmitting || redirecting}
-              sx={{ py: 1.25, borderRadius: "50px" }}
-            >
-              {formState.isSubmitting ? "Saving..." : "Change password"}
-            </CustomButton>
-          </Box>
-        ) : (
-          <Typography role="alert" sx={{ fontSize: "13px", color: "#9A2529" }}>
-            Sign in before changing your password.
-          </Typography>
-        )}
+          <CustomButton
+            fullWidth
+            variant="contained"
+            type="submit"
+            disabled={!formState.isValid || formState.isSubmitting || redirecting}
+            sx={{ py: 1.25, borderRadius: "50px" }}
+          >
+            {formState.isSubmitting ? "Saving..." : "Change password"}
+          </CustomButton>
+        </Box>
       </AuthShell>
 
       <CustomSnackbar

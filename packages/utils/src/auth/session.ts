@@ -3,10 +3,16 @@ const REFRESH_TOKEN_KEY = "refreshToken";
 const USER_ID_KEY = "userId";
 const DISPLAY_NAME_KEY = "displayName";
 const BUSINESS_TYPE_KEY = "businessType";
-const MUST_CHANGE_PASSWORD_KEY = "mustChangePassword";
 const LAST_LOGIN_AT_KEY = "lastLoginAt";
+const SESSION_ID_KEY = "sessionId";
 /** Legacy mock-only key — removed on clear so real API sessions stay clean. */
 const LEGACY_PASSWORD_CHANGED_KEY = "passwordChangedUserIds";
+
+import {
+  clearFirstLoginChangePending,
+  isFirstLoginChangePending,
+  setFirstLoginChangePending,
+} from "./firstLoginFlow";
 
 export type SessionBusinessType = "RETAIL" | "GROUP";
 
@@ -49,32 +55,40 @@ export function clearToken(): void {
   storage?.removeItem(USER_ID_KEY);
   storage?.removeItem(DISPLAY_NAME_KEY);
   storage?.removeItem(BUSINESS_TYPE_KEY);
-  storage?.removeItem(MUST_CHANGE_PASSWORD_KEY);
   storage?.removeItem(LAST_LOGIN_AT_KEY);
+  clearFirstLoginChangePending();
+  storage?.removeItem(SESSION_ID_KEY);
   storage?.removeItem(LEGACY_PASSWORD_CHANGED_KEY);
+}
+
+export function setSessionId(sessionId: string): void {
+  const storage = readStorage();
+  if (!storage) return;
+  if (sessionId.trim().length === 0) {
+    storage.removeItem(SESSION_ID_KEY);
+    return;
+  }
+  storage.setItem(SESSION_ID_KEY, sessionId.trim());
+}
+
+export function getSessionId(): string | null {
+  return readStorage()?.getItem(SESSION_ID_KEY) ?? null;
 }
 
 /** Removes every session value, including token, user, and any other saved keys. */
 export function clearSession(): void {
   readStorage()?.clear();
+  clearFirstLoginChangePending();
 }
 
-/**
- * Only persist when the server requires a password change (first login).
- * Never write "false" — absence of the key means the server did not require it.
- */
+/** @deprecated Prefer setFirstLoginChangePending — in-memory only, from login `firstLogin`. */
 export function setMustChangePassword(required: boolean): void {
-  const storage = readStorage();
-  if (!storage) return;
-  if (required) {
-    storage.setItem(MUST_CHANGE_PASSWORD_KEY, "true");
-    return;
-  }
-  storage.removeItem(MUST_CHANGE_PASSWORD_KEY);
+  setFirstLoginChangePending(required);
 }
 
+/** @deprecated Prefer isFirstLoginChangePending — not read from sessionStorage. */
 export function mustChangePassword(): boolean {
-  return readStorage()?.getItem(MUST_CHANGE_PASSWORD_KEY) === "true";
+  return isFirstLoginChangePending();
 }
 
 export function setSessionUser(user: SessionUser): void {

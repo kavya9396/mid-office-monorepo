@@ -9,9 +9,10 @@ import { CustomButton, CustomSnackbar, CustomTextField, EyeIcon, EyeSlashIcon } 
 import {
   clearSession,
   setLastLoginAt,
-  setMustChangePassword,
+  setFirstLoginChangePending,
   setRefreshToken,
   setSessionBusinessType,
+  setSessionId,
   setSessionUser,
   setToken,
 } from "@insurance-poc/utils";
@@ -56,9 +57,9 @@ function readResetMessage(state: unknown): string {
 type LoginSuccessHandlerArgs = {
   accessToken: string;
   refreshToken: string;
+  sessionId: string;
   user: Parameters<typeof setSessionUser>[0];
   firstLogin: boolean;
-  mustChangePassword: boolean;
   lastLoginAt: string;
   businessType: BusinessType;
   navigateToChangePassword: () => void;
@@ -67,28 +68,27 @@ type LoginSuccessHandlerArgs = {
 function handleLoginSuccess({
   accessToken,
   refreshToken,
+  sessionId,
   user,
   firstLogin,
-  mustChangePassword,
   lastLoginAt,
   businessType,
   navigateToChangePassword,
 }: LoginSuccessHandlerArgs): void {
   setToken(accessToken);
   setRefreshToken(refreshToken);
+  setSessionId(sessionId);
   setSessionUser(user);
   setSessionBusinessType(businessType);
   setLastLoginAt(lastLoginAt);
 
-  // Server is source of truth: force change-password only when firstLogin / mustChangePassword is true.
-  // Never persist mustChangePassword=false in sessionStorage.
-  if (firstLogin || mustChangePassword) {
-    setMustChangePassword(true);
+  if (firstLogin) {
+    setFirstLoginChangePending(true);
     navigateToChangePassword();
     return;
   }
 
-  setMustChangePassword(false);
+  setFirstLoginChangePending(false);
   const destination = businessInboxUrl(businessType);
   if (!destination) {
     throw new Error("Business Inbox is not configured.");
@@ -264,9 +264,9 @@ export function LoginPage() {
       handleLoginSuccess({
         accessToken: loginResult.accessToken,
         refreshToken: loginResult.refreshToken,
+        sessionId: loginResult.sessionId,
         user: loginResult.user,
         firstLogin: loginResult.firstLogin,
-        mustChangePassword: loginResult.mustChangePassword,
         lastLoginAt: loginResult.lastLoginAt,
         businessType,
         navigateToChangePassword: () => navigate(commonPaths.changePassword),
