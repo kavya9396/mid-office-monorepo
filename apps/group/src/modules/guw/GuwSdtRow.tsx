@@ -22,7 +22,7 @@ function DecisionCell({
   borderLeft,
 }: {
   label: string;
-  value: string;
+  value?: string;
   borderLeft?: boolean;
 }) {
   return (

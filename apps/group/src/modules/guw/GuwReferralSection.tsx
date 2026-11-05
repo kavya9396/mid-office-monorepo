@@ -6,6 +6,7 @@ import {
   CustomSelect,
   CustomTable,
   CustomTextField,
+  CustomTooltip,
   CustomTypography,
   EditIcon,
   type Column,
@@ -198,16 +199,44 @@ export function GuwReferralSection({
       width: "52px",
       render: (_value, row) =>
         row.target === REINSURER_TARGET ? (
-          <CustomButton
-            variant={reinsurerEditOpen ? "contained" : "outlined"}
-            disabled={!row.selected}
-            aria-label={reinsurerEditOpen ? "Hide reinsurer details" : "Edit reinsurer details"}
-            title={reinsurerEditOpen ? "Hide reinsurer details" : "Edit reinsurer details"}
-            onClick={() => setReinsurerEditOpen((prev) => !prev)}
-            sx={{ width: 28, minWidth: 28, height: 28, p: 0, borderRadius: "6px" }}
+          <CustomTooltip
+            title={
+              row.selected
+                ? reinsurerEditOpen
+                  ? "Hide reinsurer details"
+                  : "Edit reinsurer details"
+                : "Select row to edit details"
+            }
           >
-            <EditIcon width={16} height={16} />
-          </CustomButton>
+            <CustomBox component="span" sx={{ display: "inline-flex" }}>
+              <CustomButton
+                variant={reinsurerEditOpen ? "contained" : "outlined"}
+                disabled={!row.selected}
+                aria-label={reinsurerEditOpen ? "Hide reinsurer details" : "Edit reinsurer details"}
+                onClick={() => setReinsurerEditOpen((prev) => !prev)}
+                sx={{
+                  width: 28,
+                  minWidth: 28,
+                  height: 28,
+                  p: 0,
+                  borderRadius: "6px",
+                  ...(reinsurerEditOpen
+                    ? {
+                        background: "#e45f14",
+                        color: "#fff",
+                        borderColor: "#e45f14",
+                        "&:hover": { background: "#c94f0d", borderColor: "#c94f0d" },
+                      }
+                    : {
+                        color: row.selected ? "#e45f14" : "#aaa",
+                        borderColor: row.selected ? "#e45f14" : "#ddd",
+                      }),
+                }}
+              >
+                <EditIcon width={16} height={16} />
+              </CustomButton>
+            </CustomBox>
+          </CustomTooltip>
         ) : null,
     },
   ];
