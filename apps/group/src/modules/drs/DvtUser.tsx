@@ -22,6 +22,7 @@ import {
   requirementStatusVariants,
 } from "./requirementData";
 import { useGetGroupDrsQuery } from "../../services/drsApi";
+import { useGetGroupFinancialDetailsQuery } from "../../services/financialApi";
 import type { CardType } from "../../services/drsService";
 import { GROUP_QUICK_LINKS_CONFIG } from "../config/quickLinks.config";
 
@@ -80,6 +81,17 @@ const DvtUser = () => {
   const drs = useGetGroupDrsQuery(requestedApplicationNo);
   const applicationNo = requestedApplicationNo || drs.data?.applicationNo || "";
 
+  const applicants = drs.data?.applicants ?? [];
+  const currentApplicantParam = params.get(APPLICANT_ID_PARAM)?.trim();
+  const selectedApplicant =
+    applicants.find((a) => a.id === currentApplicantParam) ?? applicants[0];
+  const activePartyId = selectedApplicant?.partyId ?? "";
+
+  const financialQuery = useGetGroupFinancialDetailsQuery(
+    { applicationNumber: applicationNo, partyId: activePartyId },
+    { skip: !isFinancialRoute || !applicationNo || !activePartyId },
+  );
+
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
   const [applicantProfileOpen, setApplicantProfileOpen] = useState(false);
   const [breDetailOpen, setBreDetailOpen] = useState(false);
@@ -106,6 +118,12 @@ const DvtUser = () => {
     navigate({ pathname: DRS_PATH, search: query ? `?${query}` : "" });
   };
 
+  const handleFinancialApplicantChange = (applicantKey: string) => {
+    const next = new URLSearchParams(params);
+    next.set(APPLICANT_ID_PARAM, applicantKey);
+    navigate({ pathname: FINANCIAL_PATH, search: `?${next.toString()}` }, { replace: true });
+  };
+
   const handleBreRetrigger = () => console.log("BRE Retrigger clicked");
   const handleApplicantAction = (action: string) => (applicantId: string) =>
     console.log(`${action} clicked`, applicantId);
@@ -128,7 +146,7 @@ const DvtUser = () => {
     );
   }
 
-  const { cardDetails, breDecision, requirements, applicants } = drs.data;
+  const { cardDetails, breDecision, requirements } = drs.data;
 
   const detailCards = (
     <Box
@@ -151,12 +169,18 @@ const DvtUser = () => {
   );
 
   if (isFinancialRoute) {
-    const financialApplicants = applicants.map((applicant) => ({ key: applicant.id, label: applicant.label }));
+    const financialApplicants = applicants.map((applicant) => ({
+      key: applicant.id,
+      label: applicant.label,
+      partyId: applicant.partyId,
+    }));
     return (
       <Financial
         summary={detailCards}
         applicants={financialApplicants.length > 0 ? financialApplicants : undefined}
-        initialApplicantKey={params.get(APPLICANT_ID_PARAM)?.trim() || undefined}
+        initialApplicantKey={selectedApplicant?.id || undefined}
+        sections={financialQuery.data}
+        onApplicantChange={handleFinancialApplicantChange}
         onBack={closeFinancial}
         onSubmit={(payload) => console.log("Submit financial", payload)}
       />

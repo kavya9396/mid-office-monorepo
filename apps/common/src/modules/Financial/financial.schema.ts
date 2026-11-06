@@ -84,13 +84,6 @@ const optionalYear = (fieldName: string) =>
     .refine((value) => value === "" || RegexPatterns.year.test(value), `${fieldName} must be a 4-digit year (YYYY).`)
     .optional();
 
-/** Required year (YYYY). */
-const requiredYear = (fieldName: string) =>
-  z
-    .string()
-    .min(1, `${fieldName} is required. Please enter a 4-digit year (YYYY).`)
-    .regex(RegexPatterns.year, `${fieldName} must be a 4-digit year (YYYY).`);
-
 /** Optional Yes/No dropdown: blank, "Yes" or "No". */
 const optionalYesNo = (fieldName: string) =>
   z
@@ -115,22 +108,29 @@ const requiredAlphabets = (fieldName: string) =>
 /** Required free text (any characters). */
 const requiredFreeText = (fieldName: string) => z.string().min(1, `${fieldName} is required.`);
 
-/** Required assessment year range, "XXXX-XX". */
+/** Required assessment year range, "AY XX-XX". */
 const requiredAssessmentYear = (fieldName: string) =>
   z
     .string()
-    .min(1, `${fieldName} is required. Please enter it in the format XXXX-XX.`)
-    .regex(RegexPatterns.assessmentYear, `${fieldName} must be in the format XXXX-XX (for example, 2025-26).`);
+    .min(1, `${fieldName} is required. Please enter it in the format AY XX-XX.`)
+    .regex(RegexPatterns.assessmentYearAy, `${fieldName} must be in the format AY XX-XX (for example, AY 23-24).`);
 
-/** Optional assessment year range: blank is accepted, anything entered must be "XXXX-XX". */
+/** Optional assessment year range: blank is accepted, anything entered must be "AY XX-XX". */
 const optionalAssessmentYear = (fieldName: string) =>
   z
     .string()
     .refine(
-      (value) => value === "" || RegexPatterns.assessmentYear.test(value),
-      `${fieldName} must be in the format XXXX-XX (for example, 2025-26).`,
+      (value) => value === "" || RegexPatterns.assessmentYearAy.test(value),
+      `${fieldName} must be in the format AY XX-XX (for example, AY 23-24).`,
     )
     .optional();
+
+/** Required statement period range (e.g. "Jan-2026 to Jun-2026"). */
+const requiredStatementPeriod = (fieldName: string) =>
+  z
+    .string()
+    .min(1, `${fieldName} is required.`)
+    .regex(RegexPatterns.statementPeriod, `${fieldName} must be in the format 'Mmm-YYYY to Mmm-YYYY' (for example, Jan-2026 to Jun-2026).`);
 
 /** Required alphanumeric (letters and digits, no spaces). */
 const requiredAlphanumeric = (fieldName: string) =>
@@ -390,12 +390,12 @@ export const bankStatementSchema = z.object({
   averageBankBalance: freeText.optional(),
   averageAnnualIncome: freeText.optional(),
   openingBalance: requiredNumeric("Opening Balance"),
-  statementPeriod: requiredDate("Statement Period"),
+  statementPeriod: requiredStatementPeriod("Statement Period"),
   lifeAssuredName: requiredAlphabets("Life Assured Name"),
   laNameMatchesDocName: requiredYesNo("Is LA Name Match with Doc Name?"),
-  lifeInsurancePremiumDeduction: optionalNumeric("Life Insurance Premium Deduction Entry"),
-  wineBeerEntries: optionalNumeric("Wine Beer_Entries"),
-  medEntry: optionalNumeric("Med Entry"),
+  lifeInsurancePremiumDeduction: optionalYesNo("Life Insurance Premium Deduction Entry"),
+  wineBeerEntries: optionalYesNo("Wine Beer_Entries"),
+  medEntry: optionalYesNo("Med Entry"),
 });
 
 export type BankStatementValues = z.infer<typeof bankStatementSchema>;
@@ -485,11 +485,11 @@ export const bankStatementSalaryCreditSchema = z.object({
   netSalaryCreditedPa: freeText.optional(),
   averageAnnualIncome: freeText.optional(),
   annualBonus: optionalNumeric("Annual Bonus /Incentive /Reimbursement"),
-  salaryCredited: optionalNumeric("Salary Credited"),
+  salaryCredited: optionalYesNo("Salary Credited"),
   closingBalance: optionalNumeric("Closing Balance"),
   lifeAssuredName: requiredAlphabets("Life Assured Name"),
   openingBalance: requiredNumeric("Opening Balance"),
-  statementPeriod: requiredYear("Statement Period"),
+  statementPeriod: requiredStatementPeriod("Statement Period"),
   laNameMatchesDocName: requiredYesNo("Is LA Name Match with Doc Name?"),
 });
 
@@ -504,16 +504,25 @@ export const epfBasicSchema = z.object({
 
 export type EpfBasicValues = z.infer<typeof epfBasicSchema>;
 
-/** Employee Provident Fund - Advanced ("Annual Income" is a locked, auto-calculated field). */
+/**
+ * Employee Provident Fund - Advanced. The month/income rows are rendered as a table (keyed
+ * "Month N" and "Income for Month N"); "Annual Income" is a locked, auto-calculated field.
+ */
 export const epfAdvancedSchema = z.object({
   latestOrganizationName: requiredAlphabets("Latest Organization Name"),
   organizationNameSame: requiredYesNo("Is Organization Name Same?"),
-  pfContributionM1: requiredNumeric("PF Contribution M1"),
-  pfContributionM2: requiredNumeric("PF Contribution M2"),
-  pfContributionM3: requiredNumeric("PF Contribution M3"),
-  pfContributionM4: requiredNumeric("PF Contribution M4"),
-  pfContributionM5: requiredNumeric("PF Contribution M5"),
-  pfContributionM6: requiredNumeric("PF Contribution M6"),
+  month1: requiredSelect("Month 1"),
+  month2: requiredSelect("Month 2"),
+  month3: requiredSelect("Month 3"),
+  month4: requiredSelect("Month 4"),
+  month5: requiredSelect("Month 5"),
+  month6: requiredSelect("Month 6"),
+  incomeForMonth1: requiredNumeric("Income for Month 1"),
+  incomeForMonth2: requiredNumeric("Income for Month 2"),
+  incomeForMonth3: requiredNumeric("Income for Month 3"),
+  incomeForMonth4: requiredNumeric("Income for Month 4"),
+  incomeForMonth5: requiredNumeric("Income for Month 5"),
+  incomeForMonth6: requiredNumeric("Income for Month 6"),
   annualIncome: freeText.optional(),
 });
 
@@ -589,9 +598,7 @@ const form16Schema = z.object({
   companyName1: requiredAlphabets("Company Name"),
   companyName2: optionalAlphabets("Company Name (Year 2)"),
   companyName3: optionalAlphabets("Company Name (Year 3)"),
-  nameSameWithDocName1: optionalYesNo("Is Life Assured Name Same With Doc Name?"),
-  nameSameWithDocName2: optionalYesNo("Is Life Assured Name Same With Doc Name? (Year 2)"),
-  nameSameWithDocName3: optionalYesNo("Is Life Assured Name Same With Doc Name? (Year 3)"),
+  nameSameWithDocName: optionalYesNo("Is Life Assured Name Same With Doc Name?"),
 });
 
 export type Form16Values = z.infer<typeof form16Schema>;
@@ -629,9 +636,9 @@ const itrNonIndividualSchema = z.object({
   incomeFromSalary1: requiredNumeric("Income from Salary (Year 1)"),
   incomeFromSalary2: requiredNumeric("Income from Salary (Year 2)"),
   incomeFromSalary3: optionalNumeric("Income from Salary (Year 3)"),
-  panMatchedWithBarcode1: optionalPan("Pan Number Matched with Barcode Number (Year 1)"),
-  panMatchedWithBarcode2: optionalPan("Pan Number Matched with Barcode Number (Year 2)"),
-  panMatchedWithBarcode3: optionalPan("Pan Number Matched with Barcode Number (Year 3)"),
+  panMatchedWithBarcode1: optionalYesNo("Pan Number Matched with Barcode Number (Year 1)"),
+  panMatchedWithBarcode2: optionalYesNo("Pan Number Matched with Barcode Number (Year 2)"),
+  panMatchedWithBarcode3: optionalYesNo("Pan Number Matched with Barcode Number (Year 3)"),
   incomeFromHouseProperty1: optionalNumeric("Income from House Property (Year 1)"),
   incomeFromHouseProperty2: optionalNumeric("Income from House Property (Year 2)"),
   incomeFromHouseProperty3: optionalNumeric("Income from House Property (Year 3)"),
@@ -661,8 +668,8 @@ export type ItrNonIndividualValues = z.infer<typeof itrNonIndividualSchema>;
 
 /**
  * Income Tax Return (Individual). Year 1 and Year 2 are mandatory for Assessment Year, Date of Filling ITR,
- * Income from Salary(A), Income from Business or Profession(B), Exempt Income(C), Life Assured Name and
- * Is Life Assured Name Same?; Year 3 is optional.
+ * Income from Salary(A), Income from Business or Profession(B), Exempt Income(C) and Life Assured Name;
+ * Year 3 is optional. "Is Life Assured Name Same?" is a single required field above the table.
  * The three Gross Total Income(A+B+C) fields are locked, auto-calculated fields.
  */
 const itrIndividualSchema = z.object({
@@ -674,9 +681,9 @@ const itrIndividualSchema = z.object({
   itrAcknowledgementNumber1: optionalAlphanumeric("ITR Acknowledgement Number (Year 1)"),
   itrAcknowledgementNumber2: optionalAlphanumeric("ITR Acknowledgement Number (Year 2)"),
   itrAcknowledgementNumber3: optionalAlphanumeric("ITR Acknowledgement Number (Year 3)"),
-  panMatchedWithBarcode1: optionalPan("Pan Number Matched with Barcode Number (Year 1)"),
-  panMatchedWithBarcode2: optionalPan("Pan Number Matched with Barcode Number (Year 2)"),
-  panMatchedWithBarcode3: optionalPan("Pan Number Matched with Barcode Number (Year 3)"),
+  panMatchedWithBarcode1: optionalYesNo("Pan Number Matched with Barcode Number (Year 1)"),
+  panMatchedWithBarcode2: optionalYesNo("Pan Number Matched with Barcode Number (Year 2)"),
+  panMatchedWithBarcode3: optionalYesNo("Pan Number Matched with Barcode Number (Year 3)"),
   dateOfFillingItr1: requiredDate("Date of Filling ITR (Year 1)"),
   dateOfFillingItr2: requiredDate("Date of Filling ITR (Year 2)"),
   dateOfFillingItr3: optionalDate("Date of Filling ITR (Year 3)"),
@@ -712,9 +719,7 @@ const itrIndividualSchema = z.object({
   lifeAssuredName1: requiredAlphabets("Life Assured Name (Year 1)"),
   lifeAssuredName2: requiredAlphabets("Life Assured Name (Year 2)"),
   lifeAssuredName3: optionalAlphabets("Life Assured Name (Year 3)"),
-  nameSame1: requiredYesNo("Is Life Assured Name Same? (Year 1)"),
-  nameSame2: requiredYesNo("Is Life Assured Name Same? (Year 2)"),
-  nameSame3: optionalYesNo("Is Life Assured Name Same? (Year 3)"),
+  nameSame: requiredYesNo("Is Life Assured Name Same?"),
 });
 
 export type ItrIndividualValues = z.infer<typeof itrIndividualSchema>;
@@ -1118,12 +1123,18 @@ export const FINANCIAL_FIELD_KEYS: Readonly<Record<string, Readonly<Record<strin
   epf_advanced: {
     "Latest Organization Name": "latestOrganizationName",
     "Is Organization Name Same?": "organizationNameSame",
-    "PF Contribution M1": "pfContributionM1",
-    "PF Contribution M2": "pfContributionM2",
-    "PF Contribution M3": "pfContributionM3",
-    "PF Contribution M4": "pfContributionM4",
-    "PF Contribution M5": "pfContributionM5",
-    "PF Contribution M6": "pfContributionM6",
+    "Month 1": "month1",
+    "Month 2": "month2",
+    "Month 3": "month3",
+    "Month 4": "month4",
+    "Month 5": "month5",
+    "Month 6": "month6",
+    "Income for Month 1": "incomeForMonth1",
+    "Income for Month 2": "incomeForMonth2",
+    "Income for Month 3": "incomeForMonth3",
+    "Income for Month 4": "incomeForMonth4",
+    "Income for Month 5": "incomeForMonth5",
+    "Income for Month 6": "incomeForMonth6",
     "Annual Income": "annualIncome",
   },
   employee_id_card: {
@@ -1180,9 +1191,7 @@ export const FINANCIAL_FIELD_KEYS: Readonly<Record<string, Readonly<Record<strin
     "Company Name": "companyName1",
     "Company Name Year 2": "companyName2",
     "Company Name Year 3": "companyName3",
-    "Is Life Assured Name Same With Doc Name?": "nameSameWithDocName1",
-    "Is Life Assured Name Same With Doc Name? Year 2": "nameSameWithDocName2",
-    "Is Life Assured Name Same With Doc Name? Year 3": "nameSameWithDocName3",
+    "Is Life Assured Name Same With Doc Name?": "nameSameWithDocName",
   },
   form16a: {
     "Assessment Year": "assessmentYear1",
@@ -1279,9 +1288,7 @@ export const FINANCIAL_FIELD_KEYS: Readonly<Record<string, Readonly<Record<strin
     "Life Assured Name": "lifeAssuredName1",
     "Life Assured Name Year 2": "lifeAssuredName2",
     "Life Assured Name Year 3": "lifeAssuredName3",
-    "Is Life Assured Name Same?": "nameSame1",
-    "Is Life Assured Name Same? Year 2": "nameSame2",
-    "Is Life Assured Name Same? Year 3": "nameSame3",
+    "Is Life Assured Name Same?": "nameSame",
   },
   profit_and_loss: {
     "Name of Organization/Firm": "nameOfOrganization",

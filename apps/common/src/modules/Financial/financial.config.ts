@@ -13,6 +13,7 @@ export interface FinancialSection {
   /** Number of columns of the default field grid. */
   cols: number;
   fields: readonly FinancialFieldDef[];
+  extraValues?: Readonly<Record<string, string>>;
 }
 
 /** A label shown in the UI, optionally mapped to a differently named field. */
@@ -24,6 +25,8 @@ export interface FinancialTableLayout {
   kind: FinancialTableKind;
   title?: string;
   top?: readonly string[];
+  /** Columns of the grid above the table (default 2; receipts use the section's own columns). */
+  topColumns?: number;
   rows: readonly string[];
   bottom?: readonly FinancialLabelRef[];
 }
@@ -54,6 +57,7 @@ export interface FinancialOption {
 export interface FinancialApplicantTab {
   key: string;
   label: string;
+  partyId?: string;
 }
 
 export type FinancialSubmitPayload = {
@@ -208,8 +212,6 @@ export const FINANCIAL_SECTIONS: readonly FinancialSection[] = [
       ["Company Name Year 2", ""],
       ["Company Name Year 3", ""],
       ["Is Life Assured Name Same With Doc Name?", ""],
-      ["Is Life Assured Name Same With Doc Name? Year 2", ""],
-      ["Is Life Assured Name Same With Doc Name? Year 3", ""],
     ],
   },
   {
@@ -365,8 +367,6 @@ export const FINANCIAL_SECTIONS: readonly FinancialSection[] = [
       ["Life Assured Name Year 2", ""],
       ["Life Assured Name Year 3", ""],
       ["Is Life Assured Name Same?", "", true],
-      ["Is Life Assured Name Same? Year 2", "", true],
-      ["Is Life Assured Name Same? Year 3", ""],
     ],
   },
   {
@@ -689,12 +689,6 @@ export const FINANCIAL_SECTIONS: readonly FinancialSection[] = [
     fields: [
       ["Latest Organization Name", "", true],
       ["Is Organization Name Same?", "", true],
-      ["PF Contribution M1", "", true],
-      ["PF Contribution M2", "", true],
-      ["PF Contribution M3", "", true],
-      ["PF Contribution M4", "", true],
-      ["PF Contribution M5", "", true],
-      ["PF Contribution M6", "", true],
       ["Annual Income", ""],
     ],
   },
@@ -743,7 +737,9 @@ export const FINANCIAL_TABLE_LAYOUTS: Readonly<Partial<Record<string, FinancialT
   form16: {
     kind: "year3",
     title: "Form 16",
-    rows: ["ASSESSMENT","Gross Salary PA","Life Assured Pan No","Life Assured Name","Is Life Assured Name Same With Doc Name?","Company Name"],
+    top: ["Is Life Assured Name Same With Doc Name?"],
+    topColumns: 3,
+    rows: ["ASSESSMENT","Gross Salary PA","Life Assured Pan No","Life Assured Name","Company Name"],
     bottom: [{"label":"Average Annual Income"}],
   },
   form16a: {
@@ -764,8 +760,9 @@ export const FINANCIAL_TABLE_LAYOUTS: Readonly<Partial<Record<string, FinancialT
   },
   itr_individual: {
     kind: "year3",
-    top: ["Name of Organisation/Firm","Permanent Account Number"],
-    rows: ["Assessment Year","ITR Acknowledgement Number","Date of Filling ITR","Income from Salary(A)","Income from House Property","Income from Business or Profession(B)","Short term & Capital Gains","Income from Other Sources","Agricultural Income","Exempt Income(C)","Gross Total Income(A+B+C)","PF deduction - Salaried customers","Life Assured Name","Is Life Assured Name Same?","Pan Number Matched with Barcode Number"],
+    top: ["Name of Organisation/Firm","Permanent Account Number","Is Life Assured Name Same?"],
+    topColumns: 3,
+    rows: ["Assessment Year","ITR Acknowledgement Number","Date of Filling ITR","Income from Salary(A)","Income from House Property","Income from Business or Profession(B)","Short term & Capital Gains","Income from Other Sources","Agricultural Income","Exempt Income(C)","Gross Total Income(A+B+C)","PF deduction - Salaried customers","Life Assured Name","Pan Number Matched with Barcode Number"],
     bottom: [{"label":"Total Gross Total Income"},{"label":"Average Gross Total Income"}],
   },
   profit_and_loss: {
@@ -802,6 +799,11 @@ export const FINANCIAL_MONTHLY_INCOME_LAYOUTS: Readonly<Partial<Record<string, F
       "Annual Bonus /Incentive /Reimbursement",
       "Average Annual Income",
     ],
+    entries: 6,
+  },
+  epf_advanced: {
+    top: ["Latest Organization Name", "Is Organization Name Same?"],
+    average: ["Annual Income"],
     entries: 6,
   },
 };
@@ -977,7 +979,8 @@ export const FINANCIAL_MESSAGES = {
   validationFailed: "Please correct the highlighted fields before saving.",
 } as const;
 
-const YES_NO_LABEL = /^(Is\b|Photo available\b|Latest 6 months.*statements given\b|Any Overdraft)/i;
+const YES_NO_LABEL =
+  /^(Is\b|Photo available\b|Latest 6 months.*statements given\b|Any Overdraft|Pan Number Matched with Barcode Number|Life Insurance Premium Deduction Entry|Wine Beer_Entries|Med Entry|Salary Credited)/i;
 const DATE_LABEL = /^(Joining Date|Date of Filling ITR)/i;
 
 export function resolveFinancialControlKind(sectionKey: string, label: string): FinancialControlKind {

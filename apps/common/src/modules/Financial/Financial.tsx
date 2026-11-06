@@ -98,6 +98,8 @@ interface FinancialStore {
   setError: (id: string, message: string | undefined) => void;
   /** Clears the validation messages of every field whose id starts with `prefix`. */
   clearErrors: (prefix: string) => void;
+  /** Resets/populates entire store with new initial values. */
+  resetAll: (newValues: Readonly<Record<string, string>>) => void;
 }
 
 const errorKey = (id: string) => `error:${id}`;
@@ -106,11 +108,14 @@ const fieldId = (sectionKey: string, index: number) => `${sectionKey}-${index}`;
 
 const createInitialValues = (sections: readonly FinancialSection[]) => {
   const values: Record<string, string> = {};
-  sections.forEach((section) =>
+  sections.forEach((section) => {
     section.fields.forEach((field, index) => {
       values[fieldId(section.key, index)] = field[1];
-    }),
-  );
+    });
+    if (section.extraValues) {
+      Object.assign(values, section.extraValues);
+    }
+  });
   return values;
 };
 
@@ -167,6 +172,17 @@ const createFinancialStore = (
           values[id] = saved[id] ?? "";
           notify(id);
         });
+    },
+    resetAll: (newValues) => {
+      Object.keys(errors).forEach((id) => delete errors[id]);
+      const allKeys = new Set([...Object.keys(values), ...Object.keys(newValues)]);
+      allKeys.forEach((id) => {
+        const nextVal = newValues[id] ?? "";
+        if (values[id] !== nextVal) {
+          values[id] = nextVal;
+          notify(id);
+        }
+      });
     },
   };
 };
@@ -229,11 +245,23 @@ const toLabelRef = (item: FinancialLabelRef) =>
     : { label: item.label, fieldLabel: item.fieldLabel ?? item.label };
 
 const parseFinancialDate = (value: string): Dayjs | null => {
-  const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(value);
-  if (!match) return null;
-  const parsed = dayjs(
-    new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1])),
-  );
+  if (!value) return null;
+  const trimmed = value.trim();
+  const ddmmyyyy = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(trimmed);
+  if (ddmmyyyy) {
+    const parsed = dayjs(
+      new Date(Number(ddmmyyyy[3]), Number(ddmmyyyy[2]) - 1, Number(ddmmyyyy[1])),
+    );
+    return parsed.isValid() ? parsed : null;
+  }
+  const yyyymmdd = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(trimmed);
+  if (yyyymmdd) {
+    const parsed = dayjs(
+      new Date(Number(yyyymmdd[1]), Number(yyyymmdd[2]) - 1, Number(yyyymmdd[3])),
+    );
+    return parsed.isValid() ? parsed : null;
+  }
+  const parsed = dayjs(trimmed);
   return parsed.isValid() ? parsed : null;
 };
 
@@ -588,6 +616,11 @@ const FinancialControl = memo(function FinancialControl({
   );
 
   if (readOnly) {
+    let displayValue = value;
+    if (kind === "date" && value) {
+      const parsed = parseFinancialDate(value);
+      if (parsed) displayValue = parsed.format(FINANCIAL_DATE_FORMAT);
+    }
     return (
       <Box
         role="textbox"
@@ -596,7 +629,7 @@ const FinancialControl = memo(function FinancialControl({
         data-field={id}
         sx={READ_ONLY_DISPLAY_SX}
       >
-        {value || selectPlaceholder(kind)}
+        {displayValue || selectPlaceholder(kind)}
       </Box>
     );
   }
@@ -1073,7 +1106,8 @@ const SectionBody = memo(function SectionBody({
   }
 
   // Receipts (Form J) lay the fields outside the table on the section's own grid, like Fixed Deposit Receipt.
-  const topColumns = layout.kind === "receipts" ? section.cols : 2;
+  const topColumns =
+    layout.topColumns ?? (layout.kind === "receipts" ? section.cols : 2);
   return (
     <Box sx={TABLE_AREA_SX}>
       {layout.top && layout.top.length > 0 && (
@@ -1262,6 +1296,21 @@ export function Financial({
     message: string;
     severity: "success" | "warning";
   } | null>(null);
+
+  useEffect(() => {
+    store.resetAll(createInitialValues(sections));
+    setEditing({});
+    setReviews({});
+    if (sections.length > 0 && !sections.some((s) => s.key === activeSectionKey)) {
+      setActiveSectionKey(sections[0].key);
+    }
+  }, [sections, store, activeSectionKey]);
+
+  useEffect(() => {
+    if (initialApplicantKey && initialApplicantKey !== activeApplicantKey) {
+      setActiveApplicantKey(initialApplicantKey);
+    }
+  }, [initialApplicantKey, activeApplicantKey]);
 
   const cardRefs = useRef<Record<string, HTMLElement | null>>({});
   const originalsRef = useRef<Record<string, Record<string, string>>>({});
