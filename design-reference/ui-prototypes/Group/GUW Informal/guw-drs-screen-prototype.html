@@ -3690,6 +3690,7 @@
       uwState.committedRemarks = "";
       uwState.remarks = "";
       setMainDecision("");
+      persistMemberDecision();
     }
 
     function openUwDecisionDialog(code) {
@@ -3787,11 +3788,24 @@
     // On the referral path it becomes Raise Referral only when that referral is finally submitted.
     const uwCaseCode = () => (uwState.confirmed && uwState.decision === "REFERRAL" ? "REFERRAL" : uwState.baseDecision || uwState.decision);
 
+    // Multi-life case (memberCount > 1): each member's decision is held in sessionStorage under its own key,
+    // so the member summary page (MemberSelection.html) can show it against that member.
+    const uwMemberKey = Number(new URLSearchParams(window.location.search).get("memberCount") ?? 0) > 1
+      ? `guwMemberDecision:${new URLSearchParams(window.location.search).get("member") ?? "0"}`
+      : "";
+    function persistMemberDecision() {
+      if (!uwMemberKey) return;
+      try {
+        if (uwState.submitted) sessionStorage.setItem(uwMemberKey, JSON.stringify({ code: uwState.selected, snapshot: uwState.submitted }));
+        else sessionStorage.removeItem(uwMemberKey);
+      } catch { }
+    }
     // Hold the current decision (and UW Guidelines rows), and link the main dropdown to the Case UW Decision
     function saveUwDraft() {
       uwState.submitted = buildUwSnapshot();
       uwState.committedRemarks = uwState.remarks;
       setMainDecision(uwCaseCode());
+      persistMemberDecision();
     }
     // After a final submit: member summary page for a multi-life case (memberCount > 1 in the URL), else the landing page
     function uwPostSubmitUrl() {
@@ -4368,6 +4382,17 @@
     updateClock(); setInterval(updateClock, 1000);
     let sessionSeconds = 15 * 60;
     setInterval(() => { sessionSeconds = Math.max(0, sessionSeconds - 1); $("#session-time").textContent = `${String(Math.floor(sessionSeconds / 60)).padStart(2, "0")}:${String(sessionSeconds % 60).padStart(2, "0")}`; }, 1000);
+    // Multi-life: reopen this member with the decision saved earlier (dropdown + eye icon)
+    if (uwMemberKey) {
+      try {
+        const savedMember = JSON.parse(sessionStorage.getItem(uwMemberKey) || "null");
+        if (savedMember && savedMember.snapshot) {
+          uwState.submitted = savedMember.snapshot;
+          uwState.committedRemarks = savedMember.snapshot.remarks || "";
+          setMainDecision(savedMember.code);
+        }
+      } catch { }
+    }
   </script>
 </body>
 

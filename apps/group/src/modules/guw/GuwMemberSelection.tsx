@@ -7,11 +7,13 @@ import { groupPaths } from "@insurance-poc/routes";
 import { ApplicantBanner, type BannerRow } from "@insurance-poc/common/applicant-banner";
 import {
   fetchGuwDrs,
+  GUW_DECISION_CHANGED_EVENT,
   guwMemberDecisionKey,
   loadGuwSubmittedDecision,
   type GuwDrsRecord,
   type GuwSubmittedDecision,
 } from "../../services/guwService";
+import { deriveCaseUwDecision } from "../../services/guwCaseDecisionRules";
 import eyeIconSrc from "../../assets/eye.svg";
 import { GuwDecisionDetailsDialog, GuwUwPanel } from "./GuwUwPanel";
 
@@ -134,17 +136,45 @@ export function GuwMemberSelection() {
   // Member whose saved decision is shown in the details dialog (same dialog as the Case UW Decision eye icon)
   const [detailMember, setDetailMember] = useState<GuwMember | null>(null);
   // Each member's own saved decision, shown against that member
-  const [memberDecisions] = useState<Record<string, GuwSubmittedDecision | null>>(() =>
+  const loadMemberDecisions = (): Record<string, GuwSubmittedDecision | null> =>
     Object.fromEntries(
       MOCK_MEMBERS.map((m) => [
         m.memberType,
         loadGuwSubmittedDecision(guwMemberDecisionKey(applicationNo, m.memberType)),
       ]),
-    ),
-  );
+    );
+  const [memberDecisions, setMemberDecisions] = useState(loadMemberDecisions);
+  // Case UW Decision code derived from the member decisions (undefined until first derived)
+  const [derivedDecision, setDerivedDecision] = useState<string | undefined>(undefined);
   const [record, setRecord] = useState<GuwDrsRecord | null>(null);
   // Case-level decision is held under its own key so it never overwrites a member's own decision
   const summaryStorageKey = `${applicationNo}:summary`;
+
+  // Refresh member decisions whenever any decision is saved / cleared, or the page is shown again
+  useEffect(() => {
+    const refresh = () => setMemberDecisions(loadMemberDecisions());
+    window.addEventListener(GUW_DECISION_CHANGED_EVENT, refresh);
+    window.addEventListener("pageshow", refresh);
+    return () => {
+      window.removeEventListener(GUW_DECISION_CHANGED_EVENT, refresh);
+      window.removeEventListener("pageshow", refresh);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadMemberDecisions only depends on applicationNo
+  }, [applicationNo]);
+
+  // Derive the Case UW Decision from the member decisions (logic lives in guwCaseDecisionRules.ts)
+  useEffect(() => {
+    let active = true;
+    void deriveCaseUwDecision(
+      MOCK_MEMBERS.map((m) => ({
+        memberId: m.memberType,
+        decisionCode: memberDecisions[m.memberType]?.decisionCode ?? "",
+      })),
+    ).then((code) => {
+      if (active) setDerivedDecision(code);
+    });
+    return () => { active = false; };
+  }, [memberDecisions]);
 
   useEffect(() => {
     let active = true;
@@ -400,6 +430,8 @@ export function GuwMemberSelection() {
         <GuwUwPanel
           applicationNo={applicationNo}
           storageKey={summaryStorageKey}
+          derivedDecision={derivedDecision}
+          decisionReadOnly
           redirectUrl={groupPaths.inbox}
           breOverallDecision={record.uwData?.breOverallDecision}
           breOverallRemarks={record.uwData?.breOverallRemarks}

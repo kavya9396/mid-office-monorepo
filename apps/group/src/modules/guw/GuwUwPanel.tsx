@@ -35,6 +35,13 @@ export interface GuwUwPanelProps {
   applicationNo?: string;
   /** Session key for the held decision; defaults to applicationNo (the summary page uses its own). */
   storageKey?: string;
+  /**
+   * Case UW Decision code derived from the member decisions (member summary page). When it changes, the
+   * dropdown follows it and any decision held for this panel is dropped. `undefined` = not derived.
+   */
+  derivedDecision?: string;
+  /** Disables the Case UW Decision dropdown and shows its code in a read-only Decision Code field. */
+  decisionReadOnly?: boolean;
   /** Where to go after a successful final submit (inbox, or the member summary page for multi-life). */
   redirectUrl?: string;
   breOverallDecision?: string;
@@ -303,6 +310,8 @@ function GuidelineCategoryIcon({ category }: Readonly<{ category: GuwGuidelineCa
 export function GuwUwPanel({
   applicationNo = "",
   storageKey,
+  derivedDecision,
+  decisionReadOnly = false,
   redirectUrl = groupPaths.inbox,
   breOverallDecision,
   breOverallRemarks,
@@ -318,6 +327,15 @@ export function GuwUwPanel({
   const [submittedDecision, setSubmittedDecision] = useState<SubmittedDecision | null>(
     initialSubmittedDecision ?? null,
   );
+  // Follow the decision derived from the members; a held decision that no longer matches is dropped
+  useEffect(() => {
+    if (derivedDecision === undefined || derivedDecision === selectedDecision) return;
+    setSelectedDecision(derivedDecision);
+    setSubmittedDecision(null);
+    setRemarks("");
+    clearGuwSubmittedDecision(storageKey ?? applicationNo);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only react to a change of the derived value
+  }, [derivedDecision]);
   const [dialogDecision, setDialogDecision] = useState<string>("");
   // Case UW Decision chosen before switching to Counter Sign / Raise Referral from the UW Guidelines step
   const [approverBaseDecision, setApproverBaseDecision] = useState<string>("");
@@ -993,8 +1011,9 @@ export function GuwUwPanel({
           </CustomBox>
         </CustomBox>
 
-        {/* Case UW Decision Dropdown */}
-        <CustomBox component="label" sx={{ display: "block", pr: "70px" }}>
+        {/* Case UW Decision Dropdown (+ read-only Decision Code beside it when the decision is derived) */}
+        <CustomBox sx={{ display: "flex", alignItems: "flex-start", gap: "8px", pr: "70px" }}>
+        <CustomBox component="label" sx={{ display: "block", flex: 1, minWidth: 0 }}>
           <CustomTypography
             component="span"
             sx={{
@@ -1015,11 +1034,11 @@ export function GuwUwPanel({
                 flex: 1,
                 minWidth: 0,
                 "& .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#e45f14 !important",
+                  borderColor: `${decisionReadOnly ? "#e4dedb" : "#e45f14"} !important`,
                   borderWidth: "2px !important",
                 },
                 "&:hover .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#e45f14 !important",
+                  borderColor: `${decisionReadOnly ? "#e4dedb" : "#e45f14"} !important`,
                 },
                 "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
                   borderColor: "#e45f14 !important",
@@ -1033,6 +1052,7 @@ export function GuwUwPanel({
                 options={mainSelectOptions}
                 placeholder="Select"
                 fullWidth
+                disabled={decisionReadOnly}
               />
             </CustomBox>
             {submittedDecision && (
@@ -1056,6 +1076,30 @@ export function GuwUwPanel({
               </CustomButton>
             )}
           </CustomBox>
+        </CustomBox>
+        {decisionReadOnly && (
+          <CustomBox component="label" sx={{ display: "block", width: 160, flexShrink: 0 }}>
+            <CustomTypography
+              component="span"
+              sx={{
+                display: "block",
+                marginBottom: "2px",
+                color: "#7b716c",
+                fontSize: "11px",
+                fontWeight: 600,
+                letterSpacing: "0.4px",
+                textTransform: "uppercase",
+              }}
+            >
+              Decision Code
+            </CustomTypography>
+            <CustomTextField
+              value={selectedDecision}
+              fullWidth
+              htmlInputProps={{ readOnly: true, "aria-label": "Decision Code" }}
+            />
+          </CustomBox>
+        )}
         </CustomBox>
 
         {/* Action buttons + Submit */}

@@ -158,7 +158,8 @@ typed as the DTO.
 "Decision submitted successfully" and redirects after 700 ms (today's `finalizeSubmit` behaviour; the real
 final-submit API comes later). Redirect target: **Group Inbox** for a single-life case; for a **multi-life**
 case (`memberCount > 1` in the DRS URL) the **GUW member summary page** (`/guw/member-selection`, same
-`applicationNo` / `roleType` / `role`). `GuwDrsPage` builds the URL and passes it as `redirectUrl`.
+`applicationNo` / `roleType` / `role`). `GuwDrsPage` and `GuwUser` build the URL and pass it as `redirectUrl`.
+From the summary page, the final submit of its own Case UW Decision panel redirects to the **Group Inbox**.
 
 **Scenario 2 — `FAIL`, soft alerts only:** UW Guidelines shows the Soft Alert row(s); the
 "Confirm & Submit" button performs the final submit (same path as Scenario 1's close).
@@ -208,8 +209,13 @@ saved before this change has no new rows and keeps rendering its old `guidelines
   `apps/group/src/modules/drs/GuwUser.tsx` (lines 16, 132) for the shared `UwGuidelines` component. Only
   `GuwUwPanel`'s own Step 2 data source changes. In the HTML prototype the separate "UW Guidelines (7)"
   button viewer keeps its static list for the same reason.
-- `GuwDrsPage.tsx` reads `memberCount` / `roleType` / `role` from the URL and passes `redirectUrl` to
-  `GuwUwPanel` (default `groupPaths.inbox`).
+- `GuwDrsPage.tsx` and `modules/drs/GuwUser.tsx` (the `/guw/drs` renderer for `roleType=GUW` + `memberId`)
+  read `memberCount` / `roleType` / `role` from the URL and pass `redirectUrl` to `GuwUwPanel` (default
+  `groupPaths.inbox`). For multi-life, `GuwUser` also passes `storageKey` =
+  `guwMemberDecisionKey(applicationNo, memberId)` so each member keeps its own saved decision.
+- `GuwMemberSelection.tsx` (summary page) renders `GuwUwPanel` with `storageKey="<applicationNo>:summary"`
+  and `redirectUrl={groupPaths.inbox}`; its member table shows each member's saved Case UW Decision and an
+  always-enabled eye icon that opens the exported `GuwDecisionDetailsDialog`.
 - In `GuwUwPanel.tsx`, affected: `guidelines` state (set at ~439 from `INITIAL_GUIDELINES`),
   `handleGuidelinesConfirm`, `hasCounterSignAction`, `hasOtherReferralAction`, `guidelinesConfirmed`,
   `switchToActionDecision`, `handleDialogSubmit` (Step 1 Submit now calls the validation), the Step 2 table,
@@ -232,6 +238,9 @@ saved before this change has no new rows and keeps rendering its old `guidelines
 | 7 | Checklist, Blocker, header rename | `checklist[]` rows with `NoteIcon`; Blocker hard alert disables Confirm & Submit; column header "Justification/Checklist". | `[x] done` |
 | 8 | Multi-life redirect | `GuwDrsPage` passes `redirectUrl`; member selection page when `memberCount > 1`, else Inbox. | `[x] done` |
 | 9 | Prototype sync | `design-reference/ui-prototypes/Group/GUW Informal/guw-drs-screen-prototype.html` mirrors steps 1–8 (mock validation, success popup, details dialog, redirect). | `[x] done` |
+| 10 | Summary page decision | `GuwMemberSelection` reuses `GuwUwPanel` (`storageKey` `<applicationNo>:summary`, `redirectUrl` Inbox); per-member decisions saved under `<applicationNo>:<memberId>`; member table "Case UW Decision" column shows the exact saved label (or "-") with an always-enabled eye icon opening "Case UW Decision Details" (empty message if none); Financial / Medical Decision read-only. | `[x] done` |
+| 11 | Prototype sync (summary) | `MemberSelection.html` mirrors step 10: reads per-member decisions saved by `guw-drs-screen-prototype.html` (`guwMemberDecision:<member>`, only when `memberCount > 1`), shared details modal, final Submit goes to `landing-prototype.html`. | `[x] done` |
+| 12 | Derived summary Case UW Decision | `services/guwCaseDecisionRules.ts` (`deriveCaseUwDecision`, async so it can be swapped for an API) folds member decisions left to right through the business grid (LA1 x LA2/Proposer with WOP -> Final UW Decision); works for any member count. `GuwMemberSelection` re-derives whenever a member decision is saved/cleared (`GUW_DECISION_CHANGED_EVENT` in `guwService.ts`, plus `pageshow`) and passes it to `GuwUwPanel` as `derivedDecision`. Referral / Hold / Counter Sign member decisions are not in the grid, so no case decision is derived. On the summary page the Case UW Decision dropdown is disabled (`decisionReadOnly`) and a read-only **Decision Code** field sits beside it. `MemberSelection.html` mirrors this (same grid, disabled dropdown, Decision Code field, Submit shown once a decision is derived). | `[x] done` |
 
 Validation per step: `npx tsc --noEmit -p apps/group` (`pnpm` is not on PATH in the current shell; the
 project command is `pnpm --filter @insurance-poc/group typecheck`).
@@ -247,10 +256,12 @@ project command is `pnpm --filter @insurance-poc/group typecheck`).
 3. Real endpoint (URL, method, headers, error format) and the real role source remain unknown; mock +
    constant `"CUW"` until provided.
 4. Checklist icon was not specified — `NoteIcon` is used. Confirm or name another icon.
-5. The "summary page" for a multi-life redirect is assumed to be the GUW member selection page
-   (`/guw/member-selection`). Confirm or give the intended page.
+5. The "summary page" for a multi-life redirect is the GUW member selection page
+   (`/guw/member-selection`) — implemented on that assumption. Confirm.
 6. Blocker is matched on `HardAlert.action` equal to `Blocker` (case-insensitive). Confirm the exact value
    the real API sends.
+7. The summary page does not yet verify that every member has a saved decision before its final submit, and
+   no final-submission endpoint exists (stub + redirect only). Confirm the required rule.
 
 Resolved: mock scenarios, SoftAlert shape, icons, texts, `{targets}`, reset/Back rules,
 referral pre-selection, details dialog structure, success/redirect behaviour, validation entry point,

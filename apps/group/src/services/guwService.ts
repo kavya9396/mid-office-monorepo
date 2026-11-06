@@ -407,12 +407,20 @@ export function loadGuwSubmittedDecision(applicationNo: string): GuwSubmittedDec
   }
 }
 
+/** Fired on `window` whenever a held decision is saved or cleared, so open pages can refresh. */
+export const GUW_DECISION_CHANGED_EVENT = "guw-decision-changed";
+
+function notifyDecisionChanged(): void {
+  if (typeof window !== "undefined") window.dispatchEvent(new Event(GUW_DECISION_CHANGED_EVENT));
+}
+
 export function saveGuwSubmittedDecision(
   applicationNo: string,
   decision: GuwSubmittedDecision,
 ): void {
   if (!applicationNo) return;
   setSessionValue(submittedDecisionKey(applicationNo), JSON.stringify(decision));
+  notifyDecisionChanged();
 }
 
 /** Session key of one member's decision; the summary page and the member DRS page must agree on it. */
@@ -423,6 +431,7 @@ export function guwMemberDecisionKey(applicationNo: string, memberId: string): s
 export function clearGuwSubmittedDecision(applicationNo: string): void {
   if (!applicationNo) return;
   removeSessionValue(submittedDecisionKey(applicationNo));
+  notifyDecisionChanged();
 }
 
 export async function fetchGuwDrs(applicationNo: string): Promise<GuwDrsRecord | null> {
