@@ -1,8 +1,14 @@
-import { getSessionValue, removeSessionValue, setSessionValue } from "@insurance-poc/utils";
+import {
+  getSessionUser,
+  getSessionValue,
+  removeSessionValue,
+  setSessionValue,
+} from "@insurance-poc/utils";
 import type { DetailAttribute } from "@insurance-poc/common/detail-card";
 import type { RequirementItem } from "@insurance-poc/common/requirement-mgmt";
 import { mapRequirements, type RawRequirement } from "../modules/drs/requirementData";
 import guwDrsMock from "../../../../mock/drs/guw-informal-drs.json";
+import guwValidationMock from "../../../../mock/drs/guw-validation.json";
 
 /* ------------------------------------------------------------------ */
 /* Types                                                                */
@@ -70,6 +76,49 @@ export interface GuwSubmittedGuideline {
   justificationRemark: string;
 }
 
+/* ---- Decision-validation (UW Guidelines) domain types ---- */
+
+export type GuwGuidelineCategory = "justification" | "checklist" | "hardAlert" | "softAlert";
+
+export interface GuwJustificationOption {
+  code: string;
+  text: string;
+}
+
+/** One UW Guidelines table row, produced by the validation mapper. */
+export interface GuwValidationRow {
+  validationId: string;
+  category: GuwGuidelineCategory;
+  reason: string;
+  remark: string;
+  /** Hard alert / justification action; empty when the API sends none. */
+  systemAction: string;
+  /** Dropdown options; only populated for the justification and checklist categories. */
+  justificationOptions: GuwJustificationOption[];
+}
+
+export interface GuwValidationResult {
+  applicationNo: string;
+  correlationId: string;
+  success: boolean;
+  referralRequired: boolean;
+  counterSignRequired: boolean;
+  /** Justification rows first, then checklist, hard alerts and soft alerts. */
+  rows: GuwValidationRow[];
+}
+
+/** A validation row together with what the user saved for it. */
+export interface GuwSavedValidationRow extends GuwValidationRow {
+  selectedReasonCode: string;
+  justificationRemark: string;
+}
+
+export interface GuwValidationRequest {
+  userId: string;
+  role: string;
+  applicationNo: string;
+}
+
 export interface GuwSubmittedDecision {
   decisionCode: string;
   remarks: string;
@@ -80,6 +129,8 @@ export interface GuwSubmittedDecision {
   reinsurerRows: { code: string; systemName: string; uwName: string }[];
   documentRows: { name: string; assigned: boolean[] }[];
   guidelines: GuwSubmittedGuideline[];
+  /** UW Guidelines rows from the validation API with saved justifications (absent on older snapshots). */
+  validationRows?: GuwSavedValidationRow[];
 }
 
 export interface GuwUwData {
@@ -364,6 +415,11 @@ export function saveGuwSubmittedDecision(
   setSessionValue(submittedDecisionKey(applicationNo), JSON.stringify(decision));
 }
 
+/** Session key of one member's decision; the summary page and the member DRS page must agree on it. */
+export function guwMemberDecisionKey(applicationNo: string, memberId: string): string {
+  return `${applicationNo}:${memberId}`;
+}
+
 export function clearGuwSubmittedDecision(applicationNo: string): void {
   if (!applicationNo) return;
   removeSessionValue(submittedDecisionKey(applicationNo));
@@ -389,6 +445,89 @@ export async function fetchGuwDrs(applicationNo: string): Promise<GuwDrsRecord |
         }
       : record.uwData,
   };
+}
+
+/* ------------------------------------------------------------------ */
+/* Decision validation (mock until the real endpoint is available)       */
+/* ------------------------------------------------------------------ */
+
+/** Role sent with the validation request; replace once a role source is defined. */
+const VALIDATION_ROLE = "CUW";
+
+/** Order in which categories appear in the UW Guidelines table. */
+const CATEGORY_ORDER: GuwGuidelineCategory[] = ["justification", "checklist", "hardAlert", "softAlert"];
+
+export function toGuwValidationRequest(applicationNo: string): GuwValidationRequest {
+  return {
+    userId: getSessionUser()?.userId ?? "",
+    role: VALIDATION_ROLE,
+    applicationNo,
+  };
+}
+
+function recordList(v: unknown): Record<string, unknown>[] {
+  return Array.isArray(v) ? v.filter(isRecord) : [];
+}
+
+function mapOptionRows(v: unknown, category: "justification" | "checklist"): GuwValidationRow[] {
+  return recordList(v).map((j) => ({
+    validationId: str(j.validationId),
+    category,
+    reason: str(j.justificationReason),
+    remark: str(j.justificationRemarks),
+    systemAction: str(j.action),
+    justificationOptions: recordList(j.reason).map((o) => ({
+      code: str(o.reasonCode),
+      text: str(o.reasonText),
+    })),
+  }));
+}
+
+function mapAlertRows(v: unknown, category: "hardAlert" | "softAlert"): GuwValidationRow[] {
+  return recordList(v).map((a) => ({
+    validationId: str(a.validationId),
+    category,
+    reason: str(a.reason),
+    remark: str(a.remarks),
+    systemAction: str(a.action),
+    justificationOptions: [],
+  }));
+}
+
+/** DTO -> domain. Unknown fields are dropped; missing lists become empty. */
+export function fromGuwValidationResponse(dto: unknown): GuwValidationResult {
+  const src = isRecord(dto) ? dto : {};
+  const rows = [
+    ...mapOptionRows(src.justifications, "justification"),
+    ...mapOptionRows(src.checklist, "checklist"),
+    ...mapAlertRows(src.HardAlert, "hardAlert"),
+    ...mapAlertRows(src.SoftAlert, "softAlert"),
+  ].sort((a, b) => CATEGORY_ORDER.indexOf(a.category) - CATEGORY_ORDER.indexOf(b.category));
+  return {
+    applicationNo: str(src.applicationNo),
+    correlationId: str(src.correlationId),
+    success: src.status === "SUCCESS",
+    referralRequired: src.referralReqd === "Y",
+    counterSignRequired: src.counterSignReqd === "Y",
+    rows,
+  };
+}
+
+/**
+ * Validates the chosen Case UW Decision.
+ * `mockDecisionCode` only selects a mock scenario and is NOT part of the request;
+ * drop it when the real endpoint replaces this function.
+ */
+export async function validateGuwDecision(
+  request: GuwValidationRequest,
+  mockDecisionCode: string,
+): Promise<GuwValidationResult> {
+  await wait(250);
+  const fixtures: unknown = guwValidationMock;
+  const table = isRecord(fixtures) ? fixtures : {};
+  const dto = table[mockDecisionCode] ?? table.default;
+  const result = fromGuwValidationResponse(dto);
+  return { ...result, applicationNo: request.applicationNo };
 }
 
 /* ------------------------------------------------------------------ */

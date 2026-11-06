@@ -1241,6 +1241,15 @@
     .uw-guideline-table .select, .uw-guideline-table .text-input { min-width: 150px; padding: 6px 8px; }
     .uw-guideline-table .text-input { width: 100%; }
     .uw-guideline-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; }
+    .uw-gl-wrap { margin-bottom: 24px; }
+    .uw-gl-icon { display: inline-flex; flex-shrink: 0; margin-right: 6px; vertical-align: middle; }
+    .uw-gl-icon svg { width: 16px; height: 16px; }
+    .uw-gl-head { display: inline-flex; align-items: center; gap: 6px; }
+    .uw-gl-info { display: inline-flex; color: #9a2529; cursor: help; }
+    .uw-gl-info svg { width: 14px; height: 14px; }
+    .uw-guideline-message { margin: 0 0 8px; color: #9a2529; font-size: 12px; font-weight: 700; line-height: 1.5; }
+    .uw-success-text { margin: 0 0 16px; color: #302a27; font-size: 13px; font-weight: 700; }
+    .uw-step-actions .contained:disabled, .uw-guideline-actions .contained:disabled { background: #eadfd9; color: #a79f9b; cursor: not-allowed; }
 
     .bre-table {
       width: 100%;
@@ -2861,7 +2870,7 @@
       renderGrievanceHistory();
       $(`[data-grievance-history-page="${grievanceHistoryPage}"][aria-current="page"]`)?.focus();
     });
-    function closeDialog() { if (returnToRequirements) { returnToRequirements = false; openRequirements(); return; } closeSelectMenu(); $("#modal-root").hidden = true; document.body.style.overflow = ""; }
+    function closeDialog() { if (uwState.successPending) { uwState.successPending = false; finalizeUwSubmit(true); return; } if (returnToRequirements) { returnToRequirements = false; openRequirements(); return; } closeSelectMenu(); $("#modal-root").hidden = true; document.body.style.overflow = ""; }
     $("#dialog-close").addEventListener("click", closeDialog);
     $("#modal-root").addEventListener("click", (event) => { if (event.target.id === "modal-root") closeDialog(); });
     document.addEventListener("keydown", (event) => { if (event.key === "Escape") { if (!$("#view-modal-root").hidden) { closeViewDialog(); return; } if (activeSelectMenu) { closeSelectMenu(); return; } closeDialog(); $("#quick-panel").hidden = true; $("#quick-fab").classList.remove("open"); } });
@@ -3303,16 +3312,146 @@
     const UW_ASSIGNABLE_REFERRALS = ["REF_SR_UW", "REF_HOD"];
     // Placeholder assignee list (mock login user ids) until a user-lookup API is specified
     const UW_APPROVER_ASSIGNEES = ["UW001", "UW002", "UW003"];
-    const UW_GUIDELINE_REASONS = ["", "Requirement waived", "Document pending", "Financial assessment", "Medical assessment", "Counter signing", "Other"];
-    const UW_INITIAL_GUIDELINES = [
-      ["Income document waived or not received", "Income document waived or not raised. Please provide justification", ""],
-      ["Medical requirement waived or not received", "Medical document waived or not raised. Please provide justification", ""],
-      ["Financially not viable", "Justification required as financial eligibility is less than TFSA", ""],
-      ["DRC Risk Blank or Null Risk", "DRC Risk value is Blank or Null Risk — kindly take counter signing", "REFER_TO_CS"],
-      ["TSA above your UW limit", "Case above your underwriting limit, please take counter signing", "REFER_TO_CS"],
-      ["Application form validity expired", "Please call for fresh medical questionnaire", "REFER_TO_HOD"],
-      ["BIU model response field is blank", "BIU models predict response is blank — cannot take STD, XRT or COF decision. Kindly get the BIU response", ""],
-    ].map(([reason, remark, systemAction]) => ({ reason, remark, systemAction, justificationReason: "", justificationRemark: "" }));
+    // UW Guidelines come from the decision-validation API. Mock: keyed by Case UW Decision code (mirrors mock/drs/guw-validation.json);
+    // any other code (STD, HOLD, REFERRAL, APPROVER ...) returns the "default" SUCCESS response.
+    const UW_VALIDATION_ROLE = "CUW";
+    const UW_OTHER_REASON_CODE = "3";           // the only justification reason that needs a remark
+    const UW_BLOCKER_ACTION = "blocker";        // a hard alert with this system action stops the submission
+    const UW_BLOCKER_MESSAGE = "User is not allowed to provide terminal decisions,please modify the decision";
+    const UW_JUSTIFICATION_INCOMPLETE_MESSAGE = "Please select a reason for all justifications and checklists";
+    const UW_GUIDELINE_HEADER_TIP = "Select a reason for each justification and checklist item. A remark is mandatory when the justification reason is Other Reason.";
+    const UW_CATEGORY_ORDER = ["justification", "checklist", "hardAlert", "softAlert"];
+    const UW_CATEGORY_LABELS = { justification: "Justification", checklist: "Checklist", hardAlert: "Hard Alert", softAlert: "Soft Alert" };
+    const UW_SVG_OPEN = '<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="presentation">';
+    const UW_CATEGORY_ICONS = {
+      // TaskIcon
+      justification: `${UW_SVG_OPEN}<path d="M21 20.25H11C10.59 20.25 10.25 19.91 10.25 19.5C10.25 19.09 10.59 18.75 11 18.75H21C21.41 18.75 21.75 19.09 21.75 19.5C21.75 19.91 21.41 20.25 21 20.25Z"/><path d="M21 13.25H11C10.59 13.25 10.25 12.91 10.25 12.5C10.25 12.09 10.59 11.75 11 11.75H21C21.41 11.75 21.75 12.09 21.75 12.5C21.75 12.91 21.41 13.25 21 13.25Z"/><path d="M21 6.25H11C10.59 6.25 10.25 5.91 10.25 5.5C10.25 5.09 10.59 4.75 11 4.75H21C21.41 4.75 21.75 5.09 21.75 5.5C21.75 5.91 21.41 6.25 21 6.25Z"/><path d="M3.99994 7.25C3.80994 7.25 3.61994 7.18 3.46994 7.03L2.46994 6.03C2.17994 5.74 2.17994 5.26 2.46994 4.97C2.75994 4.68 3.23994 4.68 3.52994 4.97L3.99994 5.44L6.46994 2.97C6.75994 2.68 7.23994 2.68 7.52994 2.97C7.81994 3.26 7.81994 3.74 7.52994 4.03L4.52994 7.03C4.37994 7.18 4.18994 7.25 3.99994 7.25Z"/><path d="M3.99994 14.25C3.80994 14.25 3.61994 14.18 3.46994 14.03L2.46994 13.03C2.17994 12.74 2.17994 12.26 2.46994 11.97C2.75994 11.68 3.23994 11.68 3.52994 11.97L3.99994 12.44L6.46994 9.97C6.75994 9.68 7.23994 9.68 7.52994 9.97C7.81994 10.26 7.81994 10.74 7.52994 11.03L4.52994 14.03C4.37994 14.18 4.18994 14.25 3.99994 14.25Z"/><path d="M3.99994 21.25C3.80994 21.25 3.61994 21.18 3.46994 21.03L2.46994 20.03C2.17994 19.74 2.17994 19.26 2.46994 18.97C2.75994 18.68 3.23994 18.68 3.52994 18.97L3.99994 19.44L6.46994 16.97C6.75994 16.68 7.23994 16.68 7.52994 16.97C7.81994 17.26 7.81994 17.74 7.52994 18.03L4.52994 21.03C4.37994 21.18 4.18994 21.25 3.99994 21.25Z"/></svg>`,
+      // NoteIcon
+      checklist: `${UW_SVG_OPEN}<path d="M16 22.75H8C4.98 22.75 3.25 21.02 3.25 18V8.25C3.25 5.1 4.85 3.5 8 3.5C8.41 3.5 8.75 3.84 8.75 4.25C8.75 4.65 8.91 5.03 9.19 5.31C9.47 5.59 9.85 5.75 10.25 5.75H13.75C14.58 5.75 15.25 5.08 15.25 4.25C15.25 3.84 15.59 3.5 16 3.5C19.15 3.5 20.75 5.1 20.75 8.25V18C20.75 21.02 19.02 22.75 16 22.75ZM7.34998 5.02C5.76998 5.15 4.75 5.86 4.75 8.25V18C4.75 20.22 5.78 21.25 8 21.25H16C18.22 21.25 19.25 20.22 19.25 18V8.25C19.25 5.86 18.23 5.16 16.65 5.02C16.31 6.3 15.14 7.25 13.75 7.25H10.25C9.45 7.25 8.70001 6.94 8.13 6.37C7.75 5.99 7.48998 5.53 7.34998 5.02Z"/><path d="M13.75 7.25H10.25C9.45 7.25 8.7 6.94 8.13 6.37C7.56 5.79999 7.25 5.05 7.25 4.25C7.25 2.6 8.6 1.25 10.25 1.25H13.75C14.55 1.25 15.3 1.56 15.87 2.13C16.44 2.7 16.75 3.45 16.75 4.25C16.75 5.9 15.4 7.25 13.75 7.25ZM10.25 2.75C9.42 2.75 8.75 3.42 8.75 4.25C8.75 4.65 8.91 5.03 9.19 5.31C9.47 5.59 9.85 5.75 10.25 5.75H13.75C14.58 5.75 15.25 5.08 15.25 4.25C15.25 3.85 15.09 3.47 14.81 3.19C14.53 2.91 14.15 2.75 13.75 2.75H10.25Z"/><path d="M12 13.75H8C7.59 13.75 7.25 13.41 7.25 13C7.25 12.59 7.59 12.25 8 12.25H12C12.41 12.25 12.75 12.59 12.75 13C12.75 13.41 12.41 13.75 12 13.75Z"/><path d="M16 17.75H8C7.59 17.75 7.25 17.41 7.25 17C7.25 16.59 7.59 16.25 8 16.25H16C16.41 16.25 16.75 16.59 16.75 17C16.75 17.41 16.41 17.75 16 17.75Z"/></svg>`,
+      // DangerIcon
+      hardAlert: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="presentation"><path d="M12 14.75C11.59 14.75 11.25 14.41 11.25 14V9C11.25 8.59 11.59 8.25 12 8.25C12.41 8.25 12.75 8.59 12.75 9V14C12.75 14.41 12.41 14.75 12 14.75Z" fill="currentColor"/><path d="M12 18.0001C11.94 18.0001 11.87 17.9901 11.8 17.9801C11.74 17.9701 11.68 17.9501 11.62 17.9201C11.56 17.9001 11.5 17.8701 11.44 17.8301C11.39 17.7901 11.34 17.7501 11.29 17.7101C11.11 17.5201 11 17.2601 11 17.0001C11 16.7401 11.11 16.4801 11.29 16.2901C11.34 16.2501 11.39 16.2101 11.44 16.1701C11.5 16.1301 11.56 16.1001 11.62 16.0801C11.68 16.0501 11.74 16.0301 11.8 16.0201C11.93 15.9901 12.07 15.9901 12.19 16.0201C12.26 16.0301 12.32 16.0501 12.38 16.0801C12.44 16.1001 12.5 16.1301 12.56 16.1701C12.61 16.2101 12.66 16.2501 12.71 16.2901C12.89 16.4801 13 16.7401 13 17.0001C13 17.2601 12.89 17.5201 12.71 17.7101C12.66 17.7501 12.61 17.7901 12.56 17.8301C12.5 17.8701 12.44 17.9001 12.38 17.9201C12.32 17.9501 12.26 17.9701 12.19 17.9801C12.13 17.9901 12.06 18.0001 12 18.0001Z" fill="currentColor"/><path d="M18.06 22.1598H5.93998C3.98998 22.1598 2.49998 21.4498 1.73998 20.1698C0.989976 18.8898 1.08998 17.2398 2.03998 15.5298L8.09998 4.62984C9.09998 2.82984 10.48 1.83984 12 1.83984C13.52 1.83984 14.9 2.82984 15.9 4.62984L21.96 15.5398C22.91 17.2498 23.02 18.8898 22.26 20.1798C21.5 21.4498 20.01 22.1598 18.06 22.1598ZM12 3.33984C11.06 3.33984 10.14 4.05984 9.40998 5.35984L3.35998 16.2698C2.67998 17.4898 2.56998 18.6098 3.03998 19.4198C3.50998 20.2298 4.54998 20.6698 5.94998 20.6698H18.07C19.47 20.6698 20.5 20.2298 20.98 19.4198C21.46 18.6098 21.34 17.4998 20.66 16.2698L14.59 5.35984C13.86 4.05984 12.94 3.33984 12 3.33984Z" fill="currentColor"/></svg>`,
+      // InfomationIcon
+      softAlert: '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="presentation"><path d="M6.3 3.5H7.7V4.9H6.3V3.5ZM6.3 6.3H7.7V10.5H6.3V6.3ZM7 0C3.136 0 0 3.136 0 7C0 10.864 3.136 14 7 14C10.864 14 14 10.864 14 7C14 3.136 10.864 0 7 0ZM7 12.6C3.913 12.6 1.4 10.087 1.4 7C1.4 3.913 3.913 1.4 7 1.4C10.087 1.4 12.6 3.913 12.6 7C12.6 10.087 10.087 12.6 7 12.6Z" fill="#053C6D"/></svg>',
+    };
+    // InfoIcon (header tooltip trigger)
+    const UW_INFO_SVG = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="presentation"><path d="M12 22.75C6.07 22.75 1.25 17.93 1.25 12C1.25 6.07 6.07 1.25 12 1.25C17.93 1.25 22.75 6.07 22.75 12C22.75 17.93 17.93 22.75 12 22.75ZM12 2.75C6.9 2.75 2.75 6.9 2.75 12C2.75 17.1 6.9 21.25 12 21.25C17.1 21.25 21.25 17.1 21.25 12C21.25 6.9 17.1 2.75 12 2.75Z" fill="currentColor"/><path d="M12 13.75C11.59 13.75 11.25 13.41 11.25 13V8C11.25 7.59 11.59 7.25 12 7.25C12.41 7.25 12.75 7.59 12.75 8V13C12.75 13.41 12.41 13.75 12 13.75Z" fill="currentColor"/><path d="M12 16.9999C11.87 16.9999 11.74 16.9699 11.62 16.9199C11.5 16.8699 11.39 16.7999 11.29 16.7099C11.2 16.6099 11.13 16.5099 11.08 16.3799C11.03 16.2599 11 16.1299 11 15.9999C11 15.8699 11.03 15.7399 11.08 15.6199C11.13 15.4999 11.2 15.3899 11.29 15.2899C11.39 15.1999 11.5 15.1299 11.62 15.0799C11.86 14.9799 12.14 14.9799 12.38 15.0799C12.5 15.1299 12.61 15.1999 12.71 15.2899C12.8 15.3899 12.87 15.4999 12.92 15.6199C12.97 15.7399 13 15.8699 13 15.9999C13 16.1299 12.97 16.2599 12.92 16.3799C12.87 16.5099 12.8 16.6099 12.71 16.7099C12.61 16.7999 12.5 16.8699 12.38 16.9199C12.26 16.9699 12.13 16.9999 12 16.9999Z" fill="currentColor"/></svg>';
+
+    const uwJustificationItem = {
+      validationId: 98,
+      justificationReason: "Medical Sub standard",
+      justificationRemarks: "Medical sub standard , Please provide Justification.",
+      action: null,
+      reason: [
+        { reasonCode: 1, reasonText: "As per Reinsurer Manual no rating applicable" },
+        { reasonCode: 2, reasonText: "Incorrect Medical data entry done" },
+        { reasonCode: 3, reasonText: "Other Reason" },
+        { reasonCode: 4, reasonText: "Income proof not required as customer financially viable basis income bureau." },
+      ],
+    };
+    const uwChecklistItem = { ...uwJustificationItem, reason: [{ reasonCode: 1, reasonText: "Yes" }, { reasonCode: 2, reasonText: "No" }] };
+    const uwMockResponse = (status, counterSignReqd, referralReqd, extra = {}) => ({
+      applicationNo: "OS90377300",
+      correlationId: "b36778ee-523c-4700-b852-52ddc7988322",
+      status, counterSignReqd, referralReqd,
+      SoftAlert: [], HardAlert: [], justifications: [],
+      ...extra,
+    });
+    const UW_VALIDATION_MOCK = {
+      default: uwMockResponse("SUCCESS", "N", "N"),
+      EP: uwMockResponse("FAIL", "N", "N", {
+        SoftAlert: [{ validationId: 1, reason: "Extra premium case", remarks: "Extra premium applied - kindly verify the loading before submission" }],
+      }),
+      CO: uwMockResponse("FAIL", "Y", "N", {
+        SoftAlert: [{ validationId: 1, reason: "Counter offer case", remarks: "Counter offer issued - customer acceptance is pending" }],
+        HardAlert: [
+          { validationId: 5, reason: "Counter offer above authority", remarks: "Counter offer needs counter sign", action: "Counter Sign" },
+          { validationId: 5, reason: "Decline above authority", remarks: "Decline needs counter sign", action: "Blocker" },
+        ],
+      }),
+      BOR_STD: uwMockResponse("FAIL", "Y", "Y", {
+        SoftAlert: [{ validationId: 1, reason: "Borderline standard case", remarks: "Borderline standard - kindly verify the medical findings" }],
+        HardAlert: [
+          { validationId: 3, reason: "Borderline standard above authority", remarks: "Borderline case - Kindly take HOD approval", action: "Refer to HOD" },
+          { validationId: 4, reason: "Borderline standard above authority", remarks: "Borderline case - Kindly take Reinsurer opinion", action: "Refer to Reinsurer" },
+          { validationId: 5, reason: "Borderline standard above authority", remarks: "Borderline case - Kindly counter sign", action: "Counter Sign" },
+        ],
+      }),
+      REJ: uwMockResponse("FAIL", "N", "N", {
+        SoftAlert: [{ validationId: 1, reason: "Reject case", remarks: "Reject decision - kindly verify the rejection reason" }],
+        justifications: [uwJustificationItem],
+      }),
+      DC: uwMockResponse("FAIL", "Y", "N", {
+        SoftAlert: [{ validationId: 1, reason: "Decline case", remarks: "Decline decision - kindly verify the decline reason" }],
+        HardAlert: [{ validationId: 5, reason: "Decline above authority", remarks: "Decline needs counter sign", action: "Counter Sign" }],
+        justifications: [uwJustificationItem],
+        checklist: [uwChecklistItem],
+      }),
+      POSTP: uwMockResponse("FAIL", "Y", "Y", {
+        SoftAlert: [{ validationId: 1, reason: "PEP case", remarks: "PEP case - Kindly take HOD approval" }],
+        HardAlert: [
+          { validationId: 2, reason: "PEP yes", remarks: "PEP case - Kindly take HOD approval", action: "Refer to HOD" },
+          { validationId: 3, reason: "PEP yes", remarks: "PEP case - Kindly take HOD approval", action: "Refer to CMO" },
+          { validationId: 4, reason: "PEP yes", remarks: "PEP case - Kindly take HOD approval", action: "Refer to Reinsurer" },
+          { validationId: 5, reason: "PEP yes", remarks: "PEP case - Kindly take HOD approval", action: "Counter Sign" },
+        ],
+        justifications: [uwJustificationItem],
+      }),
+    };
+
+    // DTO -> UW Guidelines rows (justification, checklist, hard alert, soft alert)
+    const uwBlankRow = { options: [], selectedReasonCode: "", justificationRemark: "" };
+    const uwMapOptionRows = (list, category) => (list ?? []).map((item) => ({
+      ...uwBlankRow, validationId: String(item.validationId ?? ""), category, reason: item.justificationReason ?? "", remark: item.justificationRemarks ?? "", systemAction: item.action ?? "",
+      options: (item.reason ?? []).map((option) => ({ code: String(option.reasonCode), text: option.reasonText })),
+    }));
+    const uwMapAlertRows = (list, category) => (list ?? []).map((alert) => ({
+      ...uwBlankRow, validationId: String(alert.validationId ?? ""), category, reason: alert.reason ?? "", remark: alert.remarks ?? "", systemAction: alert.action ?? "",
+    }));
+    function uwFromValidationResponse(dto) {
+      const rows = [
+        ...uwMapOptionRows(dto.justifications, "justification"),
+        ...uwMapOptionRows(dto.checklist, "checklist"),
+        ...uwMapAlertRows(dto.HardAlert, "hardAlert"),
+        ...uwMapAlertRows(dto.SoftAlert, "softAlert"),
+      ].sort((a, b) => UW_CATEGORY_ORDER.indexOf(a.category) - UW_CATEGORY_ORDER.indexOf(b.category));
+      return { applicationNo: dto.applicationNo, success: dto.status === "SUCCESS", referralRequired: dto.referralReqd === "Y", counterSignRequired: dto.counterSignReqd === "Y", rows };
+    }
+    // Request is {userId, role: UW_VALIDATION_ROLE, applicationNo}; the decision code only selects a mock scenario.
+    const uwValidate = (decisionCode) => new Promise((resolve) => {
+      window.setTimeout(() => resolve(uwFromValidationResponse(UW_VALIDATION_MOCK[decisionCode] ?? UW_VALIDATION_MOCK.default)), 250);
+    });
+    const uwRowKey = (row) => `${row.category}-${row.validationId}`;
+    const uwIsEditableRow = (row) => row.category === "justification" || row.category === "checklist";
+    const uwRowComplete = (row) => row.selectedReasonCode !== "" && (row.category !== "justification" || row.selectedReasonCode !== UW_OTHER_REASON_CODE || row.justificationRemark.trim() !== "");
+    // Restores what the user chose earlier for the same validation row; every other row starts empty
+    const uwMergeSavedRows = (rows, saved = []) => rows.map((row) => {
+      const previous = saved.find((s) => uwRowKey(s) === uwRowKey(row));
+      if (!previous || !row.options.some((option) => option.code === previous.selectedReasonCode)) return row;
+      return { ...row, selectedReasonCode: previous.selectedReasonCode, justificationRemark: previous.justificationRemark };
+    });
+    // Referral targets named by the hard alerts ("Refer to HOD" -> "HOD"), de-duplicated, in response order
+    function uwReferralTargets(rows) {
+      const targets = rows
+        .filter((row) => row.category === "hardAlert")
+        .map((row) => row.systemAction.trim())
+        .filter((action) => /^refer to /i.test(action))
+        .map((action) => action.replace(/^refer to /i, "").trim())
+        .filter(Boolean);
+      return targets.filter((target, index) => targets.indexOf(target) === index);
+    }
+    // Only one Raise Referral row is pre-selected: CMO / other rows first, then Sr UW, HOD, Reinsurer
+    const UW_EXCLUSIVE_PICK = [{ key: "sr uw", row: "REF_SR_UW", priority: 1 }, { key: "hod", row: "REF_HOD", priority: 2 }, { key: "reinsurer", row: "REF_REINS", priority: 3 }];
+    function uwPickReferralRow(targets) {
+      let best = null;
+      targets.forEach((target) => {
+        const key = target.toLowerCase();
+        const exclusive = UW_EXCLUSIVE_PICK.find((entry) => entry.key === key);
+        const option = exclusive ? undefined : UW_REFERRAL_TYPES.find(([, label]) => label.toLowerCase() === key);
+        const candidate = exclusive ? { priority: exclusive.priority, row: exclusive.row } : option ? { priority: 0, row: option[0] } : null;
+        if (candidate && (!best || candidate.priority < best.priority)) best = candidate;
+      });
+      return best ? best.row : null;
+    }
     const uwEyeSvg = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M1.5 10s3.1-5 8.5-5 8.5 5 8.5 5-3.1 5-8.5 5-8.5-5-8.5-5Z" stroke="#e45f14" stroke-width="1.5"/><circle cx="10" cy="10" r="2.4" stroke="#e45f14" stroke-width="1.5"/></svg>';
     const uwDecisionLabel = (code) => [...UW_DECISION_OPTIONS, ...UW_ACTION_OPTIONS].find(([value]) => value === code)?.[1] ?? code;
     const isUwActionCode = (code) => UW_ACTION_OPTIONS.some(([value]) => value === code);
@@ -3333,6 +3472,9 @@
       referralRows: newReferralRows(),
       reinsurerEditOpen: false,
       guidelines: [],
+      validation: null,        // last decision-validation result (referral / counter sign flags)
+      validating: false,       // true while the validation call is in flight
+      successPending: false,   // true while the success popup is open; closing it continues with the final submit
     };
 
     const uwLabel = (text) => `<label class="field-label">${text}</label>`;
@@ -3433,17 +3575,42 @@
 
     function uwPaneHtml(code) {
       const remarks = code === "REFERRAL" ? "" : `<div style="margin-top:24px">${uwLabel("UW Remarks")}<textarea class="text-input" data-uw-remarks rows="3" maxlength="10000" placeholder="Enter remarks...">${escapeHtml(uwState.remarks)}</textarea><small data-uw-remarks-count style="display:block;text-align:right;font-size:10px;color:#938883;margin-top:4px">${uwState.remarks.length}/10000</small></div>`;
-      return `<div class="uw-dialog-grid">${uwCaseSelectHtml(code)}<div class="uw-details" data-uw-details>${uwDetailsHtml(code)}</div></div>${remarks}<div class="uw-step-actions"><button class="uw-back-btn" type="button" data-uw-back>Back</button><button class="contained" type="button" data-uw-submit>Submit</button></div>`;
+      return `<div class="uw-dialog-grid">${uwCaseSelectHtml(code)}<div class="uw-details" data-uw-details>${uwDetailsHtml(code)}</div></div>${remarks}<div class="uw-step-actions">${uwState.confirmed && ["APPROVER", "REFERRAL"].includes(code) ? '<button class="uw-back-btn" type="button" data-uw-back>Back</button>' : ""}<button class="contained" type="button" data-uw-submit>Submit</button></div>`;
+    }
+
+    const uwGuidelinesComplete = () => uwState.guidelines.filter(uwIsEditableRow).every(uwRowComplete);
+    const uwHasBlocker = () => uwState.guidelines.some((row) => row.category === "hardAlert" && row.systemAction.trim().toLowerCase() === UW_BLOCKER_ACTION);
+    // Message shown on UW Guidelines when the user must modify, refer or counter sign instead of deciding
+    function uwRoutingMessage() {
+      const validation = uwState.validation;
+      if (!validation) return "";
+      if (uwHasBlocker()) return UW_BLOCKER_MESSAGE;
+      if (validation.referralRequired) return `User is not allowed to provide terminal decisions, please refer the case to ${uwReferralTargets(uwState.guidelines).join(", ")}`;
+      if (validation.counterSignRequired) return "User is not allowed to provide terminal decisions, please counter sign the case";
+      return "";
+    }
+    const uwGuidelineIcon = (category) => `<span class="uw-gl-icon" role="img" aria-label="${UW_CATEGORY_LABELS[category]}" title="${UW_CATEGORY_LABELS[category]}">${UW_CATEGORY_ICONS[category]}</span>`;
+    // Justification / checklist rows are filled by the user; hard and soft alerts are locked
+    function uwGuidelineRemarkState(row) {
+      const editable = uwIsEditableRow(row);
+      const remarkEnabled = editable && row.selectedReasonCode !== "";
+      let placeholder = "Not applicable";
+      if (editable) {
+        if (!remarkEnabled) placeholder = "Select a reason first";
+        else placeholder = row.selectedReasonCode === UW_OTHER_REASON_CODE ? "Add remarks (required)" : "Add remarks (optional)";
+      }
+      return { remarkEnabled, placeholder };
     }
 
     function uwGuidelinesPaneHtml() {
       const rows = uwState.guidelines.map((row, index) => {
-        // A system action on the row locks its justification fields
-        const locked = Boolean(row.systemAction);
-        const enabled = Boolean(row.justificationReason) && !locked;
-        return `<tr><td>${escapeHtml(row.reason)}</td><td>${escapeHtml(row.remark)}</td><td>${escapeHtml(row.systemAction || "—")}</td><td><select class="select" data-gl-reason="${index}" ${locked ? "disabled" : ""}>${UW_GUIDELINE_REASONS.map((reason) => `<option value="${escapeHtml(reason)}" ${row.justificationReason === reason ? "selected" : ""}>${reason ? escapeHtml(reason) : "Select reason"}</option>`).join("")}</select></td><td><input class="text-input" data-gl-remark="${index}" placeholder="${locked ? "Not applicable" : enabled ? "Add remarks (required)" : "Select a reason first"}" value="${escapeHtml(row.justificationRemark)}" ${enabled ? "" : "disabled"}></td></tr>`;
+        const editable = uwIsEditableRow(row);
+        const { remarkEnabled, placeholder } = uwGuidelineRemarkState(row);
+        const options = row.options.map((option) => `<option value="${escapeHtml(option.code)}" ${row.selectedReasonCode === option.code ? "selected" : ""}>${escapeHtml(option.text)}</option>`).join("");
+        return `<tr data-testid="guw-guideline-${escapeHtml(row.validationId)}"><td>${uwGuidelineIcon(row.category)}${escapeHtml(row.reason)}</td><td>${escapeHtml(row.remark)}</td><td>${escapeHtml(row.systemAction || "—")}</td><td><select class="select" data-gl-reason="${index}" ${editable ? "" : "disabled"}><option value="">${editable ? "Select reason" : "Not applicable"}</option>${options}</select></td><td><input class="text-input" data-gl-remark="${index}" placeholder="${placeholder}" value="${escapeHtml(row.justificationRemark)}" ${remarkEnabled ? "" : "disabled"}></td></tr>`;
       }).join("");
-      return `<p class="uw-guideline-intro">Select a justification reason to enable its remarks field. Remarks are mandatory for every selected reason.</p><div class="uw-guideline-table-wrap"><table class="uw-guideline-table"><thead><tr><th>Reason</th><th>Remark</th><th>System Action</th><th>Justification Reason</th><th>Justification Remarks</th></tr></thead><tbody>${rows}</tbody></table></div><div class="uw-guideline-actions"><button id="uw-gl-back" class="uw-back-btn" type="button">Back</button><button id="uw-gl-confirm" class="contained" type="button">Confirm &amp; Submit</button></div>`;
+      const message = uwRoutingMessage();
+      return `<div class="uw-guideline-table-wrap uw-gl-wrap"><table class="uw-guideline-table"><thead><tr><th>Reason</th><th>Remark</th><th>System Action</th><th><span class="uw-gl-head">Justification/Checklist<span class="uw-gl-info" role="img" aria-label="Justification instructions" title="${escapeHtml(UW_GUIDELINE_HEADER_TIP)}">${UW_INFO_SVG}</span></span></th><th>Justification Remarks</th></tr></thead><tbody>${rows}</tbody></table></div>${message ? `<p class="uw-guideline-message" role="alert">${escapeHtml(message)}</p>` : ""}<div class="uw-guideline-actions"><button id="uw-gl-back" class="uw-back-btn" type="button">Back</button><button id="uw-gl-confirm" class="contained" type="button" ${uwHasBlocker() ? "disabled" : ""}>Confirm &amp; Submit</button></div>`;
     }
 
     const uwPane = (name) => $(`#uw-pane-${name}`);
@@ -3535,8 +3702,11 @@
         approver: { reason: "", target: "", assignedTo: "" },
         referralRows: newReferralRows(),
         reinsurerEditOpen: false,
-        // Re-open with the guidelines already populated in a previous submit
-        guidelines: (uwState.submitted?.guidelines ?? UW_INITIAL_GUIDELINES).map((row) => ({ ...row })),
+        // UW Guidelines are fetched again on Submit; reasons chosen earlier are restored then
+        guidelines: [],
+        validation: null,
+        validating: false,
+        successPending: false,
       });
       resetReinsurerState();
       Object.assign(reconsiderState, blankRecon());
@@ -3609,23 +3779,37 @@
         showBstdColumn: counterOfferRows.some((row) => row.type === "Borderline Standard"),
         reinsurerRows: reinsurerSelected ? reinsurerRows.map((row) => ({ code: row.code, systemName: row.systemName, uwName: row.uwName })) : [],
         documentRows: reinsurerSelected ? referralDocuments.map((name, row) => ({ name, assigned: reinsurerRows.map((_, column) => reinsurerDocumentState[row][column]) })) : [],
-        guidelines: uwState.guidelines.map((row) => ({ ...row })),
+        validationRows: uwState.guidelines.map((row) => ({ ...row })),
       };
     }
 
-    // Hold the current decision (and guidelines), and link the main dropdown to the Case UW Decision
+    // The Case UW Decision the user picked (kept while Counter Sign / Raise Referral is open).
+    // On the referral path it becomes Raise Referral only when that referral is finally submitted.
+    const uwCaseCode = () => (uwState.confirmed && uwState.decision === "REFERRAL" ? "REFERRAL" : uwState.baseDecision || uwState.decision);
+
+    // Hold the current decision (and UW Guidelines rows), and link the main dropdown to the Case UW Decision
     function saveUwDraft() {
       uwState.submitted = buildUwSnapshot();
       uwState.committedRemarks = uwState.remarks;
-      setMainDecision(uwState.baseDecision || uwState.decision);
+      setMainDecision(uwCaseCode());
     }
-    function finalizeUwSubmit() {
-      saveUwDraft();
+    // After a final submit: member summary page for a multi-life case (memberCount > 1 in the URL), else the landing page
+    function uwPostSubmitUrl() {
+      const memberCount = Number(new URLSearchParams(window.location.search).get("memberCount") ?? 0);
+      return memberCount > 1 ? "./MemberSelection.html" : "./landing-prototype.html";
+    }
+    function finalizeUwSubmit(alreadySaved = false) {
+      if (!alreadySaved) saveUwDraft();
       closeDialog();
       notify("Decision submitted successfully");
-      window.setTimeout(() => { window.location.href = "./landing-prototype.html"; }, 700);
+      window.setTimeout(() => { window.location.href = uwPostSubmitUrl(); }, 700);
     }
-    function handleUwSubmit() {
+    function uwSetValidating(on) {
+      uwState.validating = on;
+      document.querySelectorAll("#dialog-content [data-uw-submit]").forEach((button) => { button.disabled = on; });
+    }
+    async function handleUwSubmit() {
+      if (uwState.validating) return;
       const code = uwState.decision;
       if (code === "REFERRAL") {
         if (!uwState.referralRows.some((row) => row.selected)) { notify("Please select at least one referral"); return; }
@@ -3636,12 +3820,30 @@
         if (!a.target) { notify("Please select Refer To"); return; }
         if (!a.assignedTo) { notify("Please select Assigned To"); return; }
       }
-      // Guidelines already confirmed (system-action flow): Counter Sign / Raise Referral is the final step
+      // Opened from UW Guidelines (validation already done): Counter Sign / Raise Referral is the final step
       if (uwState.confirmed && ["APPROVER", "REFERRAL"].includes(code)) { finalizeUwSubmit(); return; }
-      saveUwDraft();
-      showUwGuidelines();
+      uwSetValidating(true);
+      try {
+        const result = await uwValidate(uwCaseCode());
+        uwState.validation = result;
+        if (result.success) {
+          // Decision details are held and linked to the main dropdown, then the success popup is shown;
+          // closing the popup (OK / X / Escape) continues with the final submit.
+          uwState.guidelines = [];
+          saveUwDraft();
+          uwState.successPending = true;
+          openDialog("Decision validated successfully", `<p class="uw-success-text">Selected decision: ${escapeHtml(uwDecisionLabel(uwCaseCode()))}</p><div class="uw-step-actions"><button id="uw-success-ok" class="contained" type="button">OK</button></div>`, true);
+          return;
+        }
+        // Rows start empty unless the user chose a reason for the same rows earlier
+        uwState.guidelines = uwMergeSavedRows(result.rows, uwState.submitted?.validationRows);
+        saveUwDraft();
+        showUwGuidelines();
+      } finally {
+        uwSetValidating(false);
+      }
     }
-    // Back from Counter Sign / Raise Referral to the UW Guidelines step
+    // Back from Counter Sign / Raise Referral to the UW Guidelines step (chosen reasons stay intact)
     function backToUwGuidelines() {
       uwState.decision = uwState.baseDecision || uwState.previous;
       uwState.baseDecision = "";
@@ -3649,20 +3851,23 @@
       showUwGuidelines();
     }
     function handleUwGuidelinesConfirm() {
-      const incomplete = uwState.guidelines.some((row) => Boolean(row.justificationReason) !== Boolean(row.justificationRemark.trim()));
-      if (incomplete) { notify("Please complete both justification fields for each applicable guideline"); return; }
-      // REFER_TO_CS returned: open the Counter Sign screen next; final submit happens from there.
-      // Otherwise any other REFER_TO_* opens the Raise Referral screen.
-      const hasCounterSign = uwState.guidelines.some((row) => row.systemAction === "REFER_TO_CS");
-      const hasOtherReferral = uwState.guidelines.some((row) => row.systemAction.startsWith("REFER_TO_") && row.systemAction !== "REFER_TO_CS");
-      const nextAction = hasCounterSign ? "APPROVER" : hasOtherReferral ? "REFERRAL" : null;
+      // A Blocker hard alert stops the submission (the button is disabled; this is a safeguard)
+      if (uwHasBlocker()) return;
+      if (!uwGuidelinesComplete()) { notify(UW_JUSTIFICATION_INCOMPLETE_MESSAGE); return; }
+      // Referral always takes priority over counter sign; final submit happens from that screen.
+      const validation = uwState.validation;
+      const nextAction = validation?.referralRequired ? "REFERRAL" : validation?.counterSignRequired ? "APPROVER" : null;
       if (nextAction && uwState.decision !== nextAction) {
         saveUwDraft();
         uwState.confirmed = true;
         if (!isUwActionCode(uwState.decision)) uwState.baseDecision = uwState.decision;
         uwState.previous = uwState.decision;
         uwState.decision = nextAction;
-        if (nextAction === "REFERRAL") uwState.reinsurerEditOpen = false;
+        if (nextAction === "REFERRAL") {
+          const picked = uwPickReferralRow(uwReferralTargets(uwState.guidelines));
+          uwState.referralRows.forEach((row) => { row.selected = row.target === picked; });
+          uwState.reinsurerEditOpen = picked === "REF_REINS";
+        }
         showUwActionPane(nextAction);
         return;
       }
@@ -3684,7 +3889,7 @@
         html += `<div class="uw-view-section"><h3>Decision Details</h3><div class="uw-view-table-wrap"><table class="uw-view-table wide"><thead><tr>${th("Product")}${th("Type")}${d.showBstdColumn ? th("BSTD Code") : ""}${th("SA")}${th("Changed SA")}${th("PT")}${th("Changed PT")}${th("Loading Class")}${th("Loading Reason Code")}</tr></thead><tbody>${d.counterOfferRows.map((row) => `<tr><td style="font-weight:700">${value(row.productName)}</td><td>${value(row.type)}</td>${d.showBstdColumn ? `<td>${value(row.bstdCode)}</td>` : ""}<td>${value(row.sa)}</td><td>${value(row.changedSa)}</td><td>${value(row.pt)}</td><td>${value(row.changedPt)}</td><td>${value(row.loadingClass)}</td><td>${value(row.loadingReason)}</td></tr>`).join("")}</tbody></table></div></div>`;
       }
       html += `<div class="uw-view-section"><span class="uw-view-label">${d.reinsurerRows.length ? "Remarks" : "UW Remarks"}</span><span class="uw-view-value">${value(d.remarks)}</span></div>`;
-      html += `<div class="uw-view-section"><h3>UW Guidelines</h3><div class="uw-view-table-wrap"><table class="uw-view-table"><thead><tr>${th("Reason")}${th("Remark")}${th("System Action")}${th("Justification Reason")}${th("Justification Remarks")}</tr></thead><tbody>${d.guidelines.map((row) => `<tr><td>${escapeHtml(row.reason)}</td><td>${escapeHtml(row.remark)}</td><td>${escapeHtml(row.systemAction || "—")}</td><td>${escapeHtml(row.justificationReason || "—")}</td><td>${escapeHtml(row.justificationRemark || "—")}</td></tr>`).join("")}</tbody></table></div></div>`;
+      if (d.validationRows.length) html += `<div class="uw-view-section"><h3>UW Guidelines</h3><div class="uw-view-table-wrap"><table class="uw-view-table"><thead><tr>${th("Reason")}${th("Remark")}${th("System Action")}${th("Justification/Checklist")}${th("Justification Remarks")}</tr></thead><tbody>${d.validationRows.map((row) => `<tr data-testid="guw-guideline-${escapeHtml(row.validationId)}"><td>${uwGuidelineIcon(row.category)}${escapeHtml(row.reason)}</td><td>${escapeHtml(row.remark)}</td><td>${escapeHtml(row.systemAction || "—")}</td><td>${escapeHtml(row.options.find((option) => option.code === row.selectedReasonCode)?.text || "—")}</td><td>${escapeHtml(row.justificationRemark || "—")}</td></tr>`).join("")}</tbody></table></div></div>`;
       return html;
     }
     function openUwViewDialog() {
@@ -3743,6 +3948,7 @@
       if (event.target.closest("[data-uw-view]")) { openUwViewDialog(); return; }
       if (event.target.id === "uw-gl-back") { showUwPane("base"); return; }
       if (event.target.id === "uw-gl-confirm") { handleUwGuidelinesConfirm(); return; }
+      if (event.target.id === "uw-success-ok") { closeDialog(); return; }
       const edit = event.target.closest("[data-ref-edit]");
       if (edit && !edit.disabled) {
         uwState.reinsurerEditOpen = !uwState.reinsurerEditOpen;
@@ -3763,12 +3969,13 @@
       if (target.dataset.refReason !== undefined) { uwState.referralRows[Number(target.dataset.refReason)].reason = target.value; return; }
       if (target.dataset.glReason !== undefined) {
         const row = uwState.guidelines[Number(target.dataset.glReason)];
-        row.justificationReason = target.value;
-        if (!target.value) row.justificationRemark = "";
+        row.selectedReasonCode = target.value;
+        row.justificationRemark = "";
+        const { remarkEnabled, placeholder } = uwGuidelineRemarkState(row);
         const remark = target.closest("tr").querySelector("[data-gl-remark]");
-        remark.disabled = !target.value;
-        remark.placeholder = target.value ? "Add remarks (required)" : "Select a reason first";
-        if (!target.value) remark.value = "";
+        remark.disabled = !remarkEnabled;
+        remark.placeholder = placeholder;
+        remark.value = "";
         return;
       }
       if (target.name === "uwReconsiderPossible") {

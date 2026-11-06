@@ -14,6 +14,7 @@ import {
   CustomDialog,
   CustomSnackbar,
 } from "@insurance-poc/ui";
+import { groupPaths } from "@insurance-poc/routes";
 import { fetchGuwDrs, type GuwDrsRecord } from "../../services/guwService";
 import   { QuickLinksModule }  from "@insurance-poc/common/quick-links";
 
@@ -35,6 +36,17 @@ type PageState =
 export function GuwDrsPage() {
   const [params] = useSearchParams();
   const applicationNo = params.get("applicationNo")?.trim() ?? "";
+  // Multi-life case (more than one member): after submit go to the member summary page, else the inbox
+  const isMultiLife = parseInt(params.get("memberCount") ?? "0", 10) > 1;
+  const memberSummaryQuery = new URLSearchParams({
+    applicationNo,
+    roleType: params.get("roleType") ?? "",
+  });
+  const roleParam = params.get("role") ?? "";
+  if (roleParam) memberSummaryQuery.set("role", roleParam);
+  const postSubmitUrl = isMultiLife
+    ? `${groupPaths.guwMemberSelection}?${memberSummaryQuery.toString()}`
+    : groupPaths.inbox;
   const [page, setPage] = useState<PageState>(
     applicationNo ? { kind: "loading" } : { kind: "missing-id" },
   );
@@ -265,6 +277,7 @@ export function GuwDrsPage() {
             {/* .uw-panel */}
             <GuwUwPanel
               applicationNo={applicationNo}
+              redirectUrl={postSubmitUrl}
               breOverallDecision={page.record.uwData?.breOverallDecision}
               breOverallRemarks={page.record.uwData?.breOverallRemarks}
               initialSubmittedDecision={page.record.uwData?.submittedDecision}

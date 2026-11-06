@@ -2,15 +2,18 @@ import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import { CustomDialog } from "@insurance-poc/ui";
+import { CustomButton } from "@insurance-poc/ui";
+import { groupPaths } from "@insurance-poc/routes";
 import { ApplicantBanner, type BannerRow } from "@insurance-poc/common/applicant-banner";
-import { CaseUwDecision } from "@insurance-poc/common/case-uw-decision";
 import {
-  fetchCaseDecisionOptions,
   fetchGuwDrs,
-  type DropdownOption,
+  guwMemberDecisionKey,
+  loadGuwSubmittedDecision,
   type GuwDrsRecord,
+  type GuwSubmittedDecision,
 } from "../../services/guwService";
+import eyeIconSrc from "../../assets/eye.svg";
+import { GuwDecisionDetailsDialog, GuwUwPanel } from "./GuwUwPanel";
 
 /* ------------------------------------------------------------------ */
 /* Types                                                                */
@@ -39,6 +42,16 @@ export type GuwMember = {
 /* ------------------------------------------------------------------ */
 /* Decision pill colours (matching prototype)                          */
 /* ------------------------------------------------------------------ */
+/** Pill label + tone of the Case UW Decision selected for a member ("-" until one is selected). */
+function memberDecisionPill(saved: GuwSubmittedDecision | null): { label: string; tone: DecisionTone } {
+  if (!saved) return { label: "-", tone: "default" };
+  const label = saved.fields.find((f) => f.label === "Case UW Decision")?.value || "-";
+  if (["STD", "BOR_STD"].includes(saved.decisionCode)) return { label, tone: "standard" };
+  if (["REJ", "DC"].includes(saved.decisionCode)) return { label, tone: "decline" };
+  if (["REFERRAL", "APPROVER"].includes(saved.decisionCode)) return { label, tone: "refer" };
+  return { label, tone: "default" };
+}
+
 const PILL_STYLE: Record<DecisionTone, { border: string; bg: string; color: string }> = {
   refer: { border: "#f1c97c", bg: "#fff3e0", color: "#9a6200" },
   decline: { border: "#f2c4c7", bg: "#fdebec", color: "#b3262e" },
@@ -50,15 +63,6 @@ const TONE_PILL_STYLE: Record<number, { border: string; bg: string; color: strin
   1: { border: "#f2c9b5", bg: "#fff0e8", color: "#b54a00" },
   2: { border: "#d9ccf2", bg: "#f4f0ff", color: "#6c4aa0" },
 };
-
-/* ------------------------------------------------------------------ */
-/* Eye icon SVG                                                         */
-/* ------------------------------------------------------------------ */
-const EyeIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="20" height="20">
-    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12.5a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z" />
-  </svg>
-);
 
 /* ------------------------------------------------------------------ */
 /* Mock members derived from guw-informal-drs.json summary[0]          */
@@ -127,16 +131,23 @@ export function GuwMemberSelection() {
   const roleType = params.get("roleType")?.trim() ?? "";
   const role = params.get("role")?.trim() ?? "";
 
+  // Member whose saved decision is shown in the details dialog (same dialog as the Case UW Decision eye icon)
   const [detailMember, setDetailMember] = useState<GuwMember | null>(null);
+  // Each member's own saved decision, shown against that member
+  const [memberDecisions] = useState<Record<string, GuwSubmittedDecision | null>>(() =>
+    Object.fromEntries(
+      MOCK_MEMBERS.map((m) => [
+        m.memberType,
+        loadGuwSubmittedDecision(guwMemberDecisionKey(applicationNo, m.memberType)),
+      ]),
+    ),
+  );
   const [record, setRecord] = useState<GuwDrsRecord | null>(null);
-  const [decisionOptions, setDecisionOptions] = useState<DropdownOption[]>([]);
-  const [caseDecision, setCaseDecision] = useState("");
+  // Case-level decision is held under its own key so it never overwrites a member's own decision
+  const summaryStorageKey = `${applicationNo}:summary`;
 
   useEffect(() => {
     let active = true;
-    void fetchCaseDecisionOptions().then((opts) => {
-      if (active) setDecisionOptions(opts);
-    });
     if (applicationNo) {
       void fetchGuwDrs(applicationNo).then((r) => {
         if (active) setRecord(r);
@@ -209,7 +220,7 @@ export function GuwMemberSelection() {
               color: "#8a817c",
             }}
           >
-            {["Life", "Name", "Details", "UW Decision", ""].map((h, i) => (
+            {["Life", "Name", "Details", "Case UW Decision", ""].map((h, i) => (
               <Typography key={i} sx={{ fontSize: 8, fontWeight: 900, letterSpacing: 0.4 }}>
                 {h}
               </Typography>
@@ -219,7 +230,9 @@ export function GuwMemberSelection() {
           {/* Member rows */}
           {MOCK_MEMBERS.map((member) => {
             const tonePill = TONE_PILL_STYLE[member.toneIndex] ?? TONE_PILL_STYLE[1];
-            const decisionPill = PILL_STYLE[member.tone] ?? PILL_STYLE.default;
+            const saved = memberDecisions[member.memberType] ?? null;
+            const pillInfo = memberDecisionPill(saved);
+            const decisionPill = PILL_STYLE[pillInfo.tone] ?? PILL_STYLE.default;
 
             return (
               <Box
@@ -310,7 +323,7 @@ export function GuwMemberSelection() {
 
                 {/* UW Decision pill */}
                 <Box
-                  title={member.uwDecision}
+                  title={pillInfo.label}
                   sx={{
                     overflow: "hidden",
                     textOverflow: "ellipsis",
@@ -327,29 +340,20 @@ export function GuwMemberSelection() {
                     whiteSpace: "nowrap",
                   }}
                 >
-                  {member.uwDecision}
+                  {pillInfo.label}
                 </Box>
 
-                {/* Eye button */}
-                <Box
-                  component="button"
-                  onClick={(e) => { e.stopPropagation(); setDetailMember(member); }}
-                  aria-label={`View UW decision details for ${member.memberType} ${member.name}`}
-                  sx={{
-                    width: 34,
-                    height: 34,
-                    p: "5px",
-                    display: "grid",
-                    placeItems: "center",
-                    border: 0,
-                    borderRadius: "50%",
-                    background: "transparent",
-                    color: "#a92129",
-                    cursor: "pointer",
-                    "&:hover": { background: "#ffead7" },
-                  }}
-                >
-                  <EyeIcon />
+                {/* Eye button - same as the Case UW Decision eye icon */}
+                <Box sx={{ display: "grid", placeItems: "center" }}>
+                  <CustomButton
+                    variant="outlined"
+                    aria-label={`View decision details for ${member.memberType} ${member.name}`}
+                    title="View decision details"
+                    onClick={() => setDetailMember(member)}
+                    sx={{ width: 30, minWidth: 30, minHeight: 28, p: 0.5, borderRadius: "6px", flexShrink: 0 }}
+                  >
+                    <img src={eyeIconSrc} alt="" width={20} height={20} style={{ display: "block" }} />
+                  </CustomButton>
                 </Box>
               </Box>
             );
@@ -357,50 +361,61 @@ export function GuwMemberSelection() {
         </Box>
       </Box>
 
-      {/* Financial Decision, Medical Decision and Case UW Decision on one row */}
-      <CaseUwDecision
-        financialDecision={record?.sdtRow.financialDecision}
-        medicalDecision={record?.sdtRow.medicalDecision}
-        options={decisionOptions}
-        value={caseDecision}
-        onChange={setCaseDecision}
-      />
-
-      {/* UW Decision detail dialog */}
-      <CustomDialog
-        open={detailMember !== null}
-        onClose={() => setDetailMember(null)}
-        title={
-          <Typography component="span" sx={{ fontSize: 12, fontWeight: 800 }}>
-            {detailMember?.memberType ?? ""} — UW Decision Details
-          </Typography>
-        }
-        maxWidth="sm"
-        fullWidth
-      >
-        <Box sx={{ p: 2 }}>
-          {detailMember?.details.map((d) => (
+      {/* Financial Decision and Medical Decision (read-only) */}
+      <Box sx={{ m: "8px 4px 0", p: "8px 8px 0" }}>
+        <Box
+          component="dl"
+          sx={{
+            display: "grid",
+            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+            m: 0,
+            border: "1px solid #e5e0dd",
+            background: "#fcfaf9",
+          }}
+        >
+          {[
+            ["Financial Decision", record?.sdtRow.financialDecision],
+            ["Medical Decision", record?.sdtRow.medicalDecision],
+          ].map(([label, value], index) => (
             <Box
-              key={d.label}
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                py: "4px",
-                borderBottom: "1px solid #f0ebe8",
-                fontSize: 11,
-                color: "#302a27",
-              }}
+              key={label}
+              sx={{ p: "10px 16px", borderLeft: index > 0 ? "1px solid #e5e0dd" : "none" }}
             >
-              <Typography component="span" sx={{ fontSize: 11, color: "#7b716c", mr: 1 }}>
-                {d.label}
+              <Typography
+                component="dt"
+                sx={{ mb: "6px", color: "#938883", fontSize: 12, fontWeight: 700, letterSpacing: ".3px" }}
+              >
+                {label}
               </Typography>
-              <Typography component="span" sx={{ fontSize: 11, fontWeight: 700 }}>
-                {d.value || "-"}
+              <Typography component="dd" sx={{ m: 0, color: "#37312e", fontSize: 12, fontWeight: 600 }}>
+                {value || "-"}
               </Typography>
             </Box>
           ))}
         </Box>
-      </CustomDialog>
+      </Box>
+
+      {/* Case UW Decision - same functionality as the member DRS page; final submit goes to the inbox */}
+      {record && (
+        <GuwUwPanel
+          applicationNo={applicationNo}
+          storageKey={summaryStorageKey}
+          redirectUrl={groupPaths.inbox}
+          breOverallDecision={record.uwData?.breOverallDecision}
+          breOverallRemarks={record.uwData?.breOverallRemarks}
+          initialSubmittedDecision={loadGuwSubmittedDecision(summaryStorageKey) ?? undefined}
+          onDecisionSubmit={() => {
+            // Submit API handler to be wired
+          }}
+        />
+      )}
+
+      {/* Saved decision of the selected member (same modal as the Case UW Decision eye icon) */}
+      <GuwDecisionDetailsDialog
+        open={detailMember !== null}
+        onClose={() => setDetailMember(null)}
+        submittedDecision={detailMember ? (memberDecisions[detailMember.memberType] ?? null) : null}
+      />
 
     </Box>
   );
