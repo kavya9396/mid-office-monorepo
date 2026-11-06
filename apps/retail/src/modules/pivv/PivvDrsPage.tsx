@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { AppHeader } from "@insurance-poc/common/app-header";
-import { ApplicantBanner } from "@insurance-poc/common/applicant-banner";
+import { ApplicantBanner, toBannerRows } from "@insurance-poc/common/applicant-banner";
 import { commonPaths, replaceUrl } from "@insurance-poc/routes";
 import { CustomBox, LogoutIcon } from "@insurance-poc/ui";
 import { clearToken, getSessionUser } from "@insurance-poc/utils";
@@ -74,9 +74,10 @@ export function PivvDrsPage() {
       >
         {state.kind === "ready" ? (
           <ApplicantBanner
-            applicantName={state.data.record.applicantName}
+            showAvatar
+            name={state.data.record.applicantName}
             applicationLabel={state.data.record.applicationLabel}
-            lines={state.data.record.lines}
+            rows={toBannerRows(state.data.record.lines)}
           >
             <PivvDecisionForm
               details={state.data.record.pivvDetails}

@@ -22,7 +22,7 @@ export type BreCardProps = {
   decision: string;
   /** Discrepancy codes of the initial BRE. */
   initialDiscrepancies: string[];
-  /** Discrepancy codes that appear only in the final BRE. */
+  /** Discrepancy codes of the final (latest) BRE. */
   finalDiscrepancies: string[];
   /** Number of initial codes shown before collapsing into "+N". */
   maxVisible?: number;
@@ -124,15 +124,7 @@ export function BreCard({
               onClick={onRefresh}
               title={refreshLabel}
               aria-label={refreshLabel}
-              sx={{
-                ...outlinePillSx,
-                px: "8px",
-                py: "3px",
-                borderColor: "#a92129",
-                background: "#fff",
-                color: "#a92129",
-                "&:hover": { borderColor: "#a92129", background: "#a92129", color: "#fff" },
-              }}
+              sx={{ ...outlinePillSx, px: "8px", py: "3px" }}
             >
               <RefreshIcon width={12} height={12} />
             </ButtonBase>

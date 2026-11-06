@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import Box from "@mui/material/Box";
-import { ApplicantBanner, type BannerRow } from "@insurance-poc/common/applicant-banner";
+import Typography from "@mui/material/Typography";
+import { DecisionComparisonTable } from "@insurance-poc/common/decision-bar";
+import { ApplicantBanner, type RowDetailsOptions } from "@insurance-poc/common/applicant-banner";
 import { BreCard } from "@insurance-poc/common/bre-card";
 import { GrievanceHistory } from "@insurance-poc/common/grievance-history";
 import { ClaimAudit, type ClaimAuditRow } from "@insurance-poc/common/claim-audit";
 import { SpecialRemarks, type SpecialRemarksRow } from "@insurance-poc/common/special-remarks";
 import { UwGuidelines, type UwGuidelineRow } from "@insurance-poc/common/uw-guidelines";
-import { GuwRiskCards } from "./GuwRiskCards";
+import { RiskCards } from "@insurance-poc/common/risk-cards";
 import { GuwSdtRow } from "./GuwSdtRow";
 import { CaseUwDecision, INITIAL_GUIDELINES } from "@insurance-poc/common/case-uw-decision";
 import { groupPaths, replaceUrl } from "@insurance-poc/routes";
@@ -17,6 +19,9 @@ import {
 } from "@insurance-poc/ui";
 import { fetchGuwDrs, type GuwDrsRecord } from "../../services/guwService";
 import { QuickLinksModule } from "@insurance-poc/common/quick-links";
+
+// Row 0 (Name / App No.) is already shown as the heading + badge; row 2 (product) is bold.
+const GUW_BANNER_OPTIONS: RowDetailsOptions = { skipRowIds: [0], emphasisRowIds: [2] };
 
 type PageState =
   | { kind: "loading" }
@@ -181,10 +186,8 @@ export function GuwDrsPage() {
             <ApplicantBanner
               name={page.record.applicantName}
               applicationNo={page.record.applicationNo}
-              rows={page.record.lines.map<BannerRow>((line, i) => ({
-                id: String(i),
-                fields: [{ id: String(i), value: line.text }],
-              }))}
+              rowDetails={page.record.rowDetails}
+              rowDetailsOptions={GUW_BANNER_OPTIONS}
             />
 
             {/* .content > .summary-wrap */}
@@ -203,37 +206,14 @@ export function GuwDrsPage() {
                     display: "grid",
                     gridTemplateColumns: {
                       xs: "1fr",
-                      lg: "minmax(0, 3fr) minmax(245px, 1fr)",
+                      md: "minmax(0, 3fr) minmax(245px, 1fr)",
                     },
                     gap: "6px",
                     alignItems: "stretch",
                   }}
                 >
-                  {/* .risk-panel */}
-                  <Box
-                    sx={{
-                      minWidth: 0,
-                      p: "8px",
-                      border: "1px solid #ded8d5",
-                      borderRadius: "12px",
-                      background: "#fff",
-                      boxShadow: "0 2px 7px rgba(60, 42, 35, .07)",
-                      display: "flex",
-                      flexDirection: "column",
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        display: "grid",
-                        gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-                        gridAutoRows: "1fr",
-                        gap: "6px",
-                        flex: 1,
-                      }}
-                    >
-                      <GuwRiskCards riskCards={page.record.riskCards} />
-                    </Box>
-                  </Box>
+                  {/* .risk-panel — common RiskCards (panel + details dialog) */}
+                  <RiskCards cards={page.record.riskCards} />
 
                   {/* .bre-card */}
                   <BreCard
@@ -306,13 +286,20 @@ export function GuwDrsPage() {
       <CustomDialog
         open={breDetailOpen}
         onClose={() => setBreDetailOpen(false)}
-        title="BRE Decision"
-        maxWidth="md"
-        fullWidth
+        title={
+          <Typography component="span" sx={{ fontSize: 12, fontWeight: 800 }}>
+            BRE Decision
+          </Typography>
+        }
+        maxWidth="lg"
+        contentSx={{ p: { xs: 1, sm: 1.5 } }}
       >
-        <Box sx={{ p: 1, color: "#302a27", fontSize: "12px" }}>
-          BRE detail view — to be built in a later step.
-        </Box>
+        {page.kind === "ready" ? (
+          <DecisionComparisonTable
+            headers={{ label: "BRE", initial: "Initial BRE", final: "Final BRE" }}
+            rows={page.record.breData.detailRows}
+          />
+        ) : null}
       </CustomDialog>
 
       {/* Claim Audit dialog — GUW is editable: rows can be validated */}

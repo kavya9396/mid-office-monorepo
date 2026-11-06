@@ -13,7 +13,10 @@ export const formatBreTimestamp = (value?: string) => {
   return `${Number(day)} ${MONTHS[Number(month) - 1]} ${year}, ${String(hour12).padStart(2, "0")}:${minutes}:00 ${meridiem}`;
 };
 
-export const buildBreRows = (initial: BreDecision, final: BreDecision): ComparisonRow[] => [
+/** The BRE fields shown in the comparison table (any BRE section satisfies this). */
+export type BreRowSource = Pick<BreDecision, "decision" | "remarks" | "discrepancy" | "timestamp">;
+
+export const buildBreRows = (initial: BreRowSource, final: BreRowSource): ComparisonRow[] => [
   {
     label: "BRE Status",
     initial: initial.decision ? "Success" : "-",

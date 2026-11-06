@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Box from "@mui/material/Box";
 import { AppHeader } from "@insurance-poc/common/app-header";
-import { ApplicantBanner } from "@insurance-poc/common/applicant-banner";
+import { ApplicantBanner, toBannerRows } from "@insurance-poc/common/applicant-banner";
 import { commonPaths, replaceUrl } from "@insurance-poc/routes";
 import { LogoutIcon } from "@insurance-poc/ui";
 import { clearToken, getSessionUser } from "@insurance-poc/utils";
@@ -75,9 +75,10 @@ export function MasDrsPage() {
       >
         {banner.kind === "ready" ? (
           <ApplicantBanner
-            applicantName={banner.record.applicantName}
+            showAvatar
+            name={banner.record.applicantName}
             applicationLabel={banner.record.applicationLabel}
-            lines={banner.record.lines}
+            rows={toBannerRows(banner.record.lines)}
           >
             <MasDecisionForm />
           </ApplicantBanner>

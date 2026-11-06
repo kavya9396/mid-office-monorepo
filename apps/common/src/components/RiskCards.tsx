@@ -81,6 +81,8 @@ export function RiskCard({
       onClick={onCardClick}
       onKeyDown={handleKeyDown}
       sx={{
+        display: "flex",
+        flexDirection: "column",
         minWidth: 0,
         minHeight: 190,
         p: "10px",
@@ -98,9 +100,29 @@ export function RiskCard({
         "&:focus-visible": { outline: "2px solid", outlineColor: "primary.main" },
       }}
     >
-      <Typography sx={{ fontSize: 12, fontWeight: 900, color: "#302a27" }}>{title}</Typography>
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <Typography sx={{ fontSize: 12, fontWeight: 900, color: "#302a27" }}>{title}</Typography>
+        {onOpenDetails && (
+          <IconButton
+            aria-label={`View ${title} details`}
+            onClick={handleArrowClick}
+            sx={{
+              width: 26,
+              height: 22,
+              flexShrink: 0,
+              border: "1px solid #e1d8d2",
+              borderRadius: "12px",
+              background: "#fff8f3",
+              color: "#a92129",
+              "&:hover": { background: "#f9ede7" },
+            }}
+          >
+            <KeyRightArrowIcon width={14} height={14} />
+          </IconButton>
+        )}
+      </Box>
 
-      <Box sx={{ mt: "8px", lineHeight: 1.35, fontSize: 10.5 }}>
+      <Box sx={{ mt: "8px", lineHeight: 1.35, fontSize: 10.5, flex: 1 }}>
         {fields.map((field) => (
           <Box key={field.name} sx={{ mt: "3px", fontSize: "inherit", color: "#302a27" }}>
             {field.name}:{" "}
@@ -111,40 +133,23 @@ export function RiskCard({
         ))}
       </Box>
 
-      {onOpenDetails && (
-        <Box sx={{ display: "flex", alignItems: "center", gap: "7px", mt: "10px" }}>
-          <IconButton
-            aria-label={`View ${title} details`}
-            onClick={handleArrowClick}
+      {onOpenDetails && viewLabel && (
+        <Box sx={{ mt: "10px" }}>
+          <ButtonBase
             sx={{
-              width: 34,
-              height: 28,
+              fontFamily: "inherit",
+              px: "10px",
+              py: "5px",
               border: "1px solid #e1d8d2",
-              borderRadius: "14px",
+              borderRadius: "16px",
               background: "#fff8f3",
-              color: "#a92129",
-              "&:hover": { background: "#fff8f3" },
+              color: "#5b302a",
+              fontSize: 9.5,
+              fontWeight: 800,
             }}
           >
-            <KeyRightArrowIcon width={16} height={16} />
-          </IconButton>
-          {viewLabel && (
-            <ButtonBase
-              sx={{
-                fontFamily: "inherit",
-                px: "10px",
-                py: "5px",
-                border: "1px solid #e1d8d2",
-                borderRadius: "16px",
-                background: "#fff8f3",
-                color: "#5b302a",
-                fontSize: 9.5,
-                fontWeight: 800,
-              }}
-            >
-              {viewLabel}
-            </ButtonBase>
-          )}
+            {viewLabel}
+          </ButtonBase>
         </Box>
       )}
     </Box>
@@ -246,6 +251,8 @@ export function RiskCards({ cards, onView }: Readonly<RiskCardsProps>) {
   return (
     <Box
       sx={{
+        display: "flex",
+        flexDirection: "column",
         minWidth: 0,
         p: 1,
         background: "#fff",
@@ -257,10 +264,10 @@ export function RiskCards({ cards, onView }: Readonly<RiskCardsProps>) {
       <Box
         sx={{
           display: "grid",
+          flex: 1,
           gridTemplateColumns: {
             xs: "1fr",
-            sm: "repeat(2, minmax(0, 1fr))",
-            lg: "repeat(3, minmax(0, 1fr))",
+            sm: "repeat(3, minmax(0, 1fr))",
           },
           gap: "6px",
         }}

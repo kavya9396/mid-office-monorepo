@@ -21,13 +21,31 @@ import {
 } from "../../services/guwService";
 import { GuwReferralSection } from "./GuwReferralSection";
 
+export interface GuwUwSummaryField {
+  label: string;
+  value?: string;
+}
+
 export interface GuwUwPanelProps {
   /** Used to hold the submitted decision (and UW guidelines) in the browser session. */
   applicationNo?: string;
   breOverallDecision?: string;
   breOverallRemarks?: string;
+  /**
+   * Optional custom summary fields shown on the left card (e.g. Financial Decision, Medical Decision, LumiQ Decision).
+   * When omitted, BRE Overall Decision / Remarks are shown.
+   */
+  summaryFields?: GuwUwSummaryField[];
+  /**
+   * Optional custom action decisions shown below the Case UW Decision dropdown.
+   * When omitted, defaults to [{ value: "REFERRAL", label: "Raise Referral" }, { value: "HOLD", label: "Hold" }, { value: "APPROVER", label: "Counter Sign" }].
+   */
+  actionOptions?: { value: string; label: string }[];
+  /** Callback when an action button or action decision is clicked */
+  onActionClick?: (value: string) => void;
   initialSubmittedDecision?: GuwSubmittedDecision;
   onDecisionSubmit: (decision: string, remarks: string) => void;
+  /** Called when the main Submit button is clicked (e.g. to navigate to the inbox). */
   onSubmit?: () => void;
 }
 
@@ -80,7 +98,11 @@ const ACTION_DECISION_OPTIONS = [
   { value: "APPROVER", label: "Counter Sign" },
 ];
 
-const ALL_DECISION_OPTIONS = [...DECISION_OPTIONS, ...ACTION_DECISION_OPTIONS];
+const ALL_DECISION_OPTIONS = [
+  ...DECISION_OPTIONS,
+  ...ACTION_DECISION_OPTIONS,
+  { value: "AMR", label: "Raise Requirement" },
+];
 
 // Placeholder assignee list (mock login user ids) until a user-lookup API is specified
 const APPROVER_ASSIGNEE_OPTIONS = ["UW001", "UW002", "UW003"].map((id) => ({
@@ -145,8 +167,8 @@ export const INITIAL_GUIDELINES: GuidelineRow[] = [
   { reason: "Income document waived or not received", remark: "Income document waived or not raised. Please provide justification", systemAction: "", justificationReason: "", justificationRemark: "" },
   { reason: "Medical requirement waived or not received", remark: "Medical document waived or not raised. Please provide justification", systemAction: "", justificationReason: "", justificationRemark: "" },
   { reason: "Financially not viable", remark: "Justification required as financial eligibility is less than TFSA", systemAction: "", justificationReason: "", justificationRemark: "" },
-  { reason: "DRC Risk Blank or Null Risk", remark: "DRC Risk value is Blank or Null Risk — kindly take counter signing", systemAction: "REFER_TO_CS", justificationReason: "", justificationRemark: "" },
-  { reason: "TSA above your UW limit", remark: "Case above your underwriting limit, please take counter signing", systemAction: "REFER_TO_CS", justificationReason: "", justificationRemark: "" },
+  // { reason: "DRC Risk Blank or Null Risk", remark: "DRC Risk value is Blank or Null Risk — kindly take counter signing", systemAction: "REFER_TO_CS", justificationReason: "", justificationRemark: "" },
+  // { reason: "TSA above your UW limit", remark: "Case above your underwriting limit, please take counter signing", systemAction: "REFER_TO_CS", justificationReason: "", justificationRemark: "" },
   { reason: "Application form validity expired", remark: "Please call for fresh medical questionnaire", systemAction: "REFER_TO_HOD", justificationReason: "", justificationRemark: "" },
   { reason: "BIU model response field is blank", remark: "BIU models predict response is blank — cannot take STD, XRT or COF decision. Kindly get the BIU response", systemAction: "", justificationReason: "", justificationRemark: "" }
 ];
@@ -155,6 +177,9 @@ export function GuwUwPanel({
   applicationNo = "",
   breOverallDecision,
   breOverallRemarks,
+  summaryFields,
+  actionOptions,
+  onActionClick,
   initialSubmittedDecision,
   onDecisionSubmit,
   onSubmit,
@@ -276,7 +301,10 @@ export function GuwUwPanel({
   const decisionLabel = (code: string) =>
     ALL_DECISION_OPTIONS.find((o) => o.value === code)?.label ?? code;
 
-  const isActionDecision = ACTION_DECISION_OPTIONS.some((o) => o.value === dialogDecision);
+  const actionDecisionOptions = actionOptions ?? ACTION_DECISION_OPTIONS;
+  const isActionDecision =
+    actionDecisionOptions.some((o) => o.value === dialogDecision) ||
+    ACTION_DECISION_OPTIONS.some((o) => o.value === dialogDecision);
 
   // The Case UW Decision the user picked (kept while Counter Sign / Raise Referral is open)
   const caseDecision = approverBaseDecision || dialogDecision;
@@ -406,6 +434,10 @@ export function GuwUwPanel({
       setSmokerFlag("");
       clearGuwSubmittedDecision(applicationNo);
       onDecisionSubmit("", "");
+      return;
+    }
+    if (actionDecisionOptions.some((o) => o.value === value) && onActionClick) {
+      onActionClick(value);
       return;
     }
     openDecisionDialog(value);
@@ -676,11 +708,14 @@ export function GuwUwPanel({
           gap: "6px",
         }}
       >
-        {/* Read-only BRE overall */}
+        {/* Read-only Summary (BRE overall or custom summary fields) */}
         <CustomBox
           sx={{
             display: "grid",
-            gridTemplateColumns: "25% 1fr",
+            gridTemplateColumns:
+              summaryFields && summaryFields.length > 0
+                ? `repeat(${summaryFields.length}, minmax(0, 1fr))`
+                : "25% 1fr",
             background: "#fcfaf9",
             border: "1px solid #eadfd9",
             borderRadius: "8px",
@@ -688,65 +723,105 @@ export function GuwUwPanel({
             boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
           }}
         >
-          <CustomBox sx={{ padding: "5px 12px", minWidth: 0 }}>
-            <CustomTypography
-              component="span"
-              sx={{
-                display: "block",
-                marginBottom: "2px",
-                color: "#7b716c",
-                fontSize: "11px",
-                fontWeight: 600,
-                letterSpacing: "0.4px",
-                textTransform: "uppercase",
-              }}
-            >
-              BRE Overall Decision
-            </CustomTypography>
-            <CustomTypography
-              component="span"
-              sx={{
-                color: "#302a27",
-                fontSize: "13px",
-                fontWeight: 800,
-              }}
-            >
-              {breOverallDecision || "-"}
-            </CustomTypography>
-          </CustomBox>
+          {summaryFields && summaryFields.length > 0 ? (
+            summaryFields.map((field, idx) => (
+              <CustomBox
+                key={field.label}
+                sx={{
+                  padding: "5px 12px",
+                  minWidth: 0,
+                  borderLeft: idx > 0 ? "1px solid #eadfd9" : "none",
+                }}
+              >
+                <CustomTypography
+                  component="span"
+                  sx={{
+                    display: "block",
+                    marginBottom: "2px",
+                    color: "#7b716c",
+                    fontSize: "11px",
+                    fontWeight: 600,
+                    letterSpacing: "0.4px",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  {field.label}
+                </CustomTypography>
+                <CustomTypography
+                  component="span"
+                  sx={{
+                    color: "#302a27",
+                    fontSize: "13px",
+                    fontWeight: 800,
+                  }}
+                >
+                  {field.value || "-"}
+                </CustomTypography>
+              </CustomBox>
+            ))
+          ) : (
+            <>
+              <CustomBox sx={{ padding: "5px 12px", minWidth: 0 }}>
+                <CustomTypography
+                  component="span"
+                  sx={{
+                    display: "block",
+                    marginBottom: "2px",
+                    color: "#7b716c",
+                    fontSize: "11px",
+                    fontWeight: 600,
+                    letterSpacing: "0.4px",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  BRE Overall Decision
+                </CustomTypography>
+                <CustomTypography
+                  component="span"
+                  sx={{
+                    color: "#302a27",
+                    fontSize: "13px",
+                    fontWeight: 800,
+                  }}
+                >
+                  {breOverallDecision || "-"}
+                </CustomTypography>
+              </CustomBox>
 
-          <CustomBox
-            sx={{
-              padding: "5px 12px",
-              borderLeft: "1px solid #eadfd9",
-              minWidth: 0,
-            }}
-          >
-            <CustomTypography
-              component="span"
-              sx={{
-                display: "block",
-                marginBottom: "2px",
-                color: "#7b716c",
-                fontSize: "11px",
-                fontWeight: 600,
-                letterSpacing: "0.4px",
-                textTransform: "uppercase",
-              }}
-            >
-              BRE Overall Remarks
-            </CustomTypography>
-            <CustomTypography
-              component="span"
-              sx={{
-                color: "#302a27",
-                fontSize: "13px",
-                fontWeight: 800,
-              }}
-            >
-              {breOverallRemarks || "-"}
-            </CustomTypography>
-          </CustomBox>
+              <CustomBox
+                sx={{
+                  padding: "5px 12px",
+                  borderLeft: "1px solid #eadfd9",
+                  minWidth: 0,
+                }}
+              >
+                <CustomTypography
+                  component="span"
+                  sx={{
+                    display: "block",
+                    marginBottom: "2px",
+                    color: "#7b716c",
+                    fontSize: "11px",
+                    fontWeight: 600,
+                    letterSpacing: "0.4px",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  BRE Overall Remarks
+                </CustomTypography>
+                <CustomTypography
+                  component="span"
+                  sx={{
+                    color: "#302a27",
+                    fontSize: "13px",
+                    fontWeight: 800,
+                  }}
+                >
+                  {breOverallRemarks || "-"}
+                </CustomTypography>
+              </CustomBox>
+            </>
+          )}
         </CustomBox>
 
         {/* Case UW Decision Dropdown */}
@@ -832,11 +907,17 @@ export function GuwUwPanel({
 
         {/* Action buttons + Submit */}
         <CustomBox sx={{ gridColumn: "1 / -1", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "flex-end", gap: "8px", pr: "70px" }}>
-          {ACTION_DECISION_OPTIONS.map((opt) => (
+          {actionDecisionOptions.map((opt) => (
             <CustomButton
               key={opt.value}
               variant="outlined"
-              onClick={() => openDecisionDialog(opt.value)}
+              onClick={() => {
+                if (onActionClick) {
+                  onActionClick(opt.value);
+                } else {
+                  openDecisionDialog(opt.value);
+                }
+              }}
               sx={{
                 borderColor: "#e45f14",
                 color: "#e45f14",
@@ -1740,7 +1821,7 @@ export function GuwUwPanel({
                 </table>
               </CustomBox>
 
-              {effectiveDecision === "EP" && (
+              {["CO", "EP"].includes(effectiveDecision) && (
                 <CustomButton
                   variant="contained"
                   onClick={handleAddEpRow}

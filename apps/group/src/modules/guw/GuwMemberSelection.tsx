@@ -4,9 +4,14 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { CustomDialog } from "@insurance-poc/ui";
 import { ApplicantBanner, type BannerRow } from "@insurance-poc/common/applicant-banner";
-import { CaseUwDecision } from "@insurance-poc/common/case-uw-decision";
+import { RequirementMgmt } from "@insurance-poc/common/requirement-mgmt";
 import { groupPaths, replaceUrl } from "@insurance-poc/routes";
 import { fetchGuwDrs, type GuwDrsRecord } from "../../services/guwService";
+import {
+  requirementStatusVariants,
+  requirementStatusOrder,
+} from "../drs/requirementData";
+import { GuwUwPanel } from "./GuwUwPanel";
 
 /* ------------------------------------------------------------------ */
 /* Types                                                                */
@@ -125,6 +130,7 @@ export function GuwMemberSelection() {
 
   const [detailMember, setDetailMember] = useState<GuwMember | null>(null);
   const [record, setRecord] = useState<GuwDrsRecord | null>(null);
+  const [requirementOpen, setRequirementOpen] = useState(false);
 
   useEffect(() => {
     if (!applicationNo) return;
@@ -348,18 +354,25 @@ export function GuwMemberSelection() {
       </Box>
 
       {/* Financial Decision, Medical Decision and Case UW Decision on one row (same flow as GuwUser) */}
-      <CaseUwDecision
+      <GuwUwPanel
         key={record ? "ready" : "loading"}
+        applicationNo={applicationNo}
         summaryFields={[
           { label: "Financial Decision", value: record?.sdtRow.financialDecision },
           { label: "Medical Decision", value: record?.sdtRow.medicalDecision },
           { label: "LumiQ Decision", value: record?.sdtRow.lumiqDecision },
         ]}
+        actionOptions={[{ value: "AMR", label: "Raise Requirement" }]}
+        onActionClick={(value) => {
+          if (value === "AMR") {
+            setRequirementOpen(true);
+          }
+        }}
         initialSubmittedDecision={record?.uwData?.submittedDecision}
         onDecisionSubmit={(_decision: string, _remarks: string) => {
           // Submit API handler to be wired
         }}
-        onSubmitted={() => replaceUrl(groupPaths.inbox)}
+        onSubmit={() => replaceUrl(groupPaths.inbox)}
       />
 
       {/* UW Decision detail dialog */}
@@ -397,6 +410,26 @@ export function GuwMemberSelection() {
           ))}
         </Box>
       </CustomDialog>
+
+      {/* Requirement Management dialog — opens on Raise Requirement */}
+      {record ? (
+        <CustomDialog
+          open={requirementOpen}
+          onClose={() => setRequirementOpen(false)}
+          title="Requirement Management"
+          maxWidth="lg"
+          fullWidth
+        >
+          <Box sx={{ p: 1 }}>
+            <RequirementMgmt
+              requirements={record.requirements}
+              readOnly
+              statusVariants={requirementStatusVariants}
+              statusOrder={requirementStatusOrder}
+            />
+          </Box>
+        </CustomDialog>
+      ) : null}
 
     </Box>
   );

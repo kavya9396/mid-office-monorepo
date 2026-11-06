@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import { CustomDialog, CustomSnackbar, KeyValueTable, type KeyValueRow } from "@insurance-poc/ui";
+import { DecisionComparisonTable } from "@insurance-poc/common/decision-bar";
+import { CustomDialog, CustomSnackbar } from "@insurance-poc/ui";
 import { BreCard } from "@insurance-poc/common/bre-card";
-import { ApplicantBanner, type BannerRow } from "@insurance-poc/common/applicant-banner";
+import { ApplicantBanner, type RowDetailsOptions } from "@insurance-poc/common/applicant-banner";
 import { GrievanceHistory } from "@insurance-poc/common/grievance-history";
 import { ClaimAudit, type ClaimAuditRow } from "@insurance-poc/common/claim-audit";
 import { SpecialRemarks, type SpecialRemarksRow } from "@insurance-poc/common/special-remarks";
@@ -13,19 +14,22 @@ import { INITIAL_GUIDELINES } from "@insurance-poc/common/case-uw-decision";
 import { groupPaths, replaceUrl } from "@insurance-poc/routes";
 import { QuickLinksModule } from "@insurance-poc/common/quick-links";
 import { RequirementMgmt } from "@insurance-poc/common/requirement-mgmt";
-import { GuwRiskCards } from "../guw/GuwRiskCards";
+import { RiskCards } from "@insurance-poc/common/risk-cards";
 import { GuwSdtRow } from "../guw/GuwSdtRow";
 import { GuwUwPanel } from "../guw/GuwUwPanel";
 import {
   requirementStatusVariants,
   requirementStatusOrder,
 } from "../drs/requirementData";
-import { fetchGuwDrs, type GuwDrsRecord, type GuwRiskCard } from "../../services/guwService";
+import { fetchGuwDrs, type GuwDrsRecord } from "../../services/guwService";
 
 // Placeholder profile image (inline SVG).
 const PROFILE_IMAGE_URL = `data:image/svg+xml;utf8,${encodeURIComponent(
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#302a27"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.2 3.6-7 8-7s8 2.8 8 7z"/></svg>',
 )}`;
+
+// Row 0 (Name / App No.) is already shown as the heading + badge; row 2 (product) is bold.
+const GUW_BANNER_OPTIONS: RowDetailsOptions = { skipRowIds: [0], emphasisRowIds: [2] };
 
 type PageState =
   | { kind: "loading" }
@@ -127,7 +131,6 @@ const GuwUser = () => {
   const [claimAuditOpen, setClaimAuditOpen] = useState(false);
   const [uwGuidelinesOpen, setUwGuidelinesOpen] = useState(false);
   const [specialRemarksOpen, setSpecialRemarksOpen] = useState(false);
-  const [viewCardOpen, setViewCardOpen] = useState<GuwRiskCard | null>(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [guidelines, setGuidelines] = useState<UwGuidelineRow[]>(
@@ -171,10 +174,8 @@ const GuwUser = () => {
               name={page.record.applicantName}
               photoUrl={PROFILE_IMAGE_URL}
               applicationNo={page.record.applicationNo}
-              rows={page.record.lines.map<BannerRow>((line, i) => ({
-                id: String(i),
-                fields: [{ id: String(i), value: line.text }],
-              }))}
+              rowDetails={page.record.rowDetails}
+              rowDetailsOptions={GUW_BANNER_OPTIONS}
             />
 
             {/* Summary wrap: risk cards + BRE card */}
@@ -193,43 +194,14 @@ const GuwUser = () => {
                     display: "grid",
                     gridTemplateColumns: {
                       xs: "1fr",
-                      lg: "minmax(0, 3fr) minmax(245px, 1fr)",
+                      md: "minmax(0, 3fr) minmax(245px, 1fr)",
                     },
                     gap: "6px",
                     alignItems: "stretch",
                   }}
                 >
-                  {/* risk panel */}
-                  <Box
-                    sx={{
-                      minWidth: 0,
-                      p: "8px",
-                      border: "1px solid #ded8d5",
-                      borderRadius: "12px",
-                      background: "#fff",
-                      boxShadow: "0 2px 7px rgba(60, 42, 35, .07)",
-                      display: "flex",
-                      flexDirection: "column",
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        display: "grid",
-                        gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-                        gridAutoRows: "1fr",
-                        gap: "6px",
-                        flex: 1,
-                      }}
-                    >
-                      <GuwRiskCards
-                        riskCards={page.record.riskCards}
-                        onView={(type) => {
-                          const card = page.record.riskCards.find((c) => c.type === type);
-                          if (card) setViewCardOpen(card);
-                        }}
-                      />
-                    </Box>
-                  </Box>
+                  {/* risk panel — common RiskCards (panel + details dialog) */}
+                  <RiskCards cards={page.record.riskCards} />
 
                   {/* BRE card — chips are clickable and open the Requirement Management dialog */}
                   <BreCard
@@ -323,13 +295,20 @@ const GuwUser = () => {
       <CustomDialog
         open={breDetailOpen}
         onClose={() => setBreDetailOpen(false)}
-        title="BRE Decision"
-        maxWidth="md"
-        fullWidth
+        title={
+          <Typography component="span" sx={{ fontSize: 12, fontWeight: 800 }}>
+            BRE Decision
+          </Typography>
+        }
+        maxWidth="lg"
+        contentSx={{ p: { xs: 1, sm: 1.5 } }}
       >
-        <Box sx={{ p: 1, color: "#302a27", fontSize: "12px" }}>
-          BRE detail view — to be built in a later step.
-        </Box>
+        {page.kind === "ready" ? (
+          <DecisionComparisonTable
+            headers={{ label: "BRE", initial: "Initial BRE", final: "Final BRE" }}
+            rows={page.record.breData.detailRows}
+          />
+        ) : null}
       </CustomDialog>
 
       {/* Claim Audit dialog */}
@@ -386,47 +365,6 @@ const GuwUser = () => {
               notify("Guidelines updated successfully");
             }}
           />
-        </Box>
-      </CustomDialog>
-
-      {/* View Financial / View Medical / Other Risk dialog — 4-column KeyValueTable */}
-      <CustomDialog
-        open={viewCardOpen !== null}
-        onClose={() => setViewCardOpen(null)}
-        title={
-          <Typography component="span" sx={{ fontSize: 12, fontWeight: 800 }}>
-            {viewCardOpen?.title ?? ""} Details
-          </Typography>
-        }
-        maxWidth="lg"
-        fullWidth
-      >
-        <Box sx={{ p: 2 }}>
-          {viewCardOpen && (() => {
-            const attrs = viewCardOpen.expandedAttributes;
-            // Chunk into pairs of 2 → each KeyValueRow covers 2 key-value pairs (4 columns).
-            // Third pair left empty when the last chunk has only 1 item.
-            const rows: KeyValueRow[] = [];
-            for (let i = 0; i < attrs.length; i += 2) {
-              const a = attrs[i];
-              const b = attrs[i + 1];
-              rows.push({
-                id: String(i),
-                firstLabel: a.name,
-                firstValue: a.value || "-",
-                secondLabel: b?.name ?? "",
-                secondValue: b?.value || (b ? "-" : ""),
-                thirdLabel: "",
-                thirdValue: "",
-              });
-            }
-            return (
-              <KeyValueTable
-                title={`${viewCardOpen.title} Details`}
-                rows={rows}
-              />
-            );
-          })()}
         </Box>
       </CustomDialog>
 

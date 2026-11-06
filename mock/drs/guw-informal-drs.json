@@ -149,7 +149,7 @@
         "fields": [
           {
             "name": "WOP - SA",
-            "value": ""
+            "value": "100000"
           },
           {
             "name": "BTBB - SA",
@@ -221,7 +221,7 @@
         "attributes": [
           {
             "name": "BRE Financial Decision",
-            "value": ""
+            "value": "std"
           },
           {
             "name": "Financial Eligibility",
@@ -433,6 +433,20 @@
         }
       },
       {
+        "name": "latestBreDecision",
+        "value": {
+          "decision": "RM",
+          "initialDecision": "Non-STP",
+          "isInitial": "Y",
+          "isLatest": "N",
+          "remarks": "Check Basic KYC Document Attestations#Original Verified KYC Document Required.#Above Non-medical limit#NRI Questionnaire Required#NRI: Passport Is Required as Age Proof#QSTN/Document Attached#Preferred Partner#Age Proof Required#TSSA value = 5000000#Require Valid Ageproof#NRI Lives- allowed with max 75emr#Web Aggregator Login#CCR waiver for BOL application",
+          "discrepancy": "OTP#AGE#PAO#KYP#IDM#ADP#SCI",
+          "timestamp": "20/08/2026, 1614hrs",
+          "action": "Straight Through Processing",
+          "reTriggerCount": 26
+        }
+      },
+      {
         "name": "summary",
         "value": [
           {
@@ -452,8 +466,8 @@
               {
                 "medicalRisk": {
                   "isMedical": true,
-                  "brePhysicalMedicalDecision": "",
-                  "brePhysicalMedicalRemark": "",
+                  "brePhysicalMedicalDecision": "std",
+                  "brePhysicalMedicalRemark": "test",
                   "breTeleVideoMerDecision": "",
                   "breTeleVideoMerRemark": "",
                   "munichReMedicalDecision": "",
@@ -462,7 +476,7 @@
                 },
                 "financialRisk": {
                   "isFinancial": true,
-                  "breFinancialDecision": "",
+                  "breFinancialDecision": "std",
                   "breRemark": "",
                   "financialEligibility": "4.8E7",
                   "derivedIncome": "1600000.0",

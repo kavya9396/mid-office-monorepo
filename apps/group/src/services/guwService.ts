@@ -1,26 +1,15 @@
 import { getSessionValue, removeSessionValue, setSessionValue } from "@insurance-poc/utils";
-import type { DetailAttribute } from "@insurance-poc/common/detail-card";
 import type { RequirementItem } from "@insurance-poc/common/requirement-mgmt";
+import type { ComparisonRow } from "@insurance-poc/common/decision-bar";
+import type { RiskCardData, RiskCardField } from "@insurance-poc/common/risk-cards";
+import type { BannerRowDetail } from "@insurance-poc/common/applicant-banner";
 import { mapRequirements, type RawRequirement } from "../modules/drs/requirementData";
+import { buildBreRows } from "../modules/drs/breFormat";
 import guwDrsMock from "../../../../mock/drs/guw-informal-drs.json";
 
 /* ------------------------------------------------------------------ */
 /* Types                                                                */
 /* ------------------------------------------------------------------ */
-
-export interface GuwBannerLine {
-  text: string;
-  emphasis?: boolean;
-}
-
-export interface GuwRiskCard {
-  type: string;
-  title: string;
-  accentColor: string;
-  valueColor: string;
-  attributes: DetailAttribute[];
-  expandedAttributes: DetailAttribute[];
-}
 
 export interface GuwSdtRow {
   financialDecision: string;
@@ -41,6 +30,8 @@ export interface GuwBreData {
   initialDiscrepancy: string[];
   finalDiscrepancy: string[];
   statusChips: GuwBreStatusChip[];
+  /** Initial (`breDecision`) vs Final (`latestBreDecision`) rows for the "View Detail" dialog. */
+  detailRows: ComparisonRow[];
 }
 
 export interface GuwSubmittedField {
@@ -93,8 +84,10 @@ export interface GuwDrsRecord {
   applicationNo: string;
   applicantName: string;
   applicationLabel: string;
-  lines: GuwBannerLine[];
-  riskCards: GuwRiskCard[];
+  /** `data.rowDetails[]` exactly as returned by the API; rendered by ApplicantBanner. */
+  rowDetails: BannerRowDetail[];
+  /** `data.cardDetails[]` mapped for the common `RiskCards` component. */
+  riskCards: RiskCardData[];
   sdtRow: GuwSdtRow;
   breData: GuwBreData;
   uwData?: GuwUwData;
@@ -124,68 +117,52 @@ function findSection(sections: unknown, name: string): unknown {
   return entry?.value ?? null;
 }
 
-/** Build banner lines from `data.rowDetails[]`.
- *
- *  rowDetails structure:
- *    id 0 → { Name, "App No." }          (skip — name shown in photo/header)
- *    id 1 → life-assured fields
- *    id 2 → product fields               (emphasis)
- *    id 3 → rider fields
- *    id 4 → sum-at-risk fields
- */
-function mapBannerLines(rowDetails: unknown): GuwBannerLine[] {
+/** Pass `data.rowDetails[]` through unchanged (normalising only name/value to strings). */
+function mapRowDetails(rowDetails: unknown): BannerRowDetail[] {
   if (!Array.isArray(rowDetails)) return [];
-
-  return rowDetails
-    .filter((row) => isRecord(row) && typeof row.id === "number" && row.id >= 1)
-    .map((row) => {
-      const r = row as Record<string, unknown>;
-      const fields = Array.isArray(r.fields) ? (r.fields as Record<string, unknown>[]) : [];
-      const parts = fields
-        .map((f) => {
-          const name = str(f.name);
-          const value = str(f.value);
-          return value ? `${name} - ${value}` : `${name} -`;
-        })
-        .filter(Boolean);
-      return {
-        text: parts.join(" / "),
-        emphasis: (r.id as number) === 2,
-      } satisfies GuwBannerLine;
-    })
-    .filter((l) => l.text.length > 0);
+  return rowDetails.filter(isRecord).map((row, index) => ({
+    id: typeof row.id === "number" || typeof row.id === "string" ? row.id : index,
+    fields: Array.isArray(row.fields)
+      ? row.fields.filter(isRecord).map((f) => ({ name: str(f.name), value: str(f.value) }))
+      : [],
+  }));
 }
 
-/** Map a single cardDetails entry to a GuwRiskCard. */
-function mapCard(raw: unknown): GuwRiskCard | null {
+const CARD_TITLES: Record<string, string> = {
+  FINANCIAL: "Financial",
+  MEDICAL: "Medical",
+  RISK_PARAMETERS: "Risk Parameters",
+};
+const CARD_TONES: Record<string, RiskCardData["tone"]> = {
+  FINANCIAL: "danger",
+  MEDICAL: "success",
+  RISK_PARAMETERS: "danger",
+};
+// Only Financial / Medical show the "View …" pill (Risk Parameters has the arrow only).
+const CARD_VIEW_LABELS: Record<string, string> = {
+  FINANCIAL: "View Financial",
+  MEDICAL: "View Medical",
+};
+
+function mapCardFields(arr: unknown): RiskCardField[] {
+  if (!Array.isArray(arr)) return [];
+  return arr.filter(isRecord).map((a) => ({ name: str(a.name), value: str(a.value) }));
+}
+
+/** Map a single `cardDetails[]` entry to the common `RiskCardData`. */
+function mapCard(raw: unknown): RiskCardData | null {
   if (!isRecord(raw)) return null;
   const type = str(raw.type);
-
-  const accentMap: Record<string, string> = {
-    FINANCIAL: "#b3262e",
-    MEDICAL: "#28743c",
-    RISK_PARAMETERS: "#b3262e",
-  };
-  const titleMap: Record<string, string> = {
-    FINANCIAL: "Financial",
-    MEDICAL: "Medical",
-    RISK_PARAMETERS: "Risk Parameters",
-  };
-
-  const mapAttrs = (arr: unknown): DetailAttribute[] => {
-    if (!Array.isArray(arr)) return [];
-    return arr
-      .filter(isRecord)
-      .map((a) => ({ name: str(a.name), value: str(a.value) }));
-  };
+  const title = CARD_TITLES[type] ?? type;
+  const expanded = mapCardFields(raw.expandedAttributes);
 
   return {
-    type,
-    title: titleMap[type] ?? type,
-    accentColor: accentMap[type] ?? "#e45f14",
-    valueColor: accentMap[type] ?? "#302a27",
-    attributes: mapAttrs(raw.attributes),
-    expandedAttributes: mapAttrs(raw.expandedAttributes),
+    id: type,
+    title,
+    tone: CARD_TONES[type] ?? "success",
+    viewLabel: CARD_VIEW_LABELS[type],
+    fields: mapCardFields(raw.attributes),
+    details: expanded.length > 0 ? { title: `${title} Details`, fields: expanded } : undefined,
   };
 }
 
@@ -197,11 +174,17 @@ function splitDiscrepancy(raw: string): string[] {
     .filter(Boolean);
 }
 
-/** Map `sections.breDecision` to GuwBreData. */
-function mapBreData(breSection: unknown, requirements: unknown[]): GuwBreData {
-  const bre = isRecord(breSection) ? breSection : {};
-  const rawDiscrepancy = str(bre.discrepancy);
-  const allCodes = splitDiscrepancy(rawDiscrepancy);
+/**
+ * Map `sections.breDecision` (initial) and `sections.latestBreDecision` (final) to GuwBreData.
+ * The headline decision is the latest one, falling back to the initial one.
+ */
+function mapBreData(
+  initialSection: unknown,
+  latestSection: unknown,
+  requirements: unknown[],
+): GuwBreData {
+  const initial = isRecord(initialSection) ? initialSection : {};
+  const latest = isRecord(latestSection) ? latestSection : {};
 
   // Build status chips from requirements array
   const statuses = ["Pending", "Received", "Accept", "Cancelled", "Reject", "Waived"];
@@ -217,10 +200,24 @@ function mapBreData(breSection: unknown, requirements: unknown[]): GuwBreData {
   ];
 
   return {
-    breCode: str(bre.decision),
-    initialDiscrepancy: allCodes,
-    finalDiscrepancy: [], // final BRE not available in this payload
+    breCode: str(latest.decision) || str(initial.decision),
+    initialDiscrepancy: splitDiscrepancy(str(initial.discrepancy)),
+    finalDiscrepancy: splitDiscrepancy(str(latest.discrepancy)),
     statusChips: chips,
+    detailRows: buildBreRows(
+      {
+        decision: str(initial.decision),
+        remarks: str(initial.remarks),
+        discrepancy: str(initial.discrepancy),
+        timestamp: str(initial.timestamp),
+      },
+      {
+        decision: str(latest.decision),
+        remarks: str(latest.remarks),
+        discrepancy: str(latest.discrepancy),
+        timestamp: str(latest.timestamp),
+      },
+    ),
   };
 }
 
@@ -280,6 +277,7 @@ export function mapGuwDrsPayload(payload: unknown): GuwDrsRecord {
   const sections = Array.isArray(data.sections) ? data.sections : [];
   const summary = findSection(sections, "summary");
   const breSection = findSection(sections, "breDecision");
+  const latestBreSection = findSection(sections, "latestBreDecision");
 
   // Map raw requirements to RequirementItem[]
   const rawReqs = Array.isArray(findSection(sections, "requirementManagement"))
@@ -301,20 +299,20 @@ export function mapGuwDrsPayload(payload: unknown): GuwDrsRecord {
   );
 
   const applicantName = mapApplicantName(summary);
-  const lines = mapBannerLines(data.rowDetails);
+  const rowDetails = mapRowDetails(data.rowDetails);
 
-  const riskCards: GuwRiskCard[] = Array.isArray(data.cardDetails)
-    ? (data.cardDetails as unknown[]).map(mapCard).filter((c): c is GuwRiskCard => c !== null)
+  const riskCards: RiskCardData[] = Array.isArray(data.cardDetails)
+    ? (data.cardDetails as unknown[]).map(mapCard).filter((c): c is RiskCardData => c !== null)
     : [];
 
   const sdtRow = mapSdtRow(summary);
-  const breData = mapBreData(breSection, rawReqs);
+  const breData = mapBreData(breSection, latestBreSection, rawReqs);
 
   return {
     applicationNo,
     applicantName,
     applicationLabel: `App No. - ${applicationNo}`,
-    lines,
+    rowDetails,
     riskCards,
     sdtRow,
     breData,
