@@ -9,12 +9,11 @@ import {
   KeyUpArrowIcon,
   SearchIcon,
 } from "@insurance-poc/ui";
-import type { RolePoolKey } from "./inboxApi";
 import { formatLastLogin, initials, toDisplayLabel } from "./inboxFormat";
 
 type InboxSidebarProps = {
-  pools: RolePoolKey[];
-  counts: Record<RolePoolKey, number>;
+  pools: string[];
+  counts: Record<string, number>;
   totalCount: number;
   selectedTask: string;
   collapsed: boolean;

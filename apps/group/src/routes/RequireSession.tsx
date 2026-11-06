@@ -10,17 +10,17 @@ import {
   getSessionBusinessType,
   getSessionUser,
   hasSession,
-  mustChangePassword,
+  isFirstLoginChangePending,
   setSessionBusinessType,
 } from "@insurance-poc/utils";
 
 export function RequireSession({ children }: { children: ReactNode }) {
-  const userId = getSessionUser()?.userId ?? null;
+  const userId = getSessionUser()?.username ?? null;
   const hasCredentials = hasSession() && Boolean(userId);
   const [allowed, setAllowed] = useState(false);
 
   useEffect(() => {
-    if (mustChangePassword()) {
+    if (isFirstLoginChangePending()) {
       replaceUrl(commonPaths.changePassword);
       return;
     }
@@ -32,27 +32,33 @@ export function RequireSession({ children }: { children: ReactNode }) {
 
     let active = true;
 
-    authorizeBusiness(userId, "GROUP").then((result) => {
-      if (!active) return;
+    void authorizeBusiness(userId, "GROUP")
+      .then((result) => {
+        if (!active) return;
 
-      if (result.status === "SUCCESS") {
-        setSessionBusinessType("GROUP");
-        setAllowed(true);
-        return;
-      }
+        if (result.status === "SUCCESS") {
+          setSessionBusinessType("GROUP");
+          setAllowed(true);
+          return;
+        }
 
-      const currentBusiness = getSessionBusinessType();
-      const fallback = currentBusiness
-        ? businessInboxUrl(currentBusiness)
-        : null;
+        const currentBusiness = getSessionBusinessType();
+        const fallback = currentBusiness
+          ? businessInboxUrl(currentBusiness)
+          : null;
 
-      if (fallback && currentBusiness !== "GROUP") {
-        replaceUrl(fallback);
-      } else {
+        if (fallback && currentBusiness !== "GROUP") {
+          replaceUrl(fallback);
+        } else {
+          clearToken();
+          replaceUrl(commonPaths.login);
+        }
+      })
+      .catch(() => {
+        if (!active) return;
         clearToken();
         replaceUrl(commonPaths.login);
-      }
-    });
+      });
 
     return () => {
       active = false;

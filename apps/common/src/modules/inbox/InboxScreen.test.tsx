@@ -27,7 +27,7 @@ vi.mock("@insurance-poc/utils", async () => {
 function landingData(): InboxData {
   const [cvt, guw, formal] = landingCases();
   return {
-    userId: "UW001",
+    username: "UW001",
     poolData: {
       CVT_POOL: cvt ? [cvt] : [],
       GUW: guw ? [guw] : [],
@@ -64,6 +64,8 @@ describe("InboxScreen", () => {
 
   it("switches sidebar tabs and updates the table title and rows", async () => {
     const user = userEvent.setup();
+    const onLoadColumns = vi.fn(async () => []);
+    const onSaveColumns = vi.fn(async (_poolKey: string, selected: string[]) => selected);
     renderUi(
       <InboxScreen
         businessType="RETAIL"
@@ -71,6 +73,8 @@ describe("InboxScreen", () => {
         loading={false}
         error=""
         onRetry={vi.fn()}
+        onLoadColumns={onLoadColumns}
+        onSaveColumns={onSaveColumns}
       />,
     );
 

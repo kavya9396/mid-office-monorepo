@@ -25,7 +25,7 @@ describe("RequirePasswordChange (strict case A)", () => {
 
   it("clears session and redirects to login when the in-memory gate is lost (e.g. refresh)", async () => {
     setToken("first-login-jwt");
-    setSessionUser({ userId: "LDAP12345", displayName: "LDAP12345" });
+    setSessionUser({ username: "LDAP12345", displayName: "LDAP12345" });
     setFirstLoginChangePending(false);
 
     render(

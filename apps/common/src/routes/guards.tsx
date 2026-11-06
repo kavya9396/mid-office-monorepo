@@ -28,10 +28,9 @@ export function RedirectIfSession({ children }: { children: ReactNode }) {
 }
 
 /**
- * Strict first-login change-password (case A):
- * - Allowed only when login just returned `firstLogin: true` (in-memory gate).
- * - Refresh, manual URL, or missing gate → clear session and send to login
- *   so a stale first-login token cannot reach the inbox.
+ * Strict change-password (case A):
+ * - Allowed only when login returned `firstLogin: true` and `mustChangePassword: true`.
+ * - Refresh, manual URL, or missing gate → clear session and send to login.
  */
 export function RequirePasswordChange({ children }: { children: ReactNode }) {
   const allowed = hasSession() && isFirstLoginChangePending();

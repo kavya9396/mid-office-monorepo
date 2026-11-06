@@ -32,7 +32,7 @@ import {
   TickIcon,
   TimeIcon,
 } from "@insurance-poc/ui";
-import type { InboxCase, InboxFieldValue } from "./inboxApi";
+import { fieldKeysForPool, type InboxCase, type InboxData, type InboxFieldValue } from "./inboxApi";
 import {
   columnsForPool,
   defaultVisibleColumns,
@@ -40,6 +40,7 @@ import {
   HIDDEN_COLUMNS,
   isApplicationColumn,
   MAX_VISIBLE_COLUMNS,
+  orderedVisibleFromSelectedFields,
 } from "./inboxFormat";
 
 type SortDirection = "asc" | "desc";
@@ -48,7 +49,13 @@ type TimingStatus = "overdue" | "atRisk" | "normal";
 type InboxTableProps = {
   title: string;
   cases: InboxCase[];
-  poolKey?: string;
+  /** Full inbox data — used to derive per-pool field keys for configure-columns (available list). */
+  inboxData?: InboxData | null;
+  /**
+   * GET /pool-columns uses this pool key (first pool key for All Cases; selected pool otherwise).
+   * When null/undefined, column API and configure-columns are disabled.
+   */
+  columnContextKey?: string | null;
   onOpen: (item: InboxCase) => void;
   onLoadColumns?: (poolKey: string) => Promise<string[]>;
   onSaveColumns?: (poolKey: string, selectedFields: string[]) => Promise<string[]>;
@@ -235,16 +242,28 @@ function PriorityLegend({
 export function InboxTable({
   title,
   cases,
-  poolKey,
+  inboxData,
+  columnContextKey,
   onOpen,
   onLoadColumns,
   onSaveColumns,
   onColumnNotice,
 }: Readonly<InboxTableProps>) {
-  const catalog = useMemo(
-    () => columnsForPool(columnKeys(cases), poolKey),
-    [cases, poolKey],
-  );
+  const fieldKeysFromCases = useMemo(() => columnKeys(cases), [cases]);
+
+  const configurePoolKey = useMemo(() => {
+    if (!columnContextKey || !inboxData) return undefined;
+    return inboxData.poolData[columnContextKey] !== undefined ? columnContextKey : undefined;
+  }, [columnContextKey, inboxData]);
+
+  const catalogAll = useMemo(() => {
+    const fromData =
+      configurePoolKey !== undefined && inboxData
+        ? fieldKeysForPool(inboxData, configurePoolKey)
+        : fieldKeysFromCases;
+    return columnsForPool(fromData, configurePoolKey);
+  }, [configurePoolKey, fieldKeysFromCases, inboxData]);
+
   const [visible, setVisible] = useState<string[]>([]);
   const [draftSelected, setDraftSelected] = useState<string[]>([]);
   const [draftAvailable, setDraftAvailable] = useState<string[]>([]);
@@ -263,20 +282,24 @@ export function InboxTable({
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [priorityFilter, setPriorityFilter] = useState<TimingStatus | null>(null);
   const [savingColumns, setSavingColumns] = useState(false);
+  const [apiSelectedFields, setApiSelectedFields] = useState<string[] | null>(null);
 
   useEffect(() => {
-    const defaults = defaultVisibleColumns(catalog, poolKey);
+    const defaults = defaultVisibleColumns(catalogAll, configurePoolKey);
     setVisible(defaults);
+    setApiSelectedFields(null);
     setFilters({});
     setPage(0);
     setPriorityFilter(null);
-    if (!poolKey || !onLoadColumns) return;
+    if (!columnContextKey || !onLoadColumns) return;
     let current = true;
-    onLoadColumns(poolKey)
+    onLoadColumns(columnContextKey)
       .then((fields) => {
         if (!current) return;
-        const next = fields.filter((field) => catalog.includes(field)).slice(0, MAX_VISIBLE_COLUMNS);
-        if (next.length > 0) setVisible(next);
+        setApiSelectedFields(fields);
+        const ordered = orderedVisibleFromSelectedFields(fields);
+        const matched = ordered.filter((field) => catalogAll.includes(field));
+        if (matched.length > 0) setVisible(matched);
       })
       .catch((reason: unknown) => {
         if (current) onColumnNotice?.(columnError(reason));
@@ -284,16 +307,47 @@ export function InboxTable({
     return () => {
       current = false;
     };
-  }, [catalog, onColumnNotice, onLoadColumns, poolKey]);
+  }, [catalogAll, columnContextKey, configurePoolKey, onColumnNotice, onLoadColumns]);
 
-  const defaultColumns = defaultVisibleColumns(catalog, poolKey);
-  const applicationColumn = defaultColumns[0] ?? "applicationNo";
-  const columns = visible.length > 0
-    ? [
-      applicationColumn,
-      ...visible.filter((column) => column !== applicationColumn),
-    ].slice(0, MAX_VISIBLE_COLUMNS)
-    : defaultColumns;
+  const defaultColumns = defaultVisibleColumns(catalogAll, configurePoolKey);
+  const columnsFromApi =
+    apiSelectedFields !== null ? orderedVisibleFromSelectedFields(apiSelectedFields) : null;
+
+  let columnsResolved: string[];
+  if (columnsFromApi !== null) {
+    columnsResolved = columnsFromApi.filter((field) => catalogAll.includes(field));
+  } else if (visible.length > 0) {
+    columnsResolved = visible;
+  } else {
+    columnsResolved = defaultColumns;
+  }
+  const applicationColumn = columnsResolved.find(isApplicationColumn) ?? "applicationNo";
+  const columns = [
+    applicationColumn,
+    ...columnsResolved.filter((column) => column !== applicationColumn),
+  ].slice(0, MAX_VISIBLE_COLUMNS);
+
+  const poolFieldList = useMemo(() => {
+    if (configurePoolKey !== undefined && inboxData) {
+      return fieldKeysForPool(inboxData, configurePoolKey);
+    }
+    return fieldKeysFromCases;
+  }, [configurePoolKey, fieldKeysFromCases, inboxData]);
+
+  const selectedFieldsForModal = useMemo(() => {
+    if (apiSelectedFields !== null) {
+      return orderedVisibleFromSelectedFields(apiSelectedFields).filter((field) => catalogAll.includes(field));
+    }
+    return columns;
+  }, [apiSelectedFields, catalogAll, columns]);
+
+  const configureAvailable = useMemo(() => {
+    const selected = new Set(selectedFieldsForModal);
+    return poolFieldList.filter(
+      (field) => !selected.has(field) && !HIDDEN_COLUMNS.has(field) && !isApplicationColumn(field),
+    );
+  }, [poolFieldList, selectedFieldsForModal]);
+
   const query = searchText.trim().toLowerCase();
 
   const filtered = cases.filter((item) => {
@@ -328,8 +382,8 @@ export function InboxTable({
   }
 
   function openSettings() {
-    setDraftSelected(columns);
-    setDraftAvailable(catalog.filter((column) => !columns.includes(column) && !isApplicationColumn(column)));
+    setDraftSelected(selectedFieldsForModal);
+    setDraftAvailable(configureAvailable);
     setPickedAvailable([]);
     setPickedSelected([]);
     setSettingsOpen(true);
@@ -362,21 +416,29 @@ export function InboxTable({
   function applyDraft(nextSelected: string[]) {
     const selected = nextSelected.slice(0, MAX_VISIBLE_COLUMNS);
     setDraftSelected(selected);
-    setDraftAvailable(catalog.filter((column) => !selected.includes(column) && !isApplicationColumn(column)));
+    const selectedSet = new Set(selected);
+    setDraftAvailable(
+      poolFieldList.filter(
+        (column) =>
+          !selectedSet.has(column) && !HIDDEN_COLUMNS.has(column) && !isApplicationColumn(column),
+      ),
+    );
     setPickedAvailable([]);
     setPickedSelected([]);
     setVisible(selected);
   }
 
   async function resetColumns() {
-    if (!poolKey || !onSaveColumns) {
+    if (!columnContextKey || !onSaveColumns) {
       applyDraft(defaultColumns);
       return;
     }
     setSavingColumns(true);
     try {
-      const saved = await onSaveColumns(poolKey, defaultColumns);
-      const next = saved.filter((field) => catalog.includes(field));
+      const saved = await onSaveColumns(columnContextKey, defaultColumns);
+      const nextOrdered = orderedVisibleFromSelectedFields(saved);
+      const next = nextOrdered.filter((field) => catalogAll.includes(field));
+      setApiSelectedFields(saved);
       applyDraft(next.length > 0 ? next : defaultColumns);
     } catch (reason: unknown) {
       onColumnNotice?.(columnError(reason));
@@ -388,15 +450,16 @@ export function InboxTable({
   async function saveColumns() {
     const next = draftSelected.slice(0, MAX_VISIBLE_COLUMNS);
     if (next.length === 0) return;
-    if (!poolKey || !onSaveColumns) {
+    if (!columnContextKey || !onSaveColumns) {
       setVisible(next);
       setSettingsOpen(false);
       return;
     }
     setSavingColumns(true);
     try {
-      const saved = await onSaveColumns(poolKey, next);
-      const applied = saved.filter((field) => catalog.includes(field)).slice(0, MAX_VISIBLE_COLUMNS);
+      const saved = await onSaveColumns(columnContextKey, next);
+      setApiSelectedFields(saved);
+      const applied = orderedVisibleFromSelectedFields(saved).filter((field) => catalogAll.includes(field));
       setVisible(applied.length > 0 ? applied : next);
       setSettingsOpen(false);
     } catch (reason: unknown) {
@@ -517,7 +580,7 @@ export function InboxTable({
           >
             <FilterIcon width={32} />
           </Box>
-          {poolKey ? (
+          {columnContextKey && onSaveColumns ? (
             <Box aria-label="Configure columns" onClick={openSettings} sx={{ cursor: "pointer", mt: 0.5 }}>
               <SettingsIcon width={32} />
             </Box>
@@ -747,7 +810,12 @@ export function InboxTable({
         title="FILTER"
         maxWidth="md"
         fullWidth
-        contentSx={{ p: 2 }}
+        contentSx={{
+          p: 2,
+          overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
+        }}
         actionsSx={{ justifyContent: "center", gap: 2, pb: 3 }}
         actions={
           <>
@@ -764,8 +832,22 @@ export function InboxTable({
           </>
         }
       >
-        <Box sx={{ display: "flex", height: 420, width: "100%" }}>
-          <Box sx={{ width: "40%", borderRight: "1px solid #eee", overflowY: "auto" }}>
+        <Box
+          sx={{
+            display: "flex",
+            width: "100%",
+            height: "min(420px, calc(100vh - 220px))",
+            minHeight: 0,
+          }}
+        >
+          <Box
+            sx={{
+              width: "40%",
+              flexShrink: 0,
+              borderRight: "1px solid #eee",
+              overflow: "hidden",
+            }}
+          >
             {columns.map((column) => (
               <Box
                 key={column}
@@ -786,7 +868,16 @@ export function InboxTable({
               <Box sx={{ padding: "12px", color: "#666" }}>No visible columns to filter</Box>
             ) : null}
           </Box>
-          <Box sx={{ width: "60%", p: 2, overflowY: "auto" }}>
+          <Box
+            sx={{
+              flex: 1,
+              minWidth: 0,
+              minHeight: 0,
+              p: 2,
+              overflowY: "auto",
+              boxSizing: "border-box",
+            }}
+          >
             {filterOptions.map((option) => (
               <Box key={option} sx={{ display: "flex", alignItems: "center", mb: 1 }}>
                 <CustomCheckbox

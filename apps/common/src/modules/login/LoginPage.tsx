@@ -60,6 +60,7 @@ type LoginSuccessHandlerArgs = {
   sessionId: string;
   user: Parameters<typeof setSessionUser>[0];
   firstLogin: boolean;
+  mustChangePassword: boolean;
   lastLoginAt: string;
   businessType: BusinessType;
   navigateToChangePassword: () => void;
@@ -71,6 +72,7 @@ function handleLoginSuccess({
   sessionId,
   user,
   firstLogin,
+  mustChangePassword,
   lastLoginAt,
   businessType,
   navigateToChangePassword,
@@ -82,7 +84,7 @@ function handleLoginSuccess({
   setSessionBusinessType(businessType);
   setLastLoginAt(lastLoginAt);
 
-  if (firstLogin) {
+  if (firstLogin && mustChangePassword) {
     setFirstLoginChangePending(true);
     navigateToChangePassword();
     return;
@@ -265,8 +267,9 @@ export function LoginPage() {
         accessToken: loginResult.accessToken,
         refreshToken: loginResult.refreshToken,
         sessionId: loginResult.sessionId,
-        user: loginResult.user,
+        user: { username: loginResult.user.username, displayName: loginResult.user.displayName },
         firstLogin: loginResult.firstLogin,
+        mustChangePassword: loginResult.mustChangePassword,
         lastLoginAt: loginResult.lastLoginAt,
         businessType,
         navigateToChangePassword: () => navigate(commonPaths.changePassword),

@@ -142,7 +142,7 @@ describe("login module", () => {
       );
 
       expectSuccess(result);
-      expect(result.user.userId).toBe("LDAP99999");
+      expect(result.user.username).toBe("LDAP99999");
       expect(result.businessType).toBe("RETAIL");
       expect(result.lastLoginAt).toBe("2026-10-06T14:10:20");
     });
@@ -161,7 +161,7 @@ describe("login module", () => {
       expect(result.businessType).toBe("RETAIL");
       expect(result.lastLoginAt).toBe(loginMock.users[1]?.lastLoginAt);
       expect(result.user).toMatchObject({
-        userId: "UW001",
+        username: "UW001",
         displayName: "Retail Underwriter",
         authorizedBusinessTypes: ["RETAIL"],
       });
@@ -193,7 +193,7 @@ describe("login module", () => {
       expect(first.lastLoginAt).toBe("");
       expect(first.sessionId).toBe("VpAjFOyn9DuNUtpoRr0okyukre6_AZy0vwRpBL6b9H8");
 
-      setSessionUser({ userId: "LDAP12345", displayName: "LDAP12345" });
+      setSessionUser({ username: "LDAP12345", displayName: "LDAP12345" });
       const changed = await runMock(() =>
         fetchChangePassword({
           username: "LDAP12345",
@@ -321,13 +321,13 @@ describe("login module", () => {
       const { authorizeBusiness } = await loadLogin();
       const { setSessionUser, setToken } = await import("@insurance-poc/utils");
       setToken("mock-jwt-token");
-      setSessionUser({ userId: "UW001", displayName: "Retail Underwriter" });
+      setSessionUser({ username: "UW001", displayName: "Retail Underwriter" });
 
       const result = await runMock(() => authorizeBusiness("UW001", "RETAIL"));
 
       expectSuccess(result);
       expect(result.businessType).toBe("RETAIL");
-      expect(result.user.userId).toBe("UW001");
+      expect(result.user.username).toBe("UW001");
     });
 
     it("rejects a missing session", async () => {
@@ -520,7 +520,7 @@ describe("login module", () => {
       const { fetchChangePassword } = await loadLogin();
       const { setSessionUser, setToken } = await import("@insurance-poc/utils");
       setToken("user-jwt");
-      setSessionUser({ userId: "UW001", displayName: "Retail Underwriter" });
+      setSessionUser({ username: "UW001", displayName: "Retail Underwriter" });
       const result = await fetchChangePassword({
         username: "UW001",
         oldPassword: POLICY_OLD_PASSWORD,

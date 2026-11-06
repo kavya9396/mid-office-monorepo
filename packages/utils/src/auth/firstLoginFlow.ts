@@ -1,6 +1,6 @@
 /**
- * In-memory only — set from the login API when `firstLogin === true`.
- * Not persisted; refresh or direct URL to change-password sends the user to login.
+ * In-memory only — set from login when `firstLogin && mustChangePassword` are both true.
+ * Not persisted; refresh or direct URL to change-password clears session and sends to login.
  */
 let pendingFirstLoginPasswordChange = false;
 

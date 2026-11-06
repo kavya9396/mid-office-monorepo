@@ -60,7 +60,7 @@ No compile step for packages — Vite in each app transpiles them. `packages/ui`
 ## Session / Auth
 
 - All session access goes through helpers in `packages/utils/src/session.ts`. Never touch `sessionStorage` directly.
-- `clearToken()` removes all four keys (`token`, `userId`, `displayName`, `businessType`).
+- `clearToken()` clears token, refresh token, `username`, `displayName`, `businessType`, and related session keys (legacy `userId` is migrated on read).
 - `hasSession()` only checks token presence — no JWT signature validation.
 - Retail/Group each re-call `authorizeBusiness()` from `@insurance-poc/common/auth` on mount via `RequireSession`.
 - Mock users: `UW001` (Retail), `UW002` (Group), `UW003` (both). Password only checks non-empty.

@@ -1,6 +1,9 @@
 const TOKEN_KEY = "token";
 const REFRESH_TOKEN_KEY = "refreshToken";
-const USER_ID_KEY = "userId";
+/** Session username (login API `data.username`); pool-columns and landing use this query param. */
+const USERNAME_KEY = "username";
+/** Legacy key — migrated on read/write; removed on clear. */
+const LEGACY_USER_ID_KEY = "userId";
 const DISPLAY_NAME_KEY = "displayName";
 const BUSINESS_TYPE_KEY = "businessType";
 const LAST_LOGIN_AT_KEY = "lastLoginAt";
@@ -17,7 +20,7 @@ import {
 export type SessionBusinessType = "RETAIL" | "GROUP";
 
 export interface SessionUser {
-  userId: string;
+  username: string;
   displayName: string;
 }
 
@@ -52,7 +55,8 @@ export function clearToken(): void {
   const storage = readStorage();
   storage?.removeItem(TOKEN_KEY);
   storage?.removeItem(REFRESH_TOKEN_KEY);
-  storage?.removeItem(USER_ID_KEY);
+  storage?.removeItem(USERNAME_KEY);
+  storage?.removeItem(LEGACY_USER_ID_KEY);
   storage?.removeItem(DISPLAY_NAME_KEY);
   storage?.removeItem(BUSINESS_TYPE_KEY);
   storage?.removeItem(LAST_LOGIN_AT_KEY);
@@ -93,16 +97,29 @@ export function mustChangePassword(): boolean {
 
 export function setSessionUser(user: SessionUser): void {
   const storage = readStorage();
-  storage?.setItem(USER_ID_KEY, user.userId);
-  storage?.setItem(DISPLAY_NAME_KEY, user.displayName);
+  if (!storage) return;
+  storage.setItem(USERNAME_KEY, user.username);
+  storage.removeItem(LEGACY_USER_ID_KEY);
+  storage.setItem(DISPLAY_NAME_KEY, user.displayName);
 }
 
 export function getSessionUser(): SessionUser | null {
   const storage = readStorage();
-  const userId = storage?.getItem(USER_ID_KEY)?.trim();
-  const displayName = storage?.getItem(DISPLAY_NAME_KEY)?.trim();
+  if (!storage) return null;
 
-  return userId && displayName ? { userId, displayName } : null;
+  const fromUsername = storage.getItem(USERNAME_KEY)?.trim();
+  const fromLegacy = storage.getItem(LEGACY_USER_ID_KEY)?.trim();
+  const username = (fromUsername ?? fromLegacy ?? "").trim();
+  const displayName = storage.getItem(DISPLAY_NAME_KEY)?.trim();
+
+  if (username.length === 0 || !displayName) return null;
+
+  if ((!fromUsername || fromUsername.length === 0) && fromLegacy !== undefined && fromLegacy.length > 0) {
+    storage.setItem(USERNAME_KEY, username);
+    storage.removeItem(LEGACY_USER_ID_KEY);
+  }
+
+  return { username, displayName };
 }
 
 export function setSessionBusinessType(

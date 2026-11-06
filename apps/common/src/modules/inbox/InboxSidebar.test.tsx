@@ -3,15 +3,14 @@ import userEvent from "@testing-library/user-event";
 import { useState, type ComponentProps } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderUi } from "../../test/renderUi";
-import type { RolePoolKey } from "./inboxApi";
 import { InboxSidebar } from "./InboxSidebar";
 
-const pools: RolePoolKey[] = ["CVT_POOL", "GUW", "DVT_FORMAL"];
+const pools = ["CVT_POOL", "GUW", "DVT_FORMAL"];
 const counts = {
   CVT_POOL: 2,
   GUW: 1,
   DVT_FORMAL: 1,
-} as Record<RolePoolKey, number>;
+} as Record<string, number>;
 
 function renderSidebar(
   props: Partial<ComponentProps<typeof InboxSidebar>> = {},

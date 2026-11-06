@@ -33,7 +33,8 @@ function hasMockPasswordChanged(userId: string): boolean {
 }
 
 export interface AuthenticatedUser {
-  userId: string;
+  /** Login username (API `data.username`). */
+  username: string;
   displayName: string;
   authorizedBusinessTypes: BusinessType[];
   roles: string[];
@@ -201,7 +202,7 @@ function buildLoginSuccess(
     lastLoginAt: readText(data.lastLoginAt),
     businessType,
     user: {
-      userId: username,
+      username,
       displayName: readText(data.displayName) || username,
       authorizedBusinessTypes,
       roles: readStringRoles(data.roles),
@@ -269,8 +270,9 @@ function buildMockLoginEnvelope(userId: string, businessType: BusinessType): Log
   const mockUser = loginMock.users.find((user) => user.userId === userId);
   const passwordAlreadyChanged = hasMockPasswordChanged(userId);
   const firstLogin = mockUser?.firstLogin === true && !passwordAlreadyChanged;
-  const forcePasswordChange = firstLogin;
-  const mustChangePassword = firstLogin;
+  const mustChangePassword =
+    mockUser?.mustChangePassword === true && !passwordAlreadyChanged;
+  const forcePasswordChange = firstLogin && mustChangePassword;
   const token = (forcePasswordChange ? loginMock.token.restricted : loginMock.token.access).trim();
 
   if (token.length === 0) {
@@ -504,8 +506,8 @@ export async function fetchChangePassword(
     () => {
       const result = mockChangePassword(request);
       if (!result.error) {
-        const userId = getSessionUser()?.userId;
-        if (userId) markMockPasswordChanged(userId);
+        const sessionUsername = getSessionUser()?.username;
+        if (sessionUsername) markMockPasswordChanged(sessionUsername);
       }
       return result;
     },
@@ -559,7 +561,7 @@ function authorizeFromSession(
 ): LoginResult {
   const token = getToken()?.trim() ?? "";
   const user = getSessionUser();
-  if (token.length === 0 || user?.userId !== userId) {
+  if (token.length === 0 || user?.username !== userId) {
     return failure("Session expired. Please sign in again.");
   }
 
@@ -574,7 +576,7 @@ function authorizeFromSession(
     lastLoginAt: getLastLoginAt()?.trim() ?? "",
     businessType,
     user: {
-      userId: user.userId,
+      username: user.username,
       displayName: user.displayName,
       authorizedBusinessTypes: [businessType],
       roles: [],

@@ -22,7 +22,7 @@ vi.mock("../../services/authApi", () => ({
 }));
 
 const successUser = {
-  userId: "UW001",
+  username: "UW001",
   displayName: "Retail Underwriter",
   authorizedBusinessTypes: ["RETAIL"] as const,
   roles: ["CVT_POOL"],
@@ -123,7 +123,9 @@ describe("LoginPage", () => {
   });
 
   it("sends a first-login user to change password", async () => {
-    auth.login.mockReturnValue(loginSuccess({ firstLogin: true }));
+    auth.login.mockReturnValue(
+      loginSuccess({ firstLogin: true, mustChangePassword: true }),
+    );
     renderUi(
       <MemoryRouter initialEntries={["/login"]}>
         <Routes>
@@ -137,6 +139,19 @@ describe("LoginPage", () => {
 
     expect(await screen.findByText("Change password screen")).toBeInTheDocument();
     expect(routes.assignUrl).not.toHaveBeenCalled();
+  });
+
+  it("opens the inbox when only one of firstLogin or mustChangePassword is true", async () => {
+    auth.login.mockReturnValue(
+      loginSuccess({ firstLogin: true, mustChangePassword: false }),
+    );
+    renderAuth(<LoginPage />);
+    const user = await fillValidLogin();
+    await user.click(screen.getByRole("button", { name: "Log In" }));
+
+    await waitFor(() => {
+      expect(routes.assignUrl).toHaveBeenCalledWith("/retail/inbox");
+    });
   });
 
   it("shows the API error and keeps the user on login after a failed sign-in", async () => {

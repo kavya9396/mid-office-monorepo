@@ -47,7 +47,7 @@ function renderChangePassword() {
 
 function seedPasswordChangeSession(userId = "LDAP12345") {
   setToken("access-token");
-  setSessionUser({ userId, displayName: userId });
+  setSessionUser({ username: userId, displayName: userId });
   setFirstLoginChangePending(true);
 }
 
@@ -69,7 +69,7 @@ describe("ChangePasswordPage", () => {
 
   it("redirects to login when change-password was not opened from a first-login response", async () => {
     setToken("access-token");
-    setSessionUser({ userId: "UW001", displayName: "Retail Underwriter" });
+    setSessionUser({ username: "UW001", displayName: "Retail Underwriter" });
     renderChangePassword();
     await waitFor(() => {
       expect(navigation.replaceUrl).toHaveBeenCalledWith("/login");

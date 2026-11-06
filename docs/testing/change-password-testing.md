@@ -18,7 +18,7 @@ Example valid passwords: `NewerPass@1234`, `NewPass@30201`.
 | 4 | Submit | Success snackbar → session cleared → **Login** |
 | 5 | Login again as **LDAP12345** | Goes to inbox (full token + refresh in mock); no change-password redirect |
 
-Mock first-login envelope matches real API shape: **`firstLogin: true`** drives the UI (not sessionStorage). `refreshToken: null`, `sessionId` set, restricted token.
+Redirect to change password only when login returns **`firstLogin: true` and `mustChangePassword: true`** (in-memory gate; not sessionStorage). Mock **LDAP12345** returns both; `refreshToken: null`, `sessionId` set, restricted token.
 
 Other mock users (**UW001**, **UW002**, **UW003**) skip change-password and go straight to inbox.
 
@@ -29,11 +29,11 @@ Other mock users (**UW001**, **UW002**, **UW003**) skip change-password and go s
 Configure in `.env`:
 
 - `VITE_AUTH_*` URLs and Apigee basic credentials
-- Valid UAT user whose login returns **`firstLogin: true`**
+- Valid UAT user whose login returns **`firstLogin: true` and `mustChangePassword: true`**
 
 | Step | Action | Expected |
 |------|--------|----------|
-| 1 | Sign in with first-time user | API returns **`firstLogin: true`** → redirect to change password |
+| 1 | Sign in with first-time user | Both flags **true** → redirect to change password; if either is **false** → inbox |
 | 2 | **User ID** | Matches API `data.username` (from login response), read-only |
 | 3 | Change password | POST body: `{ "username", "oldPassword", "newPassword" }` + Bearer access token |
 | 4 | Success | Session cleared; sign in again with **new** password |
@@ -55,7 +55,7 @@ Submit still POSTs `{ "token", "newPassword" }` to `VITE_AUTH_RESET_PASSWORD_API
 
 ## Protection checks
 
-- **Strict flow (case A):** change-password is allowed **only** immediately after login when the API returned **`firstLogin: true`** (in-memory gate; not sessionStorage).
+- **Strict flow (case A):** change-password is allowed **only** immediately after login when the API returned **`firstLogin: true` and `mustChangePassword: true`** (in-memory gate).
 - Typing `/change-password`, refreshing that page, or opening it without the gate → **session cleared** → **login** (no shortcut to inbox with a first-login token).
 - Sign in again; if the API still returns `firstLogin: true`, you are sent to change password again.
 - User ID on change-password is read-only (from login `data.username`).

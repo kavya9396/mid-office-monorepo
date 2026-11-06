@@ -25,7 +25,7 @@ export function ChangePasswordPage() {
   const [changePassword] = useChangePasswordMutation();
   const [snackbar, setSnackbar] = useState<AuthSnackbarState>(closedAuthSnackbar);
   const [redirecting, setRedirecting] = useState(false);
-  const sessionUsername = getSessionUser()?.userId ?? "";
+  const sessionUsername = getSessionUser()?.username ?? "";
 
   const { control, handleSubmit, formState } = useForm<ChangePasswordForm>({
     resolver: zodResolver(changePasswordSchema),
