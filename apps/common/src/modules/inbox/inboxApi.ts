@@ -67,9 +67,8 @@ export function storedPoolColumns(scope: string, poolKey: string, baseline: unkn
   return readSelectedFields(baseline);
 }
 
-export type RoleListRequest = {
-  username: string;
-};
+/** Role-list uses session Bearer only; request body is empty. */
+export type RoleListRequest = Record<string, never>;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);

@@ -25,6 +25,7 @@ const getButtonStyles = (variant: Variant) => {
     case "text":
       return {
         color: "#E45F14",
+        textDecoration: "underline",
         "&:hover": {
           backgroundColor: "rgba(228,95,20,0.08)",
         },

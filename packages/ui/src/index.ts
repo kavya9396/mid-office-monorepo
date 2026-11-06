@@ -20,6 +20,7 @@ export {
   type KeyValueRow,
 } from "./KeyValueTable/KeyValueTable";
 export { default as CustomPagination } from "./Pagination/Pagination";
+export { default as ScrollToTop, type ScrollToTopProps } from "./layouts/ScrollToTop";
 export { default as CustomRadioGroup } from "./Radio/Radio";
 export { default as SearchBar } from "./SearchBar/SearchBar";
 export {
@@ -36,7 +37,11 @@ export { default as CustomMultiSelect } from "./Select/MultiSelect";
 export { default as CustomSelect } from "./Select/Select";
 export { default as CustomSnackbar } from "./SnackBar/Snackbar";
 export { default as CustomTable, type Column } from "./Table/Table";
-export { default as CustomTabs, type TabItem } from "./Tabs/Tabs";
+export {
+  default as CustomTabs,
+  type CustomTabsSurface,
+  type TabItem,
+} from "./Tabs/Tabs";
 export { default as CustomTextField } from "./TextField/TextField";
 export { default as CustomTooltip } from "./Tooltip/Tooltip";
 export { default as CustomTypography } from "./Typography/Typography";

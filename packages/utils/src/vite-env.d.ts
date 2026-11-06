@@ -8,6 +8,15 @@ interface ImportMetaEnv {
   readonly VITE_AUTH_RESET_PASSWORD_API?: string;
   readonly VITE_AUTH_CHANGE_PASSWORD_API?: string;
   readonly VITE_AUTH_LOGOUT_API?: string;
+  readonly VITE_AUTH_BASIC_USERNAME?: string;
+  readonly VITE_AUTH_BASIC_PASSWORD?: string;
+  readonly VITE_LANDING_SERVICE?: string;
+  readonly VITE_RETAIL_ROLE_LIST_API?: string;
+  readonly VITE_GROUP_ROLE_LIST_API?: string;
+  readonly VITE_RETAIL_POOL_COLUMNS_API?: string;
+  readonly VITE_RETAIL_POOL_COLUMNS_SAVE_API?: string;
+  readonly VITE_GROUP_POOL_COLUMNS_API?: string;
+  readonly VITE_GROUP_POOL_COLUMNS_SAVE_API?: string;
 }
 
 interface ImportMeta {

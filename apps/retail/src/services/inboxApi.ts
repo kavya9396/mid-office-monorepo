@@ -1,22 +1,18 @@
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { createApi } from "@reduxjs/toolkit/query/react";
-import { createBusinessBaseQuery, getSessionUser, useMock } from "@insurance-poc/utils";
+import {
+  absoluteApiBaseUrl,
+  createBusinessBaseQuery,
+  getSessionUser,
+  landingUrls,
+  mustChangePassword,
+  useMock,
+} from "@insurance-poc/utils";
 import retailInboxMock from "../modules/inbox/mock/retailInbox.json";
 import { rememberPoolColumns, storedPoolColumns, type InboxData } from "@insurance-poc/common/inbox";
 import retailColumnConfigFetchMock from "../modules/inbox/mock/columnConfigFetch.json";
 import retailColumnConfigSaveMock from "../modules/inbox/mock/columnConfigSave.json";
-import {
-  createRetailRoleListRequest,
-  mapRetailInboxPayload,
-  RETAIL_POOL_COLUMNS_PATH,
-  RETAIL_POOL_COLUMNS_SAVE_PATH,
-  RETAIL_ROLE_LIST_PATH,
-} from "./inboxService";
-
-function retailApiUrl(): string {
-  const value = import.meta.env.VITE_RETAIL_API_URL;
-  return typeof value === "string" ? value.trim() : "";
-}
+import { createRetailRoleListRequest, mapRetailInboxPayload } from "./inboxService";
 
 function readError(reason: unknown): string {
   return reason instanceof Error ? reason.message : "Unable to load the Retail inbox.";
@@ -28,15 +24,18 @@ function customError(error: string): FetchBaseQueryError {
 
 export const retailInboxApi = createApi({
   reducerPath: "retailInboxApi",
-  baseQuery: createBusinessBaseQuery(retailApiUrl()),
+  baseQuery: createBusinessBaseQuery(absoluteApiBaseUrl),
   endpoints: (build) => ({
     getRetailInbox: build.query<InboxData, void>({
       async queryFn(_request, _api, _extra, baseQuery) {
         if (useMock) {
           return { data: mapRetailInboxPayload(retailInboxMock) };
         }
-        if (retailApiUrl().length === 0) {
-          return { error: customError("Retail API URL is not configured.") };
+        if (landingUrls.retailRoleList.length === 0) {
+          return { error: customError("VITE_RETAIL_ROLE_LIST_API is not configured.") };
+        }
+        if (mustChangePassword()) {
+          return { error: customError("Change your password before loading the Retail inbox.") };
         }
         const username = getSessionUser()?.userId ?? "";
         if (username.length === 0) {
@@ -44,9 +43,9 @@ export const retailInboxApi = createApi({
         }
 
         const result = await baseQuery({
-          url: RETAIL_ROLE_LIST_PATH,
+          url: landingUrls.retailRoleList,
           method: "POST",
-          body: createRetailRoleListRequest(username),
+          body: createRetailRoleListRequest(),
           headers: { accept: "*/*", "Content-Type": "application/json" },
           encryptRequest: false,
           decryptResponse: false,
@@ -65,15 +64,15 @@ export const retailInboxApi = createApi({
         if (useMock) {
           return { data: storedPoolColumns("retail", poolKey, retailColumnConfigFetchMock) };
         }
-        if (retailApiUrl().length === 0) {
-          return { error: customError("Retail API URL is not configured.") };
+        if (landingUrls.retailPoolColumns.length === 0) {
+          return { error: customError("VITE_RETAIL_POOL_COLUMNS_API is not configured.") };
         }
         const username = getSessionUser()?.userId ?? "";
         if (username.length === 0) {
           return { error: customError("Sign in before loading column configuration.") };
         }
         const result = await baseQuery({
-          url: RETAIL_POOL_COLUMNS_PATH,
+          url: landingUrls.retailPoolColumns,
           method: "GET",
           params: { username, poolKey },
           encryptRequest: false,
@@ -92,15 +91,22 @@ export const retailInboxApi = createApi({
           rememberPoolColumns("retail", request.poolKey, request.selectedFields);
           return { data: storedPoolColumns("retail", request.poolKey, retailColumnConfigFetchMock) };
         }
-        if (retailApiUrl().length === 0) {
-          return { error: customError("Retail API URL is not configured.") };
+        if (
+          landingUrls.retailPoolColumnsSave.length === 0 ||
+          landingUrls.retailPoolColumns.length === 0
+        ) {
+          return {
+            error: customError(
+              "VITE_RETAIL_POOL_COLUMNS_SAVE_API or VITE_RETAIL_POOL_COLUMNS_API is not configured.",
+            ),
+          };
         }
         const username = getSessionUser()?.userId ?? "";
         if (username.length === 0) {
           return { error: customError("Sign in before saving column configuration.") };
         }
         const saved = await baseQuery({
-          url: RETAIL_POOL_COLUMNS_SAVE_PATH,
+          url: landingUrls.retailPoolColumnsSave,
           method: "POST",
           body: { username, poolKey: request.poolKey, selectedFields: request.selectedFields },
           headers: { accept: "*/*", "Content-Type": "application/json" },
@@ -109,7 +115,7 @@ export const retailInboxApi = createApi({
         });
         if (saved.error) return { error: saved.error };
         const fetched = await baseQuery({
-          url: RETAIL_POOL_COLUMNS_PATH,
+          url: landingUrls.retailPoolColumns,
           method: "GET",
           params: { username, poolKey: request.poolKey },
           encryptRequest: false,
