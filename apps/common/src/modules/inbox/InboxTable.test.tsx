@@ -158,6 +158,34 @@ describe("InboxTable", () => {
     expect(onLoadColumns).toHaveBeenCalledWith("GUW");
   });
 
+  it("falls back to default columns when pool-columns returns an empty list in mock mode", async () => {
+    const onLoadColumns = vi.fn(async () => []);
+    renderTable({
+      useMockOverride: true,
+      columnContextKey: "GUW",
+      inboxData: guwInboxData,
+      cases: [guwCase],
+      onLoadColumns,
+    });
+
+    expect(await screen.findByText("Product Code")).toBeInTheDocument();
+    expect(screen.getByText("Channel")).toBeInTheDocument();
+  });
+
+  it("shows no columns when pool-columns returns an empty list in real API mode", async () => {
+    const onLoadColumns = vi.fn(async () => []);
+    renderTable({
+      useMockOverride: false,
+      columnContextKey: "GUW",
+      inboxData: guwInboxData,
+      cases: [guwCase],
+      onLoadColumns,
+    });
+
+    expect(await screen.findByText("No columns returned for this pool")).toBeInTheDocument();
+    expect(screen.queryByText("Product Code")).not.toBeInTheDocument();
+  });
+
   it("downloads the visible rows as Excel", async () => {
     const user = userEvent.setup();
     const createObjectURL = vi.fn(() => "blob:landing");

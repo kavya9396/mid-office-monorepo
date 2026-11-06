@@ -1,4 +1,13 @@
 {
-  "poolKey": "",
-  "selectedFields": []
+  "username": "MOCK",
+  "poolKey": "PRE_ISSUANCE_SERVICING_POOL",
+  "selectedFields": [
+    "applicationNo",
+    "channel",
+    "product",
+    "sumAssured",
+    "premium",
+    "clientType",
+    "caseType"
+  ]
 }
