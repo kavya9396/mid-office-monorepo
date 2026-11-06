@@ -54,12 +54,19 @@ import {
   isFinancialFieldRequired,
   validateFinancialField,
 } from "./financial.schema";
+import {
+  buildFinancialSaveRequest,
+  type FinancialSaveRequest,
+} from "./financialSavePayload";
 
 export * from "./financial.config";
+export * from "./financialSavePayload";
 
 type ReviewDecision = "agree" | "disagree";
 
 export interface FinancialProps {
+  applicationNumber?: string;
+  partyId?: string;
   /** Optional content rendered above the top bar (e.g. the DRS detail cards). */
   summary?: ReactNode;
   /** Applicant tabs (defaults to Life Assured1 / Proposer, like the prototype). */
@@ -71,6 +78,7 @@ export interface FinancialProps {
   onApplicantChange?: (applicantKey: string) => void;
   onBack?: () => void;
   onViewDocuments?: () => void;
+  onSaveSection?: (payload: FinancialSaveRequest) => void;
   onSubmit?: (payload: FinancialSubmitPayload) => void;
 }
 
@@ -1271,12 +1279,15 @@ const NavItem = memo(function NavItem({
 /* ------------------------------------------------------------------ */
 
 export function Financial({
+  applicationNumber,
+  partyId,
   summary,
   applicants = FINANCIAL_DEFAULT_APPLICANTS,
   initialApplicantKey,
   sections = FINANCIAL_SECTIONS,
   onApplicantChange,
   onViewDocuments,
+  onSaveSection,
   onSubmit,
 }: Readonly<FinancialProps>) {
   const [activeApplicantKey, setActiveApplicantKey] = useState(
@@ -1487,14 +1498,37 @@ export function Financial({
     (sectionKey: string) => {
       if (!validateSection(sectionKey)) return;
       stopEditing(sectionKey, false);
-      const title =
-        sections.find((section) => section.key === sectionKey)?.title ?? "";
+      const targetSection = sections.find((section) => section.key === sectionKey);
+      const title = targetSection?.title ?? "";
+      if (targetSection) {
+        const currentActiveApplicant = applicants.find(
+          (applicant) => applicant.key === activeApplicantKey,
+        );
+        const currentPartyId = partyId || currentActiveApplicant?.partyId || "";
+        const saveRequest = buildFinancialSaveRequest({
+          applicationNumber: applicationNumber || "",
+          partyId: currentPartyId,
+          section: targetSection,
+          values: store.snapshot(),
+        });
+        onSaveSection?.(saveRequest);
+      }
       setSnackbar({
         message: FINANCIAL_MESSAGES.sectionSaved(title),
         severity: "success",
       });
     },
-    [sections, stopEditing, validateSection],
+    [
+      activeApplicantKey,
+      applicants,
+      applicationNumber,
+      onSaveSection,
+      partyId,
+      sections,
+      stopEditing,
+      store,
+      validateSection,
+    ],
   );
 
   /** Opens the chosen document in a popup, remembering its values so closing without saving discards edits. */
@@ -1517,12 +1551,36 @@ export function Financial({
     if (!dialogKey) return;
     if (!validateSection(dialogKey)) return;
     stopEditing(dialogKey, false);
+    if (dialogSection) {
+      const currentActiveApplicant = applicants.find(
+        (applicant) => applicant.key === activeApplicantKey,
+      );
+      const currentPartyId = partyId || currentActiveApplicant?.partyId || "";
+      const saveRequest = buildFinancialSaveRequest({
+        applicationNumber: applicationNumber || "",
+        partyId: currentPartyId,
+        section: dialogSection,
+        values: store.snapshot(),
+      });
+      onSaveSection?.(saveRequest);
+    }
     setSnackbar({
       message: FINANCIAL_MESSAGES.sectionSaved(dialogSection?.title ?? ""),
       severity: "success",
     });
     setDialogOpen(false);
-  }, [dialogKey, dialogSection, stopEditing, validateSection]);
+  }, [
+    activeApplicantKey,
+    applicants,
+    applicationNumber,
+    dialogKey,
+    dialogSection,
+    onSaveSection,
+    partyId,
+    stopEditing,
+    store,
+    validateSection,
+  ]);
 
   const handleApplicantChange = (applicantKey: string) => {
     setActiveApplicantKey(applicantKey);

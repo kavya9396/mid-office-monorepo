@@ -77,11 +77,14 @@ const optionalAlphanumeric = (fieldName: string) =>
     )
     .optional();
 
-/** Optional year (YYYY): blank is accepted, anything entered must be a 4-digit year. */
-const optionalYear = (fieldName: string) =>
+/** Optional financial year range (FY XXXX-XX): blank is accepted, anything entered must be "FY XXXX-XX". */
+const optionalFinancialYear = (fieldName: string) =>
   z
     .string()
-    .refine((value) => value === "" || RegexPatterns.year.test(value), `${fieldName} must be a 4-digit year (YYYY).`)
+    .refine(
+      (value) => value === "" || RegexPatterns.financialYear.test(value),
+      `${fieldName} must be in the format FY XXXX-XX (for example, FY 2022-23).`,
+    )
     .optional();
 
 /** Optional Yes/No dropdown: blank, "Yes" or "No". */
@@ -304,7 +307,7 @@ export type PensionStatementValues = z.infer<typeof pensionStatementSchema>;
 export const propertyPurchaseSchema = z.object({
   purchasedByLa: optionalYesNo("Property purchased by LA"),
   purchasePrice: requiredNumeric("Purchase Price"),
-  financialYearOfPurchase: optionalYear("Financial Year of Purchase"),
+  financialYearOfPurchase: optionalFinancialYear("Financial Year of Purchase"),
   estimatedMarketValue: optionalNumeric("Estimated Market Value of Property"),
   derivedIncome: freeText.optional(),
 });

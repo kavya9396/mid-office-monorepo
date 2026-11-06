@@ -740,7 +740,10 @@ export function mapFinancialDocumentsToSections(
   return sectionsToMap.map((section) => {
     const sectionValues = valuesMap[section.key];
     const extraValues = extraValuesMap[section.key];
-    if (!sectionValues && !extraValues) return section;
+    const rawDoc = isRecord(docs[section.key]) ? docs[section.key] : undefined;
+    if (!sectionValues && !extraValues) {
+      return rawDoc ? { ...section, rawDocument: rawDoc } : section;
+    }
 
     const fields = section.fields.map(([label, defaultValue, required]) => {
       const mappedValue = sectionValues?.[label];
@@ -752,6 +755,7 @@ export function mapFinancialDocumentsToSections(
       ...section,
       fields,
       ...(extraValues ? { extraValues } : {}),
+      ...(rawDoc ? { rawDocument: rawDoc } : {}),
     };
   });
 }

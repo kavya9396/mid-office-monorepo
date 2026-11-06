@@ -14,6 +14,8 @@ export class RegexPatterns {
   static readonly assessmentYear = /^\d{4}-\d{2}$/;
   /** Assessment year in the form "AY XX-XX" (e.g. "AY 23-24"). */
   static readonly assessmentYearAy = /^AY \d{2}-\d{2}$/;
+  /** Financial year in the form "FY XXXX-XX" (e.g. "FY 2022-23"). */
+  static readonly financialYear = /^FY \d{4}-\d{2}$/;
   /** Statement period range in the form "Mmm-YYYY to Mmm-YYYY" (e.g. "Jan-2026 to Jun-2026"). */
   static readonly statementPeriod = /^[A-Za-z]{3}-\d{4}\s+to\s+[A-Za-z]{3}-\d{4}$/i;
   /** Four-digit year (YYYY). */

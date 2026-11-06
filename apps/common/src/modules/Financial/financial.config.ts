@@ -14,6 +14,7 @@ export interface FinancialSection {
   cols: number;
   fields: readonly FinancialFieldDef[];
   extraValues?: Readonly<Record<string, string>>;
+  rawDocument?: Record<string, unknown>;
 }
 
 /** A label shown in the UI, optionally mapped to a differently named field. */
@@ -865,6 +866,7 @@ export const FINANCIAL_STATEMENT_LAYOUTS: Readonly<Partial<Record<string, Financ
 
 /** Derived / calculated fields ("<sectionKey>:<label>") that stay read-only even while a section is edited. */
 export const FINANCIAL_LOCKED_FIELDS: ReadonlySet<string> = new Set<string>([
+  "credit_bureau_details:Average Bureau Income",
   "commission_statement:Average commission pm",
   "commission_statement:Average Annual Income",
   "computation_of_income:Gross Total Income",

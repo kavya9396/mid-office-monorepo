@@ -176,12 +176,17 @@ const DvtUser = () => {
     }));
     return (
       <Financial
+        applicationNumber={applicationNo}
+        partyId={selectedApplicant?.partyId}
         summary={detailCards}
         applicants={financialApplicants.length > 0 ? financialApplicants : undefined}
         initialApplicantKey={selectedApplicant?.id || undefined}
         sections={financialQuery.data}
         onApplicantChange={handleFinancialApplicantChange}
         onBack={closeFinancial}
+        onSaveSection={(saveRequest) => {
+          console.log("Trigger Save Financial Section:", saveRequest);
+        }}
         onSubmit={(payload) => console.log("Submit financial", payload)}
       />
     );
