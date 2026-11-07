@@ -16,7 +16,7 @@ export function ProfileImage({ label, image }: Readonly<ProfileImageProps>) {
     <Box
       sx={{
         p: 1,
-        bgcolor: colors.surfaceTint,
+        bgcolor: colors.white,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",

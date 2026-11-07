@@ -48,6 +48,8 @@ vi.mock("@insurance-poc/utils", async () => {
 
 const BASIC_USER = "apigee-user";
 const BASIC_PASSWORD = "apigee-secret";
+const POLICY_OLD_PASSWORD = "OldPass@1234";
+const POLICY_NEW_PASSWORD = "NewerPass@1234";
 
 function expectSuccess(result: LoginResult): asserts result is LoginSuccess {
   expect(result.status).toBe("SUCCESS");
@@ -140,7 +142,7 @@ describe("login module", () => {
       );
 
       expectSuccess(result);
-      expect(result.user.userId).toBe("LDAP99999");
+      expect(result.user.username).toBe("LDAP99999");
       expect(result.businessType).toBe("RETAIL");
       expect(result.lastLoginAt).toBe("2026-10-06T14:10:20");
     });
@@ -159,7 +161,7 @@ describe("login module", () => {
       expect(result.businessType).toBe("RETAIL");
       expect(result.lastLoginAt).toBe(loginMock.users[1]?.lastLoginAt);
       expect(result.user).toMatchObject({
-        userId: "UW001",
+        username: "UW001",
         displayName: "Retail Underwriter",
         authorizedBusinessTypes: ["RETAIL"],
       });
@@ -189,10 +191,15 @@ describe("login module", () => {
       expect(first.accessToken).toBe(loginMock.token.restricted);
       expect(first.refreshToken).toBe("");
       expect(first.lastLoginAt).toBe("");
+      expect(first.sessionId).toBe("VpAjFOyn9DuNUtpoRr0okyukre6_AZy0vwRpBL6b9H8");
 
-      setSessionUser({ userId: "LDAP12345", displayName: "LDAP12345" });
+      setSessionUser({ username: "LDAP12345", displayName: "LDAP12345" });
       const changed = await runMock(() =>
-        fetchChangePassword({ oldPassword: "old-password", newPassword: "new-password" }),
+        fetchChangePassword({
+          username: "LDAP12345",
+          oldPassword: POLICY_OLD_PASSWORD,
+          newPassword: POLICY_NEW_PASSWORD,
+        }),
       );
       expect(changed.error).toBe(false);
 
@@ -314,13 +321,13 @@ describe("login module", () => {
       const { authorizeBusiness } = await loadLogin();
       const { setSessionUser, setToken } = await import("@insurance-poc/utils");
       setToken("mock-jwt-token");
-      setSessionUser({ userId: "UW001", displayName: "Retail Underwriter" });
+      setSessionUser({ username: "UW001", displayName: "Retail Underwriter" });
 
       const result = await runMock(() => authorizeBusiness("UW001", "RETAIL"));
 
       expectSuccess(result);
       expect(result.businessType).toBe("RETAIL");
-      expect(result.user.userId).toBe("UW001");
+      expect(result.user.username).toBe("UW001");
     });
 
     it("rejects a missing session", async () => {
@@ -396,7 +403,7 @@ describe("login module", () => {
       if (!token) throw new Error("Reset fixture is missing a token.");
       const { fetchResetPassword } = await loadLogin();
       const result = await runMock(() =>
-        fetchResetPassword({ token: `  ${token}  `, newPassword: "new-password" }),
+        fetchResetPassword({ token: `  ${token}  `, newPassword: POLICY_NEW_PASSWORD }),
       );
 
       expect(result).toEqual({
@@ -410,7 +417,7 @@ describe("login module", () => {
     it("rejects an unknown token", async () => {
       const { fetchResetPassword } = await loadLogin();
       const result = await runMock(() =>
-        fetchResetPassword({ token: "missing-token", newPassword: "new-password" }),
+        fetchResetPassword({ token: "missing-token", newPassword: POLICY_NEW_PASSWORD }),
       );
 
       expect(result).toEqual({
@@ -432,7 +439,7 @@ describe("login module", () => {
 
       const result = await fetchResetPassword({
         token: " reset-token ",
-        newPassword: "new-password",
+        newPassword: POLICY_NEW_PASSWORD,
       });
 
       expect(result.error).toBe(false);
@@ -440,7 +447,7 @@ describe("login module", () => {
       const posted = postedRequest(fetchMock);
       expect(posted.url).toBe(authMode.urls.resetPassword);
       expect(readString(posted.body, "token")).toBe("reset-token");
-      expect(readString(posted.body, "newPassword")).toBe("new-password");
+      expect(readString(posted.body, "newPassword")).toBe(POLICY_NEW_PASSWORD);
     });
   });
 
@@ -453,7 +460,11 @@ describe("login module", () => {
     it("rejects a new password that is too short", async () => {
       const { fetchChangePassword } = await loadLogin();
       const result = await runMock(() =>
-        fetchChangePassword({ oldPassword: "old-password", newPassword: "short" }),
+        fetchChangePassword({
+          username: "UW001",
+          oldPassword: POLICY_OLD_PASSWORD,
+          newPassword: "short",
+        }),
       );
 
       expect(result).toEqual({
@@ -467,7 +478,11 @@ describe("login module", () => {
     it("accepts a new password that meets the policy", async () => {
       const { fetchChangePassword } = await loadLogin();
       const result = await runMock(() =>
-        fetchChangePassword({ oldPassword: "old-password", newPassword: "long-enough" }),
+        fetchChangePassword({
+          username: "UW001",
+          oldPassword: POLICY_OLD_PASSWORD,
+          newPassword: POLICY_NEW_PASSWORD,
+        }),
       );
 
       expect(result).toEqual({
@@ -486,7 +501,11 @@ describe("login module", () => {
       const { fetchChangePassword } = await loadLogin();
 
       await expect(
-        fetchChangePassword({ oldPassword: "old-password", newPassword: "new-password" }),
+        fetchChangePassword({
+          username: "UW001",
+          oldPassword: POLICY_OLD_PASSWORD,
+          newPassword: POLICY_NEW_PASSWORD,
+        }),
       ).rejects.toThrow("Sign in before changing your password.");
       expect(fetchMock).not.toHaveBeenCalled();
     });
@@ -499,12 +518,13 @@ describe("login module", () => {
       );
       vi.stubGlobal("fetch", fetchMock);
       const { fetchChangePassword } = await loadLogin();
-      const { setToken } = await import("@insurance-poc/utils");
+      const { setSessionUser, setToken } = await import("@insurance-poc/utils");
       setToken("user-jwt");
-
+      setSessionUser({ username: "UW001", displayName: "Retail Underwriter" });
       const result = await fetchChangePassword({
-        oldPassword: "old-password",
-        newPassword: "new-password",
+        username: "UW001",
+        oldPassword: POLICY_OLD_PASSWORD,
+        newPassword: POLICY_NEW_PASSWORD,
       });
 
       expect(result.error).toBe(false);
@@ -512,9 +532,12 @@ describe("login module", () => {
       const posted = postedRequest(fetchMock);
       expect(posted.url).toBe(authMode.urls.changePassword);
       expect(posted.headers.get("Authorization")).toBe("Bearer user-jwt");
-      expect(posted.headers.get("X-Apigee-Authorization")).toBeNull();
-      expect(readString(posted.body, "oldPassword")).toBe("old-password");
-      expect(readString(posted.body, "newPassword")).toBe("new-password");
+      expect(posted.headers.get("X-Apigee-Authorization")).toBe(
+        `Basic ${btoa(`${BASIC_USER}:${BASIC_PASSWORD}`)}`,
+      );
+      expect(readString(posted.body, "username")).toBe("UW001");
+      expect(readString(posted.body, "oldPassword")).toBe(POLICY_OLD_PASSWORD);
+      expect(readString(posted.body, "newPassword")).toBe(POLICY_NEW_PASSWORD);
     });
   });
 
@@ -581,6 +604,9 @@ describe("login module", () => {
       const posted = postedRequest(fetchMock);
       expect(posted.url).toBe(authMode.urls.logout);
       expect(posted.headers.get("Authorization")).toBe("Bearer user-jwt");
+      expect(posted.headers.get("X-Apigee-Authorization")).toBe(
+        `Basic ${btoa(`${BASIC_USER}:${BASIC_PASSWORD}`)}`,
+      );
       expect(posted.headers.get("accept")).toBe("*/*");
       expect(posted.headers.get("Content-Type")).toBe("application/json");
       expect(readString(posted.body, "refreshToken")).toBe(

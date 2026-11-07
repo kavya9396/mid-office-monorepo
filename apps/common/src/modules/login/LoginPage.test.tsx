@@ -22,7 +22,7 @@ vi.mock("../../services/authApi", () => ({
 }));
 
 const successUser = {
-  userId: "UW001",
+  username: "UW001",
   displayName: "Retail Underwriter",
   authorizedBusinessTypes: ["RETAIL"] as const,
   roles: ["CVT_POOL"],
@@ -36,6 +36,7 @@ function loginSuccess(overrides: Record<string, unknown> = {}) {
         message: "Logged in",
         accessToken: "access-token",
         refreshToken: "refresh-token",
+        sessionId: "mock-session-id",
         firstLogin: false,
         mustChangePassword: false,
         lastLoginAt: "2026-10-06T14:10:20",
@@ -77,8 +78,14 @@ describe("LoginPage", () => {
     renderAuth(<LoginPage />);
 
     await user.type(screen.getByPlaceholderText("Enter your User ID"), "user-1");
+    expect(screen.getByRole("button", { name: "Log In" })).toBeDisabled();
+
+    await user.type(screen.getByPlaceholderText("Enter your Password"), "any");
+    expect(screen.getByRole("button", { name: "Log In" })).toBeEnabled();
+
+    await user.clear(screen.getByPlaceholderText("Enter your Password"));
     await user.tab();
-    expect(await screen.findByText("User ID must be letters followed by numbers")).toBeInTheDocument();
+    expect(await screen.findByText("Password is required")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Log In" })).toBeDisabled();
 
     await user.clear(screen.getByPlaceholderText("Enter your User ID"));
@@ -116,7 +123,9 @@ describe("LoginPage", () => {
   });
 
   it("sends a first-login user to change password", async () => {
-    auth.login.mockReturnValue(loginSuccess({ firstLogin: true, mustChangePassword: true }));
+    auth.login.mockReturnValue(
+      loginSuccess({ firstLogin: true, mustChangePassword: true }),
+    );
     renderUi(
       <MemoryRouter initialEntries={["/login"]}>
         <Routes>
@@ -130,6 +139,19 @@ describe("LoginPage", () => {
 
     expect(await screen.findByText("Change password screen")).toBeInTheDocument();
     expect(routes.assignUrl).not.toHaveBeenCalled();
+  });
+
+  it("opens the inbox when only one of firstLogin or mustChangePassword is true", async () => {
+    auth.login.mockReturnValue(
+      loginSuccess({ firstLogin: true, mustChangePassword: false }),
+    );
+    renderAuth(<LoginPage />);
+    const user = await fillValidLogin();
+    await user.click(screen.getByRole("button", { name: "Log In" }));
+
+    await waitFor(() => {
+      expect(routes.assignUrl).toHaveBeenCalledWith("/retail/inbox");
+    });
   });
 
   it("shows the API error and keeps the user on login after a failed sign-in", async () => {

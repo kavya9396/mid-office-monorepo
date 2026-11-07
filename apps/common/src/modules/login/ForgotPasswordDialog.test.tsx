@@ -37,8 +37,12 @@ describe("ForgotPasswordDialog", () => {
     expect(screen.getByRole("button", { name: "Send reset link" })).toBeDisabled();
 
     await user.type(screen.getByPlaceholderText("Enter your user ID or email"), "not-valid");
+    expect(screen.getByRole("button", { name: "Send reset link" })).toBeEnabled();
+
+    await user.clear(screen.getByPlaceholderText("Enter your user ID or email"));
+    await user.type(screen.getByPlaceholderText("Enter your user ID or email"), "bad@email");
     await user.tab();
-    expect(await screen.findByText("Enter a valid user ID or email")).toBeInTheDocument();
+    expect(await screen.findByText("Enter a valid email address")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Send reset link" })).toBeDisabled();
 
     await user.clear(screen.getByPlaceholderText("Enter your user ID or email"));

@@ -1,123 +1,68 @@
-import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { createApi } from "@reduxjs/toolkit/query/react";
-import { createBusinessBaseQuery, getSessionUser, useMock } from "@insurance-poc/utils";
+import {
+  absoluteApiBaseUrl,
+  createBusinessBaseQuery,
+  landingUrls,
+  useMock,
+} from "@insurance-poc/utils";
 import groupInboxMock from "../modules/inbox/mock/groupInbox.json";
-import { rememberPoolColumns, storedPoolColumns, type InboxData } from "@insurance-poc/common/inbox";
+import type { InboxData } from "@insurance-poc/common/inbox";
 import groupColumnConfigFetchMock from "../modules/inbox/mock/columnConfigFetch.json";
 import groupColumnConfigSaveMock from "../modules/inbox/mock/columnConfigSave.json";
 import {
-  createGroupRoleListRequest,
-  GROUP_POOL_COLUMNS_PATH,
-  GROUP_POOL_COLUMNS_SAVE_PATH,
-  GROUP_ROLE_LIST_PATH,
-  mapGroupInboxPayload,
-} from "./inboxService";
+  mockFetchPoolColumns,
+  mockSavePoolColumns,
+  mutateLandingSavePoolColumns,
+  queryLandingPoolColumns,
+  queryLandingRoleList,
+  type LandingBaseQuery,
+} from "@insurance-poc/common/landing-inbox-queries";
+import { mapGroupInboxPayload } from "./inboxService";
 
-function groupApiUrl(): string {
-  const value = import.meta.env.VITE_GROUP_API_URL;
-  return typeof value === "string" ? value.trim() : "";
-}
-
-function readError(reason: unknown): string {
-  return reason instanceof Error ? reason.message : "Unable to load the Group inbox.";
-}
-
-function customError(error: string): FetchBaseQueryError {
-  return { status: "CUSTOM_ERROR", error };
-}
+const groupPoolColumnsMockConfig = {
+  scope: "group" as const,
+  columnConfigFetchMock: groupColumnConfigFetchMock,
+  columnConfigSaveMock: groupColumnConfigSaveMock,
+};
 
 export const groupInboxApi = createApi({
   reducerPath: "groupInboxApi",
-  baseQuery: createBusinessBaseQuery(groupApiUrl()),
+  baseQuery: createBusinessBaseQuery(absoluteApiBaseUrl),
   endpoints: (build) => ({
     getGroupInbox: build.query<InboxData, void>({
       async queryFn(_request, _api, _extra, baseQuery) {
-        if (useMock) {
-          return { data: mapGroupInboxPayload(groupInboxMock) };
-        }
-        if (groupApiUrl().length === 0) {
-          return { error: customError("Group API URL is not configured.") };
-        }
-        const username = getSessionUser()?.userId ?? "";
-        if (username.length === 0) {
-          return { error: customError("Sign in before loading the Group inbox.") };
-        }
-
-        const result = await baseQuery({
-          url: GROUP_ROLE_LIST_PATH,
-          method: "POST",
-          body: createGroupRoleListRequest(username),
-          headers: { accept: "*/*", "Content-Type": "application/json" },
-          encryptRequest: false,
-          decryptResponse: false,
+        const bq = baseQuery as LandingBaseQuery;
+        return queryLandingRoleList(bq, {
+          roleListUrl: landingUrls.groupRoleList,
+          mapInboxPayload: mapGroupInboxPayload,
+          mockData: groupInboxMock as unknown as InboxData,
+          businessLabel: "Group",
         });
-        if (result.error) return { error: result.error };
-
-        try {
-          return { data: mapGroupInboxPayload(result.data) };
-        } catch (reason: unknown) {
-          return { error: customError(readError(reason)) };
-        }
       },
     }),
     fetchGroupPoolColumns: build.query<string[], string>({
       async queryFn(poolKey, _api, _extra, baseQuery) {
+        const bq = baseQuery as LandingBaseQuery;
         if (useMock) {
-          return { data: storedPoolColumns("group", poolKey, groupColumnConfigFetchMock) };
+          return mockFetchPoolColumns(poolKey, groupPoolColumnsMockConfig);
         }
-        if (groupApiUrl().length === 0) {
-          return { error: customError("Group API URL is not configured.") };
-        }
-        const username = getSessionUser()?.userId ?? "";
-        if (username.length === 0) {
-          return { error: customError("Sign in before loading column configuration.") };
-        }
-        const result = await baseQuery({
-          url: GROUP_POOL_COLUMNS_PATH,
-          method: "GET",
-          params: { username, poolKey },
-          encryptRequest: false,
-          decryptResponse: false,
+        return queryLandingPoolColumns(poolKey, bq, {
+          scope: "group",
+          poolColumnsUrl: landingUrls.groupPoolColumns,
         });
-        if (result.error) return { error: result.error };
-        return { data: storedPoolColumns("group", poolKey, result.data) };
       },
     }),
     saveGroupPoolColumns: build.mutation<string[], { poolKey: string; selectedFields: string[] }>({
       async queryFn(request, _api, _extra, baseQuery) {
+        const bq = baseQuery as LandingBaseQuery;
         if (useMock) {
-          if (groupColumnConfigSaveMock.success === false) {
-            return { error: customError(groupColumnConfigSaveMock.message || "Unable to save columns.") };
-          }
-          rememberPoolColumns("group", request.poolKey, request.selectedFields);
-          return { data: storedPoolColumns("group", request.poolKey, groupColumnConfigFetchMock) };
+          return mockSavePoolColumns(request, groupPoolColumnsMockConfig);
         }
-        if (groupApiUrl().length === 0) {
-          return { error: customError("Group API URL is not configured.") };
-        }
-        const username = getSessionUser()?.userId ?? "";
-        if (username.length === 0) {
-          return { error: customError("Sign in before saving column configuration.") };
-        }
-        const saved = await baseQuery({
-          url: GROUP_POOL_COLUMNS_SAVE_PATH,
-          method: "POST",
-          body: { username, poolKey: request.poolKey, selectedFields: request.selectedFields },
-          headers: { accept: "*/*", "Content-Type": "application/json" },
-          encryptRequest: false,
-          decryptResponse: false,
+        return mutateLandingSavePoolColumns(request, bq, {
+          scope: "group",
+          poolColumnsUrl: landingUrls.groupPoolColumns,
+          poolColumnsSaveUrl: landingUrls.groupPoolColumnsSave,
         });
-        if (saved.error) return { error: saved.error };
-        const fetched = await baseQuery({
-          url: GROUP_POOL_COLUMNS_PATH,
-          method: "GET",
-          params: { username, poolKey: request.poolKey },
-          encryptRequest: false,
-          decryptResponse: false,
-        });
-        if (fetched.error) return { error: fetched.error };
-        const fields = storedPoolColumns("group", request.poolKey, fetched.data);
-        return { data: fields.length > 0 ? fields : request.selectedFields };
       },
     }),
   }),

@@ -1,10 +1,12 @@
 import {
   authUrls,
+  buildJsonAuthPostHeaders,
   encodeBase64,
   getLastLoginAt,
   getRefreshToken,
   getSessionUser,
   getToken,
+  meetsPasswordPolicy,
   useMock,
 } from "@insurance-poc/utils";
 import changePasswordMock from "../modules/login/mock/changePassword.json";
@@ -31,7 +33,8 @@ function hasMockPasswordChanged(userId: string): boolean {
 }
 
 export interface AuthenticatedUser {
-  userId: string;
+  /** Login username (API `data.username`). */
+  username: string;
   displayName: string;
   authorizedBusinessTypes: BusinessType[];
   roles: string[];
@@ -42,6 +45,7 @@ export type LoginSuccess = {
   message: string;
   accessToken: string;
   refreshToken: string;
+  sessionId: string;
   firstLogin: boolean;
   mustChangePassword: boolean;
   lastLoginAt: string;
@@ -73,6 +77,7 @@ export type LoginApiEnvelope = {
     expiresIn?: number;
     refreshToken?: string | null;
     refreshExpiresIn?: number;
+    sessionId?: string;
     username: string;
     displayName?: string;
     firstLogin?: boolean;
@@ -101,6 +106,7 @@ export type ResetPasswordRequest = {
 };
 
 export type ChangePasswordRequest = {
+  username: string;
   oldPassword: string;
   newPassword: string;
 };
@@ -125,32 +131,6 @@ function readText(value: unknown): string {
 
 function failure(message: string): LoginResult {
   return { status: "FAILURE", message, user: null };
-}
-
-/** Builds `Basic base64(username:password)` from env for Apigee. */
-function basicAuthorization(): string {
-  const username = readText(import.meta.env.VITE_AUTH_BASIC_USERNAME);
-  const password = readText(import.meta.env.VITE_AUTH_BASIC_PASSWORD);
-  if (username.length === 0 || password.length === 0) {
-    throw new Error("Auth credentials are not configured.");
-  }
-  const credentials = `${username}:${password}`;
-  return `Basic ${btoa(credentials)}`;
-}
-
-/**
- * Apigee login/forgot/reset use X-Apigee-Authorization with Basic.
- * Change-password and logout use Authorization with Bearer (user JWT).
- */
-function authRequestHeaders(authorization: string): HeadersInit {
-  const isBasic = authorization.startsWith("Basic ");
-  return {
-    accept: "*/*",
-    "Content-Type": "application/json",
-    ...(isBasic
-      ? { "X-Apigee-Authorization": authorization }
-      : { Authorization: authorization }),
-  };
 }
 
 function messageFromPayload(value: unknown): string {
@@ -216,12 +196,13 @@ function buildLoginSuccess(
     message: message.length > 0 ? message : "Login successful",
     accessToken,
     refreshToken: readText(data.refreshToken),
+    sessionId: readText(data.sessionId),
     firstLogin: data.firstLogin === true,
     mustChangePassword: data.mustChangePassword === true,
     lastLoginAt: readText(data.lastLoginAt),
     businessType,
     user: {
-      userId: username,
+      username,
       displayName: readText(data.displayName) || username,
       authorizedBusinessTypes,
       roles: readStringRoles(data.roles),
@@ -290,8 +271,8 @@ function buildMockLoginEnvelope(userId: string, businessType: BusinessType): Log
   const passwordAlreadyChanged = hasMockPasswordChanged(userId);
   const firstLogin = mockUser?.firstLogin === true && !passwordAlreadyChanged;
   const mustChangePassword =
-    ((mockUser?.mustChangePassword === true || firstLogin) && !passwordAlreadyChanged);
-  const forcePasswordChange = firstLogin || mustChangePassword;
+    mockUser?.mustChangePassword === true && !passwordAlreadyChanged;
+  const forcePasswordChange = firstLogin && mustChangePassword;
   const token = (forcePasswordChange ? loginMock.token.restricted : loginMock.token.access).trim();
 
   if (token.length === 0) {
@@ -312,6 +293,9 @@ function buildMockLoginEnvelope(userId: string, businessType: BusinessType): Log
       expiresIn: forcePasswordChange ? 600 : 1200,
       refreshToken: forcePasswordChange ? null : loginMock.token.refresh.trim(),
       refreshExpiresIn: forcePasswordChange ? 0 : 300,
+      sessionId: forcePasswordChange
+        ? (mockUser?.sessionId ?? "mock-first-login-session-id")
+        : (mockUser?.sessionIdAfterLogin ?? "mock-session-id"),
       username: mockUser?.userId ?? userId,
       displayName: mockUser?.displayName ?? userId,
       firstLogin,
@@ -343,14 +327,10 @@ function asAuthAction(payload: AuthActionPayload): AuthActionResponse {
   };
 }
 
-function postAuth(
-  url: string,
-  body: unknown,
-  authorization: string,
-): Promise<Response> {
+function postAuth(url: string, body: unknown, bearerToken?: string): Promise<Response> {
   return fetch(url, {
     method: "POST",
-    headers: authRequestHeaders(authorization),
+    headers: buildJsonAuthPostHeaders(bearerToken),
     body: JSON.stringify(body),
   });
 }
@@ -379,14 +359,10 @@ async function resolveAuth<T>(mock: () => T, real: () => Promise<T>): Promise<T>
 async function realLogin(request: LoginRequest): Promise<LoginResult> {
   let response: Response;
   try {
-    response = await postAuth(
-      authUrls.login,
-      {
-        username: encodeBase64(request.userId),
-        password: encodeBase64(request.password),
-      },
-      basicAuthorization(),
-    );
+    response = await postAuth(authUrls.login, {
+      username: encodeBase64(request.userId),
+      password: encodeBase64(request.password),
+    });
   } catch (reason: unknown) {
     const detail = reason instanceof Error ? reason.message : "Network error";
     return failure(
@@ -437,9 +413,9 @@ async function postAuthAction(
   url: string,
   body: unknown,
   action: string,
-  authorization = basicAuthorization(),
+  bearerToken?: string,
 ): Promise<AuthActionResponse> {
-  const response = await postAuth(url, body, authorization);
+  const response = await postAuth(url, body, bearerToken);
   const parsed = await parseResponseBody(response);
   if (parsed.kind === "empty") {
     throw new Error(`${action} response did not include a message.`);
@@ -472,10 +448,13 @@ export async function fetchForgotPassword(
   );
 }
 
-function mockResetPassword(token: string): AuthActionResponse {
+function mockResetPassword(token: string, newPassword: string): AuthActionResponse {
   const known = resetPasswordMock.knownTokens.includes(token);
-  const payload = known ? resetPasswordMock.success : resetPasswordMock.failure;
-  return asAuthAction(payload);
+  if (!known) return asAuthAction(resetPasswordMock.failure);
+  if (!meetsPasswordPolicy(newPassword)) {
+    return asAuthAction(changePasswordMock.policyFailure);
+  }
+  return asAuthAction(resetPasswordMock.success);
 }
 
 export async function fetchResetPassword(
@@ -483,7 +462,7 @@ export async function fetchResetPassword(
 ): Promise<AuthActionResponse> {
   const token = request.token.trim();
   return resolveAuth(
-    () => mockResetPassword(token),
+    () => mockResetPassword(token, request.newPassword),
     () =>
       postAuthAction(
         authUrls.resetPassword,
@@ -494,10 +473,9 @@ export async function fetchResetPassword(
 }
 
 function mockChangePassword(request: ChangePasswordRequest): AuthActionResponse {
-  const payload =
-    request.newPassword.trim().length < 8
-      ? changePasswordMock.policyFailure
-      : changePasswordMock.success;
+  const meetsPolicy =
+    meetsPasswordPolicy(request.oldPassword) && meetsPasswordPolicy(request.newPassword);
+  const payload = meetsPolicy ? changePasswordMock.success : changePasswordMock.policyFailure;
   return asAuthAction(payload);
 }
 
@@ -516,12 +494,7 @@ export async function fetchLogout(): Promise<AuthActionResponse> {
       if (token.length === 0 || refreshToken.length === 0) {
         throw new Error("Sign in before logging out.");
       }
-      return postAuthAction(
-        authUrls.logout,
-        { refreshToken },
-        "Logout",
-        `Bearer ${token}`,
-      );
+      return postAuthAction(authUrls.logout, { refreshToken }, "Logout", token);
     },
   );
 }
@@ -533,8 +506,8 @@ export async function fetchChangePassword(
     () => {
       const result = mockChangePassword(request);
       if (!result.error) {
-        const userId = getSessionUser()?.userId;
-        if (userId) markMockPasswordChanged(userId);
+        const sessionUsername = getSessionUser()?.username;
+        if (sessionUsername) markMockPasswordChanged(sessionUsername);
       }
       return result;
     },
@@ -543,11 +516,19 @@ export async function fetchChangePassword(
       if (token.length === 0) {
         throw new Error("Sign in before changing your password.");
       }
+      const username = request.username.trim();
+      if (username.length === 0) {
+        throw new Error("Sign in before changing your password.");
+      }
       return postAuthAction(
         authUrls.changePassword,
-        { oldPassword: request.oldPassword, newPassword: request.newPassword },
+        {
+          username,
+          oldPassword: request.oldPassword,
+          newPassword: request.newPassword,
+        },
         "Change password",
-        `Bearer ${token}`,
+        token,
       );
     },
   );
@@ -580,7 +561,7 @@ function authorizeFromSession(
 ): LoginResult {
   const token = getToken()?.trim() ?? "";
   const user = getSessionUser();
-  if (token.length === 0 || user?.userId !== userId) {
+  if (token.length === 0 || user?.username !== userId) {
     return failure("Session expired. Please sign in again.");
   }
 
@@ -589,12 +570,13 @@ function authorizeFromSession(
     message: "Authorized",
     accessToken: token,
     refreshToken: getRefreshToken()?.trim() ?? "",
+    sessionId: "",
     firstLogin: false,
     mustChangePassword: false,
     lastLoginAt: getLastLoginAt()?.trim() ?? "",
     businessType,
     user: {
-      userId: user.userId,
+      username: user.username,
       displayName: user.displayName,
       authorizedBusinessTypes: [businessType],
       roles: [],

@@ -14,7 +14,7 @@ const LABEL_ACRONYMS = new Set([
   "HOD",
   "IIFL",
   "IT",
-  "MMT",
+  "MMT_TASK",
   "MR",
   "NMR",
   "PIVV",
@@ -52,6 +52,7 @@ const SHARED_DEFAULT_COLUMNS = [
   "caseType",
 ];
 
+/** Default column hints when pool-columns API is unavailable (fallback). */
 const POOL_DEFAULT_COLUMNS: Partial<Record<string, string[]>> = {
   CPT_POOL: ["medicalReceivedDate", "financialReceivedDate", "poolTAT"],
   PIVV_POOL: ["pivvRaisedDate"],
@@ -72,7 +73,7 @@ const POOL_DEFAULT_COLUMNS: Partial<Record<string, string[]>> = {
   PRE_LOGIN: ["poolTAT"],
   POST_ISSUANCE_SERVICING: ["ct", "st", "source", "outliers"],
   REINSTATEMENT: ["ct", "st", "source", "outliers"],
-  MMT: [
+  MMT_TASK: [
     "nameOfProposer",
     "nameOfLifeAssured",
     "productOpted",
@@ -108,8 +109,17 @@ const POOL_DEFAULT_COLUMNS: Partial<Record<string, string[]>> = {
   GUW_FORMAL: ["policyNo", "productCode", "memberName", "poolTAT", "appliedCover"],
 };
 
+/** Full UI labels for pool keys (sidebar, table title, DRS role, tooltips). */
+const POOL_DISPLAY_LABELS: Readonly<Record<string, string>> = {
+  MMT_TASK: "MMT Task",
+};
+
 export function toDisplayLabel(value: string): string {
-  return value
+  const trimmed = value.trim();
+  const override = POOL_DISPLAY_LABELS[trimmed];
+  if (override !== undefined) return override;
+
+  return trimmed
     .split("_")
     .filter((part) => part.length > 0)
     .map((part) => {
@@ -122,7 +132,10 @@ export function toDisplayLabel(value: string): string {
 }
 
 export function taskDetailsTitle(taskKey: string): string {
-  return `${taskKey.replaceAll("_", " ")} Details`;
+  const trimmed = taskKey.trim();
+  const override = POOL_DISPLAY_LABELS[trimmed];
+  const base = override ?? trimmed.replaceAll("_", " ");
+  return `${base} Details`;
 }
 
 const COLUMN_LABELS: Record<string, string> = {
@@ -196,6 +209,26 @@ export function defaultVisibleColumns(columns: string[], poolKey?: string): stri
   return applicationColumn
     ? [applicationColumn, ...unique].slice(0, MAX_VISIBLE_COLUMNS)
     : unique.slice(0, MAX_VISIBLE_COLUMNS);
+}
+
+/**
+ * Table columns from GET /pool-columns `selectedFields`: preserve API order, cap at {@link MAX_VISIBLE_COLUMNS},
+ * and always place the application number column first (per landing spec).
+ */
+export function orderedVisibleFromSelectedFields(selectedFields: string[]): string[] {
+  const seen = new Set<string>();
+  const unique: string[] = [];
+  for (const field of selectedFields) {
+    if (typeof field !== "string" || field.length === 0) continue;
+    if (seen.has(field)) continue;
+    seen.add(field);
+    unique.push(field);
+  }
+  const applicationFromApi = unique.find(isApplicationColumn);
+  const rest = unique.filter((column) => !isApplicationColumn(column));
+  const applicationColumn = applicationFromApi ?? "applicationNo";
+  const withoutDupApp = rest.filter((column) => column !== applicationColumn);
+  return [applicationColumn, ...withoutDupApp].slice(0, MAX_VISIBLE_COLUMNS);
 }
 
 export function formatLastLogin(value: Date | string): string {

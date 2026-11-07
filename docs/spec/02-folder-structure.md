@@ -386,7 +386,7 @@ Single source of truth for all ports, base paths, and cross-SPA navigation.
 |---|---|
 | `getToken() / setToken(token) / clearToken()` | JWT token in `sessionStorage` — `clearToken()` removes all 4 keys |
 | `hasSession()` | `true` if a non-empty token string exists — does NOT validate signature |
-| `getSessionUser() / setSessionUser(user)` | `{ userId, displayName }` in `sessionStorage` |
+| `getSessionUser() / setSessionUser(user)` | `{ username, displayName }` in `sessionStorage` (`username` key; legacy `userId` is migrated on read) |
 | `getSessionBusinessType() / setSessionBusinessType(type)` | `"RETAIL" \| "GROUP"` in `sessionStorage` |
 | `SessionUser`, `SessionBusinessType` | TypeScript types |
 | `formatIndianCurrency(value)` | Formats number/string as `"₹ 1,23,456"` using `en-IN` locale; returns `"-"` for invalid input |

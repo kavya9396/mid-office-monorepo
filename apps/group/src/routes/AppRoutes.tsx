@@ -5,6 +5,7 @@ import {
   Routes,
 } from "react-router-dom";
 import { appBasename, viteBase } from "@insurance-poc/routes";
+import { RouteScrollReset } from "@insurance-poc/common/route-scroll-reset";
 import { AuthNavigation } from "../app/AuthNavigation";
 import { GroupInboxPage } from "../modules/inbox/GroupInboxPage";
 import { GroupAppLayout } from "./GroupAppLayout";
@@ -16,10 +17,12 @@ import { GroupPreviousPolicyPage } from "../modules/previousPolicy/GroupPrevious
 import { GroupRiskDetailsPage } from "../modules/riskDetails/GroupRiskDetailsPage";
 import GroupDrsRouter from "../modules/drs/GroupDrsRouter";
 import { GuwMemberSelection } from "../modules/guw/GuwMemberSelection";
+import GroupDrsPage from "../modules/drs/GroupDrsPage";
 
 export function AppRoutes() {
   return (
     <BrowserRouter basename={appBasename(viteBase.group)}>
+      <RouteScrollReset />
       <AuthNavigation />
       <Routes>
         <Route
@@ -34,6 +37,9 @@ export function AppRoutes() {
           <Route path="/drs" element={<GroupDrsRouter />} />
           <Route path="/guw/member-selection" element={<GuwMemberSelection />} />
           <Route path="/guw/drs" element={<GroupDrsRouter />} />
+          <Route path="/drs" element={<GroupDrsPage />} />
+          <Route path="/drs/financial" element={<GroupDrsPage />} />
+          <Route path="/drs/medical" element={<GroupDrsPage />} />
           {/* <Route path="/applicant-profile" element={<GroupApplicantProfilePage />} /> */}
           <Route path="/previous-policy" element={<GroupPreviousPolicyPage />} />
           <Route path="/open-tasks" element={<GroupOpenTasksPage />} />
