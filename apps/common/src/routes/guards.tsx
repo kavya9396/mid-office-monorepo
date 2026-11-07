@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from "react";
+import { Navigate } from "react-router-dom";
 import { businessInboxUrl, commonPaths, replaceUrl } from "@insurance-poc/routes";
 import {
   clearSession,
@@ -11,18 +12,20 @@ export function RedirectIfSession({ children }: { children: ReactNode }) {
   const businessType = getSessionBusinessType();
   const destination = businessType ? businessInboxUrl(businessType) : null;
   const firstLoginFlow = isFirstLoginChangePending();
-  const shouldRedirect = hasSession() && (firstLoginFlow || Boolean(destination));
+  const hasCredentials = hasSession();
 
   useEffect(() => {
-    if (!hasSession()) return;
-    if (firstLoginFlow) {
-      replaceUrl(commonPaths.changePassword);
-      return;
-    }
+    if (!hasCredentials || firstLoginFlow) return;
     if (destination) replaceUrl(destination);
-  }, [firstLoginFlow, destination]);
+  }, [hasCredentials, firstLoginFlow, destination]);
 
-  if (shouldRedirect) return null;
+  if (!hasCredentials) return children;
+
+  if (firstLoginFlow) {
+    return <Navigate to={commonPaths.changePassword} replace />;
+  }
+
+  if (destination) return null;
 
   return children;
 }

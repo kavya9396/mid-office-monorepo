@@ -1,0 +1,73 @@
+{
+  "data": {
+    "gender": [
+      {
+        "code": "F",
+        "description": "Female",
+        "value": "Female",
+        "isActive": "Y"
+      },
+      {
+        "code": "M",
+        "description": "Male",
+        "value": "Male",
+        "isActive": "Y"
+      },
+      {
+        "code": "TG",
+        "description": "Transgender",
+        "value": "Transgender",
+        "isActive": "Y"
+      }
+    ],
+    "resident_status": [
+      {
+        "code": "IR",
+        "description": "Indian Resident",
+        "value": "Indian Resident",
+        "isActive": "Y"
+      },
+      {
+        "code": "NRI",
+        "description": "Non-Resident Indian",
+        "value": "Non-Resident Indian",
+        "isActive": "Y"
+      }
+    ],
+    "nationality": [
+      {
+        "code": "IND",
+        "description": "Indian",
+        "value": "Indian",
+        "isActive": "Y"
+      }
+    ],
+    "marital_status": [
+      {
+        "code": "M",
+        "description": "Married",
+        "value": null,
+        "isActive": "Y"
+      },
+      {
+        "code": "S",
+        "description": "Single",
+        "value": null,
+        "isActive": "Y"
+      }
+    ],
+    "education": [],
+    "occupation": [
+      {
+        "code": "SAL",
+        "description": "Salaried",
+        "value": null,
+        "isActive": "Y"
+      }
+    ],
+    "product": [],
+    "country": [],
+    "state": []
+  },
+  "unknownTypes": []
+}

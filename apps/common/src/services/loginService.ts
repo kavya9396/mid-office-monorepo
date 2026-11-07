@@ -129,6 +129,22 @@ function readText(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
+/** Accepts strict booleans and common IAM wire forms (`"Y"`, `"true"`, `1`). */
+export function readApiBoolean(value: unknown): boolean {
+  if (value === true || value === 1) return true;
+  if (value === false || value === 0 || value === null || value === undefined) return false;
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    return normalized === "true" || normalized === "y" || normalized === "yes" || normalized === "1";
+  }
+  return false;
+}
+
+/** Case A — redirect to change-password only when both login flags are true. */
+export function loginRequiresPasswordChange(firstLogin: boolean, mustChangePassword: boolean): boolean {
+  return firstLogin && mustChangePassword;
+}
+
 function failure(message: string): LoginResult {
   return { status: "FAILURE", message, user: null };
 }
@@ -197,8 +213,8 @@ function buildLoginSuccess(
     accessToken,
     refreshToken: readText(data.refreshToken),
     sessionId: readText(data.sessionId),
-    firstLogin: data.firstLogin === true,
-    mustChangePassword: data.mustChangePassword === true,
+    firstLogin: readApiBoolean(data.firstLogin),
+    mustChangePassword: readApiBoolean(data.mustChangePassword),
     lastLoginAt: readText(data.lastLoginAt),
     businessType,
     user: {

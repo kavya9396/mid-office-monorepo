@@ -16,6 +16,7 @@ import {
   isFirstLoginChangePending,
   setFirstLoginChangePending,
 } from "./firstLoginFlow";
+import { clearMasterData } from "../masterData/session";
 
 export type SessionBusinessType = "RETAIL" | "GROUP";
 
@@ -63,6 +64,7 @@ export function clearToken(): void {
   clearFirstLoginChangePending();
   storage?.removeItem(SESSION_ID_KEY);
   storage?.removeItem(LEGACY_PASSWORD_CHANGED_KEY);
+  clearMasterData();
 }
 
 export function setSessionId(sessionId: string): void {
@@ -85,12 +87,12 @@ export function clearSession(): void {
   clearFirstLoginChangePending();
 }
 
-/** @deprecated Prefer setFirstLoginChangePending — in-memory only, from login `firstLogin`. */
+/** @deprecated Prefer setFirstLoginChangePending. */
 export function setMustChangePassword(required: boolean): void {
   setFirstLoginChangePending(required);
 }
 
-/** @deprecated Prefer isFirstLoginChangePending — not read from sessionStorage. */
+/** @deprecated Prefer isFirstLoginChangePending. */
 export function mustChangePassword(): boolean {
   return isFirstLoginChangePending();
 }

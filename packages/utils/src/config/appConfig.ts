@@ -67,5 +67,12 @@ export const landingUrls = {
   },
 };
 
+/** Master-data service (shared Retail/Group reference lists). Empty when unset — mock mode skips it. */
+export const masterUrls = {
+  get masters(): string {
+    return configuredUrl(import.meta.env.VITE_MASTERS_API);
+  },
+};
+
 /** RTK base URL when each request uses a full URL from `landingUrls` or `authUrls`. */
 export const absoluteApiBaseUrl = "";

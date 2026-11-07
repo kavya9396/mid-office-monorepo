@@ -257,6 +257,40 @@ describe("login module", () => {
       expect(readString(posted.body, "password")).toBe(encodeBase64("secret"));
     });
 
+    it("reads first-login flags from common SIT wire formats", async () => {
+      authMode.useMock = false;
+      vi.useRealTimers();
+      vi.stubGlobal(
+        "fetch",
+        vi.fn<typeof fetch>().mockResolvedValue(
+          jsonResponse({
+            response_code: 200,
+            error: false,
+            message: "Login successful",
+            data: {
+              token: "restricted-token",
+              username: "LDAP12345",
+              displayName: "LDAP12345",
+              firstLogin: "Y",
+              mustChangePassword: "true",
+              refreshToken: null,
+            },
+          }),
+        ),
+      );
+      const { fetchLogin } = await loadLogin();
+
+      const result = await fetchLogin({
+        userId: "LDAP12345",
+        password: "secret",
+        businessType: "RETAIL",
+      });
+
+      expectSuccess(result);
+      expect(result.firstLogin).toBe(true);
+      expect(result.mustChangePassword).toBe(true);
+    });
+
     it("returns the API failure message", async () => {
       authMode.useMock = false;
       vi.useRealTimers();
