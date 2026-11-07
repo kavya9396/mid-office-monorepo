@@ -67,6 +67,15 @@ Differences from GUW Formal:
 | `dvt-mr-view-medical.html` | DVT Medical Report |
 | `dvt-nmr-view-financial.html` | DVT Financial Report |
 
+### Member Selection / Summary behaviour (multi-life, `memberCount > 1`)
+
+- Submitting a Case UW Decision on a member DRS redirects to this summary page (`/guw/member-selection`), not the inbox.
+- The member table column **Case UW Decision** shows the exact saved decision label per member, or `-` before a decision.
+- Each row has an always-enabled eye icon that opens the shared **Case UW Decision Details** modal (or "No Case UW Decision has been submitted yet.").
+- Financial Decision and Medical Decision are read-only; the page has its own Case UW Decision panel (same as the member DRS).
+- Final submit from this page redirects to the inbox.
+- Per-member decisions are stored in `sessionStorage` as `guwSubmittedDecision:<applicationNo>:<memberId>`; the summary panel uses `<applicationNo>:summary`. Details: [group-guw-uw-submit-validation.md](./group-guw-uw-submit-validation.md).
+
 ---
 
 ## Shared Rules (GUW Informal)

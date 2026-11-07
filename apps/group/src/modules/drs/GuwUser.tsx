@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { DecisionComparisonTable } from "@insurance-poc/common/decision-bar";
-import { CustomDialog, CustomSnackbar } from "@insurance-poc/ui";
+import { CustomDialog, CustomSnackbar, KeyValueTable, type KeyValueRow } from "@insurance-poc/ui";
 import { BreCard } from "@insurance-poc/common/bre-card";
 import { ApplicantBanner, type RowDetailsOptions } from "@insurance-poc/common/applicant-banner";
 import { GrievanceHistory } from "@insurance-poc/common/grievance-history";
@@ -21,7 +21,13 @@ import {
   requirementStatusVariants,
   requirementStatusOrder,
 } from "../drs/requirementData";
-import { fetchGuwDrs, type GuwDrsRecord } from "../../services/guwService";
+import {
+  fetchGuwDrs,
+  guwMemberDecisionKey,
+  loadGuwSubmittedDecision,
+  type GuwDrsRecord,
+  type GuwRiskCard,
+} from "../../services/guwService";
 
 // Placeholder profile image (inline SVG).
 const PROFILE_IMAGE_URL = `data:image/svg+xml;utf8,${encodeURIComponent(
@@ -120,6 +126,20 @@ const QUICK_ITEMS = [
 const GuwUser = () => {
   const [params] = useSearchParams();
   const applicationNo = params.get("applicationNo")?.trim() ?? "";
+  // Multi-life case (more than one member): after submit go to the member summary page, else the inbox
+  const isMultiLife = parseInt(params.get("memberCount") ?? "0", 10) > 1;
+  const memberSummaryQuery = new URLSearchParams({
+    applicationNo,
+    roleType: params.get("roleType") ?? "",
+  });
+  const roleParam = params.get("role") ?? "";
+  if (roleParam) memberSummaryQuery.set("role", roleParam);
+  const postSubmitUrl = isMultiLife
+    ? `${groupPaths.guwMemberSelection}?${memberSummaryQuery.toString()}`
+    : groupPaths.inbox;
+  // Multi-life: each member's decision is held under its own key so the summary page can show it per member
+  const memberId = params.get("memberId")?.trim() ?? "";
+  const memberStorageKey = isMultiLife ? guwMemberDecisionKey(applicationNo, memberId) : undefined;
 
   const [page, setPage] = useState<PageState>(
     applicationNo ? { kind: "loading" } : { kind: "missing-id" },
@@ -234,9 +254,16 @@ const GuwUser = () => {
 
             {/* UW panel: BRE overall decision + case UW decision */}
             <GuwUwPanel
+              applicationNo={applicationNo}
+              storageKey={memberStorageKey}
+              redirectUrl={postSubmitUrl}
               breOverallDecision={page.record.uwData?.breOverallDecision}
               breOverallRemarks={page.record.uwData?.breOverallRemarks}
-              initialSubmittedDecision={page.record.uwData?.submittedDecision}
+              initialSubmittedDecision={
+                memberStorageKey
+                  ? (loadGuwSubmittedDecision(memberStorageKey) ?? undefined)
+                  : page.record.uwData?.submittedDecision
+              }
               onDecisionSubmit={(_decision: string, _remarks: string) => {
                 // Submit API handler to be wired
               }}
