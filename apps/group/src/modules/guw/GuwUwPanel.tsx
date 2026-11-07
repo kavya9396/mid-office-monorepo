@@ -19,7 +19,7 @@ import {
   saveGuwSubmittedDecision,
   type GuwSubmittedDecision,
 } from "../../services/guwService";
-import { GuwReferralSection } from "./GuwReferralSection";
+import { GuwReferralSection, type ReferralRow } from "./GuwReferralSection";
 
 export interface GuwUwSummaryField {
   label: string;
@@ -45,7 +45,7 @@ export interface GuwUwPanelProps {
   onActionClick?: (value: string) => void;
   initialSubmittedDecision?: GuwSubmittedDecision;
   onDecisionSubmit: (decision: string, remarks: string) => void;
-  /** Called when the main Submit button is clicked (e.g. to navigate to the inbox). */
+  /** Called when the decision is finally submitted (e.g. to navigate to the inbox). */
   onSubmit?: () => void;
 }
 
@@ -113,14 +113,19 @@ const APPROVER_ASSIGNEE_OPTIONS = ["UW001", "UW002", "UW003"].map((id) => ({
 const REFERRAL_TYPE_OPTIONS = [
   { value: "REF_IT", label: "IT" },
   { value: "REF_REINS", label: "Reinsurer" },
-  { value: "REF_SR_UW", label: "Sr UW" },
-  { value: "REF_HOD", label: "HOD" },
+  { value: "REF_SR_UW", label: "Sr UW Opinion" },
+  { value: "REF_HOD", label: "HOD Opinion" },
   { value: "REF_CMO", label: "HO CMO" },
   { value: "REF_CMO_LOCAL", label: "CMO" },
   { value: "REF_RISK", label: "Risk" },
   { value: "REF_ACU", label: "Accuity" },
   { value: "REF_CUW_CLM", label: "CUW Claim" },
+  { value: "REF_TELE_MER", label: "Tele MER" },
+  { value: "REF_VIDEO_MER", label: "Video MER" },
 ];
+
+// Assigned To is enabled only for these referral rows
+const ASSIGNABLE_REFERRALS = ["REF_SR_UW", "REF_HOD"];
 
 const REFERRAL_REASON_OPTIONS: Record<string, string[]> = {
   REF_IT: ["System issue", "Data correction", "Other"],
@@ -132,6 +137,8 @@ const REFERRAL_REASON_OPTIONS: Record<string, string[]> = {
   REF_RISK: ["Risk assessment", "Policy exception", "Other"],
   REF_ACU: ["Screening review", "Match review", "Other"],
   REF_CUW_CLM: ["Claim history", "Investigation", "Other"],
+  REF_TELE_MER: ["Medical review", "Other"],
+  REF_VIDEO_MER: ["Medical review", "Other"],
 };
 
 const LOADING_CLASS_OPTIONS: Record<string, string[]> = {
@@ -167,8 +174,8 @@ export const INITIAL_GUIDELINES: GuidelineRow[] = [
   { reason: "Income document waived or not received", remark: "Income document waived or not raised. Please provide justification", systemAction: "", justificationReason: "", justificationRemark: "" },
   { reason: "Medical requirement waived or not received", remark: "Medical document waived or not raised. Please provide justification", systemAction: "", justificationReason: "", justificationRemark: "" },
   { reason: "Financially not viable", remark: "Justification required as financial eligibility is less than TFSA", systemAction: "", justificationReason: "", justificationRemark: "" },
-  // { reason: "DRC Risk Blank or Null Risk", remark: "DRC Risk value is Blank or Null Risk — kindly take counter signing", systemAction: "REFER_TO_CS", justificationReason: "", justificationRemark: "" },
-  // { reason: "TSA above your UW limit", remark: "Case above your underwriting limit, please take counter signing", systemAction: "REFER_TO_CS", justificationReason: "", justificationRemark: "" },
+  { reason: "DRC Risk Blank or Null Risk", remark: "DRC Risk value is Blank or Null Risk — kindly take counter signing", systemAction: "REFER_TO_CS", justificationReason: "", justificationRemark: "" },
+  { reason: "TSA above your UW limit", remark: "Case above your underwriting limit, please take counter signing", systemAction: "REFER_TO_CS", justificationReason: "", justificationRemark: "" },
   { reason: "Application form validity expired", remark: "Please call for fresh medical questionnaire", systemAction: "REFER_TO_HOD", justificationReason: "", justificationRemark: "" },
   { reason: "BIU model response field is blank", remark: "BIU models predict response is blank — cannot take STD, XRT or COF decision. Kindly get the BIU response", systemAction: "", justificationReason: "", justificationRemark: "" }
 ];
@@ -234,19 +241,14 @@ export function GuwUwPanel({
 
   // Referral states
   const [referralReason, setReferralReason] = useState<string>("");
-  const [referralRows, setReferralRows] = useState<{
-    target: string;
-    label: string;
-    selected: boolean;
-    reason: string;
-    remarks: string;
-  }[]>(() =>
+  const [referralRows, setReferralRows] = useState<ReferralRow[]>(() =>
     REFERRAL_TYPE_OPTIONS.map((opt) => ({
       target: opt.value,
       label: opt.label,
       selected: false,
       reason: "",
       remarks: "",
+      assignedTo: "",
     }))
   );
   const [reinsurerEditOpen, setReinsurerEditOpen] = useState<boolean>(false);
@@ -336,6 +338,11 @@ export function GuwUwPanel({
         .map((r) => `${r.label}: ${r.remarks.trim()}`)
         .join("; ");
       if (rowRemarks) add("Referral Remarks", rowRemarks, true);
+      const rowAssignees = selectedReferrals
+        .filter((r) => r.assignedTo)
+        .map((r) => `${r.label}: ${r.assignedTo}`)
+        .join("; ");
+      if (rowAssignees) add("Assigned To", rowAssignees, true);
     }
     if (dialogDecision !== "REFERRAL" && effectiveDecision) {
       add("Decision Code", effectiveDecision);
@@ -691,6 +698,14 @@ export function GuwUwPanel({
 
   const isBstdColumnVisible = counterOfferRows.some((r) => r.type === "Borderline Standard");
 
+  const summaryItems: GuwUwSummaryField[] =
+    summaryFields && summaryFields.length > 0
+      ? summaryFields
+      : [
+          { label: "BRE Overall Decision", value: breOverallDecision },
+          { label: "BRE Overall Remarks", value: breOverallRemarks },
+        ];
+
   return (
     <CustomBox
       sx={{
@@ -712,10 +727,9 @@ export function GuwUwPanel({
         <CustomBox
           sx={{
             display: "grid",
-            gridTemplateColumns:
-              summaryFields && summaryFields.length > 0
-                ? `repeat(${summaryFields.length}, minmax(0, 1fr))`
-                : "25% 1fr",
+            gridTemplateColumns: summaryFields && summaryFields.length > 0
+              ? `repeat(${summaryFields.length}, minmax(0, 1fr))`
+              : "25% 1fr",
             background: "#fcfaf9",
             border: "1px solid #eadfd9",
             borderRadius: "8px",
@@ -723,105 +737,41 @@ export function GuwUwPanel({
             boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
           }}
         >
-          {summaryFields && summaryFields.length > 0 ? (
-            summaryFields.map((field, idx) => (
-              <CustomBox
-                key={field.label}
+          {summaryItems.map((field, idx) => (
+            <CustomBox
+              key={field.label}
+              sx={{
+                padding: "5px 12px",
+                minWidth: 0,
+                borderLeft: idx > 0 ? "1px solid #eadfd9" : "none",
+              }}
+            >
+              <CustomTypography
+                component="span"
                 sx={{
-                  padding: "5px 12px",
-                  minWidth: 0,
-                  borderLeft: idx > 0 ? "1px solid #eadfd9" : "none",
+                  display: "block",
+                  marginBottom: "2px",
+                  color: "#7b716c",
+                  fontSize: "11px",
+                  fontWeight: 600,
+                  letterSpacing: "0.4px",
+                  textTransform: "uppercase",
                 }}
               >
-                <CustomTypography
-                  component="span"
-                  sx={{
-                    display: "block",
-                    marginBottom: "2px",
-                    color: "#7b716c",
-                    fontSize: "11px",
-                    fontWeight: 600,
-                    letterSpacing: "0.4px",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  {field.label}
-                </CustomTypography>
-                <CustomTypography
-                  component="span"
-                  sx={{
-                    color: "#302a27",
-                    fontSize: "13px",
-                    fontWeight: 800,
-                  }}
-                >
-                  {field.value || "-"}
-                </CustomTypography>
-              </CustomBox>
-            ))
-          ) : (
-            <>
-              <CustomBox sx={{ padding: "5px 12px", minWidth: 0 }}>
-                <CustomTypography
-                  component="span"
-                  sx={{
-                    display: "block",
-                    marginBottom: "2px",
-                    color: "#7b716c",
-                    fontSize: "11px",
-                    fontWeight: 600,
-                    letterSpacing: "0.4px",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  BRE Overall Decision
-                </CustomTypography>
-                <CustomTypography
-                  component="span"
-                  sx={{
-                    color: "#302a27",
-                    fontSize: "13px",
-                    fontWeight: 800,
-                  }}
-                >
-                  {breOverallDecision || "-"}
-                </CustomTypography>
-              </CustomBox>
-
-              <CustomBox
+                {field.label}
+              </CustomTypography>
+              <CustomTypography
+                component="span"
                 sx={{
-                  padding: "5px 12px",
-                  borderLeft: "1px solid #eadfd9",
-                  minWidth: 0,
+                  color: "#302a27",
+                  fontSize: "13px",
+                  fontWeight: 800,
                 }}
               >
-                <CustomTypography
-                  component="span"
-                  sx={{
-                    display: "block",
-                    marginBottom: "2px",
-                    color: "#7b716c",
-                    fontSize: "11px",
-                    fontWeight: 600,
-                    letterSpacing: "0.4px",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  BRE Overall Remarks
-                </CustomTypography>
-                <CustomTypography
-                  component="span"
-                  sx={{
-                    color: "#302a27",
-                    fontSize: "13px",
-                    fontWeight: 800,
-                  }}
-                >
-                  {breOverallRemarks || "-"}
-                </CustomTypography>
-              </CustomBox>
-            </>
-          )}
+                {field.value || "-"}
+              </CustomTypography>
+            </CustomBox>
+          ))}
         </CustomBox>
 
         {/* Case UW Decision Dropdown */}
@@ -1200,6 +1150,8 @@ export function GuwUwPanel({
                 rows={referralRows}
                 setRows={setReferralRows}
                 reasonOptions={REFERRAL_REASON_OPTIONS}
+                assigneeOptions={APPROVER_ASSIGNEE_OPTIONS}
+                assignableTargets={ASSIGNABLE_REFERRALS}
                 reinsurerEditOpen={reinsurerEditOpen}
                 setReinsurerEditOpen={setReinsurerEditOpen}
                 reinsurerRows={reinsurerRows}
@@ -1216,26 +1168,15 @@ export function GuwUwPanel({
                 onSelectAllDocs={handleSelectAllDocs}
                 onDocCheckChange={handleDocCheckChange}
                 getReinsurerName={getEffectiveReinsurerName}
-                onGenerateSheet={() => notify("Referral sheet generated successfully", "success")}
+                onGenerateSheet={() => {
+                  const reinsurerRow = referralRows.find((r) => r.target === "REF_REINS");
+                  if (!(reinsurerRow?.remarks.trim() || dialogRemarks.trim())) {
+                    notify("Please add remarks before generating the referral sheet", "error");
+                    return;
+                  }
+                  notify("Referral sheet generated successfully", "success");
+                }}
               />
-            )}
-
-            {/* DECISION CODE - terminal decisions */}
-            {dialogDecision !== "REFERRAL" && ["STD", "BOR_STD", "REJ", "DC", "POSTP", "CO", "EP"].includes(effectiveDecision) && (
-              <CustomBox>
-                <CustomTypography
-                  component="span"
-                  sx={{
-                    display: "block",
-                    marginBottom: "5px",
-                    color: "#444",
-                    fontSize: "11px",
-                  }}
-                >
-                  Decision Code
-                </CustomTypography>
-                <CustomTextField value={effectiveDecision} disabled fullWidth />
-              </CustomBox>
             )}
 
             {/* SMOKER FLAG - Standard decision only */}
@@ -1262,6 +1203,24 @@ export function GuwUwPanel({
                   placeholder="Select"
                   fullWidth
                 />
+              </CustomBox>
+            )}
+
+            {/* DECISION CODE - terminal decisions */}
+            {dialogDecision !== "REFERRAL" && ["STD", "BOR_STD", "REJ", "DC", "POSTP", "CO", "EP"].includes(effectiveDecision) && (
+              <CustomBox>
+                <CustomTypography
+                  component="span"
+                  sx={{
+                    display: "block",
+                    marginBottom: "5px",
+                    color: "#444",
+                    fontSize: "11px",
+                  }}
+                >
+                  Decision Code
+                </CustomTypography>
+                <CustomTextField value={effectiveDecision} disabled fullWidth />
               </CustomBox>
             )}
 
@@ -1885,7 +1844,7 @@ export function GuwUwPanel({
 
           {/* BACK + SUBMIT BUTTONS */}
           <CustomBox sx={{ display: "flex", justifyContent: "flex-end", gap: 2, mt: 4 }}>
-            {!isActionDecision && (
+            {(!isActionDecision || guidelinesConfirmed) && (
               <CustomButton
                 variant="outlined"
                 onClick={guidelinesConfirmed ? backToGuidelines : handleDialogClose}

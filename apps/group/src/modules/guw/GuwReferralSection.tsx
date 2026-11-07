@@ -1,4 +1,4 @@
-import type { Dispatch, SetStateAction } from "react";
+import { useEffect, useRef, type Dispatch, type SetStateAction } from "react";
 import {
   CustomBox,
   CustomButton,
@@ -23,6 +23,7 @@ export interface ReferralRow {
   selected: boolean;
   reason: string;
   remarks: string;
+  assignedTo: string;
 }
 
 export interface ReinsurerRow {
@@ -41,10 +42,18 @@ const DOC_KEYS = ["reinsurer0", "reinsurer1"] as const;
 
 const REINSURER_TARGET = "REF_REINS";
 
+// Selecting any of these clears (and locks) every other referral row
+const EXCLUSIVE_TARGETS = [REINSURER_TARGET, "REF_SR_UW", "REF_HOD"];
+// Tele MER / Video MER are mutually exclusive and excluded from select-all
+const MER_TARGETS = ["REF_TELE_MER", "REF_VIDEO_MER"];
+
 interface GuwReferralSectionProps {
   rows: ReferralRow[];
   setRows: Dispatch<SetStateAction<ReferralRow[]>>;
   reasonOptions: Record<string, string[]>;
+  assigneeOptions: { value: string; label: string }[];
+  /** Referral targets for which "Assigned To" is enabled */
+  assignableTargets: string[];
   reinsurerEditOpen: boolean;
   setReinsurerEditOpen: Dispatch<SetStateAction<boolean>>;
   reinsurerRows: ReinsurerRow[];
@@ -76,6 +85,8 @@ export function GuwReferralSection({
   rows,
   setRows,
   reasonOptions,
+  assigneeOptions,
+  assignableTargets,
   reinsurerEditOpen,
   setReinsurerEditOpen,
   reinsurerRows,
@@ -88,20 +99,33 @@ export function GuwReferralSection({
   getReinsurerName,
   onGenerateSheet,
 }: Readonly<GuwReferralSectionProps>) {
+  const reinsurerSectionRef = useRef<HTMLDivElement | null>(null);
   const isReinsurerSelected = rows.some((r) => r.target === REINSURER_TARGET && r.selected);
+  const isExclusiveSelected = rows.some((r) => EXCLUSIVE_TARGETS.includes(r.target) && r.selected);
   const isHoCmoSelected = rows.some((r) => r.target === "REF_CMO" && r.selected);
+  const isTeleMerSelected = rows.some((r) => r.target === "REF_TELE_MER" && r.selected);
+  const isVideoMerSelected = rows.some((r) => r.target === "REF_VIDEO_MER" && r.selected);
+
+  // Bring the reinsurer data entry into view when it is opened
+  useEffect(() => {
+    if (reinsurerEditOpen) {
+      reinsurerSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [reinsurerEditOpen]);
 
   const isRowDisabled = (row: ReferralRow) =>
-    (isReinsurerSelected && row.target !== REINSURER_TARGET) ||
-    (row.target === "REF_CMO_LOCAL" && isHoCmoSelected);
+    (isExclusiveSelected && !row.selected) ||
+    (row.target === "REF_CMO_LOCAL" && isHoCmoSelected) ||
+    (row.target === "REF_VIDEO_MER" && isTeleMerSelected) ||
+    (row.target === "REF_TELE_MER" && isVideoMerSelected);
 
   const updateRow = (target: string, patch: Partial<ReferralRow>) =>
     setRows((prev) => prev.map((r) => (r.target === target ? { ...r, ...patch } : r)));
 
   const handleToggle = (row: ReferralRow, checked: boolean) => {
     setRows((prev) => {
-      if (row.target === REINSURER_TARGET && checked) {
-        return prev.map((r) => ({ ...r, selected: r.target === REINSURER_TARGET }));
+      if (EXCLUSIVE_TARGETS.includes(row.target) && checked) {
+        return prev.map((r) => ({ ...r, selected: r.target === row.target }));
       }
       if (row.target === "REF_CMO" && checked) {
         return prev.map((r) => {
@@ -112,15 +136,21 @@ export function GuwReferralSection({
       }
       return prev.map((r) => (r.target === row.target ? { ...r, selected: checked } : r));
     });
-    if (row.target === REINSURER_TARGET && !checked) {
+    // Deselecting Reinsurer, or switching to another exclusive row, closes the reinsurer data entry
+    if (
+      (row.target === REINSURER_TARGET && !checked) ||
+      (checked && EXCLUSIVE_TARGETS.includes(row.target) && row.target !== REINSURER_TARGET)
+    ) {
       setReinsurerEditOpen(false);
     }
   };
 
   const allSelected =
     rows.length > 0 &&
-    !isReinsurerSelected &&
-    rows.filter((r) => r.target !== REINSURER_TARGET).every((r) => r.selected);
+    !isExclusiveSelected &&
+    rows
+      .filter((r) => !EXCLUSIVE_TARGETS.includes(r.target) && !MER_TARGETS.includes(r.target))
+      .every((r) => r.selected);
 
   const referralColumns: Column<ReferralRow>[] = [
     {
@@ -129,11 +159,18 @@ export function GuwReferralSection({
       headerRender: () => (
         <CustomCheckbox
           checked={allSelected}
-          disabled={isReinsurerSelected}
+          disabled={isExclusiveSelected}
           onChange={(e) => {
             const checked = e.target.checked;
             setRows((prev) =>
-              prev.map((r) => ({ ...r, selected: r.target === REINSURER_TARGET ? false : checked })),
+              prev.map((r) => ({
+                ...r,
+                selected: EXCLUSIVE_TARGETS.includes(r.target)
+                  ? false
+                  : MER_TARGETS.includes(r.target)
+                    ? r.selected
+                    : checked,
+              })),
             );
           }}
           inputProps={{ "aria-label": "Select all referrals" }}
@@ -188,6 +225,23 @@ export function GuwReferralSection({
             onChange={(e) => updateRow(row.target, { remarks: e.target.value })}
             disabled={!row.selected || isRowDisabled(row)}
             placeholder="Enter remarks"
+            fullWidth
+          />
+        </CustomBox>
+      ),
+    },
+    {
+      key: "assignedTo",
+      header: "Assigned To",
+      width: "16%",
+      render: (_value, row) => (
+        <CustomBox sx={compactFieldSx}>
+          <CustomSelect
+            value={row.assignedTo}
+            onChange={(val) => updateRow(row.target, { assignedTo: val })}
+            options={assigneeOptions}
+            disabled={!assignableTargets.includes(row.target) || !row.selected || isRowDisabled(row)}
+            placeholder="Select User ID"
             fullWidth
           />
         </CustomBox>
@@ -298,12 +352,13 @@ export function GuwReferralSection({
   ];
 
   return (
-    <CustomBox sx={{ gridColumn: { xs: "auto", sm: "span 4" } }}>
+    <CustomBox sx={{ gridColumn: { xs: "auto", sm: "span 3" } }}>
       <CustomTable<ReferralRow> columns={referralColumns} data={rows} getRowId={(row) => row.target} />
 
       {/* Reinsurer data entry — opens from the Action icon on the Reinsurer row */}
       {reinsurerEditOpen && isReinsurerSelected && (
         <CustomBox
+          ref={reinsurerSectionRef}
           sx={{
             mt: "8px",
             p: "8px",
