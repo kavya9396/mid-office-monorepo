@@ -14,6 +14,7 @@ type Address = {
 
 type SummaryMember = {
   memberType: string;
+  partyId?: string;
   proposerSummary: Record<string, string | number | boolean | { years: number; days?: number } | null>;
   kycDetails: Record<string, string>;
   address: Address[];
@@ -112,6 +113,8 @@ const toApplicant = (
 
   return {
     id: member.memberType,
+    partyId: typeof member.partyId === "string" ? member.partyId : undefined,
+    memberType: member.memberType,
     label: memberLabel(member.memberType, total),
     profileImage: text(summary.profileImage) as string | undefined,
     imageRecords: [],

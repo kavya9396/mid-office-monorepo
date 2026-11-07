@@ -5,6 +5,7 @@ import {
   Routes,
 } from "react-router-dom";
 import { appBasename, viteBase } from "@insurance-poc/routes";
+import { RouteScrollReset } from "@insurance-poc/common/route-scroll-reset";
 import { AuthNavigation } from "../app/AuthNavigation";
 import { RetailDrsPage } from "../modules/drs/RetailDrsPage";
 import { RetailInboxPage } from "../modules/inbox/RetailInboxPage";
@@ -19,6 +20,7 @@ import { RetailAppLayout } from "./RetailAppLayout";
 export function AppRoutes() {
   return (
     <BrowserRouter basename={appBasename(viteBase.retail)}>
+      <RouteScrollReset />
       <AuthNavigation />
       <Routes>
         <Route
