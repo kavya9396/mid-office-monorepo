@@ -42,19 +42,27 @@ export default function ScrollToTop({
   const subscribe = useCallback((onStoreChange: () => void) => {
     if (typeof window === "undefined") return noop;
 
+    const mainEl = scrollTarget === undefined ? document.querySelector("main") : null;
     const target = scrollTarget ?? window;
-    if (!target) return noop;
 
-    target.addEventListener("scroll", onStoreChange, { passive: true });
-    return () => target.removeEventListener("scroll", onStoreChange);
+    target?.addEventListener("scroll", onStoreChange, { passive: true });
+    mainEl?.addEventListener("scroll", onStoreChange, { passive: true });
+
+    return () => {
+      target?.removeEventListener("scroll", onStoreChange);
+      mainEl?.removeEventListener("scroll", onStoreChange);
+    };
   }, [scrollTarget]);
 
   const getSnapshot = useCallback(() => {
     if (typeof window === "undefined") return false;
     if (scrollTarget === null) return false;
 
-    const scrollTop = scrollTarget === undefined ? window.scrollY : scrollTarget.scrollTop;
-    return scrollTop > Math.max(0, threshold);
+    const mainEl = scrollTarget === undefined ? document.querySelector("main") : null;
+    const mainScroll = mainEl ? mainEl.scrollTop : 0;
+    const windowScroll = scrollTarget === undefined ? window.scrollY : (scrollTarget?.scrollTop ?? 0);
+
+    return Math.max(windowScroll, mainScroll) > Math.max(0, threshold);
   }, [scrollTarget, threshold]);
 
   // React reads the current scroll position and updates only when visibility changes.
@@ -64,8 +72,14 @@ export default function ScrollToTop({
     onClick?.(event);
     if (event.defaultPrevented || typeof window === "undefined") return;
 
+    const mainEl = scrollTarget === undefined ? document.querySelector("main") : null;
     const target = scrollTarget ?? window;
+
     target?.scrollTo({
+      top: 0,
+      behavior: prefersReducedMotion ? "auto" : behavior,
+    });
+    mainEl?.scrollTo({
       top: 0,
       behavior: prefersReducedMotion ? "auto" : behavior,
     });

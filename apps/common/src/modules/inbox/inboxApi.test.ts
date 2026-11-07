@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   casesForTask,
+  firstPoolKey,
   mapRoleListPayload,
+  parsePoolColumnsResponse,
   readSelectedFields,
   rememberPoolColumns,
   ROLE_POOL_KEYS,
@@ -16,15 +18,16 @@ import {
   formatLastLogin,
   initials,
   isApplicationColumn,
+  orderedVisibleFromSelectedFields,
   taskDetailsTitle,
   toDisplayLabel,
 } from "./inboxFormat";
 
 function roleListPayload(
   pools: Partial<Record<RolePoolKey, unknown[]>>,
-  userId?: string,
-): { poolData: Partial<Record<RolePoolKey, unknown[]>>; userId?: string } {
-  return userId === undefined ? { poolData: pools } : { userId, poolData: pools };
+  username?: string,
+): { poolData: Partial<Record<RolePoolKey, unknown[]>>; username?: string } {
+  return username === undefined ? { poolData: pools } : { username, poolData: pools };
 }
 
 function sampleInbox(): InboxData {
@@ -160,13 +163,13 @@ describe("role-list inbox contract", () => {
     expect(data.poolData.GUW_FORMAL?.[0]?.fields.policyNo).toBe("POL-900002");
   });
 
-  it("reads the user id and keeps every known pool when the API sends them", () => {
+  it("reads the username and keeps every 19 known pools when the API sends them", () => {
     const pools = Object.fromEntries(ROLE_POOL_KEYS.map((pool) => [pool, []])) as Partial<
       Record<RolePoolKey, unknown[]>
     >;
     const data = mapRoleListPayload(roleListPayload(pools, "  UW001  "));
 
-    expect(data.userId).toBe("UW001");
+    expect(data.username).toBe("UW001");
     expect(Object.keys(data.poolData)).toEqual([...ROLE_POOL_KEYS]);
   });
 
@@ -307,6 +310,40 @@ describe("landing column configuration", () => {
   });
 });
 
+describe("pool-columns helpers", () => {
+  it("parses username, poolKey, and selectedFields from API JSON", () => {
+    expect(
+      parsePoolColumnsResponse({
+        username: "  IPRU77874 ",
+        poolKey: "MMT_TASK",
+        selectedFields: ["nameOfProposer", "plan"],
+      }),
+    ).toEqual({
+      username: "IPRU77874",
+      poolKey: "MMT_TASK",
+      selectedFields: ["nameOfProposer", "plan"],
+    });
+  });
+
+  it("returns the first pool key from role-list order", () => {
+    const data = mapRoleListPayload(
+      roleListPayload({
+        MMT_TASK: [{ applicationNo: "A1" }],
+        GUW: [{ applicationNo: "B1" }],
+      }),
+    );
+    expect(firstPoolKey(data)).toBe("MMT_TASK");
+  });
+
+  it("orders visible columns with application number first", () => {
+    expect(orderedVisibleFromSelectedFields(["plan", "applicationNo", "channel"])).toEqual([
+      "applicationNo",
+      "plan",
+      "channel",
+    ]);
+  });
+});
+
 describe("landing labels", () => {
   it("uses the landing display names for underwriting fields", () => {
     expect(formatColumnName("isMedical")).toBe("Medical");
@@ -322,8 +359,10 @@ describe("landing labels", () => {
   it("formats sidebar titles, initials, and application columns", () => {
     expect(toDisplayLabel("CVT_POOL")).toBe("CVT Pool");
     expect(toDisplayLabel("GUW")).toBe("GUW");
+    expect(toDisplayLabel("MMT_TASK")).toBe("MMT Task");
     expect(taskDetailsTitle("ALL_CASES")).toBe("ALL CASES Details");
     expect(taskDetailsTitle("DVT_FORMAL")).toBe("DVT FORMAL Details");
+    expect(taskDetailsTitle("MMT_TASK")).toBe("MMT Task Details");
     expect(initials("CVT_POOL")).toBe("CP");
     expect(initials("GUW")).toBe("GU");
     expect(initials("")).toBe("--");

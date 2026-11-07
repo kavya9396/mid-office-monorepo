@@ -9,9 +9,10 @@ import { CustomButton, CustomSnackbar, CustomTextField, EyeIcon, EyeSlashIcon } 
 import {
   clearSession,
   setLastLoginAt,
-  setMustChangePassword,
+  setFirstLoginChangePending,
   setRefreshToken,
   setSessionBusinessType,
+  setSessionId,
   setSessionUser,
   setToken,
 } from "@insurance-poc/utils";
@@ -56,6 +57,7 @@ function readResetMessage(state: unknown): string {
 type LoginSuccessHandlerArgs = {
   accessToken: string;
   refreshToken: string;
+  sessionId: string;
   user: Parameters<typeof setSessionUser>[0];
   firstLogin: boolean;
   mustChangePassword: boolean;
@@ -67,6 +69,7 @@ type LoginSuccessHandlerArgs = {
 function handleLoginSuccess({
   accessToken,
   refreshToken,
+  sessionId,
   user,
   firstLogin,
   mustChangePassword,
@@ -76,19 +79,18 @@ function handleLoginSuccess({
 }: LoginSuccessHandlerArgs): void {
   setToken(accessToken);
   setRefreshToken(refreshToken);
+  setSessionId(sessionId);
   setSessionUser(user);
   setSessionBusinessType(businessType);
   setLastLoginAt(lastLoginAt);
 
-  // Server is source of truth: force change-password only when firstLogin / mustChangePassword is true.
-  // Never persist mustChangePassword=false in sessionStorage.
-  if (firstLogin || mustChangePassword) {
-    setMustChangePassword(true);
+  if (firstLogin && mustChangePassword) {
+    setFirstLoginChangePending(true);
     navigateToChangePassword();
     return;
   }
 
-  setMustChangePassword(false);
+  setFirstLoginChangePending(false);
   const destination = businessInboxUrl(businessType);
   if (!destination) {
     throw new Error("Business Inbox is not configured.");
@@ -264,7 +266,8 @@ export function LoginPage() {
       handleLoginSuccess({
         accessToken: loginResult.accessToken,
         refreshToken: loginResult.refreshToken,
-        user: loginResult.user,
+        sessionId: loginResult.sessionId,
+        user: { username: loginResult.user.username, displayName: loginResult.user.displayName },
         firstLogin: loginResult.firstLogin,
         mustChangePassword: loginResult.mustChangePassword,
         lastLoginAt: loginResult.lastLoginAt,

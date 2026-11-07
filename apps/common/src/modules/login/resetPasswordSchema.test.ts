@@ -5,7 +5,7 @@ import { resetPasswordSchema } from "./resetPasswordSchema";
 const passwordMessage = PASSWORD_POLICY_MESSAGE;
 
 describe("resetPasswordSchema", () => {
-  it("accepts matching passwords of at least 8 characters", () => {
+  it("accepts matching passwords of at least 12 characters", () => {
     expect(
       resetPasswordSchema.safeParse({
         newPassword: "NewerPass@1234",
@@ -14,10 +14,10 @@ describe("resetPasswordSchema", () => {
     ).toBe(true);
   });
 
-  it("rejects a password shorter than 8 characters", () => {
+  it("rejects a password shorter than 12 characters", () => {
     const result = resetPasswordSchema.safeParse({
-      newPassword: "Ab@1234",
-      confirmPassword: "Ab@1234",
+      newPassword: "Short@1234",
+      confirmPassword: "Short@1234",
     });
     expect(result.success).toBe(false);
     if (!result.success) {

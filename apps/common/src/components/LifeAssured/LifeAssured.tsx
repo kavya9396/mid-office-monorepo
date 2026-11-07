@@ -32,6 +32,8 @@ export type {
 
 export type LifeAssuredApplicant = {
   id: string;
+  partyId?: string;
+  memberType?: string;
   /** Name shown under the photo, for example "Life Assured 1". */
   label: string;
   profileImage?: string;

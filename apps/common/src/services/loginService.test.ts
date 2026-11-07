@@ -142,7 +142,7 @@ describe("login module", () => {
       );
 
       expectSuccess(result);
-      expect(result.user.userId).toBe("LDAP99999");
+      expect(result.user.username).toBe("LDAP99999");
       expect(result.businessType).toBe("RETAIL");
       expect(result.lastLoginAt).toBe("2026-10-06T14:10:20");
     });
@@ -161,7 +161,7 @@ describe("login module", () => {
       expect(result.businessType).toBe("RETAIL");
       expect(result.lastLoginAt).toBe(loginMock.users[1]?.lastLoginAt);
       expect(result.user).toMatchObject({
-        userId: "UW001",
+        username: "UW001",
         displayName: "Retail Underwriter",
         authorizedBusinessTypes: ["RETAIL"],
       });
@@ -191,10 +191,12 @@ describe("login module", () => {
       expect(first.accessToken).toBe(loginMock.token.restricted);
       expect(first.refreshToken).toBe("");
       expect(first.lastLoginAt).toBe("");
+      expect(first.sessionId).toBe("VpAjFOyn9DuNUtpoRr0okyukre6_AZy0vwRpBL6b9H8");
 
-      setSessionUser({ userId: "LDAP12345", displayName: "LDAP12345" });
+      setSessionUser({ username: "LDAP12345", displayName: "LDAP12345" });
       const changed = await runMock(() =>
         fetchChangePassword({
+          username: "LDAP12345",
           oldPassword: POLICY_OLD_PASSWORD,
           newPassword: POLICY_NEW_PASSWORD,
         }),
@@ -319,13 +321,13 @@ describe("login module", () => {
       const { authorizeBusiness } = await loadLogin();
       const { setSessionUser, setToken } = await import("@insurance-poc/utils");
       setToken("mock-jwt-token");
-      setSessionUser({ userId: "UW001", displayName: "Retail Underwriter" });
+      setSessionUser({ username: "UW001", displayName: "Retail Underwriter" });
 
       const result = await runMock(() => authorizeBusiness("UW001", "RETAIL"));
 
       expectSuccess(result);
       expect(result.businessType).toBe("RETAIL");
-      expect(result.user.userId).toBe("UW001");
+      expect(result.user.username).toBe("UW001");
     });
 
     it("rejects a missing session", async () => {
@@ -458,7 +460,11 @@ describe("login module", () => {
     it("rejects a new password that is too short", async () => {
       const { fetchChangePassword } = await loadLogin();
       const result = await runMock(() =>
-        fetchChangePassword({ oldPassword: POLICY_OLD_PASSWORD, newPassword: "short" }),
+        fetchChangePassword({
+          username: "UW001",
+          oldPassword: POLICY_OLD_PASSWORD,
+          newPassword: "short",
+        }),
       );
 
       expect(result).toEqual({
@@ -473,6 +479,7 @@ describe("login module", () => {
       const { fetchChangePassword } = await loadLogin();
       const result = await runMock(() =>
         fetchChangePassword({
+          username: "UW001",
           oldPassword: POLICY_OLD_PASSWORD,
           newPassword: POLICY_NEW_PASSWORD,
         }),
@@ -495,6 +502,7 @@ describe("login module", () => {
 
       await expect(
         fetchChangePassword({
+          username: "UW001",
           oldPassword: POLICY_OLD_PASSWORD,
           newPassword: POLICY_NEW_PASSWORD,
         }),
@@ -510,10 +518,11 @@ describe("login module", () => {
       );
       vi.stubGlobal("fetch", fetchMock);
       const { fetchChangePassword } = await loadLogin();
-      const { setToken } = await import("@insurance-poc/utils");
+      const { setSessionUser, setToken } = await import("@insurance-poc/utils");
       setToken("user-jwt");
-
+      setSessionUser({ username: "UW001", displayName: "Retail Underwriter" });
       const result = await fetchChangePassword({
+        username: "UW001",
         oldPassword: POLICY_OLD_PASSWORD,
         newPassword: POLICY_NEW_PASSWORD,
       });
@@ -526,6 +535,7 @@ describe("login module", () => {
       expect(posted.headers.get("X-Apigee-Authorization")).toBe(
         `Basic ${btoa(`${BASIC_USER}:${BASIC_PASSWORD}`)}`,
       );
+      expect(readString(posted.body, "username")).toBe("UW001");
       expect(readString(posted.body, "oldPassword")).toBe(POLICY_OLD_PASSWORD);
       expect(readString(posted.body, "newPassword")).toBe(POLICY_NEW_PASSWORD);
     });

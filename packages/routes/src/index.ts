@@ -21,7 +21,7 @@ export function appBasename(base: string): string {
 export const commonPaths = {
   home: "/",
   login: "/login",
-  resetPassword: "/reset-password",
+  resetPassword: "/reset-password/validate",
   changePassword: "/change-password",
 } as const;
 

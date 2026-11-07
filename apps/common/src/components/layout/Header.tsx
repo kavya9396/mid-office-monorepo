@@ -611,7 +611,7 @@ export function Header({
   const visibleRole = showTaskIdentity ? presentText(role) : undefined;
   const visibleApplicationNo = showTaskIdentity ? presentText(applicationNo) : undefined;
   const sessionUser = getSessionUser();
-  const username = sessionUser?.userId ?? "";
+  const username = sessionUser?.username ?? "";
 
   const isDrsSubPage =
     normalizedPathname === "/previous-policy" ||

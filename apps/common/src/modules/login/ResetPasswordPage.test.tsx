@@ -13,11 +13,11 @@ vi.mock("../../services/authApi", () => ({
   useResetPasswordMutation: () => [auth.resetPassword],
 }));
 
-function renderResetPassword(route = "/reset-password?token=reset-token") {
+function renderResetPassword(route = "/reset-password/validate?token=reset-token") {
   return renderUi(
     <MemoryRouter initialEntries={[route]}>
       <Routes>
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/reset-password/validate" element={<ResetPasswordPage />} />
         <Route path="/login" element={<div>Login after reset</div>} />
       </Routes>
     </MemoryRouter>,
@@ -38,7 +38,7 @@ describe("ResetPasswordPage", () => {
   });
 
   it("shows an alert when the reset link is missing a token", () => {
-    renderAuth(<ResetPasswordPage />, { route: "/reset-password" });
+    renderAuth(<ResetPasswordPage />, { route: "/reset-password/validate" });
     expect(screen.getByText("Choose a new password")).toBeInTheDocument();
     expect(screen.getByRole("alert")).toHaveTextContent(
       "This reset link is missing a token. Request a new link from the login page.",

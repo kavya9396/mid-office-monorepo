@@ -444,7 +444,7 @@ Login after sign-in, Retail Inbox, and Group Inbox:
 ({
   origin: window.location.origin,
   token: sessionStorage.getItem("token"),
-  userId: sessionStorage.getItem("userId"),
+  username: sessionStorage.getItem("username"),
   businessType: sessionStorage.getItem("businessType"),
 });
 ```
@@ -458,7 +458,7 @@ The expected origin and token on every gateway path are:
 }
 ```
 
-`userId` and `businessType` follow the signed-in user and the active business.
+`username` and `businessType` follow the signed-in user and the active business.
 
 As a negative test, directly open Retail on port `5184` or Group on port `5185`
 and run the same code. Those URLs have different origins, so they do not see the
