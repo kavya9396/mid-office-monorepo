@@ -108,6 +108,11 @@
       "types": "./src/modules/inbox/InboxScreen.tsx",
       "import": "./src/modules/inbox/InboxScreen.tsx",
       "default": "./src/modules/inbox/InboxScreen.tsx"
+    },
+    "./landing-inbox-queries": {
+      "types": "./src/services/landingInboxQueries.ts",
+      "import": "./src/services/landingInboxQueries.ts",
+      "default": "./src/services/landingInboxQueries.ts"
     }
   },
   "scripts": {

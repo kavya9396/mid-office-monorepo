@@ -3,8 +3,16 @@ import userEvent from "@testing-library/user-event";
 import type { ComponentProps } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderUi } from "../../test/renderUi";
+import type { InboxData } from "./inboxApi";
 import { InboxTable } from "./InboxTable";
 import { landingCases } from "./landingCases";
+
+const guwCase = landingCases()[1]!;
+
+const guwInboxData: InboxData = {
+  username: "UW001",
+  poolData: { GUW: [guwCase] },
+};
 
 function renderTable(
   props: Partial<ComponentProps<typeof InboxTable>> = {},
@@ -111,10 +119,13 @@ describe("InboxTable", () => {
   it("saves a column configuration for a selected pool", async () => {
     const user = userEvent.setup();
     const onSaveColumns = vi.fn(async (_poolKey: string, selectedFields: string[]) => selectedFields);
+    const onLoadColumns = vi.fn(async () => ["applicationNo", "productCode"]);
     renderTable({
       title: "GUW Details",
-      poolKey: "GUW",
-      cases: [landingCases()[1]!],
+      columnContextKey: "GUW",
+      inboxData: guwInboxData,
+      cases: [guwCase],
+      onLoadColumns,
       onSaveColumns,
     });
 
@@ -137,13 +148,42 @@ describe("InboxTable", () => {
     const onLoadColumns = vi.fn(async () => ["applicationNo", "productCode"]);
     renderTable({
       title: "GUW Details",
-      poolKey: "GUW",
-      cases: [landingCases()[1]!],
+      columnContextKey: "GUW",
+      inboxData: guwInboxData,
+      cases: [guwCase],
       onLoadColumns,
     });
 
     expect(await screen.findByText("Product Code")).toBeInTheDocument();
     expect(onLoadColumns).toHaveBeenCalledWith("GUW");
+  });
+
+  it("falls back to default columns when pool-columns returns an empty list in mock mode", async () => {
+    const onLoadColumns = vi.fn(async () => []);
+    renderTable({
+      useMockOverride: true,
+      columnContextKey: "GUW",
+      inboxData: guwInboxData,
+      cases: [guwCase],
+      onLoadColumns,
+    });
+
+    expect(await screen.findByText("Product Code")).toBeInTheDocument();
+    expect(screen.getByText("Channel")).toBeInTheDocument();
+  });
+
+  it("shows no columns when pool-columns returns an empty list in real API mode", async () => {
+    const onLoadColumns = vi.fn(async () => []);
+    renderTable({
+      useMockOverride: false,
+      columnContextKey: "GUW",
+      inboxData: guwInboxData,
+      cases: [guwCase],
+      onLoadColumns,
+    });
+
+    expect(await screen.findByText("No columns returned for this pool")).toBeInTheDocument();
+    expect(screen.queryByText("Product Code")).not.toBeInTheDocument();
   });
 
   it("downloads the visible rows as Excel", async () => {

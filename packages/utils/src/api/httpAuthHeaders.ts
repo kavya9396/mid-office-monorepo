@@ -1,4 +1,5 @@
-import { getToken, mustChangePassword } from "../auth/session";
+import { isFirstLoginChangePending } from "../auth/firstLoginFlow";
+import { getToken } from "../auth/session";
 import { apigeeBasicAuthorization } from "./apigeeBasicAuth";
 
 const JSON_AUTH_HEADERS = {
@@ -29,7 +30,7 @@ export function buildJsonAuthPostHeaders(bearerToken?: string): HeadersInit {
 export function applyBusinessApiAuthHeaders(headers: Headers): void {
   headers.set("X-Apigee-Authorization", apigeeBasicAuthorization());
   const token = getToken()?.trim() ?? "";
-  if (token.length > 0 && !mustChangePassword()) {
+  if (token.length > 0 && !isFirstLoginChangePending()) {
     headers.set("Authorization", `Bearer ${token}`);
   }
 }

@@ -141,12 +141,12 @@ describe("logout mutation", () => {
   it("returns the mock failure message and keeps the session", async () => {
     const { authApi, store, setSessionUser, setToken } = await loadAuth();
     setToken("user-jwt");
-    setSessionUser({ userId: "UW001", displayName: "Retail Underwriter" });
+    setSessionUser({ username: "UW001", displayName: "Retail Underwriter" });
     const result = await runMock(() => store.dispatch(authApi.endpoints.logout.initiate()));
 
     expect(result.error).toBe(logoutMock.failure.message);
     expect(sessionStorage.getItem("token")).toBe("user-jwt");
-    expect(sessionStorage.getItem("userId")).toBe("UW001");
+    expect(sessionStorage.getItem("username")).toBe("UW001");
     expect(sessionStorage.getItem("displayName")).toBe("Retail Underwriter");
   });
 
@@ -195,7 +195,7 @@ describe("logout mutation", () => {
     const { setRefreshToken, setSessionUser, setToken, clearSession } = await loadAuth();
     setToken("user-jwt");
     setRefreshToken(REFRESH_TOKEN);
-    setSessionUser({ userId: "UW001", displayName: "Retail Underwriter" });
+    setSessionUser({ username: "UW001", displayName: "Retail Underwriter" });
     sessionStorage.setItem("masterData", "{}");
 
     clearSession();
@@ -203,7 +203,7 @@ describe("logout mutation", () => {
     expect(sessionStorage.length).toBe(0);
     expect(sessionStorage.getItem("token")).toBeNull();
     expect(sessionStorage.getItem("refreshToken")).toBeNull();
-    expect(sessionStorage.getItem("userId")).toBeNull();
+    expect(sessionStorage.getItem("username")).toBeNull();
     expect(sessionStorage.getItem("displayName")).toBeNull();
     expect(sessionStorage.getItem("masterData")).toBeNull();
   });

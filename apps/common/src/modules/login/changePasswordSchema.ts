@@ -3,6 +3,7 @@ import { passwordSchema } from "./loginSchema";
 
 export const changePasswordSchema = z
   .object({
+    username: z.string().trim().min(1, "User ID is required"),
     oldPassword: passwordSchema,
     newPassword: passwordSchema,
     confirmPassword: passwordSchema,

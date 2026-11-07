@@ -7,10 +7,10 @@ import { CustomButton, CustomSnackbar } from "@insurance-poc/ui";
 import { getLastLoginAt } from "@insurance-poc/utils";
 import {
   casesForTask,
-  ROLE_POOL_KEYS,
+  firstPoolKey,
+  poolKeysInOrder,
   type InboxCase,
   type InboxData,
-  type RolePoolKey,
 } from "./inboxApi";
 import { taskDetailsTitle, toDisplayLabel } from "./inboxFormat";
 import { InboxSidebar } from "./InboxSidebar";
@@ -45,27 +45,31 @@ export function InboxScreen({
   const [lastLoginAt] = useState(() => getLastLoginAt());
 
   const pools = useMemo(() => {
-    if (!data) return [] as RolePoolKey[];
-    return ROLE_POOL_KEYS.filter((pool) => Object.hasOwn(data.poolData, pool));
+    if (!data) return [] as string[];
+    return poolKeysInOrder(data);
   }, [data]);
 
   const counts = useMemo(() => {
-    const next: Record<RolePoolKey, number> = {} as Record<RolePoolKey, number>;
+    const next: Record<string, number> = {};
     if (!data) return next;
-    for (const pool of ROLE_POOL_KEYS) {
+    for (const pool of pools) {
       next[pool] = data.poolData[pool]?.length ?? 0;
     }
     return next;
-  }, [data]);
+  }, [data, pools]);
 
   const totalCount = data
     ? Object.values(data.poolData).reduce((total, cases) => total + (cases?.length ?? 0), 0)
     : 0;
-  const poolSet = useMemo(() => new Set<RolePoolKey>(pools), [pools]);
-  const activeTask =
-    selectedTask === "ALL_CASES" || poolSet.has(selectedTask as RolePoolKey)
-      ? selectedTask
-      : "ALL_CASES";
+  const poolSet = useMemo(() => new Set(pools), [pools]);
+  const activeTask = selectedTask === "ALL_CASES" || poolSet.has(selectedTask) ? selectedTask : "ALL_CASES";
+
+  const columnContextKey = useMemo(() => {
+    if (!data || pools.length === 0) return null;
+    if (activeTask === "ALL_CASES") return firstPoolKey(data);
+    return activeTask;
+  }, [activeTask, data, pools.length]);
+
   const cases = useMemo(
     () => (data ? casesForTask(data, activeTask) : []),
     [activeTask, data],
@@ -128,7 +132,8 @@ export function InboxScreen({
           <InboxTable
             title={taskDetailsTitle(activeTask)}
             cases={cases}
-            poolKey={activeTask === "ALL_CASES" ? undefined : activeTask as RolePoolKey}
+            inboxData={data}
+            columnContextKey={columnContextKey}
             onOpen={openCase}
             onLoadColumns={onLoadColumns}
             onSaveColumns={onSaveColumns}

@@ -33,7 +33,8 @@ function hasMockPasswordChanged(userId: string): boolean {
 }
 
 export interface AuthenticatedUser {
-  userId: string;
+  /** Login username (API `data.username`). */
+  username: string;
   displayName: string;
   authorizedBusinessTypes: BusinessType[];
   roles: string[];
@@ -44,6 +45,7 @@ export type LoginSuccess = {
   message: string;
   accessToken: string;
   refreshToken: string;
+  sessionId: string;
   firstLogin: boolean;
   mustChangePassword: boolean;
   lastLoginAt: string;
@@ -75,6 +77,7 @@ export type LoginApiEnvelope = {
     expiresIn?: number;
     refreshToken?: string | null;
     refreshExpiresIn?: number;
+    sessionId?: string;
     username: string;
     displayName?: string;
     firstLogin?: boolean;
@@ -103,6 +106,7 @@ export type ResetPasswordRequest = {
 };
 
 export type ChangePasswordRequest = {
+  username: string;
   oldPassword: string;
   newPassword: string;
 };
@@ -192,12 +196,13 @@ function buildLoginSuccess(
     message: message.length > 0 ? message : "Login successful",
     accessToken,
     refreshToken: readText(data.refreshToken),
+    sessionId: readText(data.sessionId),
     firstLogin: data.firstLogin === true,
     mustChangePassword: data.mustChangePassword === true,
     lastLoginAt: readText(data.lastLoginAt),
     businessType,
     user: {
-      userId: username,
+      username,
       displayName: readText(data.displayName) || username,
       authorizedBusinessTypes,
       roles: readStringRoles(data.roles),
@@ -266,8 +271,8 @@ function buildMockLoginEnvelope(userId: string, businessType: BusinessType): Log
   const passwordAlreadyChanged = hasMockPasswordChanged(userId);
   const firstLogin = mockUser?.firstLogin === true && !passwordAlreadyChanged;
   const mustChangePassword =
-    ((mockUser?.mustChangePassword === true || firstLogin) && !passwordAlreadyChanged);
-  const forcePasswordChange = firstLogin || mustChangePassword;
+    mockUser?.mustChangePassword === true && !passwordAlreadyChanged;
+  const forcePasswordChange = firstLogin && mustChangePassword;
   const token = (forcePasswordChange ? loginMock.token.restricted : loginMock.token.access).trim();
 
   if (token.length === 0) {
@@ -288,6 +293,9 @@ function buildMockLoginEnvelope(userId: string, businessType: BusinessType): Log
       expiresIn: forcePasswordChange ? 600 : 1200,
       refreshToken: forcePasswordChange ? null : loginMock.token.refresh.trim(),
       refreshExpiresIn: forcePasswordChange ? 0 : 300,
+      sessionId: forcePasswordChange
+        ? (mockUser?.sessionId ?? "mock-first-login-session-id")
+        : (mockUser?.sessionIdAfterLogin ?? "mock-session-id"),
       username: mockUser?.userId ?? userId,
       displayName: mockUser?.displayName ?? userId,
       firstLogin,
@@ -498,8 +506,8 @@ export async function fetchChangePassword(
     () => {
       const result = mockChangePassword(request);
       if (!result.error) {
-        const userId = getSessionUser()?.userId;
-        if (userId) markMockPasswordChanged(userId);
+        const sessionUsername = getSessionUser()?.username;
+        if (sessionUsername) markMockPasswordChanged(sessionUsername);
       }
       return result;
     },
@@ -508,9 +516,17 @@ export async function fetchChangePassword(
       if (token.length === 0) {
         throw new Error("Sign in before changing your password.");
       }
+      const username = request.username.trim();
+      if (username.length === 0) {
+        throw new Error("Sign in before changing your password.");
+      }
       return postAuthAction(
         authUrls.changePassword,
-        { oldPassword: request.oldPassword, newPassword: request.newPassword },
+        {
+          username,
+          oldPassword: request.oldPassword,
+          newPassword: request.newPassword,
+        },
         "Change password",
         token,
       );
@@ -545,7 +561,7 @@ function authorizeFromSession(
 ): LoginResult {
   const token = getToken()?.trim() ?? "";
   const user = getSessionUser();
-  if (token.length === 0 || user?.userId !== userId) {
+  if (token.length === 0 || user?.username !== userId) {
     return failure("Session expired. Please sign in again.");
   }
 
@@ -554,12 +570,13 @@ function authorizeFromSession(
     message: "Authorized",
     accessToken: token,
     refreshToken: getRefreshToken()?.trim() ?? "",
+    sessionId: "",
     firstLogin: false,
     mustChangePassword: false,
     lastLoginAt: getLastLoginAt()?.trim() ?? "",
     businessType,
     user: {
-      userId: user.userId,
+      username: user.username,
       displayName: user.displayName,
       authorizedBusinessTypes: [businessType],
       roles: [],

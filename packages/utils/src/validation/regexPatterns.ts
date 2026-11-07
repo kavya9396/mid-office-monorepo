@@ -1,6 +1,6 @@
 export class RegexPatterns {
   static readonly userId = /^[A-Za-z]+\d+$/;
-  static readonly password = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z\d\s])\S{8,}$/;
+  static readonly password = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z\d\s])\S{12,}$/;
   static readonly alphanumeric = /^[A-Za-z\d]+$/;
   /** Date in DD/MM/YYYY form, capturing day, month and year. */
   static readonly dateDDMMYYYY = /^(\d{2})\/(\d{2})\/(\d{4})$/;
@@ -17,7 +17,7 @@ export class RegexPatterns {
   /** Financial year in the form "FY XXXX-XX" (e.g. "FY 2022-23"). */
   static readonly financialYear = /^FY \d{4}-\d{2}$/;
   /** Statement period range in the form "Mmm-YYYY to Mmm-YYYY" (e.g. "Jan-2026 to Jun-2026"). */
-  static readonly statementPeriod = /^[A-Za-z]{3}-\d{4}\s+to\s+[A-Za-z]{3}-\d{4}$/i;
+  static readonly statementPeriod = /^[a-z]{3}-\d{4}\s+to\s+[a-z]{3}-\d{4}$/i;
   /** Four-digit year (YYYY). */
   static readonly year = /^\d{4}$/;
   /** Permanent Account Number: 5 capital letters, 4 digits, 1 capital letter (e.g. ABCDE1234F). */
