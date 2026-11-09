@@ -8,4 +8,5 @@ dist
 .pnpm-store
 .cursor/
 .bob
+design-reference
 

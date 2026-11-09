@@ -164,10 +164,20 @@
       "import": "./src/modules/inbox/InboxScreen.tsx",
       "default": "./src/modules/inbox/InboxScreen.tsx"
     },
+    "./legacy-drs-redirect": {
+      "types": "./src/routes/LegacyDrsRedirect.tsx",
+      "import": "./src/routes/LegacyDrsRedirect.tsx",
+      "default": "./src/routes/LegacyDrsRedirect.tsx"
+    },
     "./landing-inbox-queries": {
       "types": "./src/services/landingInboxQueries.ts",
       "import": "./src/services/landingInboxQueries.ts",
       "default": "./src/services/landingInboxQueries.ts"
+    },
+    "./master-data": {
+      "types": "./src/services/masterDataService.ts",
+      "import": "./src/services/masterDataService.ts",
+      "default": "./src/services/masterDataService.ts"
     }
   },
   "scripts": {

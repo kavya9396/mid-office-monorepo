@@ -5,6 +5,7 @@ import {
   Routes,
 } from "react-router-dom";
 import { appBasename, viteBase } from "@insurance-poc/routes";
+import { LegacyDrsRedirect } from "@insurance-poc/common/legacy-drs-redirect";
 import { RouteScrollReset } from "@insurance-poc/common/route-scroll-reset";
 import { AuthNavigation } from "../app/AuthNavigation";
 import { RetailDrsPage } from "../modules/drs/RetailDrsPage";
@@ -39,6 +40,8 @@ export function AppRoutes() {
           <Route path="/mas/drs" element={<MasDrsPage />} />
           <Route path="/mmt-grievance/drs" element={<MmtGrievanceDrsPage />} />
           <Route path="/pivv/drs" element={<PivvDrsPage />} />
+          <Route path="/app/:applicationNo/drs" element={<RetailDrsPage />} />
+          <Route path="/drs" element={<LegacyDrsRedirect />} />
           <Route path="/previous-policy" element={<RetailPreviousPolicyPage />} />
           <Route path="/open-tasks" element={<RetailOpenTasksPage />} />
           <Route path="/risk-details" element={<RetailRiskDetailsPage />} />

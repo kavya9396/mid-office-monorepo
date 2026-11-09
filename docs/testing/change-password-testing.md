@@ -18,7 +18,7 @@ Example valid passwords: `NewerPass@1234`, `NewPass@30201`.
 | 4 | Submit | Success snackbar → session cleared → **Login** |
 | 5 | Login again as **LDAP12345** | Goes to inbox (full token + refresh in mock); no change-password redirect |
 
-Redirect to change password only when login returns **`firstLogin: true` and `mustChangePassword: true`** (in-memory gate; not sessionStorage). Mock **LDAP12345** returns both; `refreshToken: null`, `sessionId` set, restricted token.
+Redirect to change password only when login returns **`firstLogin: true` and `mustChangePassword: true`** (strict booleans or IAM strings such as `"Y"` / `"true"`). The gate is stored in **sessionStorage** (`firstLoginChangePending`) so full-page inbox redirects do not clear it. Mock **LDAP12345** returns both; `refreshToken: null`, `sessionId` set, restricted token.
 
 Other mock users (**UW001**, **UW002**, **UW003**) skip change-password and go straight to inbox.
 

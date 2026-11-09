@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -151,8 +151,8 @@ const RETAIL_QUICK_LINKS: QuickLinkItem[] = [
 
 function RetailDrsRecordPage() {
   const navigate = useNavigate();
-  const [params] = useSearchParams();
-  const applicationNo = params.get("applicationNo")?.trim() ?? "";
+  const { applicationNo: applicationNoParam } = useParams();
+  const applicationNo = applicationNoParam?.trim() ?? "";
   const [reloadKey, setReloadKey] = useState(0);
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
   const [status, setStatus] = useState<Status>(

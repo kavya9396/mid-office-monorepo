@@ -3,12 +3,17 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderAuth, renderUi } from "../../test/renderUi";
+import { RedirectIfSession } from "../../routes/guards";
 import { LoginPage } from "./LoginPage";
 
 const routes = vi.hoisted(() => ({ assignUrl: vi.fn() }));
 const auth = vi.hoisted(() => ({
   login: vi.fn(),
   forgotPassword: vi.fn(),
+}));
+
+const masters = vi.hoisted(() => ({
+  fetchAndStoreMasterData: vi.fn(),
 }));
 
 vi.mock("@insurance-poc/routes", async () => {
@@ -19,6 +24,10 @@ vi.mock("@insurance-poc/routes", async () => {
 vi.mock("../../services/authApi", () => ({
   useLoginMutation: () => [auth.login],
   useForgotPasswordMutation: () => [auth.forgotPassword],
+}));
+
+vi.mock("../../services/masterDataService", () => ({
+  fetchAndStoreMasterData: masters.fetchAndStoreMasterData,
 }));
 
 const successUser = {
@@ -60,6 +69,11 @@ describe("LoginPage", () => {
     auth.login.mockReset();
     auth.forgotPassword.mockReset();
     routes.assignUrl.mockReset();
+    masters.fetchAndStoreMasterData.mockReset();
+    masters.fetchAndStoreMasterData.mockResolvedValue({
+      data: { gender: [] },
+      unknownTypes: [],
+    });
   });
 
   it("renders the login form, business tabs and legal links", () => {
@@ -118,6 +132,7 @@ describe("LoginPage", () => {
         password: "NewerPass@1234",
         businessType: "GROUP",
       });
+      expect(masters.fetchAndStoreMasterData).toHaveBeenCalledTimes(1);
       expect(routes.assignUrl).toHaveBeenCalledWith("/group/inbox");
     });
   });
@@ -129,7 +144,14 @@ describe("LoginPage", () => {
     renderUi(
       <MemoryRouter initialEntries={["/login"]}>
         <Routes>
-          <Route path="/login" element={<LoginPage />} />
+          <Route
+            path="/login"
+            element={
+              <RedirectIfSession>
+                <LoginPage />
+              </RedirectIfSession>
+            }
+          />
           <Route path="/change-password" element={<div>Change password screen</div>} />
         </Routes>
       </MemoryRouter>,
@@ -138,6 +160,7 @@ describe("LoginPage", () => {
     await user.click(screen.getByRole("button", { name: "Log In" }));
 
     expect(await screen.findByText("Change password screen")).toBeInTheDocument();
+    expect(masters.fetchAndStoreMasterData).not.toHaveBeenCalled();
     expect(routes.assignUrl).not.toHaveBeenCalled();
   });
 
@@ -179,5 +202,16 @@ describe("LoginPage", () => {
   it("shows a reset success message passed from the reset page", async () => {
     renderAuth(<LoginPage />, { state: { resetMessage: "Password reset" } });
     expect(await screen.findByText("Password reset")).toBeInTheDocument();
+  });
+
+  it("blocks inbox navigation when master data load fails", async () => {
+    auth.login.mockReturnValue(loginSuccess());
+    masters.fetchAndStoreMasterData.mockRejectedValue(new Error("Master data unavailable"));
+    renderAuth(<LoginPage />);
+    const user = await fillValidLogin();
+    await user.click(screen.getByRole("button", { name: "Log In" }));
+
+    expect(await screen.findByText("Master data unavailable")).toBeInTheDocument();
+    expect(routes.assignUrl).not.toHaveBeenCalled();
   });
 });

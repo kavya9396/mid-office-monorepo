@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { drsRoutePath } from "@insurance-poc/routes";
 
 import { Box, Typography } from "@mui/material";
 import { CustomSnackbar, CustomDialog, DeleteIcon, EditIcon } from "@insurance-poc/ui";
@@ -33,9 +34,6 @@ const CARD_TITLES: Record<CardType, string> = {
 
 const quickLinksConfig = GROUP_QUICK_LINKS_CONFIG.dvt;
 
-const DRS_PATH = "/drs";
-const FINANCIAL_PATH = "/drs/financial";
-const MEDICAL_PATH = "/drs/medical";
 const APPLICANT_ID_PARAM = "applicantId";
 
 export interface DvtUserProps {
@@ -59,12 +57,17 @@ const DvtUser = () => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [params] = useSearchParams();
+  const { applicationNo: applicationNoParam } = useParams();
   const lowerPath = pathname.toLowerCase();
-  const isFinancialRoute = lowerPath.endsWith(FINANCIAL_PATH) || lowerPath.endsWith(`${FINANCIAL_PATH}/`);
-  const isMedicalRoute = lowerPath.endsWith(MEDICAL_PATH) || lowerPath.endsWith(`${MEDICAL_PATH}/`);
-  const requestedApplicationNo = params.get("applicationNo")?.trim() ?? "";
-  const drs = useGetGroupDrsQuery(requestedApplicationNo);
+  const isFinancialRoute = lowerPath.includes("/drs/financial");
+  const isMedicalRoute = lowerPath.includes("/drs/medical");
+  const requestedApplicationNo = applicationNoParam?.trim() ?? "";
+  const drs = useGetGroupDrsQuery(requestedApplicationNo, { skip: requestedApplicationNo.length === 0 });
   const applicationNo = requestedApplicationNo || drs.data?.applicationNo || "";
+  const drsBasePath = applicationNo.length > 0 ? drsRoutePath(applicationNo) : "";
+  const financialPath =
+    applicationNo.length > 0 ? drsRoutePath(applicationNo, "financial") : "";
+  const medicalPath = applicationNo.length > 0 ? drsRoutePath(applicationNo, "medical") : "";
 
   const applicants = drs.data?.applicants ?? [];
   const currentApplicantParam = params.get(APPLICANT_ID_PARAM)?.trim();
@@ -83,30 +86,30 @@ const DvtUser = () => {
   const openFinancial = (applicantId: string) => {
     const next = new URLSearchParams(params);
     next.set(APPLICANT_ID_PARAM, applicantId);
-    navigate({ pathname: FINANCIAL_PATH, search: `?${next.toString()}` });
+    navigate({ pathname: financialPath, search: `?${next.toString()}` });
   };
   const closeFinancial = () => {
     const next = new URLSearchParams(params);
     next.delete(APPLICANT_ID_PARAM);
     const query = next.toString();
-    navigate({ pathname: DRS_PATH, search: query ? `?${query}` : "" });
+    navigate({ pathname: drsBasePath, search: query ? `?${query}` : "" });
   };
   const openMedical = (applicantId: string) => {
     const next = new URLSearchParams(params);
     next.set(APPLICANT_ID_PARAM, applicantId);
-    navigate({ pathname: MEDICAL_PATH, search: `?${next.toString()}` });
+    navigate({ pathname: medicalPath, search: `?${next.toString()}` });
   };
   const closeMedical = () => {
     const next = new URLSearchParams(params);
     next.delete(APPLICANT_ID_PARAM);
     const query = next.toString();
-    navigate({ pathname: DRS_PATH, search: query ? `?${query}` : "" });
+    navigate({ pathname: drsBasePath, search: query ? `?${query}` : "" });
   };
 
   const handleFinancialApplicantChange = (applicantKey: string) => {
     const next = new URLSearchParams(params);
     next.set(APPLICANT_ID_PARAM, applicantKey);
-    navigate({ pathname: FINANCIAL_PATH, search: `?${next.toString()}` }, { replace: true });
+    navigate({ pathname: financialPath, search: `?${next.toString()}` }, { replace: true });
   };
 
   const handleBreRetrigger = () => console.log("BRE Retrigger clicked");

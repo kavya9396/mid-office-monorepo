@@ -19,7 +19,11 @@ import {
 import { Controller, useForm, type Control } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useLoginMutation } from "../../services/authApi";
-import type { BusinessType } from "../../services/loginService";
+import { fetchAndStoreMasterData } from "../../services/masterDataService";
+import {
+  loginRequiresPasswordChange,
+  type BusinessType,
+} from "../../services/loginService";
 import { BusinessTypeTabs } from "./BusinessTypeTabs";
 import { AuthShell, authCompactLaptop, authShortLaptop } from "./AuthShell";
 import {
@@ -35,6 +39,7 @@ import { loginSchema, type LoginForm } from "./loginSchema";
 type SubmissionState = {
   canSubmit: boolean;
   submitting: boolean;
+  loadingMasters: boolean;
 };
 
 type CredentialsFormProps = {
@@ -66,31 +71,49 @@ type LoginSuccessHandlerArgs = {
   navigateToChangePassword: () => void;
 };
 
-function handleLoginSuccess({
+function applyLoginSession({
   accessToken,
   refreshToken,
   sessionId,
   user,
-  firstLogin,
-  mustChangePassword,
   lastLoginAt,
   businessType,
-  navigateToChangePassword,
-}: LoginSuccessHandlerArgs): void {
+}: Omit<
+  LoginSuccessHandlerArgs,
+  "firstLogin" | "mustChangePassword" | "navigateToChangePassword"
+>): void {
   setToken(accessToken);
   setRefreshToken(refreshToken);
   setSessionId(sessionId);
   setSessionUser(user);
   setSessionBusinessType(businessType);
   setLastLoginAt(lastLoginAt);
+}
 
-  if (firstLogin && mustChangePassword) {
+async function completeLoginAfterAuth(args: LoginSuccessHandlerArgs): Promise<void> {
+  const {
+    firstLogin,
+    mustChangePassword,
+    businessType,
+    navigateToChangePassword,
+    accessToken,
+    refreshToken,
+    sessionId,
+    user,
+    lastLoginAt,
+  } = args;
+  const needsPasswordChange = loginRequiresPasswordChange(firstLogin, mustChangePassword);
+
+  if (needsPasswordChange) {
     setFirstLoginChangePending(true);
+    applyLoginSession({ accessToken, refreshToken, sessionId, user, lastLoginAt, businessType });
     navigateToChangePassword();
     return;
   }
 
   setFirstLoginChangePending(false);
+  applyLoginSession({ accessToken, refreshToken, sessionId, user, lastLoginAt, businessType });
+  await fetchAndStoreMasterData();
   const destination = businessInboxUrl(businessType);
   if (!destination) {
     throw new Error("Business Inbox is not configured.");
@@ -109,7 +132,11 @@ function CredentialsForm({
   onForgotPassword,
 }: Readonly<CredentialsFormProps>) {
   const passwordLabel = passwordVisible ? "Hide password" : "Show password";
-  const submitLabel = submission.submitting ? "Signing in..." : "Log In";
+  const submitLabel = submission.submitting
+    ? submission.loadingMasters
+      ? "Loading reference data..."
+      : "Signing in..."
+    : "Log In";
 
   return (
     <Box
@@ -228,6 +255,7 @@ function CredentialsForm({
 export function LoginPage() {
   const [businessType, setBusinessType] = useState<BusinessType>("RETAIL");
   const [showPassword, setShowPassword] = useState(false);
+  const [loadingMasters, setLoadingMasters] = useState(false);
   const [snackbar, setSnackbar] = useState<AuthSnackbarState>(closedAuthSnackbar);
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
   const [forgotUserId, setForgotUserId] = useState("");
@@ -263,17 +291,33 @@ export function LoginPage() {
         password: credentials.password,
         businessType,
       }).unwrap();
-      handleLoginSuccess({
-        accessToken: loginResult.accessToken,
-        refreshToken: loginResult.refreshToken,
-        sessionId: loginResult.sessionId,
-        user: { username: loginResult.user.username, displayName: loginResult.user.displayName },
-        firstLogin: loginResult.firstLogin,
-        mustChangePassword: loginResult.mustChangePassword,
-        lastLoginAt: loginResult.lastLoginAt,
-        businessType,
-        navigateToChangePassword: () => navigate(commonPaths.changePassword),
-      });
+      const needsPasswordChange = loginRequiresPasswordChange(
+        loginResult.firstLogin,
+        loginResult.mustChangePassword,
+      );
+      if (!needsPasswordChange) {
+        setLoadingMasters(true);
+      }
+      try {
+        await completeLoginAfterAuth({
+          accessToken: loginResult.accessToken,
+          refreshToken: loginResult.refreshToken,
+          sessionId: loginResult.sessionId,
+          user: { username: loginResult.user.username, displayName: loginResult.user.displayName },
+          firstLogin: loginResult.firstLogin,
+          mustChangePassword: loginResult.mustChangePassword,
+          lastLoginAt: loginResult.lastLoginAt,
+          businessType,
+          navigateToChangePassword: () => navigate(commonPaths.changePassword),
+        });
+      } catch (reason: unknown) {
+        clearSession();
+        showNotify(readApiMessage(reason, "Unable to load master data."), "error");
+      } finally {
+        if (!needsPasswordChange) {
+          setLoadingMasters(false);
+        }
+      }
     } catch (reason: unknown) {
       clearSession();
       showNotify(readApiMessage(reason, "Login failed."), "error");
@@ -281,8 +325,9 @@ export function LoginPage() {
   };
 
   const submission: SubmissionState = {
-    canSubmit: formState.isValid && !formState.isSubmitting,
-    submitting: formState.isSubmitting,
+    canSubmit: formState.isValid && !formState.isSubmitting && !loadingMasters,
+    submitting: formState.isSubmitting || loadingMasters,
+    loadingMasters,
   };
 
   return (

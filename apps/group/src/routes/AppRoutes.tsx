@@ -5,6 +5,7 @@ import {
   Routes,
 } from "react-router-dom";
 import { appBasename, viteBase } from "@insurance-poc/routes";
+import { LegacyDrsRedirect } from "@insurance-poc/common/legacy-drs-redirect";
 import { RouteScrollReset } from "@insurance-poc/common/route-scroll-reset";
 import { AuthNavigation } from "../app/AuthNavigation";
 import { GroupInboxPage } from "../modules/inbox/GroupInboxPage";
@@ -40,6 +41,12 @@ export function AppRoutes() {
           <Route path="/drs" element={<GroupDrsPage />} />
           <Route path="/drs/financial" element={<GroupDrsPage />} />
           <Route path="/drs/medical" element={<GroupDrsPage />} />
+          <Route path="/app/:applicationNo/drs" element={<GroupDrsPage />} />
+          <Route path="/app/:applicationNo/drs/financial" element={<GroupDrsPage />} />
+          <Route path="/app/:applicationNo/drs/medical" element={<GroupDrsPage />} />
+          <Route path="/drs" element={<LegacyDrsRedirect />} />
+          <Route path="/drs/financial" element={<LegacyDrsRedirect />} />
+          <Route path="/drs/medical" element={<LegacyDrsRedirect />} />
           {/* <Route path="/applicant-profile" element={<GroupApplicantProfilePage />} /> */}
           <Route path="/previous-policy" element={<GroupPreviousPolicyPage />} />
           <Route path="/open-tasks" element={<GroupOpenTasksPage />} />

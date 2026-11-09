@@ -1,6 +1,7 @@
 import { Outlet, useLocation, useSearchParams } from "react-router-dom";
 import Box from "@mui/material/Box";
 import { Header } from "@insurance-poc/common/header";
+import { drsRoutePath, parseDrsApplicationNo } from "@insurance-poc/routes";
 
 const INBOX_PATH = "/inbox";
 
@@ -26,7 +27,8 @@ export function GroupAppLayout() {
   const role = isInbox ? undefined : readQueryValue(params.get("role"));
   const applicationNo = isInbox
     ? undefined
-    : readQueryValue(params.get("applicationNo"));
+    : parseDrsApplicationNo(normalizedPath) ?? readQueryValue(params.get("applicationNo"));
+  const drsPath = applicationNo ? drsRoutePath(applicationNo) : undefined;
 
   /**
    * On the GUW informal DRS page (/guw/drs), back button behaviour depends on
@@ -58,6 +60,7 @@ export function GroupAppLayout() {
     >
       <Header
         inboxPath={INBOX_PATH}
+        drsPath={drsPath}
         role={role}
         applicationNo={applicationNo}
         backPath={guwBackPath}

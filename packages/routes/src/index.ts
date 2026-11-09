@@ -1,4 +1,12 @@
 import devConfig from "./dev-config.json";
+import { drsRoutePath } from "./drsPaths";
+
+export {
+  drsRoutePath,
+  isDrsAppRoute,
+  parseDrsApplicationNo,
+  type DrsRouteSection,
+} from "./drsPaths";
 
 /**
  * Local same-origin URLs for Common, Retail, and Group.
@@ -31,6 +39,7 @@ const groupBase = appBasename(viteBase.group);
 export const retailPaths = {
   root: retailBase,
   inbox: `${retailBase}/inbox`,
+  /** Legacy; prefer `drsUrl` / `drsRoutePath` with application number. */
   drs: `${retailBase}/drs`,
   masDrs: `${retailBase}/mas/drs`,
   previousPolicy: `${retailBase}/previous-policy`,
@@ -54,13 +63,21 @@ export function businessInboxUrl(businessType: string): string | null {
 export function drsUrl(
   businessType: string,
   applicationNo: string,
+  queryParams?: Record<string, string>,
 ): string | null {
-  const query = new URLSearchParams({ applicationNo }).toString();
+  const spaBase = businessType === "RETAIL" ? retailBase : businessType === "GROUP" ? groupBase : null;
+  if (!spaBase) return null;
 
-  if (businessType === "RETAIL") return `${retailPaths.drs}?${query}`;
-  if (businessType === "GROUP") return `${groupPaths.drs}?${query}`;
+  const path = `${spaBase}${drsRoutePath(applicationNo)}`;
+  if (!queryParams) return path;
 
-  return null;
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(queryParams)) {
+    const trimmed = value.trim();
+    if (trimmed.length > 0) query.set(key, trimmed);
+  }
+  const queryString = query.toString();
+  return queryString.length > 0 ? `${path}?${queryString}` : path;
 }
 
 export function previousPolicyUrl(

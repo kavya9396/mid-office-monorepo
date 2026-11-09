@@ -2,7 +2,7 @@ import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { createBusinessBaseQuery, useMock } from "@insurance-poc/utils";
 import groupDrsMock from "../modules/drs/mock/groupDrs.json";
-import { GROUP_DRS_PATH, mapGroupDrsPayload, type GroupDrsData } from "./drsService";
+import { GROUP_DRS_API_PATH, mapGroupDrsPayload, type GroupDrsData } from "./drsService";
 
 function groupApiUrl(): string {
   const value = import.meta.env.VITE_GROUP_API_URL;
@@ -31,7 +31,7 @@ export const groupDrsApi = createApi({
         }
 
         const result = await baseQuery({
-          url: GROUP_DRS_PATH,
+          url: GROUP_DRS_API_PATH,
           method: "GET",
           params: { applicationNo },
         });
