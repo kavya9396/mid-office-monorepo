@@ -86,7 +86,16 @@ export function InboxScreen({
       setNotice("This task is missing an application number.");
       return;
     }
-    navigate(drsRoutePath(item.applicationNo));
+    const query = new URLSearchParams({
+      applicationNo: item.applicationNo,
+      role: toDisplayLabel(item.poolName),
+    });
+    const routeFields = ["taskId", "instanceId", "roleType", "businessType"] as const;
+    for (const field of routeFields) {
+      const value = item.fields[field];
+      if (typeof value === "string" && value.length > 0) query.set(field, value);
+    }
+    navigate(`${drsRoutePath(item.applicationNo)}?${query.toString()}`);
   }
 
   if (loading) {

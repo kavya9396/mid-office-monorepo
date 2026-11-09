@@ -1,7 +1,7 @@
 {
   "success": true,
   "data": {
-    "applicationNo": "OB90311125",
+    "applicationNo": "OB90377122",
     "screenType": "GUW_INFORMAL",
     "businessType": "GROUP",
     "rowDetails": [
@@ -10,19 +10,14 @@
         "fields": [
           {
             "name": "Name",
-            "value": "GANESH CHAVAN"
+            "value": "Rudra Prakash Sangha"
           },
           {
             "name": "App No.",
-            "value": "OB90311125"
-          }
-        ]
-      },
-      {
-        "id": 1,
-        "fields": [
+            "value": "OB90377122"
+          },
           {
-            "name": "Life Assured",
+            "name": "Member",
             "value": "Life Assured 1"
           },
           {
@@ -35,7 +30,7 @@
           },
           {
             "name": "Age",
-            "value": ""
+            "value": "40"
           },
           {
             "name": "Education",
@@ -43,23 +38,23 @@
           },
           {
             "name": "Occupation",
-            "value": "PROF"
+            "value": "Salaried"
           },
           {
             "name": "Organisation",
-            "value": ""
+            "value": "3I INFOTECH"
           },
           {
             "name": "Declared income",
-            "value": "1600000"
+            "value": "1000000"
           },
           {
             "name": "City, State",
-            "value": "CHENNAI, TMND"
+            "value": "Pune, Maharashtra"
           },
           {
             "name": "Residence Status",
-            "value": "IND"
+            "value": "Indian"
           },
           {
             "name": "Residing Country",
@@ -68,19 +63,19 @@
         ]
       },
       {
-        "id": 2,
+        "id": 1,
         "fields": [
           {
-            "name": "Product",
-            "value": "ICICI Pru GIFT Assure - E40"
+            "name": "Product Name - Product Code",
+            "value": "ICICI Pru GIFT Pro"
           },
           {
             "name": "Channel",
-            "value": ""
+            "value": "Agency"
           },
           {
             "name": "Sum Assured",
-            "value": "5000000"
+            "value": "â‚¹10,68,000"
           },
           {
             "name": "MPH Name",
@@ -88,11 +83,11 @@
           },
           {
             "name": "Policy Term",
-            "value": "20"
+            "value": ""
           },
           {
             "name": "Annual Premium",
-            "value": "500000"
+            "value": ""
           },
           {
             "name": "PAD",
@@ -145,27 +140,27 @@
         ]
       },
       {
-        "id": 3,
+        "id": 2,
         "fields": [
           {
             "name": "WOP - SA",
-            "value": "100000"
+            "value": "â‚¹15,00,000"
           },
           {
             "name": "BTBB - SA",
-            "value": ""
+            "value": "â‚¹25,00,000"
           },
           {
             "name": "TI Rider - SA",
-            "value": ""
+            "value": "â‚¹25,00,000"
           },
           {
             "name": "ADBR - SA",
-            "value": "0"
+            "value": "â‚¹25,00,000"
           },
           {
             "name": "CI Rider - SA",
-            "value": "0"
+            "value": "â‚¹25,00,000"
           }
         ]
       },
@@ -174,43 +169,43 @@
         "fields": [
           {
             "name": "TSA",
-            "value": "5000000.0"
+            "value": "â‚¹10,00,000"
           },
           {
             "name": "TRSA",
-            "value": "5000000"
+            "value": "â‚¹5,00,000"
           },
           {
             "name": "TPSA",
-            "value": ""
+            "value": "â‚¹10,00,000"
           },
           {
             "name": "TFSA",
-            "value": "Infinity"
+            "value": "â‚¹10,00,000"
           },
           {
             "name": "TSSA",
-            "value": ""
+            "value": "â‚¹10,00,000"
           },
           {
             "name": "ADBR TSA",
-            "value": ""
+            "value": "â‚¹5,00,000"
           },
           {
             "name": "ATPD TSA",
-            "value": ""
+            "value": "â‚¹5,00,000"
           },
           {
             "name": "CI Rider TSA",
-            "value": ""
+            "value": "â‚¹3,00,000"
           },
           {
             "name": "CI Rider TRSA",
-            "value": ""
+            "value": "â‚¹3,00,000"
           },
           {
             "name": "BTBB TSA",
-            "value": ""
+            "value": "â‚¹5,00,000"
           }
         ]
       }
@@ -218,108 +213,70 @@
     "cardDetails": [
       {
         "type": "FINANCIAL",
-        "attributes": [
-          {
-            "name": "BRE Financial Decision",
-            "value": "std"
-          },
-          {
-            "name": "Financial Eligibility",
-            "value": ""
-          },
-          {
-            "name": "Derived Income",
-            "value": ""
-          },
-          {
-            "name": "Verified Income",
-            "value": ""
-          },
-          {
-            "name": "BIU Financial Status",
-            "value": ""
-          }
-        ],
+        "label": "Financial",
         "expandedAttributes": [
           {
-            "name": "BRE Financial Decision",
-            "value": ""
+            "name": "BRE Financial decision",
+            "value": "NON-FSTP"
           },
           {
             "name": "Financial Eligibility",
-            "value": ""
+            "value": "â‚¹4,80,000"
           },
           {
             "name": "Derived Income",
-            "value": ""
-          },
-          {
-            "name": "Verified Income",
-            "value": ""
-          },
-          {
-            "name": "BIU Financial Status",
-            "value": ""
-          },
-          {
-            "name": "BRE Remark",
-            "value": ""
+            "value": "â‚¹16,00,000"
           },
           {
             "name": "Counter Offer Value",
-            "value": ""
+            "value": "â‚¹50,00,000"
           },
           {
             "name": "Additional SA",
-            "value": ""
+            "value": "0.0"
+          },
+          {
+            "name": "BIU Financial status (Match/Mismatch)",
+            "value": "Match"
           },
           {
             "name": "Final Bureau Income",
-            "value": ""
+            "value": "â‚¹16,00,000"
           },
           {
             "name": "Reinsurer Case",
-            "value": ""
+            "value": "No"
+          },
+          {
+            "name": "BRE Remark",
+            "value": "Financial assessment completed"
           }
         ],
         "tables": []
       },
       {
         "type": "MEDICAL",
-        "attributes": [
-          {
-            "name": "BRE Physical Medical Decision",
-            "value": ""
-          },
-          {
-            "name": "MunichRe Medical Decision",
-            "value": ""
-          },
-          {
-            "name": "BIU Medical Status",
-            "value": ""
-          }
-        ],
+        "label": "Medical",
         "expandedAttributes": [
           {
             "name": "BRE Physical Medical Decision",
-            "value": ""
-          },
-          {
-            "name": "MunichRe Medical Decision",
-            "value": ""
-          },
-          {
-            "name": "BIU Medical Status",
-            "value": ""
+            "value": "STP"
           },
           {
             "name": "BRE Tele/Video MER Decision",
             "value": ""
           },
           {
+            "name": "MunichRe Medical decision",
+            "value": ""
+          },
+          {
             "name": "MunichRe Rating",
             "value": ""
+          },
+          {
+            "name": "BIU Medical status (Match/Mismatch)",
+            "value": "Match"
           },
           {
             "name": "BRE Physical Medical Remark",
@@ -334,84 +291,71 @@
       },
       {
         "type": "RISK_PARAMETERS",
-        "attributes": [
-          {
-            "name": "PEP Question Response (LA)",
-            "value": ""
-          },
-          {
-            "name": "FATF/OFAC Country Login",
-            "value": ""
-          },
-          {
-            "name": "Health Question Positive",
-            "value": ""
-          }
-        ],
+        "label": "Risk Parameters",
         "expandedAttributes": [
           {
             "name": "PEP Question Response (LA)",
-            "value": ""
-          },
-          {
-            "name": "FATF/OFAC Country Login",
-            "value": ""
-          },
-          {
-            "name": "Health Question Positive",
-            "value": ""
+            "value": "No"
           },
           {
             "name": "PEP Question Response (PR)",
-            "value": ""
+            "value": "No"
+          },
+          {
+            "name": "FATF/OFAC Country Login",
+            "value": "No"
           },
           {
             "name": "Claim Registered",
-            "value": ""
+            "value": "No"
           },
           {
             "name": "Adverse IIB",
-            "value": ""
+            "value": "No"
           },
           {
             "name": "Adverse ACR",
-            "value": ""
+            "value": "No"
           },
           {
             "name": "Criminal Question Response (LA)",
-            "value": ""
+            "value": "No"
           },
           {
             "name": "Criminal Question Response (PR)",
-            "value": ""
+            "value": "No"
           },
           {
             "name": "Face Match Score < 75%",
-            "value": ""
+            "value": "No"
           },
           {
             "name": "Distance < acceptable range",
-            "value": ""
+            "value": "No"
           },
           {
             "name": "Adverse App OID",
-            "value": ""
+            "value": "No"
           },
           {
             "name": "Previous Policy Substandard",
-            "value": ""
+            "value": "No"
           },
           {
             "name": "Avocation Related Disclosure",
-            "value": ""
+            "value": "No"
           },
           {
             "name": "Hazardous Occupation",
-            "value": ""
+            "value": "No"
           },
           {
             "name": "Employment in Risky Industry",
-            "value": ""
+            "value": "No"
+          },
+          {
+            "name": "Health Question Positive",
+            "value": "Yes"
           }
         ],
         "tables": []
@@ -419,35 +363,311 @@
     ],
     "sections": [
       {
-        "name": "breDecision",
+        "name": "grievanceHistory",
+        "label": "Grievance History",
         "value": {
-          "decision": "ST",
-          "initialDecision": "Non-STP",
-          "isInitial": "Y",
-          "isLatest": "N",
-          "remarks": "Preferred Partner#Check Basic KYC Document Attestations#Original Verified KYC Document Required.#Above Non-medical limit#NRI Questionnaire Required#NRI: Passport Is Required as Age Proof#QSTN/Document Attached#Preferred Partner#Age Proof Required#TSSA value = 5000000#Require Valid Ageproof#NRI Lives- allowed with max 75emr#Web Aggregator Login#CCR waiver for BOL application",
-          "discrepancy": "OTP#AGE#PAL#KYP#IDM#ADP#SCI",
-          "timestamp": "20/08/2026, 1614hrs",
-          "action": "Straight Through Processing",
-          "reTriggerCount": 26
+          "columns": [
+            {
+                "label":"User Name"
+            },
+            {
+                "label":"User Role"
+            },
+            {
+                "label":"FUP Code"
+            },
+            {
+                "label":"Grievance Raised Remark"
+            },
+            {
+                "label":"Grievance Raised Date"
+            },
+            {
+                "label":"TPA Remarks"
+            }
+          ],
+          "rows": [
+            {
+              "userName": "Premanand Sawant",
+              "userRole": "UW",
+              "fupCode": "ECG",
+              "grievanceRaisedRemark": "ECG graph is blurry",
+              "grievanceRaisedDate": "7 Sep 2026",
+              "tpaRemarks": "Provided new ECG graph"
+            }
+          ]
         }
+      },
+      {
+        "name": "requirementManagement",
+        "label": "Requirement Management",
+        "value": [
+          {
+            "status": "",
+            "requirementPoolType": "",
+            "profile": "",
+            "category": "",
+            "subCategory": "",
+            "document": "",
+            "reason": "",
+            "fupCode": "",
+            "description": "",
+            "extraRemark": ""
+          }
+        ]
       },
       {
         "name": "latestBreDecision",
+        "label": "BRE Decision",
         "value": {
-          "decision": "RM",
-          "initialDecision": "Non-STP",
-          "isInitial": "Y",
-          "isLatest": "N",
-          "remarks": "Check Basic KYC Document Attestations#Original Verified KYC Document Required.#Above Non-medical limit#NRI Questionnaire Required#NRI: Passport Is Required as Age Proof#QSTN/Document Attached#Preferred Partner#Age Proof Required#TSSA value = 5000000#Require Valid Ageproof#NRI Lives- allowed with max 75emr#Web Aggregator Login#CCR waiver for BOL application",
-          "discrepancy": "OTP#AGE#PAO#KYP#IDM#ADP#SCI",
-          "timestamp": "20/08/2026, 1614hrs",
-          "action": "Straight Through Processing",
-          "reTriggerCount": 26
+          "code": "ST",
+          "columns": [
+            {
+              "key": "label",
+              "header": "BRE"
+            },
+            {
+              "key": "initial",
+              "header": "Initial BRE"
+            },
+            {
+              "key": "final",
+              "header": "Final BRE"
+            }
+          ],
+          "rows": [
+            {
+              "id": "status",
+              "label": "BRE Status",
+              "initial": "Success",
+              "final": "Success"
+            },
+            {
+              "id": "decision",
+              "label": "BRE Decision",
+              "initial": [
+                "DC"
+              ],
+              "final": [
+                "ST"
+              ]
+            },
+            {
+              "id": "remarks",
+              "label": "BRE Remarks",
+              "initial": "Product Non Eligible",
+              "final": "Product Non Eligible"
+            },
+            {
+              "id": "discrepancy",
+              "label": "BRE Discrepancy",
+              "initial": "ACR#OCD#PAN#ADP#AGE#IDM#KYP",
+              "final": "ACR#OCD#PAN#ADP#AGE#IDM#KYP#NYC"
+            },
+            {
+              "id": "timestamp",
+              "label": "BRE Timestamp",
+              "initial": "2026-08-14T11:08:00+05:30",
+              "final": "2026-08-14T11:08:00+05:30"
+            }
+          ]
         }
       },
       {
-        "name": "summary",
+        "name": "sdtDecision",
+        "value": {
+          "fields": [
+            {
+              "name": "Financial Decision",
+              "value": "Standard"
+            },
+            {
+              "name": "Medical Decision",
+              "value": "Standard"
+            }
+          ]
+        }
+      },
+      {
+        "name": "claimAudit",
+        "value": {
+          "title": "Claim Audit",
+          "columns": [
+            {
+                "label":"Policy Number"
+            },
+            {
+                "label":"Product Code"
+            },
+            {
+                "label":"Claim Key"
+            },
+            {
+                "label":"Canonical ID"
+            },
+            {
+                "label":"Patient Name"
+            },
+            {
+                "label":"Ailment for Communication"
+            },
+            {
+                "label":"Claim Type"
+            },
+            {
+                "label":"Subtype"
+            },
+            {
+                "label":"Intimation Date"
+            },
+            {
+                "label":"DOA"
+            },
+            {
+                "label":"DOD"
+            },
+            {
+                "label":"Decision Status"
+            }
+          ],
+          "rows": []
+        }
+      },
+      {
+        "name": "uwGuidelines",
+        "value": {
+          "reasons": [
+            {
+              "reason": "Income document waived or not received",
+              "remark": "Income document waived or not raised. Please provide justification",
+              "systemAction": "",
+              "justificationReason": "",
+              "justificationRemarks": ""
+            },
+            {
+              "reason": "Medical requirement waived or not received",
+              "remark": "Medical document waived or not raised. Please provide justification",
+              "systemAction": "",
+              "justificationReason": "",
+              "justificationRemarks": ""
+            },
+            {
+              "reason": "Financially not viable",
+              "remark": "Justification required as financial eligibility is less than TFSA",
+              "systemAction": "",
+              "justificationReason": "",
+              "justificationRemarks": ""
+            },
+            {
+              "reason": "DRC Risk Blank or Null Risk",
+              "remark": "DRC Risk value is Blank or Null Risk â€” kindly take counter signing",
+              "systemAction": "REFER_TO_CS",
+              "justificationReason": "",
+              "justificationRemarks": ""
+            },
+            {
+              "reason": "TSA above your UW limit",
+              "remark": "Case above your underwriting limit, please take counter signing",
+              "systemAction": "REFER_TO_CS",
+              "justificationReason": "",
+              "justificationRemarks": ""
+            },
+            {
+              "reason": "Application form validity expired",
+              "remark": "Please call for fresh medical questionnaire",
+              "systemAction": "REFER_TO_HOD",
+              "justificationReason": "",
+              "justificationRemarks": ""
+            },
+            {
+              "reason": "BIU model response field is blank",
+              "remark": "BIU models predict response is blank â€” cannot take STD, XRT or COF decision. Kindly get the BIU response",
+              "systemAction": "",
+              "justificationReason": "",
+              "justificationRemarks": ""
+            }
+          ],
+          "justificationChoices": [
+            "Requirement waived",
+            "Document pending",
+            "Financial assessment",
+            "Medical assessment",
+            "Counter signing",
+            "Other"
+          ]
+        }
+      },
+      {
+        "name": "specialRemarks",
+        "value": {
+          "title": "Special Remarks",
+          "columns": [
+            "Comments",
+            "Updated Date",
+            "Updated By"
+          ],
+          "rows": [
+            {
+              "comments": "Medical documents require verification before the final decision.",
+              "updatedDate": "07/09/2026 11:36:09",
+              "updatedBy": "ipru75474"
+            },
+            {
+              "comments": "Customer was contacted for additional financial information.",
+              "updatedDate": "07/09/2026 10:52:41",
+              "updatedBy": "CUW Team"
+            },
+            {
+              "comments": "Previous claim history reviewed and no adverse concern identified.",
+              "updatedDate": "08/09/2026 09:18:27",
+              "updatedBy": "DRS Reviewer"
+            }
+          ]
+        }
+      },
+      {
+        "name": "caseUwDecision",
+        "value": {
+          "fields": [
+            {
+              "name": "BRE Overall Decision",
+              "value": ""
+            },
+            {
+              "name": "BRE Overall Remarks",
+              "value": ""
+            },
+            {
+              "name": "Case UW Decision",
+              "value": ""
+            }
+          ],
+          "choices": [
+            "Standard",
+            "Counter Offer",
+            "Decline",
+            "Reject",
+            "Postpone",
+            "Hold",
+            "Refer to Risk",
+            "Refer to Accuity",
+            "Refer to Reinsurer",
+            "Refer to HO CMO",
+            "Refer to Sr.UW",
+            "Refer to HoD",
+            "Refer to CUW Claim Audit",
+            "Refer to IT",
+            "Raise Requirements",
+            "Refer to Tele MER",
+            "Refer to Video MER",
+            "Refer to DVT"
+          ]
+        }
+      }
+    ],
+    "subSections": [
+      {
+        "name": "applicantProfile",
         "value": [
           {
             "memberType": "lifeassured1",
@@ -462,3021 +682,816 @@
             "jointPRRelation": "",
             "nriFlag": false,
             "fatfFlag": false,
-            "riskAnalytics": [
-              {
-                "medicalRisk": {
-                  "isMedical": true,
-                  "brePhysicalMedicalDecision": "std",
-                  "brePhysicalMedicalRemark": "test",
-                  "breTeleVideoMerDecision": "",
-                  "breTeleVideoMerRemark": "",
-                  "munichReMedicalDecision": "",
-                  "munichReRating": "",
-                  "biuMedicalStatus": "N"
-                },
-                "financialRisk": {
-                  "isFinancial": true,
-                  "breFinancialDecision": "std",
-                  "breRemark": "",
-                  "financialEligibility": "4.8E7",
-                  "derivedIncome": "1600000.0",
-                  "counterOfferValue": "5000000.0",
-                  "additionalSA": "0.0",
-                  "biuFinancialStatus": "false"
-                },
-                "otherRisk": {
-                  "isOthers": true,
-                  "ptlrResponse": "",
-                  "drcResponse": "N",
-                  "adverseIIB": "",
-                  "criminalQuestionResponseLA": "No",
-                  "pepQuestionResponseLA": "No",
-                  "criminalQuestionResponsePR": "No",
-                  "pepQuestionResponsePR": "No",
-                  "previousPolicySubstandard": "No",
-                  "avocationRelatedDisclosure": "",
-                  "healthQuestionPositive": "Yes",
-                  "employmentInRiskyIndustry": "LowRiskPremium",
-                  "fatfOfacCountryLogin": "No",
-                  "hazardousOccupation": "",
-                  "eddFlag": "Yes",
-                  "claimRiskIndicator": "",
-                  "faceMatchScore": "",
-                  "tobacco": "",
-                  "narcotics": ""
-                }
-              }
-            ],
-            "faceMatchDetails": {
-              "document": "",
-              "faceMatchScore": null,
-              "imageQuality": null,
-              "remarks": ""
-            },
-            "proposerSummary": {
-              "title": "",
-              "firstName": "GANESH",
-              "middleName": "",
-              "lastName": "CHAVAN",
-              "gender": "Male",
-              "maritalStatus": "Married",
-              "dob": "1995-03-14T00:00",
-              "age": {
-                "years": 31,
-                "days": 230
-              },
-              "profileImage": "",
-              "caseStatus": "DRAFT",
-              "nationality": "India",
-              "countryOfResidence": "India",
-              "residentStatus": "IND",
-              "education": "Graduate",
-              "pioStatus": "0",
-              "highestQualification": "Graduate",
-              "graduationFlag": "",
-              "orgName": "",
-              "yearsInServiceOrBusiness": null,
-              "industryType": "",
-              "birthCountry": "",
-              "occupationType": "PROF",
-              "netIncomeAmt": null,
-              "immigrationStatus": "Indian Resident",
-              "orgType": "",
-              "latestIncYear": 2026,
-              "isPEP": false,
-              "panNo": "AMXPB9901C",
-              "remarks": "",
-              "ckycNumber": "",
-              "criminalProceeding": "No",
-              "incomeProof": "ANM",
-              "designation": "Senior Manager",
-              "disabled": "N",
-              "percentageOfImpairment": "",
-              "typeOfImpairment": "",
-              "udidNumber": "UDID-90377180"
-            },
-            "applicantDetails": {
-              "dateOfBirth": "1995-03-14",
-              "gender": "Male",
-              "maritalStatus": "Married",
-              "nationality": "India",
-              "countryOfResidence": "India",
-              "education": "Graduate",
-              "designation": "Senior Manager",
-              "disabled": "N",
-              "percentageOfImpairment": "",
-              "typeOfImpairment": ""
-            },
-            "financialDetails": {
-              "annualIncome": 1600000,
-              "appliedSumAssured": 5000000,
-              "trsa": 5000000,
-              "tfsa": "Infinity"
-            },
-            "policyDetails": {
-              "proposerName": "",
-              "lifeAssuredName": "GANESH CHAVAN",
-              "productName": "ICICI Pru GIFT Assure",
-              "modalPremium": 500000,
-              "paymentMode": "",
-              "channelCode": "",
-              "channel": ""
-            },
-            "underwriting": {
-              "remarks": "Preferred Partner#Check Basic KYC Document Attestations#Original Verified KYC Document Required.#Above Non-medical limit#NRI Questionnaire Required#NRI: Passport Is Required as Age Proof#QSTN/Document Attached#Preferred Partner#Age Proof Required#TSSA value = 5000000#Require Valid Ageproof#NRI Lives- allowed with max 75emr#Web Aggregator Login#CCR waiver for BOL application",
-              "breDecision": {
-                "status": "ST",
-                "category": "Straight Through Processing",
-                "coverage": "Preferred Partner#Check Basic KYC Document Attestations#Original Verified KYC Document Required.#Above Non-medical limit#NRI Questionnaire Required#NRI: Passport Is Required as Age Proof#QSTN/Document Attached#Preferred Partner#Age Proof Required#TSSA value = 5000000#Require Valid Ageproof#NRI Lives- allowed with max 75emr#Web Aggregator Login#CCR waiver for BOL application"
-              }
-            },
-            "kycDetails": {
-              "panNumber": "AMXPB9901C",
-              "identityProofType": "ANM",
-              "identityProofNumber": "AAAAA1111A",
-              "addressProof": "ANM",
-              "incomeProof": "ANM",
-              "ageProof": "ANM",
-              "existingCkycNumber": "NA",
-              "pep": "No",
-              "criminalProceedings": "No",
-              "panFlag": "Verified",
-              "panAadharSeedingStatus": "Y",
-              "identityProofExpiryDate": "2099-12-31T00:00",
-              "pranNo": "",
-              "pranNoVerification": "",
-              "udsLink": "https://udsviewer-uat.icicilife.com/App/UdsViewer/document-listing/split?roleid=bk8vQVBlanM1WVhjekE4a0d6emJnZz09&_uidtype=M1ZLSVhSY09scmVPQ1R2Nk9lSFM5UT09&_uidvalue=Ri9Wa2xlUVRwZnRzSFNiZ0pCMnhiZz09&ntid=UDSMIDOFFICE&token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJVMDRMRHBkTlk3QVpMR2FRTlNvQW4zTTN0bFpOcUlaZXp5TUdvYkJxVzVLbkVOSHQiLCJhdWQiOiJ1cm46Ly9jNjA1MTFjMC0xMmEyLTQ3M2MtODBmZC00MjUyOGViNjVhNmEiLCJudElkIjoiVURTTUlET0ZGSUNFIiwiYXV0aCI6Imp6b3gwQXF5amh1cDhtcGkySTlmN01sNGF5UW4iLCJpc3MiOiJ1cm46Ly9hcGlnZWUtZWRnZS1KV1QtcG9saWN5LXRlc3QiLCJleHAiOjE3OTMzNTM0ODIsImlhdCI6MTc5MzM1MTY4MiwianRpIjoiZmYxMmY4OTUtZmRjZC00MWZiLWE1NmItZTQ2MDhhN2Y4ZDk1In0.ii9WDJj5xTI-UPIVwkl_6ZVahW0mXF6iXcTG4BX3b4k9xTxemLkrbKVkmehDZ-UUXTWNWnCVQ7ClZls4nm-LCmXRE-h99kkUcYHE0hlu5tuPAmSCLy0lLlAAlhbxjTKcG9VXfhPt4zc5BgU1zsWruMwan1JiFPlaoyFBJL6iD0IA7PQLH3UnzXyEId1BNTjCUDzJHsHQwZu7bjEWLJNTXSSadWsBe8cWNm0bZwvzynw34swdN2_symlSqyCkqZbZfzxJC29lYg_hPBmp8nZ9AqiO3AybEzaytJSotbnsras1AxF6mWIRmh5uFzoR-t_0b2Oabm2RUVZsLQD4i3hnYiaK7kEkaDVyAkPhBI_EH6_8xFDGICRVudCLiNE65Pv1Q7h3Wyjxn91V7pAJxEJoo8eoOPMjBjn-AC0yaYAaBtcQq4s-dif_vbvhDpRWV3wPv-WD58I_L2oCTJdMcvZec34e_gJyzsy38yJNSyx2ISDdwtwPyZ8HN0IXCCHxP8ZBPHPc3E8pRkkwEO_XJih7EMcCUGKGpWUWOfa9aBs-vhvm9AQkh5CeUPahyPVOzMcU4zlIPDbB95YvGBrkXW8JrRQvSCl9rPyJ6rZcW7jD_sNHI0sA2Wex8d5lM4Eo2R5sfCHpGtUQplovicr_lRej5Zlc_Uw70Egi-dm3AkHbMD0"
-            },
-            "address": [
-              {
-                "type": "communication",
-                "addressLine1": "dfsdde",
-                "addressLine2": "njwdjed",
-                "addressLine3": "ddeedw",
-                "landmark": "asdfvgbhnm",
-                "city": "CHENNAI",
-                "state": "TMND",
-                "pinCode": "603203",
-                "residingCountry": "India",
-                "topCity": "Y",
-                "negativePinCode": "N"
-              },
-              {
-                "type": "permanent",
-                "addressLine1": "jedj",
-                "addressLine2": "swhhjw",
-                "addressLine3": "whbdh",
-                "landmark": "dwjhjed",
-                "city": "CHENNAI",
-                "state": "TMND",
-                "pinCode": "603203",
-                "residingCountry": "India",
-                "topCity": "Y",
-                "negativePinCode": "N"
-              }
-            ],
-            "communicationAddressDetails": {
-              "addressLine1": "dfsdde",
-              "addressLine2": "njwdjed",
-              "addressLine3": "ddeedw",
-              "landmark": "asdfvgbhnm",
-              "city": "CHENNAI",
-              "state": "TMND",
-              "country": "India",
-              "pincode": "603203",
-              "topCity": "Y",
-              "negativePinCode": "N"
-            },
-            "permanentAddressDetails": {
-              "addressLine1": "jedj",
-              "addressLine2": "swhhjw",
-              "addressLine3": "whbdh",
-              "landmark": "dwjhjed",
-              "city": "CHENNAI",
-              "state": "TMND",
-              "country": "India",
-              "pincode": "603203",
-              "topCity": "Y",
-              "negativePinCode": "N"
-            },
-            "contactDetails": {
-              "mobileNo": "9125269789",
-              "alternateMobileNo": "",
-              "alternateMobile": "",
-              "std": "",
-              "landlineNo": "",
-              "landlineNumber": "",
-              "emailId": "nnm@gmail.com",
-              "emailPref": "Y",
-              "smsPref": "Y"
-            },
-            "applicantFinancialDetails": {
-              "occupation": "PROF",
-              "annualIncome": 1600000,
-              "gstin": "",
-              "lastIncomeYear": 2026,
-              "organisationType": "",
-              "organisationName": ""
-            },
-            "healthDetail": {
-              "height": "180.3",
-              "weight": "70",
-              "bmi": "22.0",
-              "avgSystolic": "",
-              "avgDiastolic": "",
-              "heightFeet": "",
-              "heightInches": "0",
-              "hazardousOccupation": "",
-              "isDisabled": "N",
-              "percentageOfImpairment": "",
-              "typeOfImpairment": "",
-              "illnessOrImpairment": [],
-              "substanceConsumption": [
-                {
-                  "substance": "",
-                  "consumedAs": "",
-                  "quantity": {
-                    "amount": "",
-                    "unit": "day/week"
+            "image_details": {
+              "label": "Image Details",
+              "value": {
+                "columns": [
+                  {
+                    "label": "Image Type"
                   },
-                  "noOfYears": null,
-                  "advisedByDoctorForAbstinence": ""
-                }
-              ],
-              "medicalQuestionnaire": [
+                  {
+                    "label": "Document"
+                  },
+                  {
+                    "label": "Face Match Score"
+                  },
+                  {
+                    "label": "Image Quality"
+                  },
+                  {
+                    "label": "Remarks"
+                  }
+                ],
+                "rows": [
+                  {
+                    "imageType": "Live photograph",
+                    "document": "Applicant selfie",
+                    "faceMatchScore": "98.6%",
+                    "imageQuality": "Good",
+                    "remarks": "Face matched successfully"
+                  }
+                ]
+              }
+            },
+            "personal_kyc": {
+              "label": "Personal & KYC",
+              "groups": [
+                [
+                  {
+                    "label": "Applicant Name",
+                    "value": "Rudra Prakash Sangha"
+                  },
+                  {
+                    "label": "Date of Birth",
+                    "value": "9 Aug 1988"
+                  },
+                  {
+                    "label": "Age",
+                    "value": "38 Years"
+                  },
+                  {
+                    "label": "Gender",
+                    "value": "Male"
+                  },
+                  {
+                    "label": "Marital Status",
+                    "value": ""
+                  },
+                  {
+                    "label": "Nationality",
+                    "value": "India"
+                  },
+                  {
+                    "label": "Country of Residence",
+                    "value": "India"
+                  },
+                  {
+                    "label": "Education",
+                    "value": "Graduate"
+                  },
+                  {
+                    "label": "Resident Status",
+                    "value": "IND"
+                  },
+                  {
+                    "label": "Designation",
+                    "value": "Manager"
+                  },
+                  {
+                    "label": "Disabled",
+                    "value": ""
+                  },
+                  {
+                    "label": "Percentage Of Impairment",
+                    "value": ""
+                  },
+                  {
+                    "label": "Type Of Impairment",
+                    "value": ""
+                  },
+                  {
+                    "label": "UDID Number",
+                    "value": "UDID-98765"
+                  },
+                  {
+                    "label": "UDS Link",
+                    "value": ""
+                  }
+                ],
+                [
+                  {
+                    "label": "PRAN Number",
+                    "value": "XXXXXXXX9012"
+                  },
+                  {
+                    "label": "PRAN Number Verification",
+                    "value": "Verified"
+                  },
+                  {
+                    "label": "PAN Number",
+                    "value": ""
+                  },
+                  {
+                    "label": "PAN Flag",
+                    "value": "Verified"
+                  },
+                  {
+                    "label": "PAN Aadhar Seeding Status",
+                    "value": "Y"
+                  },
+                  {
+                    "label": "Identity Proof Type",
+                    "value": "Aadhaar"
+                  },
+                  {
+                    "label": "Identity Proof Expiry Date",
+                    "value": "31 Dec 2099"
+                  },
+                  {
+                    "label": "Identity Proof Number",
+                    "value": "XXXXXX111A"
+                  },
+                  {
+                    "label": "Address Proof",
+                    "value": "Aadhaar"
+                  },
+                  {
+                    "label": "Income Proof",
+                    "value": "Aadhaar"
+                  },
+                  {
+                    "label": "CKYC Number",
+                    "value": "NA"
+                  },
+                  {
+                    "label": "PEP",
+                    "value": "No"
+                  },
+                  {
+                    "label": "Criminal Proceedings",
+                    "value": "No"
+                  }
+                ]
+              ]
+            },
+            "contact_and_address": {
+              "label": "Contact & Address",
+              "value": [
                 {
-                  "qtid": "Q",
-                  "value": "No",
-                  "remar": "",
-                  "subQts": []
+                  "label": "Communication Address",
+                  "value": [
+                    {
+                      "label": "Address Line 1",
+                      "value": "malad"
+                    },
+                    {
+                      "label": "Address Line 2",
+                      "value": "malad"
+                    },
+                    {
+                      "label": "Address Line 3",
+                      "value": ""
+                    },
+                    {
+                      "label": "Landmark",
+                      "value": "prism"
+                    },
+                    {
+                      "label": "City",
+                      "value": "mumbai"
+                    },
+                    {
+                      "label": "State",
+                      "value": "maharashtra"
+                    },
+                    {
+                      "label": "Country",
+                      "value": ""
+                    },
+                    {
+                      "label": "Pincode",
+                      "value": "400064"
+                    }
+                  ]
                 },
                 {
-                  "qtid": "LAPROPSAME",
-                  "value": "yes",
-                  "remar": "",
-                  "subQts": []
+                  "label": "Permanent Address",
+                  "value": [
+                    {
+                      "label": "Address Line 1",
+                      "value": "RFRF"
+                    },
+                    {
+                      "label": "Address Line 2",
+                      "value": "FGHJK"
+                    },
+                    {
+                      "label": "Address Line 3",
+                      "value": "FGHJKL"
+                    },
+                    {
+                      "label": "Landmark",
+                      "value": ""
+                    },
+                    {
+                      "label": "City",
+                      "value": "THANE"
+                    },
+                    {
+                      "label": "State",
+                      "value": "Maharashtra"
+                    },
+                    {
+                      "label": "Country",
+                      "value": "India"
+                    },
+                    {
+                      "label": "Pincode",
+                      "value": "400709"
+                    }
+                  ]
                 },
                 {
-                  "qtid": "ILLIMPAIRMENT",
-                  "value": "no",
-                  "remar": "",
-                  "subQts": []
-                },
-                {
-                  "qtid": "GYNACPROB",
-                  "value": "no",
-                  "remar": "",
-                  "subQts": []
-                },
-                {
-                  "qtid": "HISTMISCRG",
-                  "value": "no",
-                  "remar": "",
-                  "subQts": []
-                },
-                {
-                  "qtid": "PREGNANCY",
-                  "value": "no",
-                  "remar": "",
-                  "subQts": []
-                },
-                {
-                  "qtid": "HAZARDOUSOCC",
-                  "value": "no",
-                  "remar": "",
-                  "subQts": []
-                },
-                {
-                  "qtid": "HDTRYDISEASE",
-                  "value": "no",
-                  "remar": "",
-                  "subQts": []
-                },
-                {
-                  "qtid": "SUBSTDREINSTMT",
-                  "value": "no",
-                  "remar": "",
-                  "subQts": []
-                },
-                {
-                  "qtid": "THIRDPARTYPAYMENT",
-                  "value": "N",
-                  "remar": "",
-                  "subQts": []
-                },
-                {
-                  "qtid": "EXCLIENT",
-                  "value": "No",
-                  "remar": "",
-                  "subQts": []
-                },
-                {
-                  "qtid": "ILLIMPAIRMENT",
-                  "value": "no",
-                  "remar": "",
-                  "subQts": []
-                },
-                {
-                  "qtid": "GYNACPROB",
-                  "value": "no",
-                  "remar": "",
-                  "subQts": []
-                },
-                {
-                  "qtid": "HISTMISCRG",
-                  "value": "no",
-                  "remar": "",
-                  "subQts": []
-                },
-                {
-                  "qtid": "PREGNANCY",
-                  "value": "no",
-                  "remar": "",
-                  "subQts": []
-                },
-                {
-                  "qtid": "HAZARDOUSOCC",
-                  "value": "no",
-                  "remar": "",
-                  "subQts": []
-                },
-                {
-                  "qtid": "HDTRYDISEASE",
-                  "value": "no",
-                  "remar": "",
-                  "subQts": []
-                },
-                {
-                  "qtid": "SUBSTDREINSTMT",
-                  "value": "no",
-                  "remar": "",
-                  "subQts": []
-                },
-                {
-                  "qtid": "isThisPreFilledPlan",
-                  "value": "No",
-                  "remar": "",
-                  "subQts": []
+                  "label": "Contact Details",
+                  "value": [
+                    {
+                      "label": "Mobile No.",
+                      "value": "9878716726"
+                    },
+                    {
+                      "label": "Email ID",
+                      "value": "TRSTR@GMAIL.COM"
+                    },
+                    {
+                      "label": "Alternate Mobile",
+                      "value": ""
+                    },
+                    {
+                      "label": "STD/ISD Code",
+                      "value": ""
+                    },
+                    {
+                      "label": "Landline Number",
+                      "value": ""
+                    },
+                    {
+                      "label": "Email Pref",
+                      "value": "Y"
+                    },
+                    {
+                      "label": "SMS Pref",
+                      "value": "Y"
+                    }
+                  ]
                 }
               ]
             },
-            "nominee": [
-              {
-                "relationWithLA": "Wife",
-                "relationship": "Wife",
-                "firstName": "Johna",
-                "lastName": "Jain",
-                "dob": "1999-05-26T00:00",
-                "gender": "Female",
-                "percentage": 100,
-                "proposerNomineeRelation": "Wife",
-                "accountNumber": "",
-                "ifsc": ""
+            "nominee": {
+              "label": "Nominee",
+              "value": [
+                {
+                  "label": "Nominee Details",
+                  "columns": [
+                    {
+                      "label": "Nominee Name"
+                    },
+                    {
+                      "label": "Nominee DOB"
+                    },
+                    {
+                      "label": "Gender"
+                    },
+                    {
+                      "label": "Relationship"
+                    },
+                    {
+                      "label": "Share %"
+                    }
+                  ],
+                  "rows": [
+                    {
+                      "name": "Smit Sangha",
+                      "dob": "12 Mar 1991",
+                      "gender": "Male",
+                      "relationship": "",
+                      "share": "0"
+                    },
+                    {
+                      "name": "",
+                      "dob": "",
+                      "gender": "",
+                      "relationship": "",
+                      "share": ""
+                    }
+                  ]
+                }
+              ]
+            },
+            "generic": {
+              "label": "Generic",
+              "value": {
+                "label": "Generic",
+                "value": [
+                  {
+                    "label": "Existing Policy Number",
+                    "value": "NA"
+                  },
+                  {
+                    "label": "Client ID",
+                    "value": "NA"
+                  },
+                  {
+                    "label": "Self Proposed",
+                    "value": "Yes"
+                  },
+                  {
+                    "label": "Type of Proposer",
+                    "value": "Individual"
+                  },
+                  {
+                    "label": "Relationship with Life Assured",
+                    "value": "Self"
+                  },
+                  {
+                    "label": "Type of Proposal",
+                    "value": "Retail New Business"
+                  },
+                  {
+                    "label": "OID App form",
+                    "value": ""
+                  },
+                  {
+                    "label": "OID IIB",
+                    "value": ""
+                  },
+                  {
+                    "label": "Previous policy",
+                    "value": ""
+                  }
+                ]
               }
-            ],
-            "appointee": [],
-            "genericDetails": {
-              "existingPolicyNumber": "NA",
-              "clientId": "NA",
-              "selfProposed": "Yes",
-              "typeOfProposer": "Individual",
-              "relationshipWithLifeAssured": "Self",
-              "typeOfProposal": "Retail New Business"
             },
-            "eiaDetails": {
-              "openEIA": "No",
-              "existingEIANumber": "NA",
-              "preferredRepository": "",
-              "convertPolicies": "No"
-            },
-            "fundDetails": {
-              "allocationStrategy": "",
-              "totalAllocation": "",
-              "atpOpted": "",
-              "fundDetail": []
-            },
-            "paymentDetails": {},
-            "payoutDetails": {},
-            "advisorDetails": {
-              "relationWithAdvisor": "others",
-              "acquaintanceDuration": 0,
-              "fileSentToCopsDate": "",
-              "branchUWDate": "",
-              "decalarationDate": "",
-              "declarationPlace": ""
-            },
-            "questions": [
-              {
-                "quesCode": "Q",
-                "quesFor": "LA",
-                "quesType": "",
-                "quesAns": "No"
-              },
-              {
-                "quesCode": "LAPROPSAME",
-                "quesFor": "PR",
-                "quesType": "GEN",
-                "quesAns": "yes"
-              },
-              {
-                "quesCode": "ILLIMPAIRMENT",
-                "quesFor": "PR",
-                "quesType": "HEALTH",
-                "quesAns": "no"
-              },
-              {
-                "quesCode": "GYNACPROB",
-                "quesFor": "PR",
-                "quesType": "FEMQUES",
-                "quesAns": "no"
-              },
-              {
-                "quesCode": "HISTMISCRG",
-                "quesFor": "PR",
-                "quesType": "FEMQUES",
-                "quesAns": "no"
-              },
-              {
-                "quesCode": "PREGNANCY",
-                "quesFor": "PR",
-                "quesType": "FEMQUES",
-                "quesAns": "no"
-              },
-              {
-                "quesCode": "HAZARDOUSOCC",
-                "quesFor": "PR",
-                "quesType": "GEN",
-                "quesAns": "no"
-              },
-              {
-                "quesCode": "HDTRYDISEASE",
-                "quesFor": "PR",
-                "quesType": "FAMILY",
-                "quesAns": "no"
-              },
-              {
-                "quesCode": "SUBSTDREINSTMT",
-                "quesFor": "PR",
-                "quesType": "HEALTH",
-                "quesAns": "no"
-              },
-              {
-                "quesCode": "THIRDPARTYPAYMENT",
-                "quesFor": "LA",
-                "quesType": "GEN",
-                "quesAns": "N"
-              },
-              {
-                "quesCode": "EXCLIENT",
-                "quesFor": "PR",
-                "quesType": "GEN",
-                "quesAns": "No"
-              },
-              {
-                "quesCode": "ILLIMPAIRMENT",
-                "quesFor": "LA",
-                "quesType": "HEALTH",
-                "quesAns": "no"
-              },
-              {
-                "quesCode": "GYNACPROB",
-                "quesFor": "LA",
-                "quesType": "FEMQUES",
-                "quesAns": "no"
-              },
-              {
-                "quesCode": "HISTMISCRG",
-                "quesFor": "LA",
-                "quesType": "FEMQUES",
-                "quesAns": "no"
-              },
-              {
-                "quesCode": "PREGNANCY",
-                "quesFor": "LA",
-                "quesType": "FEMQUES",
-                "quesAns": "no"
-              },
-              {
-                "quesCode": "HAZARDOUSOCC",
-                "quesFor": "LA",
-                "quesType": "GEN",
-                "quesAns": "no"
-              },
-              {
-                "quesCode": "HDTRYDISEASE",
-                "quesFor": "LA",
-                "quesType": "FAMILY",
-                "quesAns": "no"
-              },
-              {
-                "quesCode": "SUBSTDREINSTMT",
-                "quesFor": "LA",
-                "quesType": "HEALTH",
-                "quesAns": "no"
-              },
-              {
-                "quesCode": "isThisPreFilledPlan",
-                "quesFor": "LA",
-                "quesType": "GEN",
-                "quesAns": "No"
+            "product_details": {
+              "label": "Product Details",
+              "value": {
+                "label": "Product Details",
+                "value": [
+                  {
+                    "label": "Top Advisor Flag",
+                    "value": "-"
+                  },
+                  {
+                    "label": "Partner Type",
+                    "value": "-"
+                  },
+                  {
+                    "label": "Benefit Option",
+                    "value": "-"
+                  },
+                  {
+                    "label": "Policy Term",
+                    "value": "-"
+                  },
+                  {
+                    "label": "Premium Paying Term",
+                    "value": "-"
+                  },
+                  {
+                    "label": "Proposer Type",
+                    "value": "-"
+                  },
+                  {
+                    "label": "Annual Premium",
+                    "value": "-"
+                  },
+                  {
+                    "label": "Sum Assured to Premium Ratio",
+                    "value": "-"
+                  }
+                ]
               }
-            ],
-            "producerDetails": {
-              "perfiosBank": "No",
-              "premiumPaymentOption": "",
-              "isecExperianCategory": "",
-              "gstInNumber": "",
-              "pasaSegmentCitiesFlag": "",
-              "productSource": "",
-              "imputedMarker": "",
-              "imputedIncome": "",
-              "prePopulatedValueEdited": "",
-              "fnaSumAssured": "",
-              "componentCode": "EGAG",
-              "cdfWaiverFlag": "No",
-              "youthExpressFlag": "",
-              "atsSource": "",
-              "ipsDiscountFlag": "",
-              "lumpSumPercentage": "",
-              "accuityRiskIndicator": "",
-              "primaryLASumAssured": "5000000"
             },
-            "documentDetails": [
-              {
-                "documentType": "AGE_PROOF",
-                "documentName": "ANM",
-                "documentId": "AAAAA1111A",
-                "validityDate": "2099-12-31T00:00"
+            "eia": {
+              "label": "eIA",
+              "value": {
+                "label": "eIA",
+                "value": [
+                  {
+                    "label": "Open eIA",
+                    "value": "No"
+                  },
+                  {
+                    "label": "Existing eIA Number",
+                    "value": "NA"
+                  },
+                  {
+                    "label": "Preferred Repository",
+                    "value": ""
+                  },
+                  {
+                    "label": "Convert Policies",
+                    "value": "No"
+                  }
+                ]
               }
-            ],
-            "bureauDetails": {
-              "cibilScore": "0",
-              "cibilIncomeSegment": "0",
-              "cibilEligibilityStatus": "",
-              "cibilServiceStatus": "",
-              "experianScore": "10",
-              "experianIncomeSegment": "",
-              "experianEligibilityStatus": "",
-              "experianServiceStatus": "",
-              "payuScore": "",
-              "payuIncomeSegment": "",
-              "payuEligibilityStatus": "",
-              "payuServiceStatus": ""
+            },
+            "payment_and_payout": {
+              "label": "Payment & Payout",
+              "value": [
+                {
+                  "label": "Payment Details",
+                  "value": [
+                    {
+                      "label": "Is it a Third Party payment",
+                      "value": "false"
+                    },
+                    {
+                      "label": "Payment Options",
+                      "value": ""
+                    }
+                  ]
+                },
+                {
+                  "label": "Payout Details",
+                  "value": [
+                    {
+                      "label": "Account Type",
+                      "value": "Savings"
+                    },
+                    {
+                      "label": "Bank Type",
+                      "value": ""
+                    },
+                    {
+                      "label": "Branch",
+                      "value": ""
+                    },
+                    {
+                      "label": "MICR Code",
+                      "value": "1234"
+                    },
+                    {
+                      "label": "IFSC code",
+                      "value": "ABKV998"
+                    },
+                    {
+                      "label": "Account Number",
+                      "value": "129894543"
+                    }
+                  ]
+                }
+              ]
             }
           }
         ]
       },
       {
-        "name": "requirementManagement",
-        "value": [
-          {
-            "team": "UW",
-            "profile": "",
-            "category": "Consent",
-            "subCategory": "Policy confirmation",
-            "document": "OTP",
-            "specialTest": "N",
-            "reason": "Document not uplaoded",
-            "fupCode": "OTP",
-            "requirementId": 11792,
-            "description": "OTP-Policy confirmation/ consent code required",
-            "status": "pass",
-            "isActive": "Y",
-            "raisedDate": "2026-08-20T00:00:00",
-            "raisedBy": "BRE_URMS",
-            "receivedDate": "2026-08-20",
-            "receivedBy": "VIDASSURE",
-            "validity": "",
-            "userId": "",
-            "remarks": "",
-            "udsLink": "",
-            "ocrStatus": "pass",
-            "ocrDoc": ""
-          },
-          {
-            "team": "COPS",
-            "profile": "",
-            "category": "KYC",
-            "subCategory": "Ageproof",
-            "document": "PAN Card",
-            "specialTest": "N",
-            "reason": "Documents not submitted",
-            "fupCode": "AGE",
-            "requirementId": 11790,
-            "description": "AGE-Age proof of life assured (Passport - front & back or Driving License or Pan Card or Aadhaar - front & back)",
-            "status": "pass",
-            "isActive": "Y",
-            "raisedDate": "2026-08-20T00:00:00",
-            "raisedBy": "BRE_URMS",
-            "receivedDate": "2026-08-20",
-            "receivedBy": "VIDASSURE",
-            "validity": "",
-            "userId": "",
-            "remarks": "",
-            "udsLink": "",
-            "ocrStatus": "pass",
-            "ocrDoc": ""
-          },
-          {
-            "team": "COPS",
-            "profile": "",
-            "category": "KYC",
-            "subCategory": "PAN Card",
-            "document": "PAN /Form 60",
-            "specialTest": "N",
-            "reason": "Documents not submitted",
-            "fupCode": "PAL",
-            "requirementId": 11791,
-            "description": "PAL- Please submit PAN Card copy linked with your Aadhaar",
-            "status": "pass",
-            "isActive": "Y",
-            "raisedDate": "2026-08-20T00:00:00",
-            "raisedBy": "BRE_URMS",
-            "receivedDate": "2026-08-20",
-            "receivedBy": "VIDASSURE",
-            "validity": "",
-            "userId": "",
-            "remarks": "",
-            "udsLink": "",
-            "ocrStatus": "pass",
-            "ocrDoc": ""
-          },
-          {
-            "team": "COPS",
-            "profile": "",
-            "category": "KYC",
-            "subCategory": "PAN Card",
-            "document": "Photo",
-            "specialTest": "N",
-            "reason": "Documents not submitted",
-            "fupCode": "KYP",
-            "requirementId": 11795,
-            "description": "KYP- Upload recent photograph of proposer",
-            "status": "pass",
-            "isActive": "Y",
-            "raisedDate": "2026-08-20T00:00:00",
-            "raisedBy": "BRE_URMS",
-            "receivedDate": "2026-08-20",
-            "receivedBy": "VIDASSURE",
-            "validity": "",
-            "userId": "",
-            "remarks": "",
-            "udsLink": "",
-            "ocrStatus": "pass",
-            "ocrDoc": ""
-          },
-          {
-            "team": "COPS",
-            "profile": "",
-            "category": "KYC",
-            "subCategory": "ID proof",
-            "document": "Drving License",
-            "specialTest": "N",
-            "reason": "Documents not submitted",
-            "fupCode": "IDM",
-            "requirementId": 11793,
-            "description": "IDM- Upload valid ID proof of proposer (Passport - front & back or Driving License or Pan Card or Aadhaar - front & back)",
-            "status": "pass",
-            "isActive": "Y",
-            "raisedDate": "2026-08-20T00:00:00",
-            "raisedBy": "BRE_URMS",
-            "receivedDate": "2026-08-20",
-            "receivedBy": "VIDASSURE",
-            "validity": "",
-            "userId": "",
-            "remarks": "",
-            "udsLink": "",
-            "ocrStatus": "pass",
-            "ocrDoc": ""
-          },
-          {
-            "team": "COPS",
-            "profile": "",
-            "category": "KYC",
-            "subCategory": "Address Proof",
-            "document": "Driving License",
-            "specialTest": "N",
-            "reason": "Documents not submitted",
-            "fupCode": "ADP",
-            "requirementId": 11794,
-            "description": "ADP-Address proof of the proposer matching with application form (Passport - front & back or Aadhaar - front & back or Driving License or Voter id)",
-            "status": "pass",
-            "isActive": "Y",
-            "raisedDate": "2026-08-20T00:00:00",
-            "raisedBy": "BRE_URMS",
-            "receivedDate": "2026-08-20",
-            "receivedBy": "VIDASSURE",
-            "validity": "",
-            "userId": "",
-            "remarks": "",
-            "udsLink": "",
-            "ocrStatus": "pass",
-            "ocrDoc": ""
-          },
-          {
-            "team": "COPS",
-            "profile": "",
-            "category": "Internal",
-            "subCategory": "SPAARC call",
-            "document": "SPAARC call ID",
-            "specialTest": "N",
-            "reason": "Call ID to be raised for details mismatch in Application form",
-            "fupCode": "SCI",
-            "requirementId": 12069,
-            "description": "SPAARC call ID to be raised (related to Name, address, DOB, Pin Code, gender & residential status mismatch as per the IUW form)",
-            "status": "pass",
-            "isActive": "Y",
-            "raisedDate": "2026-08-24T00:00:00",
-            "raisedBy": "ipru75031",
-            "receivedDate": "2026-08-24",
-            "receivedBy": "ipru75031",
-            "validity": "",
-            "userId": "",
-            "remarks": "",
-            "udsLink": "",
-            "ocrStatus": "",
-            "ocrDoc": ""
-          }
-        ]
-      },
-      {
-        "name": "decision",
-        "value": null
-      },
-      {
-        "name": "applicationInfo",
+        "name": "auditTrail",
+        "label": "Audit Trail",
         "value": {
-          "applicationDate": "2026-08-07T00:00:00.0",
-          "comboFlag": "no",
-          "storyCode": "",
-          "pbRiskScore": "",
-          "comboNumber": "OB90311123",
-          "lifeCount": null,
-          "proposerType": "Individual",
-          "umCode": "",
-          "source": "M090",
-          "simultaneousPolicies": false,
-          "simultaneousLifeSA": 0,
-          "isLAPropSame": true,
-          "otherPolicySA": 0,
-          "lifeType": "Main Life",
-          "coApplicationFlag": "no",
-          "gaVisitorId": "",
-          "isTagged": "",
-          "taggedAppNo": "NA",
-          "taggedRelation": "NA",
-          "spousePolicyNo": "NA",
-          "trsa": 5000000,
-          "tfsa": "Infinity",
-          "tsa": "5000000.0",
-          "tfesa": 5000000,
-          "tmsa": 5000000,
-          "adbrSa": 0,
-          "ciRiderSa": 0,
-          "case_category": ""
-        }
-      },
-      {
-        "name": "basicDetails",
-        "value": {
-          "applicationNumber": "OB90311125",
-          "lastLoginDate": "2026-10-30T14:44:42.362049",
-          "submitDate": "2026-08-07T00:00:00.0",
-          "totalPremium": 500000,
-          "sourceSystem": "M090"
-        }
-      },
-      {
-        "name": "applicationOverview",
-        "value": {
-          "sourcingDetail": {
-            "agentCode": "01245065",
-            "bankCode": "01J",
-            "corporateAgent": "",
-            "negativeAdvisor": "",
-            "agencyType": "OB",
-            "areaCode": "",
-            "partnerType": "",
-            "lanNumber": "",
-            "partnerBank": "",
-            "salesChannel": "",
-            "fscfsm": "",
-            "cafosCode": "",
-            "companyCode": "NCOMBO",
-            "spCode": "",
-            "csrlim": "",
-            "bank": "",
-            "branch": "",
-            "channelCode": "",
-            "drcChannelCode": "BOL",
-            "subChannelCode": "",
-            "agentName": "ICICI Prudential Website",
-            "trsa": 5000000,
-            "tfsa": "Infinity"
-          },
-          "groupDetails": {
-            "coverageOption": "",
-            "coverageStatus": "",
-            "moratorium": "",
-            "loanType": "",
-            "bankType": "",
-            "loanTerm": null,
-            "loanAmount": null,
-            "typeOfLoan": "",
-            "dateOfLoanDisbursement": "",
-            "shareOfLoan": null,
-            "applicantStatus": "",
-            "shareOfLoanJl": null,
-            "applicantStatusJl": "",
-            "masterPolicyHolder": ""
-          },
-          "productDetail": [
+          "columns": [
             {
-              "type": "base",
-              "code": "E40",
-              "name": "ICICI Pru GIFT Assure",
-              "faceValue": "5000000",
-              "coverageOption": "",
-              "term": "20",
-              "premiumMode": "",
-              "renewalPremiumMode": "",
-              "premiumFrequency": "12",
-              "annualPremium": 500000,
-              "installmentPremium": "500000",
-              "installmentPremiumWithTax": "500000",
-              "ratingFactor": "0",
-              "isEligible": "N",
-              "riskCessationTerm": 20,
-              "premiumCessationTerm": 10,
-              "paymentAmount": 500000,
-              "premiumModeFpd": "Credit Card",
-              "baseAnnualPremium": 500000,
-              "premium": 500000,
-              "sumAssured": 5000000,
-              "loanLimit": null,
-              "deathBenefitPayoutOption": "",
-              "benefitOption": "",
-              "statCode": "",
-              "incomeBenefitFlag": "",
-              "lifeStageBenefitFlag": "",
-              "statCodeD": "",
-              "statCodeE": "N40",
-              "initialSumAssured": "",
-              "modalPremium": 500000,
-              "productType": "",
-              "customerType": "HNI",
-              "policyType": "Retail New Business",
-              "policyTerm": 20,
-              "premiumPaymentTerm": 10
+              "label": "User ID"
+            },
+            {
+              "label": "User Name"
+            },
+            {
+              "label": "Pool Name"
+            },
+            {
+              "label": "Case Status"
+            },
+            {
+              "label": "Decision"
+            },
+            {
+              "label": "Date Updated On"
+            },
+            {
+              "label": "Comments/Remarks"
             }
           ],
-          "riderDetails": [],
-          "customer": {
-            "customerType": "HNI",
-            "policyType": "Retail New Business"
-          },
-          "policyDetails": {
-            "proposerName": "",
-            "lifeAssuredName": "GANESH CHAVAN",
-            "modalPremium": 500000,
-            "policyTerm": 20,
-            "premiumPaymentTerm": 10,
-            "paymentMode": ""
-          }
+          "rows": [
+            {
+              "userId": "",
+              "userName": "",
+              "poolName": "",
+              "caseStatus": "",
+              "Decision": "",
+              "updatedDate": "",
+              "comments": ""
+            }
+          ]
         }
-      }
-    ],
-    "subSections": [
+      },
       {
-        "name": "proposerForm",
+        "name": "raiseGrievance",
         "value": {
-          "link": "https://udsviewer-uat.icicilife.com/App/UdsViewer/document-listing/split?roleid=bk8vQVBlanM1WVhjekE4a0d6emJnZz09&_uidtype=M1ZLSVhSY09scmVPQ1R2Nk9lSFM5UT09&_uidvalue=Ri9Wa2xlUVRwZnRzSFNiZ0pCMnhiZz09&ntid=UDSMIDOFFICE&token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJVMDRMRHBkTlk3QVpMR2FRTlNvQW4zTTN0bFpOcUlaZXp5TUdvYkJxVzVLbkVOSHQiLCJhdWQiOiJ1cm46Ly9jNjA1MTFjMC0xMmEyLTQ3M2MtODBmZC00MjUyOGViNjVhNmEiLCJudElkIjoiVURTTUlET0ZGSUNFIiwiYXV0aCI6Imp6b3gwQXF5amh1cDhtcGkySTlmN01sNGF5UW4iLCJpc3MiOiJ1cm46Ly9hcGlnZWUtZWRnZS1KV1QtcG9saWN5LXRlc3QiLCJleHAiOjE3OTMzNTM0ODIsImlhdCI6MTc5MzM1MTY4MiwianRpIjoiZmYxMmY4OTUtZmRjZC00MWZiLWE1NmItZTQ2MDhhN2Y4ZDk1In0.ii9WDJj5xTI-UPIVwkl_6ZVahW0mXF6iXcTG4BX3b4k9xTxemLkrbKVkmehDZ-UUXTWNWnCVQ7ClZls4nm-LCmXRE-h99kkUcYHE0hlu5tuPAmSCLy0lLlAAlhbxjTKcG9VXfhPt4zc5BgU1zsWruMwan1JiFPlaoyFBJL6iD0IA7PQLH3UnzXyEId1BNTjCUDzJHsHQwZu7bjEWLJNTXSSadWsBe8cWNm0bZwvzynw34swdN2_symlSqyCkqZbZfzxJC29lYg_hPBmp8nZ9AqiO3AybEzaytJSotbnsras1AxF6mWIRmh5uFzoR-t_0b2Oabm2RUVZsLQD4i3hnYiaK7kEkaDVyAkPhBI_EH6_8xFDGICRVudCLiNE65Pv1Q7h3Wyjxn91V7pAJxEJoo8eoOPMjBjn-AC0yaYAaBtcQq4s-dif_vbvhDpRWV3wPv-WD58I_L2oCTJdMcvZec34e_gJyzsy38yJNSyx2ISDdwtwPyZ8HN0IXCCHxP8ZBPHPc3E8pRkkwEO_XJih7EMcCUGKGpWUWOfa9aBs-vhvm9AQkh5CeUPahyPVOzMcU4zlIPDbB95YvGBrkXW8JrRQvSCl9rPyJ6rZcW7jD_sNHI0sA2Wex8d5lM4Eo2R5sfCHpGtUQplovicr_lRej5Zlc_Uw70Egi-dm3AkHbMD0",
-          "errorMessage": "successful"
+          "title": "Raise Grievance",
+          "section": "Medical Requirements",
+          "columns": [
+            {
+                "label":"FUP Code"
+            },
+            {
+                "label":"Profile"
+            },
+            {
+                "label":"Remarks By User"
+            }
+          ],
+          "rows": [
+            {
+              "fupCode": "",
+              "profile": "",
+              "Remarks": ""
+            }
+          ]
         }
       },
       {
         "name": "previousPolicies",
-        "value": [
-          {
-            "policyNumber": "OB91311116",
-            "productName": "",
-            "productType": "T68",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 50000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB91311116",
-            "applicationNo": "",
-            "appliedSumAssured": 50000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "72"
-          },
-          {
-            "policyNumber": "OB91311103",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 50000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB91311103",
-            "applicationNo": "",
-            "appliedSumAssured": 50000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "71"
-          },
-          {
-            "policyNumber": "OB91311101",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 50000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB91311101",
-            "applicationNo": "",
-            "appliedSumAssured": 50000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "70"
-          },
-          {
-            "policyNumber": "OB90911123",
-            "productName": "",
-            "productType": "T68",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 50000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90911123",
-            "applicationNo": "",
-            "appliedSumAssured": 50000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "69"
-          },
-          {
-            "policyNumber": "OB90341123",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90341123",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "68"
-          },
-          {
-            "policyNumber": "OB90341113",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90341113",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "67"
-          },
-          {
-            "policyNumber": "OB90334114",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90334114",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "66"
-          },
-          {
-            "policyNumber": "OB90331114",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90331114",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "65"
-          },
-          {
-            "policyNumber": "OB90331113",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 50000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90331113",
-            "applicationNo": "",
-            "appliedSumAssured": 50000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "64"
-          },
-          {
-            "policyNumber": "OB90318768",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90318768",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "63"
-          },
-          {
-            "policyNumber": "OB90318767",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90318767",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "62"
-          },
-          {
-            "policyNumber": "OB90318765",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90318765",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "61"
-          },
-          {
-            "policyNumber": "OB90318764",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90318764",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "60"
-          },
-          {
-            "policyNumber": "OB90318566",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90318566",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "59"
-          },
-          {
-            "policyNumber": "OB90318565",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90318565",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "58"
-          },
-          {
-            "policyNumber": "OB90318564",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90318564",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "57"
-          },
-          {
-            "policyNumber": "OB90318164",
-            "productName": "ICICI Pru GIFT Assure",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90318219",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 0,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "56"
-          },
-          {
-            "policyNumber": "OB90318164",
-            "productName": "ICICI Pru GIFT Assure",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90318218",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 0,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "55"
-          },
-          {
-            "policyNumber": "OB90318201",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90318201",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "54"
-          },
-          {
-            "policyNumber": "OB90318200",
-            "productName": "",
-            "productType": "U95",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90318200",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "53"
-          },
-          {
-            "policyNumber": "OB90318174",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90318174",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "52"
-          },
-          {
-            "policyNumber": "OB90318173",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90318173",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "51"
-          },
-          {
-            "policyNumber": "OB90318171",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90318171",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "50"
-          },
-          {
-            "policyNumber": "OB90318170",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90318170",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "49"
-          },
-          {
-            "policyNumber": "OB90318169",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 100000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90318169",
-            "applicationNo": "",
-            "appliedSumAssured": 100000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 0,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "48"
-          },
-          {
-            "policyNumber": "OB90318168",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 2000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90318168",
-            "applicationNo": "",
-            "appliedSumAssured": 2000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 0,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "47"
-          },
-          {
-            "policyNumber": "OB90318167",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 2000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90318167",
-            "applicationNo": "",
-            "appliedSumAssured": 2000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 0,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "46"
-          },
-          {
-            "policyNumber": "OB90318166",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 2000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90318166",
-            "applicationNo": "",
-            "appliedSumAssured": 2000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 0,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "45"
-          },
-          {
-            "policyNumber": "OB90318165",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90318165",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 0,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "44"
-          },
-          {
-            "policyNumber": "OB90318164",
-            "productName": "ICICI Pru GIFT Assure",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90318164",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 0,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "43"
-          },
-          {
-            "policyNumber": "OB90318163",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90318163",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "42"
-          },
-          {
-            "policyNumber": "OB90318164",
-            "productName": "ICICI Pru GIFT Assure",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90318133",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 0,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "41"
-          },
-          {
-            "policyNumber": "OB90318126",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90318126",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "40"
-          },
-          {
-            "policyNumber": "OB90318125",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90318125",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "39"
-          },
-          {
-            "policyNumber": "OB90318123",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90318123",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "38"
-          },
-          {
-            "policyNumber": "OB90318122",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90318122",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "37"
-          },
-          {
-            "policyNumber": "OB90318118",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90318118",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "36"
-          },
-          {
-            "policyNumber": "OB90311205",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90311205",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 0,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "35"
-          },
-          {
-            "policyNumber": "OB90311204",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90311204",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 0,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "34"
-          },
-          {
-            "policyNumber": "OB90311202",
-            "productName": "",
-            "productType": "NA",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90311202",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "33"
-          },
-          {
-            "policyNumber": "OB90311190",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90311190",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "32"
-          },
-          {
-            "policyNumber": "OB90311177",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 50000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90311177",
-            "applicationNo": "",
-            "appliedSumAssured": 50000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "31"
-          },
-          {
-            "policyNumber": "OB90311176",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 50000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90311176",
-            "applicationNo": "",
-            "appliedSumAssured": 50000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "30"
-          },
-          {
-            "policyNumber": "OB90311173",
-            "productName": "ICICI Pru GIFT Assure",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90311173",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 0,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "29"
-          },
-          {
-            "policyNumber": "OB90311139",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90311139",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "28"
-          },
-          {
-            "policyNumber": "OB90311129",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90311129",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "27"
-          },
-          {
-            "policyNumber": "OB90311128",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90311128",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "26"
-          },
-          {
-            "policyNumber": "OB90311124",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90311124",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "25"
-          },
-          {
-            "policyNumber": "OB90311123",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90311123",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "24"
-          },
-          {
-            "policyNumber": "OB90311122",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 50000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90311122",
-            "applicationNo": "",
-            "appliedSumAssured": 50000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 5000000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "23"
-          },
-          {
-            "policyNumber": "OB90311121",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 50000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90311121",
-            "applicationNo": "",
-            "appliedSumAssured": 50000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 5000000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "22"
-          },
-          {
-            "policyNumber": "OB90311119",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 50000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90311119",
-            "applicationNo": "",
-            "appliedSumAssured": 50000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 5000000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "21"
-          },
-          {
-            "policyNumber": "OB90311118",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 50000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90311118",
-            "applicationNo": "",
-            "appliedSumAssured": 50000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "20"
-          },
-          {
-            "policyNumber": "OB90311117",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90311117",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "19"
-          },
-          {
-            "policyNumber": "OB90311116",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90311116",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "18"
-          },
-          {
-            "policyNumber": "OB90311115",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90311115",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "17"
-          },
-          {
-            "policyNumber": "OB90311114",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90311114",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "16"
-          },
-          {
-            "policyNumber": "OB90311113",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90311113",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "15"
-          },
-          {
-            "policyNumber": "OB90311111",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 50000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90311111",
-            "applicationNo": "",
-            "appliedSumAssured": 50000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "14"
-          },
-          {
-            "policyNumber": "OB90311109",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 50000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90311109",
-            "applicationNo": "",
-            "appliedSumAssured": 50000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "13"
-          },
-          {
-            "policyNumber": "OB90311103",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 50000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90311103",
-            "applicationNo": "",
-            "appliedSumAssured": 50000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "12"
-          },
-          {
-            "policyNumber": "OB20341113",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB20341113",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "11"
-          },
-          {
-            "policyNumber": "OB20318164",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB20318164",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "10"
-          },
-          {
-            "policyNumber": "OB20311158",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB20311158",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "09"
-          },
-          {
-            "policyNumber": "OB20311157",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 5000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB20311157",
-            "applicationNo": "",
-            "appliedSumAssured": 5000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "08"
-          },
-          {
-            "policyNumber": "OB20311156",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 500000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB20311156",
-            "applicationNo": "",
-            "appliedSumAssured": 500000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "07"
-          },
-          {
-            "policyNumber": "OB20311155",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 500000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB20311155",
-            "applicationNo": "",
-            "appliedSumAssured": 500000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "06"
-          },
-          {
-            "policyNumber": "OB00311111",
-            "productName": "ICICI Pru GIFT Assure",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 50000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB00311111",
-            "applicationNo": "",
-            "appliedSumAssured": 50000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 0,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "05"
-          },
-          {
-            "policyNumber": "OB90311199",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 50000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90311199",
-            "applicationNo": "",
-            "appliedSumAssured": 50000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "04"
-          },
-          {
-            "policyNumber": "OS90293554",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 50000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OS90293554",
-            "applicationNo": "",
-            "appliedSumAssured": 50000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "03"
-          },
-          {
-            "policyNumber": "OS90293555",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 50000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OS90293555",
-            "applicationNo": "",
-            "appliedSumAssured": 50000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "02"
-          },
-          {
-            "policyNumber": "OB90311179",
-            "productName": "",
-            "productType": "E40",
-            "dateOfIssuance": "",
-            "decision": "",
-            "sumAssured": 500000000,
-            "medicalReceivedDate": "",
-            "medicalValidity": "",
-            "financialReceivedDate": "",
-            "financialValidity": "",
-            "riders": "0 Riders",
-            "riderDetails": [],
-            "clientId": "OB90311179",
-            "applicationNo": "",
-            "appliedSumAssured": 500000000,
-            "policyStatus": "IF",
-            "uwDecision": "",
-            "applicationDate": "2026-08-07",
-            "claimsFlag": "",
-            "mortalityClass": "",
-            "installmentPremium": 500000,
-            "clientRole": "LA",
-            "companyName": "ICICI Prudential Life Insurance",
-            "yearOfIssueApplication": "2026",
-            "partyRole": "LA",
-            "lifeNumber": "01"
-          }
-        ]
+        "label": "Previous Policies",
+        "value": {
+          "members": [
+            {
+              "memberKey": "lifeAssured1",
+              "label": "Life Assured 1",
+              "dedupePosidex": [
+                {
+                  "clientId": "",
+                  "firstName": "",
+                  "surname": "",
+                  "state": "",
+                  "city": "",
+                  "dob": "",
+                  "mobileNo": "",
+                  "landlineNo": "",
+                  "recordType": "",
+                  "matchPercentage": "",
+                  "riskIndicator": ""
+                }
+              ],
+              "ipru": [
+                {
+                  "policyNumber": "",
+                  "productName": "",
+                  "sumAssured": "",
+                  "policyStatus": "",
+                  "uwDecision": "",
+                  "applicationDate": "",
+                  "claimsFlag": "",
+                  "mortalityClass": "",
+                  "installmentPremium": "",
+                  "clientRole": "",
+                  "companyName": "",
+                  "yearOfIssueApplication": "",
+                  "riderDetails": [
+                    {
+                      "riderCode": "",
+                      "riderName": "",
+                      "riderSubType": "",
+                      "faceValue": "",
+                      "mortalityClass": "",
+                      "uwMortalityClassBase": "",
+                      "sumAssured": "",
+                      "rating": "",
+                      "sarConsideration": "",
+                      "clientRole": ""
+                    }
+                  ]
+                }
+              ],
+              "iibNonIpru": [
+                {
+                  "questDbNo": "",
+                  "questSumAssured": "",
+                  "questPolicyStatus": "",
+                  "questCompanyName": "",
+                  "matchingParameter": "",
+                  "questDopDoc": "",
+                  "questDateOfDeath": "",
+                  "questCauseOfDeath": "",
+                  "questRecordLastUpdated": "",
+                  "questEntityCautionStatus": "",
+                  "intermediaryCautionStatus": "",
+                  "isNegativeMatch": "",
+                  "whetherStandardLife": "",
+                  "medicalNonmedical": "",
+                  "reasonForDecline": "",
+                  "reasonForPostpone": "",
+                  "reasonForRepudiation": "",
+                  "linkedNonLinked": "",
+                  "productType": "",
+                  "remarks": "",
+                  "broadReason": "",
+                  "granularReason1": "",
+                  "granularReason2": ""
+                }
+              ],
+              "applicationFormDetails": [
+                {
+                  "companyName": "",
+                  "policyNumber": "",
+                  "baseSumAssured": "",
+                  "proposalDate": "",
+                  "policyDecision": ""
+                }
+              ]
+            }
+          ],
+          "familyPolicies": [
+            {
+              "type": "",
+              "relationWithLifeAssured": "",
+              "insuranceCompany": "",
+              "sumAssured": "",
+              "annualIncome": "",
+              "policyStatus": ""
+            }
+          ]
+        }
       },
       {
         "name": "openOtherTasks",
-        "value": []
+        "label": "Open Tasks",
+        "value": {
+          "columns": [
+            {
+              "label": "Call log date"
+            },
+            {
+              "label": "Service call ID"
+            },
+            {
+              "label": "CT"
+            },
+            {
+              "label": "ST"
+            },
+            {
+              "label": "Call Details"
+            },
+            {
+              "label": "User Pool"
+            },
+            {
+              "source": ""
+            }
+          ],
+          "rows": [
+            {
+              "callLogDate": "",
+              "callId": "",
+              "ct": "",
+              "st": "",
+              "callDetails": "",
+              "userPoll": "",
+              "source": ""
+            },
+            {
+              "callLogDate": "",
+              "callId": "",
+              "ct": "",
+              "st": "",
+              "callDetails": "",
+              "userPoll": "",
+              "source": ""
+            }
+          ]
+        }
       },
       {
         "name": "riskDetails",
-        "value": []
-      },
-      {
-        "name": "auditTrail",
         "value": [
           {
-            "taskId": "25675",
-            "taskName": "Payment & ATS",
-            "instanceId": "6200",
-            "applicationNumber": "OB90311125",
-            "status": "Completed",
-            "statusCode": "PWATS",
-            "statusValue": "Pending with Payment & ATS",
-            "assignedTo": "",
-            "claimedDate": "",
-            "completionDate": "2026-08-20T16:17:41",
-            "createdOn": "2026-08-20T16:14:16",
-            "updatedBy": "SYSTEM",
-            "updatedOn": "2026-08-20T16:17:42"
-          },
-          {
-            "taskId": "25681",
-            "taskName": "AMR Non Medical Task",
-            "instanceId": "6200",
-            "applicationNumber": "OB90311125",
-            "status": "Completed",
-            "statusCode": "PWNML",
-            "statusValue": "Pending with NML",
-            "assignedTo": "",
-            "claimedDate": "",
-            "completionDate": "2026-08-20T16:27:36",
-            "createdOn": "2026-08-20T16:17:42",
-            "updatedBy": "SYSTEM",
-            "updatedOn": "2026-08-20T16:27:36"
-          },
-          {
-            "taskId": "25705",
-            "taskName": "UW Task",
-            "instanceId": "6200",
-            "applicationNumber": "OB90311125",
-            "status": "Assigned",
-            "statusCode": "PWCUW",
-            "statusValue": "Pending with CUW",
-            "assignedTo": "",
-            "claimedDate": "",
-            "completionDate": "",
-            "createdOn": "2026-08-20T16:27:37",
-            "updatedBy": "",
-            "updatedOn": "2026-08-20T16:28:36"
-          },
-          {
-            "taskId": "25712",
-            "taskName": "AMR Non Medical Task",
-            "instanceId": "6200",
-            "applicationNumber": "OB90311125",
-            "status": "Completed",
-            "statusCode": "PWNML",
-            "statusValue": "Pending with NML",
-            "assignedTo": "",
-            "claimedDate": "",
-            "completionDate": "2026-08-20T17:00:47",
-            "createdOn": "2026-08-20T16:58:33",
-            "updatedBy": "SYSTEM",
-            "updatedOn": "2026-08-20T17:00:47"
-          },
-          {
-            "taskId": "25718",
-            "taskName": "AMR Non Medical Task",
-            "instanceId": "6200",
-            "applicationNumber": "OB90311125",
-            "status": "Completed",
-            "statusCode": "PWNML",
-            "statusValue": "Pending with NML",
-            "assignedTo": "",
-            "claimedDate": "",
-            "completionDate": "2026-08-20T17:15:49",
-            "createdOn": "2026-08-20T17:15:35",
-            "updatedBy": "SYSTEM",
-            "updatedOn": "2026-08-20T17:15:49"
-          },
-          {
-            "taskId": "25724",
-            "taskName": "CVT Task",
-            "instanceId": "6200",
-            "applicationNumber": "OB90311125",
-            "status": "Completed",
-            "statusCode": "PWCVT",
-            "statusValue": "Pending with CVT",
-            "assignedTo": "",
-            "claimedDate": "",
-            "completionDate": "2026-08-31T00:48:30",
-            "createdOn": "",
-            "updatedBy": "ipru75031",
-            "updatedOn": "2026-08-31T00:48:30"
-          }
-        ]
+            "risk_details": {
+              "member": "Life Assured1",
+              "label": "Risk Details",
+              "memberDetails": {
+				"label": "Member Details",
+				"value": [
+					{
+						"label":"KRN No",
+						"value": ""
+					},
+					{
+						"label":"Application No",
+						"value": ""
+					},
+					{
+						"label":"Customer Name",
+						"value": ""
+					},
+					{
+						"label":"Vendor Name",
+						"value": ""
+					},
+					{
+						"label":"Report Revised Date",
+						"value": ""
+					}
+				]
+			  },
+			  "riskAssessament": {
+				"label": "Risk Assessment",
+				"value": [
+					{
+						"label":"Name, address & stay confirmed",
+						"value": ""
+					},
+					{
+						"label":"Standard of living",
+						"value": ""
+					},
+					{
+						"label":"Life assured existence",
+						"value": ""
+					},
+					{
+						"label":"Educational qualification",
+						"value": ""
+					},
+					{
+						"label":"Contactability established",
+						"value": ""
+					},
+					{
+						"label":"Occupation category",
+						"value": ""
+					},
+					{
+						"label":"Computer applied for policy",
+						"value": ""
+					},
+					{
+						"label":"Annual income",
+						"value": ""
+					},
+					{
+						"label":"Met with whom",
+						"value": ""
+					},
+					{
+						"label":"Availability of LC at current address",
+						"value": ""
+					},
+					{
+						"label":"Hobbies",
+						"value": ""
+					},
+					{
+						"label":"Hobbies",
+						"value": ""
+					},
+					{
+						"label":"Previous medical history",
+						"value": ""
+					},
+					{
+						"label":"Photo availability of life assured",
+						"value": ""
+					},
+					{
+						"label":"Vitality check",
+						"value": ""
+					},
+					{
+						"label":"Geo tagging",
+						"value": ""
+					},
+					{
+						"label":"Type of house",
+						"value": ""
+					},
+					{
+						"label":"Face match",
+						"value": ""
+					},
+					{
+						"label":"Have Life Insurance",
+						"value": ""
+					},
+					{
+						"label":"Investigation score",
+						"value": ""
+					},
+					{
+						"label":"FE remarks",
+						"value": ""
+					}
+				]
+			  },
+			  "riskDecision": {
+				"label": "Risk Decision",
+				"riskRemark": "",
+				"riskCode": ""
+			}
+		  }
+    }
+		]
+    
       }
     ],
     "sectionType": [

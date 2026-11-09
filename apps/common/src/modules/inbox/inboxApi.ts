@@ -21,6 +21,8 @@ export const ROLE_POOL_KEYS = [
   "GOPS_DVT",
   "DVT_FORMAL",
   "GUW_FORMAL",
+  "SR_UW_TASK",
+  "HOD_TASK",
 ] as const;
 
 export type RolePoolKey = (typeof ROLE_POOL_KEYS)[number];

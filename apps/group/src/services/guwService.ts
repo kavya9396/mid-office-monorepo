@@ -4,12 +4,18 @@ import {
   removeSessionValue,
   setSessionValue,
 } from "@insurance-poc/utils";
+import type { Column } from "@insurance-poc/ui";
 import type { RequirementItem } from "@insurance-poc/common/requirement-mgmt";
 import type { ComparisonRow } from "@insurance-poc/common/decision-bar";
 import type { RiskCardData, RiskCardField } from "@insurance-poc/common/risk-cards";
 import type { BannerRowDetail } from "@insurance-poc/common/applicant-banner";
+import type { GrievanceHistoryRow } from "@insurance-poc/common/grievance-history";
+import type { ClaimAuditRow } from "@insurance-poc/common/claim-audit";
+import type { SpecialRemarksRow } from "@insurance-poc/common/special-remarks";
+import type { UwGuidelineRow } from "@insurance-poc/common/uw-guidelines";
 import { mapRequirements, type RawRequirement } from "../modules/drs/requirementData";
-import { buildBreRows } from "../modules/drs/breFormat";
+import { formatBreTimestamp, splitDiscrepancies } from "../modules/drs/breFormat";
+import { grievanceColumns } from "@insurance-poc/common/grievance-history";
 import guwDrsMock from "../../../../mock/drs/guw-informal-drs.json";
 import guwValidationMock from "../../../../mock/drs/guw-validation.json";
 
@@ -36,8 +42,43 @@ export interface GuwBreData {
   initialDiscrepancy: string[];
   finalDiscrepancy: string[];
   statusChips: GuwBreStatusChip[];
-  /** Initial (`breDecision`) vs Final (`latestBreDecision`) rows for the "View Detail" dialog. */
+  /** Headers of the "View Detail" comparison table (`latestBreDecision.columns`). */
+  detailHeaders: { label: string; initial: string; final: string };
+  /** Initial vs Final rows for the "View Detail" dialog (`latestBreDecision.rows`). */
   detailRows: ComparisonRow[];
+}
+
+/** Sections shown in the DRS dialogs; each one is driven by its `data.sections[]` entry. */
+export interface GuwGrievanceSection {
+  title: string;
+  columns: Column<GrievanceHistoryRow>[];
+  rows: GrievanceHistoryRow[];
+}
+
+export interface GuwClaimAuditSection {
+  title: string;
+  columnHeaders: Partial<Record<keyof ClaimAuditRow, string>>;
+  rows: ClaimAuditRow[];
+}
+
+export interface GuwSpecialRemarksSection {
+  title: string;
+  columnHeaders: Partial<Record<keyof SpecialRemarksRow, string>>;
+  rows: SpecialRemarksRow[];
+}
+
+export interface GuwUwGuidelinesSection {
+  title: string;
+  rows: UwGuidelineRow[];
+  /** `uwGuidelines.justificationChoices`; undefined = component default. */
+  justificationReasons?: string[];
+}
+
+export interface GuwDialogSections {
+  grievanceHistory: GuwGrievanceSection;
+  claimAudit: GuwClaimAuditSection;
+  specialRemarks: GuwSpecialRemarksSection;
+  uwGuidelines: GuwUwGuidelinesSection;
 }
 
 export interface GuwSubmittedField {
@@ -141,6 +182,8 @@ export interface GuwDrsRecord {
   riskCards: RiskCardData[];
   sdtRow: GuwSdtRow;
   breData: GuwBreData;
+  /** Data for the Grievance / Claim Audit / Special Remarks / UW Guidelines dialogs. */
+  sections: GuwDialogSections;
   uwData?: GuwUwData;
   requirements: RequirementItem[];
 }
@@ -179,11 +222,42 @@ function mapRowDetails(rowDetails: unknown): BannerRowDetail[] {
   }));
 }
 
-const CARD_TITLES: Record<string, string> = {
-  FINANCIAL: "Financial",
-  MEDICAL: "Medical",
-  RISK_PARAMETERS: "Risk Parameters",
-};
+/** Display text of a mock cell that may be a string or a list of strings. */
+function textOf(v: unknown): string {
+  return Array.isArray(v) ? v.map(str).join(", ") : str(v);
+}
+
+function recordOf(v: unknown): Record<string, unknown> {
+  return isRecord(v) ? v : {};
+}
+
+/** Value of the `{ name, value }` entry called `name`. */
+function fieldValue(fields: unknown, name: string): string {
+  const hit = recordList(fields).find((f) => str(f.name) === name);
+  return str(hit?.value);
+}
+
+/** Header text of one `columns[]` entry: either a plain string or `{ label }`. */
+function headerText(column: unknown): string {
+  return isRecord(column) ? str(column.label) : str(column);
+}
+
+/** Zips positional header labels (`columns: (string | { label })[]`) onto the keys they describe. */
+function headersByKey<K extends string>(
+  keys: readonly K[],
+  headers: unknown,
+): Partial<Record<K, string>> {
+  const out: Partial<Record<K, string>> = {};
+  if (!Array.isArray(headers)) return out;
+  keys.forEach((key, index) => {
+    const text = headerText(headers[index]);
+    if (text) out[key] = text;
+  });
+  return out;
+}
+
+/* ---- Risk cards ---- */
+
 const CARD_TONES: Record<string, RiskCardData["tone"]> = {
   FINANCIAL: "danger",
   MEDICAL: "success",
@@ -194,125 +268,245 @@ const CARD_VIEW_LABELS: Record<string, string> = {
   FINANCIAL: "View Financial",
   MEDICAL: "View Medical",
 };
+/** Attributes shown on the card face; the rest appear only in the details dialog. */
+const CARD_SUMMARY_FIELDS: Record<string, string[]> = {
+  FINANCIAL: [
+    "BRE Financial decision",
+    "Financial Eligibility",
+    "Derived Income",
+    "BIU Financial status (Match/Mismatch)",
+  ],
+  MEDICAL: [
+    "BRE Physical Medical Decision",
+    "MunichRe Medical decision",
+    "BIU Medical status (Match/Mismatch)",
+  ],
+  RISK_PARAMETERS: [
+    "PEP Question Response (LA)",
+    "FATF/OFAC Country Login",
+    "Health Question Positive",
+  ],
+};
+const CARD_SUMMARY_FALLBACK_COUNT = 3;
 
 function mapCardFields(arr: unknown): RiskCardField[] {
-  if (!Array.isArray(arr)) return [];
-  return arr.filter(isRecord).map((a) => ({ name: str(a.name), value: str(a.value) }));
+  return recordList(arr).map((a) => ({ name: str(a.name), value: str(a.value) }));
 }
 
 /** Map a single `cardDetails[]` entry to the common `RiskCardData`. */
 function mapCard(raw: unknown): RiskCardData | null {
   if (!isRecord(raw)) return null;
   const type = str(raw.type);
-  const title = CARD_TITLES[type] ?? type;
+  const title = str(raw.label) || type;
   const expanded = mapCardFields(raw.expandedAttributes);
+  const explicit = mapCardFields(raw.attributes);
+  const summaryNames = CARD_SUMMARY_FIELDS[type];
+  const fields =
+    explicit.length > 0
+      ? explicit
+      : summaryNames
+        ? summaryNames
+            .map((name) => expanded.find((f) => f.name === name))
+            .filter((f): f is RiskCardField => f !== undefined)
+        : expanded.slice(0, CARD_SUMMARY_FALLBACK_COUNT);
 
   return {
     id: type,
     title,
     tone: CARD_TONES[type] ?? "success",
     viewLabel: CARD_VIEW_LABELS[type],
-    fields: mapCardFields(raw.attributes),
+    fields,
     details: expanded.length > 0 ? { title: `${title} Details`, fields: expanded } : undefined,
   };
 }
 
-/** Extract BRE discrepancy codes from a "#"-separated string. */
-function splitDiscrepancy(raw: string): string[] {
-  return raw
-    .split("#")
-    .map((s) => s.trim())
-    .filter(Boolean);
-}
+/* ---- BRE ---- */
+
+const BRE_ROW_DIFF: Record<string, ComparisonRow["diff"]> = {
+  decision: "value",
+  discrepancy: "tokens",
+};
 
 /**
- * Map `sections.breDecision` (initial) and `sections.latestBreDecision` (final) to GuwBreData.
- * The headline decision is the latest one, falling back to the initial one.
+ * Map `sections.latestBreDecision` — `code`, `columns` (table headers) and `rows`
+ * (BRE Status / Decision / Remarks / Discrepancy / Timestamp, each with initial + final).
  */
-function mapBreData(
-  initialSection: unknown,
-  latestSection: unknown,
-  requirements: unknown[],
-): GuwBreData {
-  const initial = isRecord(initialSection) ? initialSection : {};
-  const latest = isRecord(latestSection) ? latestSection : {};
+function mapBreData(latestSection: unknown, requirements: unknown[]): GuwBreData {
+  const latest = recordOf(latestSection);
+  const columns = recordList(latest.columns);
+  const rows = recordList(latest.rows);
+  const header = (key: string, fallback: string) =>
+    str(columns.find((c) => str(c.key) === key)?.header) || fallback;
+  const discrepancy = rows.find((r) => str(r.id) === "discrepancy");
 
-  // Build status chips from requirements array
+  // Status chips from the requirements array
   const statuses = ["Pending", "Received", "Accept", "Cancelled", "Reject", "Waived"];
   const reqs = requirements.filter(isRecord);
   const chips: GuwBreStatusChip[] = [
     { label: "All", count: reqs.length },
     ...statuses.map((label) => ({
       label,
-      count: reqs.filter(
-        (r) => str(r.status).toLowerCase() === label.toLowerCase(),
-      ).length,
+      count: reqs.filter((r) => str(r.status).toLowerCase() === label.toLowerCase()).length,
     })),
   ];
 
   return {
-    breCode: str(latest.decision) || str(initial.decision),
-    initialDiscrepancy: splitDiscrepancy(str(initial.discrepancy)),
-    finalDiscrepancy: splitDiscrepancy(str(latest.discrepancy)),
+    breCode: str(latest.code),
+    initialDiscrepancy: splitDiscrepancies(textOf(discrepancy?.initial)),
+    finalDiscrepancy: splitDiscrepancies(textOf(discrepancy?.final)),
     statusChips: chips,
-    detailRows: buildBreRows(
-      {
-        decision: str(initial.decision),
-        remarks: str(initial.remarks),
-        discrepancy: str(initial.discrepancy),
-        timestamp: str(initial.timestamp),
-      },
-      {
-        decision: str(latest.decision),
-        remarks: str(latest.remarks),
-        discrepancy: str(latest.discrepancy),
-        timestamp: str(latest.timestamp),
-      },
-    ),
+    detailHeaders: {
+      label: header("label", "BRE"),
+      initial: header("initial", "Initial BRE"),
+      final: header("final", "Final BRE"),
+    },
+    detailRows: rows.map((r) => {
+      const id = str(r.id);
+      const format = id === "timestamp" ? formatBreTimestamp : (s: string) => s;
+      return {
+        label: str(r.label),
+        initial: format(textOf(r.initial)),
+        final: format(textOf(r.final)),
+        diff: BRE_ROW_DIFF[id],
+      };
+    }),
   };
 }
 
-/** Extract financial and medical decisions from `sections.summary[0].riskAnalytics[0]`. */
-function mapSdtRow(summary: unknown): GuwSdtRow {
-  const defaultRow: GuwSdtRow = {
-    financialDecision: "",
-    medicalDecision: "",
-    lumiqDecision: "",
-    grievanceHistoryCount: 0,
-    claimAuditCount: 0,
-    uwGuidelinesCount: 0,
-  };
-  if (!Array.isArray(summary) || summary.length === 0) return defaultRow;
-  const first = summary[0];
-  if (!isRecord(first)) return defaultRow;
-  const analytics = Array.isArray(first.riskAnalytics) ? first.riskAnalytics : [];
-  const analytic = isRecord(analytics[0]) ? (analytics[0] as Record<string, unknown>) : {};
-  const financial = isRecord(analytic.financialRisk)
-    ? (analytic.financialRisk as Record<string, unknown>)
-    : {};
-  const medical = isRecord(analytic.medicalRisk)
-    ? (analytic.medicalRisk as Record<string, unknown>)
-    : {};
+/* ---- Dialog sections ---- */
+
+/** Column order of `grievanceHistory.columns` (headers are positional in the API). */
+const GRIEVANCE_COLUMN_KEYS = [
+  "userName",
+  "profile",
+  "fupCode",
+  "grievanceRemarks",
+  "raisedDate",
+  "tpaRemark",
+] as const;
+/** Row field -> API row key. */
+const GRIEVANCE_SOURCE_KEYS: Record<keyof GrievanceHistoryRow, string> = {
+  userName: "userName",
+  profile: "userRole",
+  fupCode: "fupCode",
+  grievanceRemarks: "grievanceRaisedRemark",
+  tpaRemark: "tpaRemarks",
+  raisedDate: "grievanceRaisedDate",
+  updatedDate: "updatedDate",
+  raisedBy: "raisedBy",
+  updatedBy: "updatedBy",
+};
+
+function mapGrievanceSection(value: unknown): GuwGrievanceSection {
+  const section = recordOf(value);
+  const headers = headersByKey(GRIEVANCE_COLUMN_KEYS, section.columns);
+  const text = (row: Record<string, unknown>, key: keyof GrievanceHistoryRow) =>
+    str(row[GRIEVANCE_SOURCE_KEYS[key]]);
   return {
-    financialDecision: str(financial.breFinancialDecision),
-    medicalDecision: str(medical.brePhysicalMedicalDecision),
-    lumiqDecision: str(analytic.lumiqDecision ?? analytic.breLumiqDecision ?? ""),
-    grievanceHistoryCount: 0,
-    claimAuditCount: 0,
-    uwGuidelinesCount: 0,
+    title: str(section.title) || "Grievance History",
+    columns: GRIEVANCE_COLUMN_KEYS.map((key) => ({
+      key,
+      header: headers[key] ?? grievanceColumns.find((c) => c.key === key)?.header,
+    })),
+    rows: recordList(section.rows).map((r) => ({
+      userName: text(r, "userName"),
+      fupCode: text(r, "fupCode"),
+      profile: text(r, "profile"),
+      grievanceRemarks: text(r, "grievanceRemarks"),
+      tpaRemark: text(r, "tpaRemark"),
+      raisedDate: text(r, "raisedDate"),
+      updatedDate: text(r, "updatedDate"),
+      raisedBy: text(r, "raisedBy"),
+      updatedBy: text(r, "updatedBy"),
+    })),
   };
 }
 
-/** Build applicant name from summary[0].proposerSummary. */
-function mapApplicantName(summary: unknown): string {
-  if (!Array.isArray(summary) || summary.length === 0) return "";
-  const first = summary[0];
-  if (!isRecord(first)) return "";
-  const ps = isRecord(first.proposerSummary) ? (first.proposerSummary as Record<string, unknown>) : {};
-  const fn = str(ps.firstName);
-  const mn = str(ps.middleName);
-  const ln = str(ps.lastName);
-  return [fn, mn, ln].filter(Boolean).join(" ");
+/** Column order of `claimAudit.columns`. */
+const CLAIM_AUDIT_COLUMN_KEYS = [
+  "policyNo",
+  "productCode",
+  "claimKey",
+  "canonicalId",
+  "patientName",
+  "ailment",
+  "claimType",
+  "subType",
+  "intimationDate",
+  "doa",
+  "dod",
+  "status",
+] as const;
+
+function mapClaimAuditSection(value: unknown): GuwClaimAuditSection {
+  const section = recordOf(value);
+  return {
+    title: str(section.title) || "Claim Audit",
+    columnHeaders: headersByKey(CLAIM_AUDIT_COLUMN_KEYS, section.columns),
+    rows: recordList(section.rows).map((r, index) => ({
+      id: str(r.id) || String(index + 1),
+      policyNo: str(r.policyNo),
+      productCode: str(r.productCode),
+      claimKey: str(r.claimKey),
+      canonicalId: str(r.canonicalId),
+      patientName: str(r.patientName),
+      ailment: str(r.ailment),
+      claimType: str(r.claimType),
+      subType: str(r.subType),
+      intimationDate: str(r.intimationDate),
+      doa: str(r.doa),
+      dod: str(r.dod),
+      status: str(r.status),
+    })),
+  };
+}
+
+/** Column order of `specialRemarks.columns`. */
+const SPECIAL_REMARKS_COLUMN_KEYS = ["comments", "updatedDate", "updatedBy"] as const;
+
+function mapSpecialRemarksSection(value: unknown): GuwSpecialRemarksSection {
+  const section = recordOf(value);
+  return {
+    title: str(section.title) || "Special Remarks",
+    columnHeaders: headersByKey(SPECIAL_REMARKS_COLUMN_KEYS, section.columns),
+    rows: recordList(section.rows).map((r, index) => ({
+      id: str(r.id) || String(index + 1),
+      comments: str(r.comments),
+      updatedDate: str(r.updatedDate),
+      updatedBy: str(r.updatedBy),
+    })),
+  };
+}
+
+function mapUwGuidelinesSection(value: unknown): GuwUwGuidelinesSection {
+  const section = recordOf(value);
+  const choices = Array.isArray(section.justificationChoices)
+    ? section.justificationChoices.map(str).filter(Boolean)
+    : [];
+  return {
+    title: str(section.title) || "UW Guidelines",
+    rows: recordList(section.reasons).map((r) => ({
+      reason: str(r.reason),
+      remark: str(r.remark),
+      systemAction: str(r.systemAction),
+      justificationReason: str(r.justificationReason),
+      justificationRemark: str(r.justificationRemarks ?? r.justificationRemark),
+    })),
+    justificationReasons: choices.length > 0 ? choices : undefined,
+  };
+}
+
+/** `sections.sdtDecision.fields` + the dialog row counts. */
+function mapSdtRow(sdtSection: unknown, dialogs: GuwDialogSections): GuwSdtRow {
+  const fields = recordOf(sdtSection).fields;
+  return {
+    financialDecision: fieldValue(fields, "Financial Decision"),
+    medicalDecision: fieldValue(fields, "Medical Decision"),
+    lumiqDecision: fieldValue(fields, "LumiQ Decision"),
+    grievanceHistoryCount: dialogs.grievanceHistory.rows.length,
+    claimAuditCount: dialogs.claimAudit.rows.length,
+    uwGuidelinesCount: dialogs.uwGuidelines.rows.length,
+  };
 }
 
 /* ------------------------------------------------------------------ */
@@ -320,20 +514,16 @@ function mapApplicantName(summary: unknown): string {
 /* ------------------------------------------------------------------ */
 
 export function mapGuwDrsPayload(payload: unknown): GuwDrsRecord {
-  const root = isRecord(payload) ? payload : {};
+  const root = recordOf(payload);
   // Support both wrapped { success, data } and bare data shapes
-  const data = isRecord(root.data) ? (root.data as Record<string, unknown>) : root;
+  const data = isRecord(root.data) ? root.data : root;
 
   const applicationNo = str(data.applicationNo);
   const sections = Array.isArray(data.sections) ? data.sections : [];
-  const summary = findSection(sections, "summary");
-  const breSection = findSection(sections, "breDecision");
-  const latestBreSection = findSection(sections, "latestBreDecision");
 
   // Map raw requirements to RequirementItem[]
-  const rawReqs = Array.isArray(findSection(sections, "requirementManagement"))
-    ? (findSection(sections, "requirementManagement") as unknown[])
-    : [];
+  const requirementSection = findSection(sections, "requirementManagement");
+  const rawReqs = Array.isArray(requirementSection) ? requirementSection : [];
   const requirements: RequirementItem[] = mapRequirements(
     rawReqs.filter(isRecord).map((r) => ({
       requirementId: typeof r.requirementId === "number" ? r.requirementId : 0,
@@ -349,15 +539,21 @@ export function mapGuwDrsPayload(payload: unknown): GuwDrsRecord {
     } satisfies RawRequirement)),
   );
 
-  const applicantName = mapApplicantName(summary);
   const rowDetails = mapRowDetails(data.rowDetails);
+  const applicantName = fieldValue(rowDetails[0]?.fields, "Name");
 
   const riskCards: RiskCardData[] = Array.isArray(data.cardDetails)
-    ? (data.cardDetails as unknown[]).map(mapCard).filter((c): c is RiskCardData => c !== null)
+    ? data.cardDetails.map(mapCard).filter((c): c is RiskCardData => c !== null)
     : [];
 
-  const sdtRow = mapSdtRow(summary);
-  const breData = mapBreData(breSection, latestBreSection, rawReqs);
+  const dialogSections: GuwDialogSections = {
+    grievanceHistory: mapGrievanceSection(findSection(sections, "grievanceHistory")),
+    claimAudit: mapClaimAuditSection(findSection(sections, "claimAudit")),
+    specialRemarks: mapSpecialRemarksSection(findSection(sections, "specialRemarks")),
+    uwGuidelines: mapUwGuidelinesSection(findSection(sections, "uwGuidelines")),
+  };
+
+  const caseDecisionFields = recordOf(findSection(sections, "caseUwDecision")).fields;
 
   return {
     applicationNo,
@@ -365,10 +561,14 @@ export function mapGuwDrsPayload(payload: unknown): GuwDrsRecord {
     applicationLabel: `App No. - ${applicationNo}`,
     rowDetails,
     riskCards,
-    sdtRow,
-    breData,
+    sdtRow: mapSdtRow(findSection(sections, "sdtDecision"), dialogSections),
+    breData: mapBreData(findSection(sections, "latestBreDecision"), rawReqs),
+    sections: dialogSections,
     requirements,
-    uwData: undefined,
+    uwData: {
+      breOverallDecision: fieldValue(caseDecisionFields, "BRE Overall Decision"),
+      breOverallRemarks: fieldValue(caseDecisionFields, "BRE Overall Remarks"),
+    },
   };
 }
 

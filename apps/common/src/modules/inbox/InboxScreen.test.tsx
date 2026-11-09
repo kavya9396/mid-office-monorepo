@@ -103,6 +103,8 @@ describe("InboxScreen", () => {
     );
 
     await user.click(screen.getByRole("button", { name: "RET-CVT-001" }));
-    expect(navigate).toHaveBeenCalledWith("/app/RET-CVT-001/drs");
+    expect(navigate).toHaveBeenCalledWith(
+      "/app/RET-CVT-001/drs?applicationNo=RET-CVT-001&role=CVT+Pool",
+    );
   });
 });

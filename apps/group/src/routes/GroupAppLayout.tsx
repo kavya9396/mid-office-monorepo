@@ -37,16 +37,18 @@ export function GroupAppLayout() {
    *   memberCount <= 1 →  back to /inbox (default Header behaviour)
    */
   const isGuwDrs = normalizedPath === "/guw/drs";
+  const isReferralDrs = normalizedPath === "/referral/drs";
   const memberCount = parseInt(params.get("memberCount") ?? "0", 10);
   const guwBackPath: string | undefined = (() => {
-    if (!isGuwDrs || memberCount <= 1) return undefined;
+    if ((!isGuwDrs && !isReferralDrs) || memberCount <= 1) return undefined;
     const backParams = new URLSearchParams({
       applicationNo: params.get("applicationNo") ?? "",
       roleType: params.get("roleType") ?? "",
     });
     const roleVal = params.get("role") ?? "";
     if (roleVal) backParams.set("role", roleVal);
-    return `/guw/member-selection?${backParams.toString()}`;
+    const memberSelectionPath = isReferralDrs ? "/referral/member-selection" : "/guw/member-selection";
+    return `${memberSelectionPath}?${backParams.toString()}`;
   })();
 
   return (

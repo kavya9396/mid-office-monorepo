@@ -26,6 +26,8 @@ export type SpecialRemarksRow = {
 export type SpecialRemarksProps = {
   rows: SpecialRemarksRow[];
   variant?: SpecialRemarksVariant;
+  /** Overrides the header text of individual columns, keyed by row field. */
+  columnHeaders?: Partial<Record<keyof SpecialRemarksRow, string>>;
   /** Called when a row is validated (editable only). */
   onValidate?: (row: SpecialRemarksRow) => void;
   /** Rows per page. */
@@ -33,7 +35,7 @@ export type SpecialRemarksProps = {
   paginationDisabled?: boolean;
 };
 
-const baseColumns: Column<SpecialRemarksRow>[] = [
+const defaultColumns: Column<SpecialRemarksRow>[] = [
   { key: "comments", header: "Comments", width: "450px" },
   { key: "updatedDate", header: "Updated Date", width: "150px" },
   { key: "updatedBy", header: "Updated By", width: "120px" },
@@ -42,12 +44,18 @@ const baseColumns: Column<SpecialRemarksRow>[] = [
 export function SpecialRemarks({
   rows,
   variant = "readonly",
+  columnHeaders,
   onValidate,
   pageSize = 5,
   paginationDisabled = false,
 }: Readonly<SpecialRemarksProps>) {
   const { page, setPage, pageCount, pageItems } = usePagination(rows, pageSize);
   const [validatedIds, setValidatedIds] = useState<string[]>([]);
+
+  const baseColumns: Column<SpecialRemarksRow>[] = defaultColumns.map((column) => ({
+    ...column,
+    header: columnHeaders?.[column.key] ?? column.header,
+  }));
 
   const columns: Column<SpecialRemarksRow>[] =
     variant === "editable"

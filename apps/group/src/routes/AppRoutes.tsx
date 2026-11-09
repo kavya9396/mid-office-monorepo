@@ -18,6 +18,7 @@ import { GroupPreviousPolicyPage } from "../modules/previousPolicy/GroupPrevious
 import { GroupRiskDetailsPage } from "../modules/riskDetails/GroupRiskDetailsPage";
 import GroupDrsRouter from "../modules/drs/GroupDrsRouter";
 import { GuwMemberSelection } from "../modules/guw/GuwMemberSelection";
+import { ReferralMemberSelection } from "../modules/referral-uw/ReferralMemberSelection";
 import GroupDrsPage from "../modules/drs/GroupDrsPage";
 
 export function AppRoutes() {
@@ -38,6 +39,8 @@ export function AppRoutes() {
           <Route path="/drs" element={<GroupDrsRouter />} />
           <Route path="/guw/member-selection" element={<GuwMemberSelection />} />
           <Route path="/guw/drs" element={<GroupDrsRouter />} />
+          <Route path="/referral/member-selection" element={<ReferralMemberSelection />} />
+          <Route path="/referral/drs" element={<GroupDrsRouter />} />
           <Route path="/drs" element={<GroupDrsPage />} />
           <Route path="/drs/financial" element={<GroupDrsPage />} />
           <Route path="/drs/medical" element={<GroupDrsPage />} />

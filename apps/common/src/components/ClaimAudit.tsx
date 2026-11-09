@@ -35,6 +35,8 @@ export type ClaimAuditRow = {
 export type ClaimAuditProps = {
   rows: ClaimAuditRow[];
   variant?: ClaimAuditVariant;
+  /** Overrides the header text of individual columns, keyed by row field. */
+  columnHeaders?: Partial<Record<keyof ClaimAuditRow, string>>;
   /** Called when a row is validated (editable only). */
   onValidate?: (row: ClaimAuditRow) => void;
   /** Rows per page. */
@@ -42,7 +44,7 @@ export type ClaimAuditProps = {
   paginationDisabled?: boolean;
 };
 
-const baseColumns: Column<ClaimAuditRow>[] = [
+const defaultColumns: Column<ClaimAuditRow>[] = [
   { key: "policyNo", header: "Policy Number" },
   { key: "productCode", header: "Product Code" },
   { key: "claimKey", header: "Claim Key" },
@@ -82,12 +84,18 @@ const baseColumns: Column<ClaimAuditRow>[] = [
 export function ClaimAudit({
   rows,
   variant = "readonly",
+  columnHeaders,
   onValidate,
   pageSize = 5,
   paginationDisabled = false,
 }: Readonly<ClaimAuditProps>) {
   const { page, setPage, pageCount, pageItems } = usePagination(rows, pageSize);
   const [validatedIds, setValidatedIds] = useState<string[]>([]);
+
+  const baseColumns: Column<ClaimAuditRow>[] = defaultColumns.map((column) => ({
+    ...column,
+    header: columnHeaders?.[column.key] ?? column.header,
+  }));
 
   const columns: Column<ClaimAuditRow>[] =
     variant === "editable"

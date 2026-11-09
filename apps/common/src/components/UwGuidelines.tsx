@@ -27,6 +27,8 @@ export type UwGuidelineRow = {
 export type UwGuidelinesProps = {
   rows: UwGuidelineRow[];
   variant?: UwGuidelinesVariant;
+  /** Justification reason choices (an empty "Select reason" entry is added). Defaults to `DEFAULT_JUSTIFICATION_REASONS`. */
+  justificationReasons?: string[];
   /** Called with the edited rows once validation passes (editable only). */
   onSubmit?: (rows: UwGuidelineRow[]) => void;
   /** Back / Close button. */
@@ -35,8 +37,7 @@ export type UwGuidelinesProps = {
   onValidationError?: (message: string) => void;
 };
 
-const JUSTIFICATION_REASONS = [
-  "",
+export const DEFAULT_JUSTIFICATION_REASONS = [
   "Requirement waived",
   "Document pending",
   "Financial assessment",
@@ -52,6 +53,7 @@ const lastCellSx = { padding: "8px 10px", borderBottom: BORDER } as const;
 export function UwGuidelines({
   rows,
   variant = "readonly",
+  justificationReasons = DEFAULT_JUSTIFICATION_REASONS,
   onSubmit,
   onClose,
   onValidationError,
@@ -116,7 +118,7 @@ export function UwGuidelines({
                           justificationRemark: val ? row.justificationRemark : "",
                         })
                       }
-                      options={JUSTIFICATION_REASONS.map((r) => ({
+                      options={["", ...justificationReasons].map((r) => ({
                         value: r,
                         label: r || "Select reason",
                       }))}

@@ -6,17 +6,13 @@ import { DecisionComparisonTable } from "@insurance-poc/common/decision-bar";
 import { CustomDialog, CustomSnackbar } from "@insurance-poc/ui";
 import { BreCard } from "@insurance-poc/common/bre-card";
 import { ApplicantBanner, type RowDetailsOptions } from "@insurance-poc/common/applicant-banner";
-import { GrievanceHistory } from "@insurance-poc/common/grievance-history";
-import { ClaimAudit, type ClaimAuditRow } from "@insurance-poc/common/claim-audit";
-import { SpecialRemarks, type SpecialRemarksRow } from "@insurance-poc/common/special-remarks";
-import { UwGuidelines, type UwGuidelineRow } from "@insurance-poc/common/uw-guidelines";
-import { INITIAL_GUIDELINES } from "@insurance-poc/common/case-uw-decision";
 import { groupPaths } from "@insurance-poc/routes";
 import { QuickLinksModule } from "@insurance-poc/common/quick-links";
 import { RequirementMgmt } from "@insurance-poc/common/requirement-mgmt";
 import { RiskCards } from "@insurance-poc/common/risk-cards";
 import { GuwSdtRow } from "../guw/GuwSdtRow";
 import { GuwUwPanel } from "../guw/GuwUwPanel";
+import { GuwSectionDialogs, type GuwSectionDialogKey } from "../guw/GuwSectionDialogs";
 import {
   requirementStatusVariants,
   requirementStatusOrder,
@@ -41,76 +37,6 @@ type PageState =
   | { kind: "missing-id" }
   | { kind: "not-found" }
   | { kind: "ready"; record: GuwDrsRecord };
-
-// Mock rows for Claim Audit & Special Remarks dialogs.
-const CLAIM_AUDIT_ROWS: ClaimAuditRow[] = [
-  {
-    id: "1",
-    policyNo: "POL-2026-001845",
-    productCode: "IPRU123",
-    claimKey: "CLM-000783",
-    canonicalId: "CAN-874152",
-    patientName: "Rohan Mehta",
-    ailment: "Acute Myocardial Infarction",
-    claimType: "Death",
-    subType: "Natural",
-    intimationDate: "18/08/2026",
-    doa: "20/08/2026",
-    dod: "22/08/2026",
-    status: "Approved",
-  },
-  {
-    id: "2",
-    policyNo: "POL-2026-002196",
-    productCode: "IPRU456",
-    claimKey: "CLM-000921",
-    canonicalId: "CAN-874338",
-    patientName: "Nisha Kapoor",
-    ailment: "Chronic Kidney Disease",
-    claimType: "Critical Illness",
-    subType: "Medical",
-    intimationDate: "02/09/2026",
-    doa: "04/09/2026",
-    dod: "-",
-    status: "Under Review",
-  },
-  {
-    id: "3",
-    policyNo: "POL-2026-002418",
-    productCode: "IPRU789",
-    claimKey: "CLM-001038",
-    canonicalId: "CAN-874519",
-    patientName: "Amit Verma",
-    ailment: "Road Traffic Accident",
-    claimType: "Accidental",
-    subType: "Hospitalization",
-    intimationDate: "12/09/2026",
-    doa: "12/09/2026",
-    dod: "-",
-    status: "Approved",
-  },
-];
-
-const SPECIAL_REMARK_ROWS: SpecialRemarksRow[] = [
-  {
-    id: "1",
-    comments: "Medical documents require verification before the final decision.",
-    updatedDate: "07/09/2026 11:36:09",
-    updatedBy: "ipru75474",
-  },
-  {
-    id: "2",
-    comments: "Customer was contacted for additional financial information.",
-    updatedDate: "07/09/2026 10:52:41",
-    updatedBy: "CUW Team",
-  },
-  {
-    id: "3",
-    comments: "Previous claim history reviewed and no adverse concern identified.",
-    updatedDate: "08/09/2026 09:18:27",
-    updatedBy: "DRS Reviewer",
-  },
-];
 
 const QUICK_ITEMS = [
   { id: "applicant-profile", label: "Applicant Profile" },
@@ -144,17 +70,11 @@ const GuwUser = () => {
     applicationNo ? { kind: "loading" } : { kind: "missing-id" },
   );
 
-  const [historyOpen, setHistoryOpen] = useState(false);
+  const [sectionDialog, setSectionDialog] = useState<GuwSectionDialogKey | null>(null);
   const [breDetailOpen, setBreDetailOpen] = useState(false);
   const [requirementOpen, setRequirementOpen] = useState(false);
-  const [claimAuditOpen, setClaimAuditOpen] = useState(false);
-  const [uwGuidelinesOpen, setUwGuidelinesOpen] = useState(false);
-  const [specialRemarksOpen, setSpecialRemarksOpen] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [guidelines, setGuidelines] = useState<UwGuidelineRow[]>(
-    INITIAL_GUIDELINES.map((g) => ({ ...g })),
-  );
 
   const notify = (message: string) => {
     setSnackbarMessage(message);
@@ -242,10 +162,10 @@ const GuwUser = () => {
                 <Box sx={{ mt: "7px" }}>
                   <GuwSdtRow
                     data={page.record.sdtRow}
-                    onGrievanceHistory={() => setHistoryOpen(true)}
-                    onClaimAudit={() => setClaimAuditOpen(true)}
-                    onUwGuidelines={() => setUwGuidelinesOpen(true)}
-                    onSpecialRemarks={() => setSpecialRemarksOpen(true)}
+                    onGrievanceHistory={() => setSectionDialog("grievanceHistory")}
+                    onClaimAudit={() => setSectionDialog("claimAudit")}
+                    onUwGuidelines={() => setSectionDialog("uwGuidelines")}
+                    onSpecialRemarks={() => setSectionDialog("specialRemarks")}
                   />
                 </Box>
               </Box>
@@ -306,16 +226,6 @@ const GuwUser = () => {
         </CustomDialog>
       )}
 
-      {/* Grievance History dialog */}
-      <CustomDialog
-        open={historyOpen}
-        onClose={() => setHistoryOpen(false)}
-        maxWidth="xl"
-        fullWidth
-      >
-        <GrievanceHistory rows={[]} paginationDisabled />
-      </CustomDialog>
-
       {/* BRE Detail dialog */}
       <CustomDialog
         open={breDetailOpen}
@@ -330,68 +240,20 @@ const GuwUser = () => {
       >
         {page.kind === "ready" ? (
           <DecisionComparisonTable
-            headers={{ label: "BRE", initial: "Initial BRE", final: "Final BRE" }}
+            headers={page.record.breData.detailHeaders}
             rows={page.record.breData.detailRows}
           />
         ) : null}
       </CustomDialog>
 
-      {/* Claim Audit dialog */}
-      <CustomDialog
-        open={claimAuditOpen}
-        onClose={() => setClaimAuditOpen(false)}
-        title="Claim Audit"
-        maxWidth="lg"
-        fullWidth
-      >
-        <Box sx={{ p: 2 }}>
-          <ClaimAudit
-            variant="editable"
-            rows={CLAIM_AUDIT_ROWS}
-            onValidate={(row) => notify(`Claim ${row.policyNo} validated successfully`)}
-          />
-        </Box>
-      </CustomDialog>
-
-      {/* Special Remarks dialog */}
-      <CustomDialog
-        open={specialRemarksOpen}
-        onClose={() => setSpecialRemarksOpen(false)}
-        title="Special Remarks"
-        maxWidth="md"
-        fullWidth
-      >
-        <Box sx={{ p: 2 }}>
-          <SpecialRemarks
-            variant="editable"
-            rows={SPECIAL_REMARK_ROWS}
-            onValidate={() => notify("Special remark validated successfully")}
-          />
-        </Box>
-      </CustomDialog>
-
-      {/* UW Guidelines dialog */}
-      <CustomDialog
-        open={uwGuidelinesOpen}
-        onClose={() => setUwGuidelinesOpen(false)}
-        title="UW Guidelines"
-        maxWidth="lg"
-        fullWidth
-      >
-        <Box sx={{ p: 2 }}>
-          <UwGuidelines
-            variant="editable"
-            rows={guidelines}
-            onClose={() => setUwGuidelinesOpen(false)}
-            onValidationError={notify}
-            onSubmit={(updated) => {
-              setGuidelines(updated);
-              setUwGuidelinesOpen(false);
-              notify("Guidelines updated successfully");
-            }}
-          />
-        </Box>
-      </CustomDialog>
+      {page.kind === "ready" ? (
+        <GuwSectionDialogs
+          sections={page.record.sections}
+          open={sectionDialog}
+          onClose={() => setSectionDialog(null)}
+          notify={notify}
+        />
+      ) : null}
 
       <CustomSnackbar
         open={snackbarOpen}
