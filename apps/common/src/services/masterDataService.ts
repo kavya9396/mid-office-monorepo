@@ -32,8 +32,15 @@ function readMasterEntry(value: unknown): MasterListEntry | null {
   } else if (typeof rawValue === "string") {
     entryValue = rawValue;
   }
+  const rowType = typeof value.type === "string" ? value.type.trim() : "";
   if (code.length === 0 && description.length === 0) return null;
-  return { code, description, value: entryValue, isActive };
+  return {
+    code,
+    description,
+    value: entryValue,
+    isActive,
+    ...(rowType.length > 0 ? { type: rowType } : {}),
+  };
 }
 
 export function parseMasterDataResponse(value: unknown): MasterDataPayload {

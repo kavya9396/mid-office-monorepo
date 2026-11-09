@@ -2,6 +2,7 @@ export { absoluteApiBaseUrl, authUrls, landingUrls, masterUrls, useMock } from "
 export {
   clearMasterData,
   getMasterData,
+  getMasterList,
   setMasterData,
   type MasterDataPayload,
   type MasterListEntry,

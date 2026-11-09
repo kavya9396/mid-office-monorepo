@@ -5,6 +5,8 @@ export type MasterListEntry = {
   description: string;
   value: string | null;
   isActive: string;
+  /** Sub-type on some masters (e.g. `misc` → `SES_TIMEOUT`). */
+  type?: string | null;
 };
 
 export type MasterDataPayload = {
