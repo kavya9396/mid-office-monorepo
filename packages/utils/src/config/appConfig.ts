@@ -74,5 +74,18 @@ export const masterUrls = {
   },
 };
 
+/** Full Group DRS / Financial service URLs from .env. Empty when unset — mock mode skips them. */
+export const groupBusinessUrls = {
+  get drsData(): string {
+    return configuredUrl(import.meta.env.VITE_GROUP_DRS_DATA_API);
+  },
+  get financialFetch(): string {
+    return configuredUrl(import.meta.env.VITE_GROUP_FINANCIAL_FETCH_API);
+  },
+  get financialSave(): string {
+    return configuredUrl(import.meta.env.VITE_GROUP_FINANCIAL_SAVE_API);
+  },
+};
+
 /** RTK base URL when each request uses a full URL from `landingUrls` or `authUrls`. */
 export const absoluteApiBaseUrl = "";

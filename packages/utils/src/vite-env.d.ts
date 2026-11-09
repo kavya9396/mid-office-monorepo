@@ -19,6 +19,11 @@ interface ImportMetaEnv {
   readonly VITE_GROUP_POOL_COLUMNS_SAVE_API?: string;
   readonly VITE_MASTER_SERVICE?: string;
   readonly VITE_MASTERS_API?: string;
+  readonly VITE_GROUP_DRS_SERVICE?: string;
+  readonly VITE_GROUP_DRS_DATA_API?: string;
+  readonly VITE_FINANCE_SERVICE?: string;
+  readonly VITE_GROUP_FINANCIAL_FETCH_API?: string;
+  readonly VITE_GROUP_FINANCIAL_SAVE_API?: string;
 }
 
 interface ImportMeta {

@@ -1,4 +1,11 @@
-export { absoluteApiBaseUrl, authUrls, landingUrls, masterUrls, useMock } from "./config";
+export {
+  absoluteApiBaseUrl,
+  authUrls,
+  groupBusinessUrls,
+  landingUrls,
+  masterUrls,
+  useMock,
+} from "./config";
 export {
   clearMasterData,
   getMasterData,
