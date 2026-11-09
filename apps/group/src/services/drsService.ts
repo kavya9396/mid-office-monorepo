@@ -1,7 +1,7 @@
 import type { DetailAttribute, DetailTable } from "@insurance-poc/common/detail-card";
-import type { LifeAssuredApplicant } from "@insurance-poc/common/life-assured";
+import type { LifeAssuredApplicant, RiderEditRow } from "@insurance-poc/common/life-assured";
 import type { RequirementItem } from "@insurance-poc/common/requirement-mgmt";
-import { mapApplicants, type LifeAssuredSource } from "../modules/drs/lifeAssuredData";
+import { mapApplicants } from "../modules/drs/lifeAssuredData";
 import { mapRequirements, type RawRequirement } from "../modules/drs/requirementData";
 
 export type CardType = "APPLICATION" | "SOURCE" | "GROUP" | "RISK";
@@ -13,54 +13,79 @@ export type CardDetail = {
   tables: DetailTable[];
 };
 
+export type BreRow = {
+  id: string;
+  label: string;
+  initial: string;
+  final: string;
+};
+
 export type BreDecision = {
-  decision: string;
+  /** Column headers of the BRE comparison table. */
+  headers: { label: string; initial: string; final: string };
+  rows: BreRow[];
+  /** Values of the "decision" row, shown in the BRE decision bar. */
   initialDecision: string;
+  decision: string;
+};
+
+export type DvtDecision = {
   remarks: string;
-  discrepancy: string;
-  action: string;
-  timestamp: string;
-  reTriggerCount: number;
+  decision: string;
+  decisionCode: string;
+  decisionOptions: string[];
 };
 
 export type GroupDrsData = {
   applicationNo: string;
   cardDetails: CardDetail[];
   breDecision: BreDecision;
+  dvtDecision: DvtDecision;
   requirements: RequirementItem[];
   applicants: LifeAssuredApplicant[];
 };
 
-const CARD_TYPES: readonly CardType[] = ["APPLICATION", "SOURCE", "GROUP", "RISK"];
+// `cardDetails[].type` as sent by the API -> internal card type
+const CARD_TYPE_BY_NAME: Record<string, CardType> = {
+  "Application Detail": "APPLICATION",
+  "Source Detail": "SOURCE",
+  "Group Policy Detail": "GROUP",
+  "Risk Detail": "RISK",
+};
+
+const RIDER_TABLE_NAME = "Rider Details";
+
+// Rider Details table column -> key in the API row. "Rider" is numbered by row position instead.
+const RIDER_COLUMN_KEYS: Record<string, string | undefined> = {
+  "Rider Code": "name",
+  "Sum Assured": "sumAssured",
+};
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function readText(value: unknown): string {
-  return typeof value === "string" ? value : "";
+  if (typeof value === "string") return value;
+  if (typeof value === "number") return String(value);
+  return "";
 }
 
 function invalidResponse(): Error {
   return new Error("Group DRS response is not in the expected format.");
 }
 
-function isCardType(value: string): value is CardType {
-  return CARD_TYPES.includes(value as CardType);
+function readCardType(value: string): CardType {
+  const cardType = CARD_TYPE_BY_NAME[value];
+  if (!cardType) throw invalidResponse();
+  return cardType;
 }
 
 function readAttributes(value: unknown): DetailAttribute[] {
   if (!Array.isArray(value)) throw invalidResponse();
   return value.map((item) => {
     if (!isRecord(item) || typeof item.name !== "string") throw invalidResponse();
-    const attributeValue = item.value;
-    const text =
-      typeof attributeValue === "string"
-        ? attributeValue
-        : attributeValue == null
-          ? ""
-          : String(attributeValue);
-    return { name: item.name, value: text };
+    return { name: item.name, value: readText(item.value) };
   });
 }
 
@@ -73,27 +98,33 @@ function readTables(value: unknown): DetailTable[] {
     if (!item.columns.every((column) => typeof column === "string")) throw invalidResponse();
     if (!Array.isArray(item.rows)) throw invalidResponse();
 
-    const rows = item.rows.map((row) => {
+    const columns: string[] = item.columns;
+    const isRiderTable = item.name === RIDER_TABLE_NAME;
+
+    const rows = item.rows.map((row, index) => {
       if (!isRecord(row)) throw invalidResponse();
       const cells: Record<string, string> = {};
-      for (const [key, cell] of Object.entries(row)) {
-        cells[key] = typeof cell === "string" ? cell : cell == null ? "" : String(cell);
+      for (const column of columns) {
+        if (isRiderTable && column === "Rider") {
+          cells[column] = `Rider ${index + 1}`;
+          continue;
+        }
+        const key = isRiderTable ? RIDER_COLUMN_KEYS[column] : column;
+        cells[column] = key ? readText(row[key]) : "";
       }
       return cells;
     });
 
-    return { name: item.name, columns: item.columns, rows };
+    return { name: item.name, columns, rows };
   });
 }
 
 function readCards(value: unknown): CardDetail[] {
   if (!Array.isArray(value)) throw invalidResponse();
   return value.map((item) => {
-    if (!isRecord(item) || typeof item.type !== "string" || !isCardType(item.type)) {
-      throw invalidResponse();
-    }
+    if (!isRecord(item) || typeof item.type !== "string") throw invalidResponse();
     return {
-      type: item.type,
+      type: readCardType(item.type),
       attributes: readAttributes(item.attributes),
       expandedAttributes: readAttributes(item.expandedAttributes),
       tables: readTables(item.tables),
@@ -101,114 +132,116 @@ function readCards(value: unknown): CardDetail[] {
   });
 }
 
-/** Finds a section by name inside data.sections array and returns its value. */
-function findSection(sections: unknown, name: string): unknown {
+/** Finds an entry by name inside the data.sections array. */
+function findSection(sections: unknown, name: string): Record<string, unknown> | null {
   if (!Array.isArray(sections)) throw invalidResponse();
-  const entry = sections.find(
-    (s) => isRecord(s) && s.name === name,
-  ) as Record<string, unknown> | undefined;
-  return entry?.value ?? null;
+  return sections.find((s): s is Record<string, unknown> => isRecord(s) && s.name === name) ?? null;
 }
 
-function readBre(value: unknown): BreDecision {
-  if (!isRecord(value)) throw invalidResponse();
-  const reTriggerCount = value.reTriggerCount;
-  if (typeof reTriggerCount !== "number") throw invalidResponse();
+const BRE_DECISION_ROW_ID = "decision";
+
+/** BRE cell values are strings, except "decision" which is a list of codes. */
+function readBreText(value: unknown): string {
+  if (Array.isArray(value)) {
+    return value
+      .map(readText)
+      .filter((item) => item !== "")
+      .join(", ");
+  }
+  return readText(value);
+}
+
+function readBreHeader(columns: unknown, key: string, fallback: string): string {
+  if (!Array.isArray(columns)) return fallback;
+  const column = columns.find((item) => isRecord(item) && item.key === key);
+  return isRecord(column) && typeof column.header === "string" ? column.header : fallback;
+}
+
+function readBre(section: Record<string, unknown> | null): BreDecision {
+  const value = section?.value;
+  if (!isRecord(value) || !Array.isArray(value.rows)) throw invalidResponse();
+
+  const rows = value.rows.map((row): BreRow => {
+    if (!isRecord(row)) throw invalidResponse();
+    return {
+      id: readText(row.id),
+      label: readText(row.label),
+      initial: readBreText(row.initial),
+      final: readBreText(row.final),
+    };
+  });
+  const decisionRow = rows.find((row) => row.id === BRE_DECISION_ROW_ID);
+
   return {
-    decision: readText(value.decision),
-    initialDecision: readText(value.initialDecision),
-    remarks: readText(value.remarks),
-    discrepancy: readText(value.discrepancy),
-    action: readText(value.action),
-    timestamp: readText(value.timestamp),
-    reTriggerCount,
+    headers: {
+      label: readBreHeader(value.columns, "label", "BRE"),
+      initial: readBreHeader(value.columns, "initial", "Initial BRE"),
+      final: readBreHeader(value.columns, "final", "Final BRE"),
+    },
+    rows,
+    initialDecision: decisionRow?.initial ?? "",
+    decision: decisionRow?.final ?? "",
   };
 }
 
-function readRequirements(value: unknown): RawRequirement[] {
-  if (!Array.isArray(value)) throw invalidResponse();
-  return value.map((item) => {
-    if (!isRecord(item) || typeof item.requirementId !== "number") throw invalidResponse();
+function readDvtDecision(section: Record<string, unknown> | null): DvtDecision {
+  const value = isRecord(section?.value) ? section.value : {};
+  const options = Array.isArray(value.decisionOptions)
+    ? value.decisionOptions.filter((option): option is string => typeof option === "string")
+    : [];
+  return {
+    remarks: readText(value.dvtRemarks),
+    decision: readText(value.dvtDecision),
+    decisionCode: readText(value.decisionCode),
+    decisionOptions: options,
+  };
+}
+
+/** Requirement rows sit directly on the section and carry no id, so the row index is used. */
+function readRequirements(section: Record<string, unknown> | null): RawRequirement[] {
+  const rows = section?.rows;
+  if (!Array.isArray(rows)) throw invalidResponse();
+  return rows.map((row, index) => {
+    if (!isRecord(row)) throw invalidResponse();
     return {
-      requirementId: item.requirementId,
-      status: readText(item.status),
-      ocrStatus: readText(item.ocrStatus),
-      team: readText(item.team),
-      category: readText(item.category),
-      subCategory: readText(item.subCategory),
-      document: readText(item.document),
-      reason: readText(item.reason),
-      fupCode: readText(item.fupCode),
-      description: readText(item.description),
+      requirementId: typeof row.requirementId === "number" ? row.requirementId : index,
+      status: readText(row.status),
+      ocrStatus: readText(row.ocrStatus),
+      team: readText(row.team),
+      profile: readText(row.profile),
+      category: readText(row.category),
+      subCategory: readText(row.subCategory),
+      document: readText(row.document),
+      reason: readText(row.reason),
+      fupCode: readText(row.fupCode),
+      extraRemarks: readText(row.extraRemarks),
+      description: readText(row.description),
     };
   });
 }
 
-/**
- * Reads the product detail from applicationOverview.productDetail (array).
- * Falls back to empty strings if absent.
- */
-function readProductDetail(appOverview: unknown): { code: string; productType: string } {
-  if (!isRecord(appOverview)) return { code: "", productType: "" };
-  const products = appOverview.productDetail;
-  if (!Array.isArray(products) || products.length === 0) return { code: "", productType: "" };
-  const first = products[0];
-  if (!isRecord(first)) return { code: "", productType: "" };
-  return {
-    code: readText(first.code),
-    productType: readText(first.productType),
-  };
+/** Rider rows of the Application Detail card's "Rider Details" table (name + sum assured only). */
+function readRiders(cardDetails: unknown): RiderEditRow[] {
+  if (!Array.isArray(cardDetails)) return [];
+  const card = cardDetails.find(
+    (item): item is Record<string, unknown> => isRecord(item) && item.type === "Application Detail",
+  );
+  if (!card || !Array.isArray(card.tables)) return [];
+  const table = card.tables.find(
+    (item): item is Record<string, unknown> => isRecord(item) && item.name === RIDER_TABLE_NAME,
+  );
+  if (!table || !Array.isArray(table.rows)) return [];
+  return table.rows.filter(isRecord).map((row) => ({
+    riderName: readText(row.name),
+    sumAssured: readText(row.sumAssured),
+    riderTerm: "",
+  }));
 }
 
-/**
- * Reads rider details from applicationOverview.riderDetails (array).
- */
-function readRiderDetails(appOverview: unknown): { riderName: string; sumAssured: number; riderTerm: number }[] {
-  if (!isRecord(appOverview) || !Array.isArray(appOverview.riderDetails)) return [];
-  return appOverview.riderDetails
-    .filter(isRecord)
-    .map((r) => ({
-      riderName: readText(r.riderName),
-      sumAssured: typeof r.sumAssured === "number" ? r.sumAssured : 0,
-      riderTerm: typeof r.riderTerm === "number" ? r.riderTerm : 0,
-    }));
-}
-
-/**
- * Reads loan/group details from applicationOverview.groupDetails.
- */
-function readLoanDetail(appOverview: unknown): Record<string, string> {
-  if (!isRecord(appOverview) || !isRecord(appOverview.groupDetails)) return {};
-  const g = appOverview.groupDetails;
-  return {
-    baseSumAssured: "",
-    loanAmount: g.loanAmount != null ? String(g.loanAmount) : "",
-    loanDisbursementDate: readText(g.dateOfLoanDisbursement),
-    loanShare: g.shareOfLoan != null ? String(g.shareOfLoan) : "",
-    loanTerm: g.loanTerm != null ? String(g.loanTerm) : "",
-    policyTerm: "",
-    masterCode: "",
-    loanAccountNumber: "",
-  };
-}
-
-function readLifeAssured(
-  summaryValue: unknown,
-  appOverview: unknown,
-): LifeAssuredSource {
-  if (!Array.isArray(summaryValue)) throw invalidResponse();
-
-  const productDetail = readProductDetail(appOverview);
-  const riderDetails = readRiderDetails(appOverview);
-  const loan = readLoanDetail(appOverview);
-
-  return {
-    summary: summaryValue,
-    productDetail,
-    riderDetails,
-    loan: loan as LifeAssuredSource["loan"],
-    imageRecords: [],
-  };
+function readApplicantMembers(section: Record<string, unknown> | null): unknown[] {
+  const members = section?.value;
+  if (!Array.isArray(members)) throw invalidResponse();
+  return members;
 }
 
 export function mapGroupDrsPayload(value: unknown): GroupDrsData {
@@ -219,16 +252,16 @@ export function mapGroupDrsPayload(value: unknown): GroupDrsData {
   if (applicationNo.length === 0) throw invalidResponse();
 
   const sections = data.sections;
-  const breSection = findSection(sections, "breDecision");
-  const summarySection = findSection(sections, "summary");
-  const requirementSection = findSection(sections, "requirementManagement");
-  const appOverviewSection = findSection(sections, "applicationOverview");
 
   return {
     applicationNo,
     cardDetails: readCards(data.cardDetails),
-    breDecision: readBre(breSection),
-    requirements: mapRequirements(readRequirements(requirementSection)),
-    applicants: mapApplicants(readLifeAssured(summarySection, appOverviewSection)),
+    breDecision: readBre(findSection(sections, "latestBreDecision")),
+    dvtDecision: readDvtDecision(findSection(sections, "dvtDecision")),
+    requirements: mapRequirements(readRequirements(findSection(sections, "requirementManagement"))),
+    applicants: mapApplicants({
+      members: readApplicantMembers(findSection(sections, "applicantProfile")),
+      riders: readRiders(data.cardDetails),
+    }),
   };
 }

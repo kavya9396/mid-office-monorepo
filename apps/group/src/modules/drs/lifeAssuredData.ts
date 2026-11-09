@@ -1,69 +1,48 @@
-import type { FieldData, LifeAssuredApplicant } from "@insurance-poc/common/life-assured";
+import type {
+  AppointeeRow,
+  FieldData,
+  ImageDetailRecord,
+  LifeAssuredApplicant,
+  LoanEditValues,
+  NomineeEditRow,
+  NomineeRow,
+  RiderEditRow,
+} from "@insurance-poc/common/life-assured";
 
-type Address = {
-  type: string;
-  addressLine1: string;
-  addressLine2: string;
-  addressLine3: string;
-  landmark: string;
-  city: string;
-  state: string;
-  pinCode: string;
-  residingCountry: string;
-};
-
-type SummaryMember = {
-  memberType: string;
-  partyId?: string;
-  proposerSummary: Record<string, string | number | boolean | { years: number; days?: number } | null>;
-  kycDetails: Record<string, string>;
-  address: Address[];
-  contactDetails: Record<string, string>;
-  healthDetail: { height: string; weight: string; bmi: string };
-  nominee: {
-    firstName: string;
-    lastName: string;
-    dob: string;
-    gender: string;
-    percentage: number;
-    proposerNomineeRelation?: string;
-    accountNumber?: string;
-    ifsc?: string;
-  }[];
-  appointee: { firstName: string; lastName: string; dob: string; gender: string }[];
-};
-
-type ProductDetail = { code: string; productType: string };
-
-type RiderDetail = { riderName: string; sumAssured: number; riderTerm: number };
-
-export type LoanDetail = {
-  baseSumAssured: string;
-  loanAmount: string;
-  loanDisbursementDate: string;
-  loanShare: string;
-  loanTerm: string;
-  policyTerm: string;
-  masterCode: string;
-  loanAccountNumber: string;
-};
+type JsonRecord = Record<string, unknown>;
 
 export type LifeAssuredSource = {
-  summary: unknown[];
-  productDetail: ProductDetail;
-  riderDetails: RiderDetail[];
-  loan: LoanDetail;
-  imageRecords: never[];
+  /** Raw `sections.applicantProfile.value` entries. */
+  members: unknown[];
+  /** Rider rows read from the Application Detail card's "Rider Details" table. */
+  riders: RiderEditRow[];
 };
 
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+// KYC values the prototype masks (everything except the last 4 characters)
+const MASKED_KYC_LABELS = new Set(["PRAN Number", "PAN Number", "Identity Proof Number"]);
 
-// "1988-08-09T00:00" -> "9 Aug 1988" (same output as the prototype)
-const formatDate = (value?: string) => {
-  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value?.trim() ?? "");
-  if (!match) return "";
-  const [, year, month, day] = match;
-  return `${Number(day)} ${MONTHS[Number(month) - 1]} ${year}`;
+// base_and_loan_details label -> LoanEditValues key (case-insensitive)
+const LOAN_KEYS: Record<string, keyof LoanEditValues> = {
+  "base sum assured": "baseSumAssured",
+  "base summ assured": "baseSumAssured",
+  "loan amount": "loanAmount",
+  "date of loan disbursement": "loanDisbursementDate",
+  "share of loan": "loanShare",
+  "loan term": "loanTerm",
+  "policy term": "policyTerm",
+  "master code": "masterCode",
+  "loan account number": "loanAccountNumber",
+};
+
+const EMPTY_LOAN: LoanEditValues = {
+  baseSumAssured: "",
+  loanAmount: "",
+  loanDisbursementDate: "",
+  loanShare: "",
+  loanTerm: "",
+  policyTerm: "",
+  masterCode: "",
+  loanAccountNumber: "",
 };
 
 // Prototype masks everything except the last 4 characters
@@ -80,155 +59,161 @@ const memberLabel = (memberType: string, total: number) => {
   return name ? `${name.charAt(0).toUpperCase()}${name.slice(1)}` : "";
 };
 
+const isRecord = (value: unknown): value is JsonRecord =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const asRecord = (value: unknown): JsonRecord => (isRecord(value) ? value : {});
+
+const asArray = (value: unknown): unknown[] => (Array.isArray(value) ? value : []);
+
 const text = (value: unknown) => (typeof value === "string" || typeof value === "number" ? value : undefined);
 
-const addressFields = (address?: Address): FieldData[] => [
-  { label: "Address Line 1", value: address?.addressLine1 },
-  { label: "Address Line 2", value: address?.addressLine2 },
-  { label: "Address Line 3", value: address?.addressLine3 },
-  { label: "Landmark", value: address?.landmark },
-  { label: "City", value: address?.city },
-  { label: "State", value: address?.state },
-  { label: "Country", value: address?.residingCountry },
-  { label: "Pincode", value: address?.pinCode },
-];
+const str = (value: unknown) => (typeof value === "string" || typeof value === "number" ? String(value) : "");
 
-const fullName = (first: string, last: string) => [first, last].filter(Boolean).join(" ") || "-";
+const optionalText = (value: unknown) => {
+  const result = str(value);
+  return result === "" ? undefined : result;
+};
 
-// Summary values are loosely typed; only non-empty strings are valid name parts
-const joinNameParts = (...parts: unknown[]) =>
-  parts.filter((part): part is string => typeof part === "string" && part !== "").join(" ");
+/** [{ label, value }] -> FieldData[] */
+const readFields = (value: unknown): FieldData[] =>
+  asArray(value)
+    .filter(isRecord)
+    .map((item) => ({ label: str(item.label), value: text(item.value) }));
 
-const toApplicant = (
-  member: SummaryMember,
-  total: number,
-  productDetail: ProductDetail,
-  riders: RiderDetail[],
-  loan: LoanDetail,
-): LifeAssuredApplicant => {
-  const summary = member.proposerSummary;
-  const kyc = member.kycDetails;
-  const contact = member.contactDetails;
-  const years = (summary.age as { years: number } | null)?.years;
+/** Finds an entry of a [{ label, ... }] list by label (case-insensitive). */
+const findByLabel = (entries: unknown, label: string): JsonRecord | undefined =>
+  asArray(entries)
+    .filter(isRecord)
+    .find((entry) => str(entry.label).trim().toLowerCase() === label.toLowerCase());
+
+const maskKycField = (field: FieldData): FieldData =>
+  MASKED_KYC_LABELS.has(field.label)
+    ? { label: field.label, value: maskValue(typeof field.value === "string" ? field.value : undefined) }
+    : field;
+
+const splitName = (name: string) => {
+  const [firstName = "", ...rest] = name.trim().split(/\s+/);
+  return { firstName, lastName: rest.join(" ") };
+};
+
+const toShare = (value: unknown) => {
+  const raw = str(value).trim();
+  const parsed = Number(raw);
+  return raw !== "" && Number.isFinite(parsed) ? parsed : 0;
+};
+
+const readNomineeRows = (nominee: unknown, label: string): JsonRecord[] =>
+  asArray(findByLabel(asRecord(nominee).value, label)?.rows).filter(isRecord);
+
+const readLoan = (baseAndLoan: unknown): LoanEditValues => {
+  const loan: LoanEditValues = { ...EMPTY_LOAN };
+  for (const item of asArray(asRecord(baseAndLoan).value).filter(isRecord)) {
+    const key = LOAN_KEYS[(str(item.name) || str(item.label)).trim().toLowerCase()];
+    if (key) loan[key] = str(item.value);
+  }
+  return loan;
+};
+
+// product_details row key + default label, in column order. The row keys keep the API's own
+// spelling (`foundSource`, `partnertype`); labels come from `columns` by position when present.
+const PRODUCT_COLUMNS = [
+  { key: "productCode", label: "Product Code" },
+  { key: "productType", label: "Product Type" },
+  { key: "foundSource", label: "Fund Source" },
+  { key: "partnertype", label: "Partner Type" },
+] as const;
+
+/**
+ * product_details table -> FieldData[] (one field per column). An applicant has one product, so only
+ * the first row is used; the field card keys fields by label, so extra rows would repeat the labels.
+ */
+const readProductFields = (productDetails: unknown): FieldData[] => {
+  const value = asRecord(asRecord(productDetails).value);
+  const columns = asArray(value.columns);
+  const row = asArray(value.rows).find(isRecord);
+  if (!row) return [];
+  return PRODUCT_COLUMNS.map(({ key, label }, index) => ({
+    label: optionalText(asRecord(columns[index]).label) ?? label,
+    value: text(row[key]),
+  }));
+};
+
+const readImageRecords = (imageDetails: unknown): ImageDetailRecord[] =>
+  asArray(asRecord(asRecord(imageDetails).value).rows)
+    .filter(isRecord)
+    .map((row) => ({
+      document: optionalText(row.document),
+      faceMatchScore: optionalText(row.faceMatchScore),
+      imageQuality: optionalText(row.imageQuality),
+      remarks: optionalText(row.remarks),
+    }));
+
+const toApplicant = (member: JsonRecord, total: number, riders: RiderEditRow[]): LifeAssuredApplicant => {
+  const memberType = str(member.memberType);
+  const groups = asArray(asRecord(member.personal_kyc).groups);
+
+  const contactAndAddress = asRecord(member.contact_and_address).value;
+  const healthInformation = findByLabel(asRecord(member.medical_and_lifestyle).value, "Health Information");
+  const lifestyleHabits = findByLabel(asRecord(member.medical_and_lifestyle).value, "Lifestyle Habits");
+
+  const nomineeRows = readNomineeRows(member.nominee, "Nominee Details");
+  const appointeeRows = readNomineeRows(member.nominee, "Appointee Details");
+
+  const nominees: NomineeRow[] = nomineeRows.map((row) => ({
+    nomineeName: str(row.name) || "-",
+    nomineeDOB: str(row.dob) || "-",
+    gender: str(row.gender) || "-",
+    relationship: str(row.relationship) || "-",
+    sharePercentage: toShare(row.share),
+    isLASame: "-",
+    relationShipWithJL: "-",
+    laFlag: "-",
+  }));
+
+  const appointees: AppointeeRow[] = appointeeRows.map((row) => ({
+    appointeeName: str(row.name) || "-",
+    appointeeGender: str(row.gender) || "-",
+    appointeeDOB: str(row.dob) || "-",
+    appointeeRelationship: str(row.relationship) || "-",
+  }));
+
+  const editNominees: NomineeEditRow[] = nomineeRows.map((row) => ({
+    ...splitName(str(row.name)),
+    dob: str(row.dob).slice(0, 10),
+    gender: str(row.gender),
+    proposerNomineeRelation: str(row.relationship),
+    percentage: str(row.share),
+    accountNumber: "",
+    ifsc: "",
+  }));
 
   return {
-    id: member.memberType,
-    partyId: typeof member.partyId === "string" ? member.partyId : undefined,
-    memberType: member.memberType,
-    label: memberLabel(member.memberType, total),
-    profileImage: text(summary.profileImage) as string | undefined,
-    imageRecords: [],
-    personalFields: [
-      {
-        label: "Applicant Name",
-        value: joinNameParts(summary.firstName, summary.middleName, summary.lastName),
-      },
-      { label: "Date of Birth", value: formatDate(summary.dob as string) },
-      { label: "Age", value: years == null ? "-" : `${years} Years` },
-      { label: "Gender", value: text(summary.gender) },
-      { label: "Marital Status", value: text(summary.maritalStatus) },
-      { label: "Nationality", value: text(summary.nationality) },
-      { label: "Country of Residence", value: text(summary.countryOfResidence) },
-      { label: "Education", value: text(summary.education) },
-      { label: "Resident Status", value: text(summary.residentStatus) },
-      { label: "Designation", value: text(summary.designation) },
-      { label: "Disabled", value: text(summary.disabled) },
-      { label: "UDID Number", value: text(summary.udidNumber) },
-      { label: "City of Resident", value: "-" },
-      { label: "State of Resident", value: "-" },
-    ],
-    kycFields: [
-      { label: "PRAN Number", value: maskValue(kyc.pranNo) },
-      { label: "PRAN Number Verification", value: kyc.pranNoVerification },
-      { label: "PAN Number", value: maskValue(kyc.panNumber) },
-      { label: "PAN Flag", value: kyc.panFlag },
-      { label: "PAN Aadhar Seeding Status", value: kyc.panAadharSeedingStatus },
-      { label: "Identity Proof Type", value: kyc.identityProofType },
-      { label: "Identity Proof Expiry Date", value: formatDate(kyc.identityProofExpiryDate) },
-      { label: "Identity Proof Number", value: maskValue(kyc.identityProofNumber) },
-      { label: "Address Proof", value: kyc.addressProof },
-      { label: "Income Proof", value: kyc.incomeProof },
-      { label: "CKYC Number", value: kyc.existingCkycNumber },
-      { label: "PEP", value: kyc.pep },
-      { label: "Criminal Proceedings", value: kyc.criminalProceedings },
-    ],
-    communicationAddress: addressFields(
-      member.address.find((a) => a.type.trim().toLowerCase() === "communication"),
-    ),
-    permanentAddress: addressFields(
-      member.address.find((a) => a.type.trim().toLowerCase() === "permanent"),
-    ),
-    contactDetails: [
-      { label: "Mobile No.", value: contact.mobileNo },
-      { label: "Email ID", value: contact.emailId },
-      { label: "Alternate Mobile", value: contact.alternateMobileNo },
-      { label: "STD/ISD Code", value: contact.std },
-      { label: "Landline Number", value: contact.landlineNo },
-      { label: "Email Pref", value: contact.emailPref },
-      { label: "SMS Pref", value: contact.smsPref },
-      { label: "Negative Pincode", value: undefined },
-    ],
-    productFields: [
-      { label: "Product Code", value: productDetail.code },
-      { label: "Product Type", value: productDetail.productType },
-      { label: "Fund Source", value: undefined },
-      { label: "Partner Type", value: undefined },
-    ],
-    nominees: member.nominee.map((n) => ({
-      nomineeName: fullName(n.firstName, n.lastName),
-      nomineeDOB: formatDate(n.dob) || "-",
-      gender: n.gender || "-",
-      relationship: "-",
-      sharePercentage: n.percentage,
-      isLASame: "-",
-      relationShipWithJL: "-",
-      laFlag: "-",
-    })),
-    appointees: member.appointee.map((a) => ({
-      appointeeName: fullName(a.firstName, a.lastName),
-      appointeeGender: a.gender || "-",
-      appointeeDOB: formatDate(a.dob) || "-",
-      appointeeRelationship: "-",
-    })),
-    editNominees: member.nominee.map((n) => ({
-      firstName: n.firstName,
-      lastName: n.lastName,
-      dob: n.dob.slice(0, 10),
-      gender: n.gender,
-      proposerNomineeRelation: "",
-      percentage: String(n.percentage),
-      accountNumber: "",
-      ifsc: "",
-    })),
-    editRiders: riders.map((r) => ({
-      riderName: r.riderName,
-      sumAssured: String(r.sumAssured),
-      riderTerm: String(r.riderTerm),
-    })),
-    editLoan: loan,
+    id: memberType,
+    partyId: optionalText(member.partyId),
+    memberType,
+    label: memberLabel(memberType, total),
+    profileImage: undefined,
+    imageRecords: readImageRecords(member.image_details),
+    personalFields: readFields(groups[0]),
+    kycFields: readFields(groups[1]).map(maskKycField),
+    communicationAddress: readFields(findByLabel(contactAndAddress, "Communication Address")?.value),
+    permanentAddress: readFields(findByLabel(contactAndAddress, "Permanent Address")?.value),
+    contactDetails: readFields(findByLabel(contactAndAddress, "Contact Details")?.value),
+    productFields: readProductFields(member.product_details),
+    nominees,
+    appointees,
+    editNominees,
+    editRiders: riders,
+    editLoan: readLoan(member.base_and_loan_details),
     lifestyleFields: [
-      { label: "Height", value: member.healthDetail.height },
-      { label: "Weight", value: member.healthDetail.weight },
-      { label: "BMI", value: member.healthDetail.bmi },
-      { label: "Smoker", value: undefined },
-      { label: "Alcohol", value: undefined },
-      { label: "Any Narcotics Question ticked Positive", value: undefined },
-      { label: "Any Medical Question ticked Positive", value: undefined },
-      { label: "Is Occupation Hazardous?", value: undefined },
-      { label: "Illness Impairment", value: undefined },
-      { label: "Is Family Medical History? if yes please provide details", value: undefined },
+      ...readFields(healthInformation?.value),
+      { label: "Lifestyle Habits", value: text(lifestyleHabits?.value) },
     ],
   };
 };
 
 export function mapApplicants(source: LifeAssuredSource): LifeAssuredApplicant[] {
-  return (source.summary as SummaryMember[]).map((member) =>
-    toApplicant(
-      member,
-      source.summary.length,
-      source.productDetail,
-      source.riderDetails,
-      source.loan,
-    ),
-  );
+  const members = source.members.filter(isRecord);
+  return members.map((member) => toApplicant(member, members.length, source.riders));
 }

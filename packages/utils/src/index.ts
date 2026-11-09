@@ -53,7 +53,7 @@ export {
   resetUnauthorizedHandling,
   type BusinessRequest,
 } from "./api";
-export { formatIndianCurrency, default } from "./format";
+export { formatDateTime, formatIndianCurrency, default } from "./format";
 export {
   isLikelyEmail,
   isValidEmailAddress,
