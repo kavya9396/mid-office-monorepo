@@ -16,11 +16,18 @@ vi.mock("react-router-dom", async () => {
   };
 });
 
+const drsTask = vi.hoisted(() => ({
+  setDrsTaskIds: vi.fn(),
+  clearDrsTaskIds: vi.fn(),
+}));
+
 vi.mock("@insurance-poc/utils", async () => {
   const actual = await vi.importActual<typeof import("@insurance-poc/utils")>("@insurance-poc/utils");
   return {
     ...actual,
     getLastLoginAt: () => "2026-10-06T14:10:20",
+    setDrsTaskIds: drsTask.setDrsTaskIds,
+    clearDrsTaskIds: drsTask.clearDrsTaskIds,
   };
 });
 
@@ -103,6 +110,7 @@ describe("InboxScreen", () => {
     );
 
     await user.click(screen.getByRole("button", { name: "RET-CVT-001" }));
+    expect(drsTask.setDrsTaskIds).toHaveBeenCalledWith("RT-1001", "RI-1001");
     expect(navigate).toHaveBeenCalledWith("/app/RET-CVT-001/drs");
   });
 });

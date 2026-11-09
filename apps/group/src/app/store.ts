@@ -3,6 +3,7 @@ import { authApi } from "@insurance-poc/common/auth-api";
 import { authReducer, sessionExpired } from "@insurance-poc/utils";
 import { groupDrsApi } from "../services/drsApi";
 import { groupFinancialApi } from "../services/financialApi";
+import { groupCompleteTaskApi } from "../services/completeTaskApi";
 import { groupInboxApi } from "../services/inboxApi";
 
 const listenerMiddleware = createListenerMiddleware();
@@ -13,6 +14,7 @@ listenerMiddleware.startListening({
     listenerApi.dispatch(groupInboxApi.util.resetApiState());
     listenerApi.dispatch(groupDrsApi.util.resetApiState());
     listenerApi.dispatch(groupFinancialApi.util.resetApiState());
+    listenerApi.dispatch(groupCompleteTaskApi.util.resetApiState());
   },
 });
 
@@ -23,6 +25,7 @@ export const store = configureStore({
     [groupInboxApi.reducerPath]: groupInboxApi.reducer,
     [groupDrsApi.reducerPath]: groupDrsApi.reducer,
     [groupFinancialApi.reducerPath]: groupFinancialApi.reducer,
+    [groupCompleteTaskApi.reducerPath]: groupCompleteTaskApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
@@ -32,6 +35,7 @@ export const store = configureStore({
         groupInboxApi.middleware,
         groupDrsApi.middleware,
         groupFinancialApi.middleware,
+        groupCompleteTaskApi.middleware,
       ),
 });
 

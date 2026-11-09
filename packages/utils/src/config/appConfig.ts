@@ -65,6 +65,12 @@ export const landingUrls = {
   get groupPoolColumnsSave(): string {
     return configuredUrl(import.meta.env.VITE_GROUP_POOL_COLUMNS_SAVE_API);
   },
+  get retailCompleteTask(): string {
+    return configuredUrl(import.meta.env.VITE_RETAIL_COMPLETE_TASK_API);
+  },
+  get groupCompleteTask(): string {
+    return configuredUrl(import.meta.env.VITE_GROUP_COMPLETE_TASK_API);
+  },
 };
 
 /** Master-data service (shared Retail/Group reference lists). Empty when unset — mock mode skips it. */

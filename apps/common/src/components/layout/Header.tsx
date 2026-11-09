@@ -26,6 +26,7 @@ import {
 import {
   clearSession,
   clearToken,
+  clearDrsTaskIds,
   getSessionBusinessType,
   getSessionUser,
   setSessionBusinessType,
@@ -652,9 +653,11 @@ export function Header({
     }
 
     if (onBackToInbox) {
+      clearDrsTaskIds();
       onBackToInbox();
       return;
     }
+    clearDrsTaskIds();
     navigate(inboxPath);
   };
 

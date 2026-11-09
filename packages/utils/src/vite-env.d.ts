@@ -17,6 +17,8 @@ interface ImportMetaEnv {
   readonly VITE_RETAIL_POOL_COLUMNS_SAVE_API?: string;
   readonly VITE_GROUP_POOL_COLUMNS_API?: string;
   readonly VITE_GROUP_POOL_COLUMNS_SAVE_API?: string;
+  readonly VITE_RETAIL_COMPLETE_TASK_API?: string;
+  readonly VITE_GROUP_COMPLETE_TASK_API?: string;
   readonly VITE_MASTER_SERVICE?: string;
   readonly VITE_MASTERS_API?: string;
   readonly VITE_GROUP_DRS_SERVICE?: string;

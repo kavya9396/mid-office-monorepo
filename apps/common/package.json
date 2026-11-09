@@ -119,6 +119,11 @@
       "import": "./src/services/landingInboxQueries.ts",
       "default": "./src/services/landingInboxQueries.ts"
     },
+    "./complete-task": {
+      "types": "./src/services/completeTask.ts",
+      "import": "./src/services/completeTask.ts",
+      "default": "./src/services/completeTask.ts"
+    },
     "./master-data": {
       "types": "./src/services/masterDataService.ts",
       "import": "./src/services/masterDataService.ts",

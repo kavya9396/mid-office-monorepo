@@ -1,11 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { drsRoutePath } from "@insurance-poc/routes";
 import Box from "@mui/material/Box";
 import CircularProgress from "@mui/material/CircularProgress";
 import Typography from "@mui/material/Typography";
 import { CustomButton, CustomSnackbar } from "@insurance-poc/ui";
-import { getLastLoginAt } from "@insurance-poc/utils";
+import { clearDrsTaskIds, getLastLoginAt, setDrsTaskIds } from "@insurance-poc/utils";
 import {
   casesForTask,
   firstPoolKey,
@@ -13,7 +13,7 @@ import {
   type InboxCase,
   type InboxData,
 } from "./inboxApi";
-import { taskDetailsTitle, toDisplayLabel } from "./inboxFormat";
+import { taskDetailsTitle } from "./inboxFormat";
 import { InboxSidebar } from "./InboxSidebar";
 import { InboxTable } from "./InboxTable";
 
@@ -44,6 +44,10 @@ export function InboxScreen({
   const [casesOpen, setCasesOpen] = useState(true);
   const [selectedTask, setSelectedTask] = useState("ALL_CASES");
   const [lastLoginAt] = useState(() => getLastLoginAt());
+
+  useEffect(() => {
+    clearDrsTaskIds();
+  }, []);
 
   const pools = useMemo(() => {
     if (!data) return [] as string[];
@@ -85,6 +89,17 @@ export function InboxScreen({
     if (item.applicationNo.length === 0) {
       setNotice("This task is missing an application number.");
       return;
+    }
+    const taskId =
+      typeof item.fields.taskId === "string" ? item.fields.taskId.trim() : String(item.fields.taskId ?? "").trim();
+    const instanceId =
+      typeof item.fields.instanceId === "string"
+        ? item.fields.instanceId.trim()
+        : String(item.fields.instanceId ?? "").trim();
+    if (taskId.length > 0 && instanceId.length > 0) {
+      setDrsTaskIds(taskId, instanceId);
+    } else {
+      clearDrsTaskIds();
     }
     navigate(drsRoutePath(item.applicationNo));
   }

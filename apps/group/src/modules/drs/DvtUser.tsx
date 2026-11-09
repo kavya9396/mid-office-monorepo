@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { drsRoutePath } from "@insurance-poc/routes";
+import { clearDrsTaskIds, readApiErrorMessage } from "@insurance-poc/utils";
 
 import { Box, Typography } from "@mui/material";
 import { CustomSnackbar, CustomDialog, DeleteIcon, EditIcon } from "@insurance-poc/ui";
@@ -22,6 +23,7 @@ import {
   requirementStatusOrder,
   requirementStatusVariants,
 } from "./requirementData";
+import { useCompleteGroupTaskMutation } from "../../services/completeTaskApi";
 import { useGetGroupDrsQuery } from "../../services/drsApi";
 import {
   useGetGroupFinancialDetailsQuery,
@@ -102,6 +104,9 @@ const DvtUser = () => {
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
   const [applicantProfileOpen, setApplicantProfileOpen] = useState(false);
   const [breDetailOpen, setBreDetailOpen] = useState(false);
+  const [decision, setDecision] = useState("");
+  const [remarks, setRemarks] = useState("");
+  const [completeGroupTask, completeGroupTaskState] = useCompleteGroupTaskMutation();
   const openFinancial = (applicantId: string) => {
     const next = new URLSearchParams(params);
     next.set(APPLICANT_ID_PARAM, applicantId);
@@ -134,8 +139,27 @@ const DvtUser = () => {
   const handleBreRetrigger = () => console.log("BRE Retrigger clicked");
   const handleApplicantAction = (action: string) => (applicantId: string) =>
     console.log(`${action} clicked`, applicantId);
-  const handleDecisionSubmit = (payload: DecisionSubmitPayload) =>
-    console.log("Submit DVT decision", payload);
+  const handleDecisionSubmit = async (payload: DecisionSubmitPayload) => {
+    const appNo = applicationNo.trim();
+    if (appNo.length === 0) {
+      setSnackbarMessage("Application number is missing.");
+      return;
+    }
+    try {
+      await completeGroupTask({
+        appNo,
+        decision: payload.decision,
+        remarks: payload.remarks,
+      }).unwrap();
+      clearDrsTaskIds();
+      navigate("/inbox", { replace: true });
+    } catch (reason: unknown) {
+      const apiMessage = readApiErrorMessage(reason);
+      if (apiMessage.length > 0) {
+        setSnackbarMessage(apiMessage);
+      }
+    }
+  };
 
   if (drs.isLoading) {
     return (
@@ -315,7 +339,12 @@ const DvtUser = () => {
       />
 
       <DecisionSection
+        decision={decision}
+        remarks={remarks}
+        onDecisionChange={setDecision}
+        onRemarksChange={setRemarks}
         onSubmit={handleDecisionSubmit}
+        isSubmitting={completeGroupTaskState.isLoading}
       />
 
       <CustomDialog
