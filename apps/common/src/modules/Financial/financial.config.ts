@@ -978,6 +978,7 @@ export const FINANCIAL_MESSAGES = {
   documents: "Financial documents are available in the source application.",
   submitted: "Financial details submitted successfully.",
   sectionSaved: (title: string) => `${title} saved successfully.`,
+  saveFailed: "Unable to save the financial details. Please try again.",
   validationFailed: "Please correct the highlighted fields before saving.",
 } as const;
 

@@ -57,6 +57,7 @@ import {
 import {
   buildFinancialSaveRequest,
   type FinancialSaveRequest,
+  type FinancialSaveResponse,
 } from "./financialSavePayload";
 
 export * from "./financial.config";
@@ -78,7 +79,13 @@ export interface FinancialProps {
   onApplicantChange?: (applicantKey: string) => void;
   onBack?: () => void;
   onViewDocuments?: () => void;
-  onSaveSection?: (payload: FinancialSaveRequest) => void;
+  /**
+   * Called with the Save API request. When it returns (or resolves to) the API response, the
+   * response `message` is shown in the snackbar and the section stays editable if it failed.
+   */
+  onSaveSection?: (
+    payload: FinancialSaveRequest,
+  ) => FinancialSaveResponse | Promise<FinancialSaveResponse | void> | void;
   onSubmit?: (payload: FinancialSubmitPayload) => void;
 }
 
@@ -125,6 +132,18 @@ const createInitialValues = (sections: readonly FinancialSection[]) => {
     }
   });
   return values;
+};
+
+/** Pulls a readable message out of a thrown Error or an RTK Query `{ error | data.message }` rejection. */
+const readSaveError = (reason: unknown): string => {
+  if (reason instanceof Error) return reason.message;
+  if (typeof reason !== "object" || reason === null) return "";
+  if ("error" in reason && typeof reason.error === "string") return reason.error;
+  if ("data" in reason && typeof reason.data === "object" && reason.data !== null) {
+    const { message } = reason.data as { message?: unknown };
+    if (typeof message === "string") return message;
+  }
+  return "";
 };
 
 const createFinancialStore = (
@@ -1305,7 +1324,7 @@ export function Financial({
   );
   const [snackbar, setSnackbar] = useState<{
     message: string;
-    severity: "success" | "warning";
+    severity: "success" | "warning" | "error";
   } | null>(null);
 
   useEffect(() => {
@@ -1494,29 +1513,45 @@ export function Financial({
     [sections, store],
   );
 
-  const handleSave = useCallback(
-    (sectionKey: string) => {
-      if (!validateSection(sectionKey)) return;
-      stopEditing(sectionKey, false);
-      const targetSection = sections.find((section) => section.key === sectionKey);
-      const title = targetSection?.title ?? "";
-      if (targetSection) {
-        const currentActiveApplicant = applicants.find(
-          (applicant) => applicant.key === activeApplicantKey,
-        );
-        const currentPartyId = partyId || currentActiveApplicant?.partyId || "";
-        const saveRequest = buildFinancialSaveRequest({
-          applicationNumber: applicationNumber || "",
-          partyId: currentPartyId,
-          section: targetSection,
-          values: store.snapshot(),
+  /** Builds the Save request for a section and sends it; true when the save succeeded. */
+  const saveSection = useCallback(
+    async (section: FinancialSection): Promise<boolean> => {
+      const currentActiveApplicant = applicants.find(
+        (applicant) => applicant.key === activeApplicantKey,
+      );
+      const currentPartyId = partyId || currentActiveApplicant?.partyId || "";
+      const saveRequest = buildFinancialSaveRequest({
+        applicationNumber: applicationNumber || "",
+        partyId: currentPartyId,
+        section,
+        values: store.snapshot(),
+      });
+      try {
+        const response = await onSaveSection?.(saveRequest);
+        if (response) {
+          const failed = response.error || response.response_code !== 200;
+          setSnackbar({
+            message:
+              response.message ||
+              (failed
+                ? FINANCIAL_MESSAGES.saveFailed
+                : FINANCIAL_MESSAGES.sectionSaved(section.title)),
+            severity: failed ? "error" : "success",
+          });
+          return !failed;
+        }
+      } catch (reason: unknown) {
+        setSnackbar({
+          message: readSaveError(reason) || FINANCIAL_MESSAGES.saveFailed,
+          severity: "error",
         });
-        onSaveSection?.(saveRequest);
+        return false;
       }
       setSnackbar({
-        message: FINANCIAL_MESSAGES.sectionSaved(title),
+        message: FINANCIAL_MESSAGES.sectionSaved(section.title),
         severity: "success",
       });
+      return true;
     },
     [
       activeApplicantKey,
@@ -1524,11 +1559,21 @@ export function Financial({
       applicationNumber,
       onSaveSection,
       partyId,
-      sections,
-      stopEditing,
       store,
-      validateSection,
     ],
+  );
+
+  const handleSave = useCallback(
+    async (sectionKey: string) => {
+      if (!validateSection(sectionKey)) return;
+      const targetSection = sections.find((section) => section.key === sectionKey);
+      if (!targetSection) {
+        stopEditing(sectionKey, false);
+        return;
+      }
+      if (await saveSection(targetSection)) stopEditing(sectionKey, false);
+    },
+    [saveSection, sections, stopEditing, validateSection],
   );
 
   /** Opens the chosen document in a popup, remembering its values so closing without saving discards edits. */
@@ -1547,40 +1592,13 @@ export function Financial({
     setDialogOpen(false);
   }, [dialogKey, store]);
 
-  const saveDialog = useCallback(() => {
+  const saveDialog = useCallback(async () => {
     if (!dialogKey) return;
     if (!validateSection(dialogKey)) return;
+    if (dialogSection && !(await saveSection(dialogSection))) return;
     stopEditing(dialogKey, false);
-    if (dialogSection) {
-      const currentActiveApplicant = applicants.find(
-        (applicant) => applicant.key === activeApplicantKey,
-      );
-      const currentPartyId = partyId || currentActiveApplicant?.partyId || "";
-      const saveRequest = buildFinancialSaveRequest({
-        applicationNumber: applicationNumber || "",
-        partyId: currentPartyId,
-        section: dialogSection,
-        values: store.snapshot(),
-      });
-      onSaveSection?.(saveRequest);
-    }
-    setSnackbar({
-      message: FINANCIAL_MESSAGES.sectionSaved(dialogSection?.title ?? ""),
-      severity: "success",
-    });
     setDialogOpen(false);
-  }, [
-    activeApplicantKey,
-    applicants,
-    applicationNumber,
-    dialogKey,
-    dialogSection,
-    onSaveSection,
-    partyId,
-    stopEditing,
-    store,
-    validateSection,
-  ]);
+  }, [dialogKey, dialogSection, saveSection, stopEditing, validateSection]);
 
   const handleApplicantChange = (applicantKey: string) => {
     setActiveApplicantKey(applicantKey);
@@ -1599,10 +1617,11 @@ export function Financial({
   const activeApplicant = applicants.find(
     (applicant) => applicant.key === activeApplicantKey,
   );
-  const applicantTabs = useMemo(
-    () => applicants.map(({ key, label }) => ({ key, label })),
-    [applicants],
-  );
+  /** Only the selected applicant is shown in the tabs; falls back to all when none matches. */
+  const applicantTabs = useMemo(() => {
+    const visible = activeApplicant ? [activeApplicant] : applicants;
+    return visible.map(({ key, label }) => ({ key, label }));
+  }, [activeApplicant, applicants]);
   /** Only sections with Edit/Save or Agree/Disagree buttons can be opened from the dropdown. */
   const editableOptions = useMemo(
     () =>

@@ -13,6 +13,16 @@ export interface FinancialSaveRequest<TDocKey extends string = string, TDocPaylo
   };
 }
 
+/**
+ * Save API response envelope. `message` is shown to the user as-is.
+ */
+export interface FinancialSaveResponse {
+  response_code: number;
+  error: boolean;
+  message: string;
+  data?: unknown;
+}
+
 /* ------------------------------------------------------------------ */
 /* Individual document save payload interfaces                        */
 /* ------------------------------------------------------------------ */

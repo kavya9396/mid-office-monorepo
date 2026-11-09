@@ -1,3 +1,4 @@
+export { getMasterList } from "./getMasterList";
 export {
   clearMasterData,
   getMasterData,

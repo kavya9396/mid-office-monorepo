@@ -3,8 +3,6 @@ import {
   type FinancialSection,
 } from "@insurance-poc/common/financial";
 
-export const GROUP_FINANCIAL_PATH = "/financial-fetch";
-
 export type FinancialFetchRequest = {
   applicationNumber: string;
   partyId: string;
