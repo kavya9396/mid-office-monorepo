@@ -1,13 +1,13 @@
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { createApi } from "@reduxjs/toolkit/query/react";
-import { createBusinessBaseQuery, useMock } from "@insurance-poc/utils";
+import {
+  absoluteApiBaseUrl,
+  createBusinessBaseQuery,
+  groupBusinessUrls,
+  useMock,
+} from "@insurance-poc/utils";
 import groupDrsMock from "../modules/drs/mock/groupDrs.json";
-import { GROUP_DRS_API_PATH, mapGroupDrsPayload, type GroupDrsData } from "./drsService";
-
-function groupApiUrl(): string {
-  const value = import.meta.env.VITE_GROUP_API_URL;
-  return typeof value === "string" ? value.trim() : "";
-}
+import { mapGroupDrsPayload, type GroupDrsData } from "./drsService";
 
 function readError(reason: unknown): string {
   return reason instanceof Error ? reason.message : "Unable to load the Group DRS.";
@@ -19,19 +19,20 @@ function customError(error: string): FetchBaseQueryError {
 
 export const groupDrsApi = createApi({
   reducerPath: "groupDrsApi",
-  baseQuery: createBusinessBaseQuery(groupApiUrl()),
+  baseQuery: createBusinessBaseQuery(absoluteApiBaseUrl),
   endpoints: (build) => ({
     getGroupDrs: build.query<GroupDrsData, string>({
       async queryFn(applicationNo, _api, _extra, baseQuery) {
         if (useMock) {
           return { data: mapGroupDrsPayload(groupDrsMock) };
         }
-        if (groupApiUrl().length === 0) {
-          return { error: customError("Group API URL is not configured.") };
+        const drsDataUrl = groupBusinessUrls.drsData;
+        if (drsDataUrl.length === 0) {
+          return { error: customError("Group DRS data API is not configured.") };
         }
 
         const result = await baseQuery({
-          url: GROUP_DRS_API_PATH,
+          url: drsDataUrl,
           method: "GET",
           params: { applicationNo },
         });

@@ -23,7 +23,10 @@ import {
   requirementStatusVariants,
 } from "./requirementData";
 import { useGetGroupDrsQuery } from "../../services/drsApi";
-import { useGetGroupFinancialDetailsQuery } from "../../services/financialApi";
+import {
+  useGetGroupFinancialDetailsQuery,
+  useSaveGroupFinancialMutation,
+} from "../../services/financialApi";
 import type { CardType } from "../../services/drsService";
 import { GROUP_QUICK_LINKS_CONFIG } from "../config/quickLinks.config";
 
@@ -94,6 +97,7 @@ const DvtUser = () => {
     { applicationNumber: applicationNo, partyId: activePartyId },
     { skip: !isFinancialRoute || !applicationNo || !activePartyId },
   );
+  const [saveFinancial] = useSaveGroupFinancialMutation();
 
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
   const [applicantProfileOpen, setApplicantProfileOpen] = useState(false);
@@ -187,9 +191,7 @@ const DvtUser = () => {
         sections={financialQuery.data}
         onApplicantChange={handleFinancialApplicantChange}
         onBack={closeFinancial}
-        onSaveSection={(saveRequest) => {
-          console.log("Trigger Save Financial Section:", saveRequest);
-        }}
+        onSaveSection={(saveRequest) => saveFinancial(saveRequest).unwrap()}
         onSubmit={(payload) => console.log("Submit financial", payload)}
       />
     );

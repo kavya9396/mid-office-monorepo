@@ -1,1 +1,8 @@
-export { absoluteApiBaseUrl, authUrls, landingUrls, masterUrls, useMock } from "./appConfig";
+export {
+  absoluteApiBaseUrl,
+  authUrls,
+  groupBusinessUrls,
+  landingUrls,
+  masterUrls,
+  useMock,
+} from "./appConfig";
