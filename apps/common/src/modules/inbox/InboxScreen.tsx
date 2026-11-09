@@ -6,6 +6,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Typography from "@mui/material/Typography";
 import { CustomButton, CustomSnackbar } from "@insurance-poc/ui";
 import { getLastLoginAt } from "@insurance-poc/utils";
+import type { ClaimTaskResponse } from "../../services/landingInboxQueries";
 import {
   casesForTask,
   firstPoolKey,
@@ -13,11 +14,35 @@ import {
   type InboxCase,
   type InboxData,
 } from "./inboxApi";
-import { taskDetailsTitle, toDisplayLabel } from "./inboxFormat";
+import { taskDetailsTitle } from "./inboxFormat";
 import { InboxSidebar } from "./InboxSidebar";
 import { InboxTable } from "./InboxTable";
 
 export type InboxBusiness = "RETAIL" | "GROUP";
+
+function readClaimErrorMessage(error: unknown): string {
+  if (typeof error === "object" && error !== null) {
+    if (
+      "data" in error &&
+      typeof error.data === "object" &&
+      error.data !== null &&
+      "message" in error.data &&
+      typeof (error.data as { message: unknown }).message === "string"
+    ) {
+      return (error.data as { message: string }).message;
+    }
+    if ("error" in error && typeof error.error === "string" && error.error.length > 0) {
+      return error.error;
+    }
+    if ("message" in error && typeof error.message === "string" && error.message.length > 0) {
+      return error.message;
+    }
+  }
+  if (error instanceof Error && error.message.length > 0) {
+    return error.message;
+  }
+  return "";
+}
 
 type InboxScreenProps = {
   businessType: InboxBusiness;
@@ -27,6 +52,7 @@ type InboxScreenProps = {
   onRetry: () => void;
   onLoadColumns?: (poolKey: string) => Promise<string[]>;
   onSaveColumns?: (poolKey: string, selectedFields: string[]) => Promise<string[]>;
+  onClaimTask?: (taskId: string) => Promise<ClaimTaskResponse>;
 };
 
 export function InboxScreen({
@@ -37,6 +63,7 @@ export function InboxScreen({
   onRetry,
   onLoadColumns,
   onSaveColumns,
+  onClaimTask,
 }: Readonly<InboxScreenProps>) {
   const navigate = useNavigate();
   const [notice, setNotice] = useState("");
@@ -76,7 +103,7 @@ export function InboxScreen({
     [activeTask, data],
   );
 
-  function openCase(item: InboxCase) {
+  async function openCase(item: InboxCase) {
     const caseBusiness = item.fields.businessType;
     if (typeof caseBusiness === "string" && caseBusiness.length > 0 && caseBusiness !== businessType) {
       setNotice(`Cannot open ${item.applicationNo} in the ${businessType} application.`);
@@ -86,6 +113,33 @@ export function InboxScreen({
       setNotice("This task is missing an application number.");
       return;
     }
+
+    const rawTaskId = item.fields.taskId;
+    let taskId = "";
+    if (typeof rawTaskId === "string") {
+      taskId = rawTaskId.trim();
+    } else if (rawTaskId !== undefined && rawTaskId !== null) {
+      taskId = String(rawTaskId).trim();
+    }
+
+    if (onClaimTask && taskId.length > 0) {
+      try {
+        const response = await onClaimTask(taskId);
+        const errorCode = String(response?.errorCode ?? "").trim();
+        const isSuccess =
+          errorCode === "200" || (response?.success === true && errorCode !== "400");
+        if (isSuccess) {
+          navigate(drsRoutePath(item.applicationNo));
+          return;
+        }
+        setNotice(response?.message ?? "");
+        return;
+      } catch (err: unknown) {
+        setNotice(readClaimErrorMessage(err));
+        return;
+      }
+    }
+
     navigate(drsRoutePath(item.applicationNo));
   }
 

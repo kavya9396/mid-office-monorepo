@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { InboxScreen } from "@insurance-poc/common/inbox-screen";
 import {
+  useClaimGroupTaskMutation,
   useGetGroupInboxQuery,
   useLazyFetchGroupPoolColumnsQuery,
   useSaveGroupPoolColumnsMutation,
@@ -22,6 +23,7 @@ export function GroupInboxPage() {
   const inbox = useGetGroupInboxQuery();
   const [loadColumns] = useLazyFetchGroupPoolColumnsQuery();
   const [saveColumns] = useSaveGroupPoolColumnsMutation();
+  const [claimTask] = useClaimGroupTaskMutation();
   const onLoadColumns = useCallback(
     (poolKey: string) => loadColumns(poolKey).unwrap(),
     [loadColumns],
@@ -29,6 +31,10 @@ export function GroupInboxPage() {
   const onSaveColumns = useCallback(
     (poolKey: string, selectedFields: string[]) => saveColumns({ poolKey, selectedFields }).unwrap(),
     [saveColumns],
+  );
+  const onClaimTask = useCallback(
+    (taskId: string) => claimTask({ taskId }).unwrap(),
+    [claimTask],
   );
 
   return (
@@ -42,6 +48,7 @@ export function GroupInboxPage() {
       }}
       onLoadColumns={onLoadColumns}
       onSaveColumns={onSaveColumns}
+      onClaimTask={onClaimTask}
     />
   );
 }

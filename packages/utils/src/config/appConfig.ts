@@ -65,6 +65,9 @@ export const landingUrls = {
   get groupPoolColumnsSave(): string {
     return configuredUrl(import.meta.env.VITE_GROUP_POOL_COLUMNS_SAVE_API);
   },
+  get claimTask(): string {
+    return configuredUrl(import.meta.env.VITE_CLAIM_TASK_API);
+  },
 };
 
 /** Master-data service (shared Retail/Group reference lists). Empty when unset — mock mode skips it. */

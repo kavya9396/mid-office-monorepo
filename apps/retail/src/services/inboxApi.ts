@@ -11,12 +11,17 @@ import {
 } from "@insurance-poc/common/inbox";
 import retailColumnConfigFetchMock from "../modules/inbox/mock/columnConfigFetch.json";
 import retailColumnConfigSaveMock from "../modules/inbox/mock/columnConfigSave.json";
+import retailClaimTaskMock from "../modules/inbox/mock/claimTask.json";
 import {
+  mockClaimTask,
   mockFetchPoolColumns,
   mockSavePoolColumns,
+  mutateLandingClaimTask,
   mutateLandingSavePoolColumns,
   queryLandingPoolColumns,
   queryLandingRoleList,
+  type ClaimTaskRequest,
+  type ClaimTaskResponse,
   type LandingBaseQuery,
 } from "@insurance-poc/common/landing-inbox-queries";
 import { mapRetailInboxPayload } from "./inboxService";
@@ -34,7 +39,7 @@ export const retailInboxApi = createApi({
     getRetailInbox: build.query<InboxData, void>({
       async queryFn(_request, _api, _extra, baseQuery) {
         const bq = baseQuery as LandingBaseQuery;
-        return queryLandingRoleList(bq, {
+        return await queryLandingRoleList(bq, {
           roleListUrl: landingUrls.retailRoleList,
           mapInboxPayload: mapRetailInboxPayload,
           mockData: retailInboxMock as unknown as InboxData,
@@ -48,7 +53,7 @@ export const retailInboxApi = createApi({
         if (useMock) {
           return mockFetchPoolColumns(poolKey, retailPoolColumnsMockConfig);
         }
-        return queryLandingPoolColumns(poolKey, bq, {
+        return await queryLandingPoolColumns(poolKey, bq, {
           scope: "retail",
           poolColumnsUrl: landingUrls.retailPoolColumns,
         });
@@ -60,10 +65,22 @@ export const retailInboxApi = createApi({
         if (useMock) {
           return mockSavePoolColumns(request, retailPoolColumnsMockConfig);
         }
-        return mutateLandingSavePoolColumns(request, bq, {
+        return await mutateLandingSavePoolColumns(request, bq, {
           scope: "retail",
           poolColumnsUrl: landingUrls.retailPoolColumns,
           poolColumnsSaveUrl: landingUrls.retailPoolColumnsSave,
+        });
+      },
+    }),
+    claimRetailTask: build.mutation<ClaimTaskResponse, ClaimTaskRequest>({
+      async queryFn(request, _api, _extra, baseQuery) {
+        const bq = baseQuery as LandingBaseQuery;
+        if (useMock) {
+          return mockClaimTask(request, { claimTaskMock: retailClaimTaskMock });
+        }
+        return await mutateLandingClaimTask(request, bq, {
+          claimTaskUrl: landingUrls.claimTask,
+          businessLabel: "Retail",
         });
       },
     }),
@@ -74,4 +91,5 @@ export const {
   useGetRetailInboxQuery,
   useLazyFetchRetailPoolColumnsQuery,
   useSaveRetailPoolColumnsMutation,
+  useClaimRetailTaskMutation,
 } = retailInboxApi;

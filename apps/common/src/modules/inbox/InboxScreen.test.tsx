@@ -105,4 +105,93 @@ describe("InboxScreen", () => {
     await user.click(screen.getByRole("button", { name: "RET-CVT-001" }));
     expect(navigate).toHaveBeenCalledWith("/app/RET-CVT-001/drs");
   });
+
+  it("claims task and redirects to DRS when errorCode is 200", async () => {
+    const user = userEvent.setup();
+    navigate.mockReset();
+    const onClaimTask = vi.fn(async () => ({
+      id: "2078.569",
+      state: "claim",
+      message: "Task claim success",
+      success: true,
+      errorCode: "200",
+    }));
+
+    const data: InboxData = {
+      username: "UW001",
+      poolData: {
+        CVT_POOL: [
+          {
+            rowId: "CVT-1",
+            poolName: "CVT_POOL",
+            applicationNo: "RET-CVT-001",
+            fields: {
+              applicationNo: "RET-CVT-001",
+              taskId: "510",
+            },
+          },
+        ],
+      },
+    };
+
+    renderUi(
+      <InboxScreen
+        businessType="RETAIL"
+        data={data}
+        loading={false}
+        error=""
+        onRetry={vi.fn()}
+        onClaimTask={onClaimTask}
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "RET-CVT-001" }));
+    expect(onClaimTask).toHaveBeenCalledWith("510");
+    expect(navigate).toHaveBeenCalledWith("/app/RET-CVT-001/drs");
+  });
+
+  it("shows error snackbar and stays on inbox page when errorCode is 400", async () => {
+    const user = userEvent.setup();
+    navigate.mockReset();
+    const onClaimTask = vi.fn(async () => ({
+      id: "569",
+      state: "claim",
+      message: "Task already claimed by other user",
+      success: false,
+      errorCode: "400",
+    }));
+
+    const data: InboxData = {
+      username: "UW001",
+      poolData: {
+        CVT_POOL: [
+          {
+            rowId: "CVT-1",
+            poolName: "CVT_POOL",
+            applicationNo: "RET-CVT-001",
+            fields: {
+              applicationNo: "RET-CVT-001",
+              taskId: "510",
+            },
+          },
+        ],
+      },
+    };
+
+    renderUi(
+      <InboxScreen
+        businessType="RETAIL"
+        data={data}
+        loading={false}
+        error=""
+        onRetry={vi.fn()}
+        onClaimTask={onClaimTask}
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "RET-CVT-001" }));
+    expect(onClaimTask).toHaveBeenCalledWith("510");
+    expect(navigate).not.toHaveBeenCalled();
+    expect(await screen.findByText("Task already claimed by other user")).toBeInTheDocument();
+  });
 });
