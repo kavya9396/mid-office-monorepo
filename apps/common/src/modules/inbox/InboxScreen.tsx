@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { drsRoutePath } from "@insurance-poc/routes";
 import Box from "@mui/material/Box";
 import CircularProgress from "@mui/material/CircularProgress";
 import Typography from "@mui/material/Typography";
@@ -85,16 +86,7 @@ export function InboxScreen({
       setNotice("This task is missing an application number.");
       return;
     }
-    const query = new URLSearchParams({
-      applicationNo: item.applicationNo,
-      role: toDisplayLabel(item.poolName),
-    });
-    const routeFields = ["taskId", "instanceId", "roleType", "businessType"] as const;
-    for (const field of routeFields) {
-      const value = item.fields[field];
-      if (typeof value === "string" && value.length > 0) query.set(field, value);
-    }
-    navigate(`/drs?${query.toString()}`);
+    navigate(drsRoutePath(item.applicationNo));
   }
 
   if (loading) {

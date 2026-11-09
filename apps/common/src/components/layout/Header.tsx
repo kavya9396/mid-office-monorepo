@@ -642,14 +642,12 @@ export function Header({
         return;
       }
       const searchParams = new URLSearchParams(location.search);
-      if (applicationNo && !searchParams.has("applicationNo")) {
-        searchParams.set("applicationNo", applicationNo);
-      }
       if (role && !searchParams.has("role")) {
         searchParams.set("role", role);
       }
       const queryString = searchParams.toString() ? `?${searchParams.toString()}` : "";
-      navigate(`${drsPath}${queryString}`);
+      const destination = drsPath ?? "/drs";
+      navigate(`${destination}${queryString}`);
       return;
     }
 

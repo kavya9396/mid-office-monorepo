@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { Box } from "@mui/material";
 import { CustomSnackbar } from "@insurance-poc/ui";
@@ -48,7 +48,8 @@ const BANNER_ROWS: BannerRow[] = [
 const GuwUser = () => {
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const applicationNo = params.get("applicationNo")?.trim() ?? "";
+  const { applicationNo: applicationNoParam } = useParams();
+  const applicationNo = applicationNoParam?.trim() ?? "";
 
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
   const [applicantProfileOpen, setApplicantProfileOpen] = useState(false);

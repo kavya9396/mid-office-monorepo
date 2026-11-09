@@ -109,6 +109,11 @@
       "import": "./src/modules/inbox/InboxScreen.tsx",
       "default": "./src/modules/inbox/InboxScreen.tsx"
     },
+    "./legacy-drs-redirect": {
+      "types": "./src/routes/LegacyDrsRedirect.tsx",
+      "import": "./src/routes/LegacyDrsRedirect.tsx",
+      "default": "./src/routes/LegacyDrsRedirect.tsx"
+    },
     "./landing-inbox-queries": {
       "types": "./src/services/landingInboxQueries.ts",
       "import": "./src/services/landingInboxQueries.ts",

@@ -4,7 +4,11 @@ import type { RequirementItem } from "@insurance-poc/common/requirement-mgmt";
 import { mapApplicants, type LifeAssuredSource } from "../modules/drs/lifeAssuredData";
 import { mapRequirements, type RawRequirement } from "../modules/drs/requirementData";
 
-export const GROUP_DRS_PATH = "/drs";
+/** Backend GET path for Group DRS (not the browser route). */
+export const GROUP_DRS_API_PATH = "/drs";
+
+/** @deprecated Use `GROUP_DRS_API_PATH` for API calls; browser routes use `drsRoutePath` from `@insurance-poc/routes`. */
+export const GROUP_DRS_PATH = GROUP_DRS_API_PATH;
 
 export type CardType = "APPLICATION" | "SOURCE" | "GROUP" | "RISK";
 
