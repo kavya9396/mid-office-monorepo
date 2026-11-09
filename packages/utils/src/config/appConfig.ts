@@ -71,6 +71,9 @@ export const landingUrls = {
   get groupCompleteTask(): string {
     return configuredUrl(import.meta.env.VITE_GROUP_COMPLETE_TASK_API);
   },
+  get claimTask(): string {
+    return configuredUrl(import.meta.env.VITE_CLAIM_TASK_API);
+  },
 };
 
 /** Master-data service (shared Retail/Group reference lists). Empty when unset — mock mode skips it. */

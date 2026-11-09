@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { drsRoutePath } from "@insurance-poc/routes";
-import { clearDrsTaskIds, readApiErrorMessage } from "@insurance-poc/utils";
+import { clearDrsTaskIds, formatDateTime, readApiErrorMessage } from "@insurance-poc/utils";
 
 import { Box, Typography } from "@mui/material";
 import { CustomSnackbar, CustomDialog, DeleteIcon, EditIcon } from "@insurance-poc/ui";
@@ -61,16 +61,10 @@ function readQueryError(error: unknown): string {
   return "Unable to load the Group DRS.";
 }
 
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-// "14/08/2026, 1108hrs" -> "14 Aug 2026, 11:08:00 am" (same output as the prototype)
-const formatBreTimestamp = (value?: string) => {
-  const match = value?.trim().match(/^(\d{2})\/(\d{2})\/(\d{4}),?\s+(\d{2})(\d{2})hrs$/i);
-  if (!match) return "";
-  const [, day, month, year, hours, minutes] = match;
-  const hour12 = Number(hours) % 12 || 12;
-  const meridiem = Number(hours) < 12 ? "am" : "pm";
-  return `${Number(day)} ${MONTHS[Number(month) - 1]} ${year}, ${String(hour12).padStart(2, "0")}:${minutes}:00 ${meridiem}`;
+// Which BRE rows highlight differences between Initial and Final (as in the prototype)
+const BRE_DIFF_BY_ROW_ID: Record<string, ComparisonRow["diff"]> = {
+  decision: "value",
+  discrepancy: "tokens",
 };
 
 const DvtUser = () => {
@@ -177,7 +171,7 @@ const DvtUser = () => {
     );
   }
 
-  const { cardDetails, breDecision, requirements } = drs.data;
+  const { cardDetails, breDecision, dvtDecision, requirements } = drs.data;
 
   const detailCards = (
     <Box
@@ -234,35 +228,12 @@ const DvtUser = () => {
     );
   }
 
-  const breRows: ComparisonRow[] = [
-    {
-      label: "BRE Status",
-      initial: breDecision.initialDecision ? "Success" : "-",
-      final: breDecision.decision ? "Success" : "-",
-    },
-    {
-      label: "BRE Decision",
-      initial: breDecision.initialDecision,
-      final: breDecision.decision,
-      diff: "value",
-    },
-    {
-      label: "BRE Remarks",
-      initial: breDecision.remarks,
-      final: breDecision.remarks,
-    },
-    {
-      label: "BRE Discrepancy",
-      initial: breDecision.discrepancy,
-      final: breDecision.discrepancy,
-      diff: "tokens",
-    },
-    {
-      label: "BRE Timestamp",
-      initial: formatBreTimestamp(breDecision.timestamp),
-      final: formatBreTimestamp(breDecision.timestamp),
-    },
-  ];
+  const breRows: ComparisonRow[] = breDecision.rows.map((row) => ({
+    label: row.label,
+    initial: row.id === "timestamp" ? formatDateTime(row.initial) : row.initial,
+    final: row.id === "timestamp" ? formatDateTime(row.final) : row.final,
+    diff: BRE_DIFF_BY_ROW_ID[row.id],
+  }));
 
   return (
     <Box sx={{ position: "relative", minHeight: "100%", p:2, display: "flex", gap:2, flexDirection: "column" }}>
@@ -339,10 +310,12 @@ const DvtUser = () => {
       />
 
       <DecisionSection
+        decisionOptions={dvtDecision.decisionOptions.length > 0 ? dvtDecision.decisionOptions : undefined}
         decision={decision}
         remarks={remarks}
         onDecisionChange={setDecision}
         onRemarksChange={setRemarks}
+        defaultDecisionCode={dvtDecision.decisionCode}
         onSubmit={handleDecisionSubmit}
         isSubmitting={completeGroupTaskState.isLoading}
       />
@@ -361,7 +334,7 @@ const DvtUser = () => {
         maxWidth="lg"
       >
         <DecisionComparisonTable
-          headers={{ label: "BRE", initial: "Initial BRE", final: "Final BRE" }}
+          headers={breDecision.headers}
           rows={breRows}
         />
       </CustomDialog>

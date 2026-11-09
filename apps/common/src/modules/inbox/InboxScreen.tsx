@@ -5,7 +5,8 @@ import Box from "@mui/material/Box";
 import CircularProgress from "@mui/material/CircularProgress";
 import Typography from "@mui/material/Typography";
 import { CustomButton, CustomSnackbar } from "@insurance-poc/ui";
-import { clearDrsTaskIds, getLastLoginAt, setDrsTaskIds } from "@insurance-poc/utils";
+import { clearDrsTaskIds, getLastLoginAt, readApiErrorMessage, setDrsTaskIds } from "@insurance-poc/utils";
+import type { ClaimTaskResponse } from "../../services/landingInboxQueries";
 import {
   casesForTask,
   firstPoolKey,
@@ -19,6 +20,12 @@ import { InboxTable } from "./InboxTable";
 
 export type InboxBusiness = "RETAIL" | "GROUP";
 
+function readFieldText(value: InboxCase["fields"][string]): string {
+  if (typeof value === "string") return value.trim();
+  if (value === undefined || value === null) return "";
+  return String(value).trim();
+}
+
 type InboxScreenProps = {
   businessType: InboxBusiness;
   data: InboxData | null;
@@ -27,6 +34,7 @@ type InboxScreenProps = {
   onRetry: () => void;
   onLoadColumns?: (poolKey: string) => Promise<string[]>;
   onSaveColumns?: (poolKey: string, selectedFields: string[]) => Promise<string[]>;
+  onClaimTask?: (taskId: string) => Promise<ClaimTaskResponse>;
 };
 
 export function InboxScreen({
@@ -37,6 +45,7 @@ export function InboxScreen({
   onRetry,
   onLoadColumns,
   onSaveColumns,
+  onClaimTask,
 }: Readonly<InboxScreenProps>) {
   const navigate = useNavigate();
   const [notice, setNotice] = useState("");
@@ -80,7 +89,7 @@ export function InboxScreen({
     [activeTask, data],
   );
 
-  function openCase(item: InboxCase) {
+  async function openCase(item: InboxCase) {
     const caseBusiness = item.fields.businessType;
     if (typeof caseBusiness === "string" && caseBusiness.length > 0 && caseBusiness !== businessType) {
       setNotice(`Cannot open ${item.applicationNo} in the ${businessType} application.`);
@@ -90,17 +99,39 @@ export function InboxScreen({
       setNotice("This task is missing an application number.");
       return;
     }
-    const taskId =
-      typeof item.fields.taskId === "string" ? item.fields.taskId.trim() : String(item.fields.taskId ?? "").trim();
-    const instanceId =
-      typeof item.fields.instanceId === "string"
-        ? item.fields.instanceId.trim()
-        : String(item.fields.instanceId ?? "").trim();
-    if (taskId.length > 0 && instanceId.length > 0) {
-      setDrsTaskIds(taskId, instanceId);
-    } else {
-      clearDrsTaskIds();
+    const taskId = readFieldText(item.fields.taskId);
+    const instanceId = readFieldText(item.fields.instanceId);
+
+    const persistTaskContext = () => {
+      if (taskId.length > 0 && instanceId.length > 0) {
+        setDrsTaskIds(taskId, instanceId);
+      } else {
+        clearDrsTaskIds();
+      }
+    };
+
+    if (onClaimTask && taskId.length > 0) {
+      try {
+        const response = await onClaimTask(taskId);
+        const errorCode = String(response?.errorCode ?? "").trim();
+        const isSuccess =
+          errorCode === "200" || (response?.success === true && errorCode !== "400");
+        if (isSuccess) {
+          persistTaskContext();
+          navigate(drsRoutePath(item.applicationNo));
+          return;
+        }
+        const apiMessage = String(response?.message ?? "").trim();
+        if (apiMessage.length > 0) setNotice(apiMessage);
+        return;
+      } catch (err: unknown) {
+        const apiMessage = readApiErrorMessage(err);
+        if (apiMessage.length > 0) setNotice(apiMessage);
+        return;
+      }
     }
+
+    persistTaskContext();
     navigate(drsRoutePath(item.applicationNo));
   }
 

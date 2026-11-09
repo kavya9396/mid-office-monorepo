@@ -222,3 +222,53 @@ export function mockSavePoolColumns(
   rememberPoolColumns(config.scope, request.poolKey, request.selectedFields);
   return { data: storedPoolColumns(config.scope, request.poolKey, config.columnConfigFetchMock) };
 }
+
+export type ClaimTaskRequest = {
+  taskId: string;
+};
+
+export type ClaimTaskResponse = {
+  id?: string;
+  state?: string;
+  message?: string;
+  success?: boolean;
+  errorCode?: string;
+};
+
+export type ClaimTaskMutationConfig = {
+  claimTaskUrl: string;
+  businessLabel?: string;
+};
+
+export type MockClaimTaskConfig = {
+  claimTaskMock: ClaimTaskResponse;
+};
+
+export async function mutateLandingClaimTask(
+  request: ClaimTaskRequest,
+  baseQuery: LandingBaseQuery,
+  config: ClaimTaskMutationConfig,
+): Promise<{ data: ClaimTaskResponse } | { error: FetchBaseQueryError }> {
+  if (config.claimTaskUrl.length === 0) {
+    return {
+      error: customError("Claim task API is not configured."),
+    };
+  }
+  const result = await baseQuery({
+    url: config.claimTaskUrl,
+    method: "POST",
+    body: { taskId: request.taskId },
+    headers: { accept: "*/*", "Content-Type": "application/json" },
+    encryptRequest: false,
+    decryptResponse: false,
+  });
+  if ("error" in result) return result;
+  return { data: result.data as ClaimTaskResponse };
+}
+
+export function mockClaimTask(
+  _request: ClaimTaskRequest,
+  config: MockClaimTaskConfig,
+): { data: ClaimTaskResponse } {
+  return { data: config.claimTaskMock };
+}
