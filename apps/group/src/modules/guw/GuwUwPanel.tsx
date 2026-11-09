@@ -31,6 +31,11 @@ import {
   type GuwValidationRow,
 } from "../../services/guwService";
 
+export interface GuwUwSummaryField {
+  label: string;
+  value?: string;
+}
+
 export interface GuwUwPanelProps {
   /** Used to hold the submitted decision (and UW guidelines) in the browser session. */
   applicationNo?: string;
@@ -61,8 +66,6 @@ export interface GuwUwPanelProps {
   onActionClick?: (value: string) => void;
   initialSubmittedDecision?: GuwSubmittedDecision;
   onDecisionSubmit: (decision: string, remarks: string) => void;
-  /** Called when the decision is finally submitted (e.g. to navigate to the inbox). */
-  onSubmit?: () => void;
 }
 
 interface CounterOfferRow {
@@ -122,12 +125,6 @@ const ALL_DECISION_OPTIONS = [
   ...ACTION_DECISION_OPTIONS,
   { value: "AMR", label: "Raise Requirement" },
 ];
-
-// Placeholder assignee list (mock login user ids) until a user-lookup API is specified
-const APPROVER_ASSIGNEE_OPTIONS = ["UW001", "UW002", "UW003"].map((id) => ({
-  value: id,
-  label: id,
-}));
 
 // Placeholder assignee list (mock login user ids) until a user-lookup API is specified
 const APPROVER_ASSIGNEE_OPTIONS = ["UW001", "UW002", "UW003"].map((id) => ({
@@ -345,7 +342,6 @@ export function GuwUwPanel({
   onActionClick,
   initialSubmittedDecision,
   onDecisionSubmit,
-  onSubmit,
 }: Readonly<GuwUwPanelProps>) {
   const [selectedDecision, setSelectedDecision] = useState<string>(
     initialSubmittedDecision?.decisionCode ?? "",
@@ -396,6 +392,9 @@ export function GuwUwPanel({
   };
 
   // Detailed Dynamic Form State
+  const [smokerFlag, setSmokerFlag] = useState<string>(
+    () => initialSubmittedDecision?.fields.find((f) => f.label === "Smoker Flag")?.value ?? "",
+  );
   const [subStdReason, setSubStdReason] = useState<string[]>([]);
   const [postponementPeriod, setPostponementPeriod] = useState<string>("");
   const [holdReason, setHoldReason] = useState<string>("");
@@ -530,9 +529,6 @@ export function GuwUwPanel({
     actionDecisionOptions.some((o) => o.value === dialogDecision) ||
     ACTION_DECISION_OPTIONS.some((o) => o.value === dialogDecision);
 
-  // The Case UW Decision the user picked (kept while Counter Sign / Raise Referral is open)
-  const caseDecision = approverBaseDecision || dialogDecision;
-
   // The Case UW Decision the user picked (kept while Counter Sign / Raise Referral is open).
   // On the referral path it is reset to Raise Referral only when that referral is finally submitted.
   const caseDecision =
@@ -589,6 +585,9 @@ export function GuwUwPanel({
     }
     if (dialogDecision !== "REFERRAL" && effectiveDecision) {
       add("Decision Code", effectiveDecision);
+    }
+    if (effectiveDecision === "STD") {
+      add("Smoker Flag", smokerFlag);
     }
     if (
       effectiveDecision &&
@@ -661,6 +660,10 @@ export function GuwUwPanel({
     setGuidelinesConfirmed(false);
     setDialogRemarks(remarks);
     setDialogStep(1);
+    const prevSmoker = submittedDecision?.fields.find((f) => f.label === "Smoker Flag")?.value;
+    if (prevSmoker) {
+      setSmokerFlag(prevSmoker);
+    }
     // UW Guidelines are fetched again on Submit; earlier saved justifications are restored then
     setValidation(null);
     setValidationRows([]);
@@ -677,6 +680,7 @@ export function GuwUwPanel({
       setSelectedDecision("");
       setSubmittedDecision(null);
       setRemarks("");
+      setSmokerFlag("");
       clearGuwSubmittedDecision(storageKey ?? applicationNo);
       onDecisionSubmit("", "");
       return;
@@ -1936,6 +1940,33 @@ export function GuwUwPanel({
                   Decision Code
                 </CustomTypography>
                 <CustomTextField value={effectiveDecision} disabled fullWidth />
+              </CustomBox>
+            )}
+
+            {/* SMOKER FLAG - Standard decision only */}
+            {effectiveDecision === "STD" && (
+              <CustomBox>
+                <CustomTypography
+                  component="span"
+                  sx={{
+                    display: "block",
+                    marginBottom: "5px",
+                    color: "#444",
+                    fontSize: "11px",
+                  }}
+                >
+                  Smoker Flag
+                </CustomTypography>
+                <CustomSelect
+                  value={smokerFlag}
+                  onChange={(val) => setSmokerFlag(val)}
+                  options={[
+                    { value: "Smoker", label: "Smoker" },
+                    { value: "Non Smoker", label: "Non Smoker" },
+                  ]}
+                  placeholder="Select"
+                  fullWidth
+                />
               </CustomBox>
             )}
 

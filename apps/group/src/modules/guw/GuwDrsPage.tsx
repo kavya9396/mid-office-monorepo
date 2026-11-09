@@ -11,13 +11,13 @@ import { SpecialRemarks, type SpecialRemarksRow } from "@insurance-poc/common/sp
 import { UwGuidelines, type UwGuidelineRow } from "@insurance-poc/common/uw-guidelines";
 import { RiskCards } from "@insurance-poc/common/risk-cards";
 import { GuwSdtRow } from "./GuwSdtRow";
-import { CaseUwDecision, INITIAL_GUIDELINES } from "@insurance-poc/common/case-uw-decision";
-import { groupPaths, replaceUrl } from "@insurance-poc/routes";
+import { INITIAL_GUIDELINES } from "@insurance-poc/common/case-uw-decision";
+import { GuwUwPanel } from "./GuwUwPanel";
+import { groupPaths } from "@insurance-poc/routes";
 import {
   CustomDialog,
   CustomSnackbar,
 } from "@insurance-poc/ui";
-import { groupPaths } from "@insurance-poc/routes";
 import { fetchGuwDrs, type GuwDrsRecord } from "../../services/guwService";
 import   { QuickLinksModule }  from "@insurance-poc/common/quick-links";
 
@@ -265,7 +265,6 @@ export function GuwDrsPage() {
               onDecisionSubmit={(_decision: string, _remarks: string) => {
                 // Submit API handler to be wired
               }}
-              onSubmitted={() => replaceUrl(groupPaths.inbox)}
             />
 
             {/* Quick Links Floating Action Button */}

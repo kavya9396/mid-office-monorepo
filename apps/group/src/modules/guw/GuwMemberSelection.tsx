@@ -450,26 +450,6 @@ export function GuwMemberSelection() {
         submittedDecision={detailMember ? (memberDecisions[detailMember.memberType] ?? null) : null}
       />
 
-      {/* Requirement Management dialog — opens on Raise Requirement */}
-      {record ? (
-        <CustomDialog
-          open={requirementOpen}
-          onClose={() => setRequirementOpen(false)}
-          title="Requirement Management"
-          maxWidth="lg"
-          fullWidth
-        >
-          <Box sx={{ p: 1 }}>
-            <RequirementMgmt
-              requirements={record.requirements}
-              readOnly
-              statusVariants={requirementStatusVariants}
-              statusOrder={requirementStatusOrder}
-            />
-          </Box>
-        </CustomDialog>
-      ) : null}
-
     </Box>
   );
 }

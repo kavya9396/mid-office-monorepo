@@ -1,4 +1,3 @@
-import { getSessionValue, removeSessionValue, setSessionValue } from "@insurance-poc/utils";
 import {
   getSessionUser,
   getSessionValue,
@@ -470,7 +469,7 @@ const CATEGORY_ORDER: GuwGuidelineCategory[] = ["justification", "checklist", "h
 
 export function toGuwValidationRequest(applicationNo: string): GuwValidationRequest {
   return {
-    userId: getSessionUser()?.userId ?? "",
+    userId: getSessionUser()?.username ?? "",
     role: VALIDATION_ROLE,
     applicationNo,
   };

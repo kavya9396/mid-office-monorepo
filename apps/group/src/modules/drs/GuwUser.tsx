@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { DecisionComparisonTable } from "@insurance-poc/common/decision-bar";
-import { CustomDialog, CustomSnackbar, KeyValueTable, type KeyValueRow } from "@insurance-poc/ui";
+import { CustomDialog, CustomSnackbar } from "@insurance-poc/ui";
 import { BreCard } from "@insurance-poc/common/bre-card";
 import { ApplicantBanner, type RowDetailsOptions } from "@insurance-poc/common/applicant-banner";
 import { GrievanceHistory } from "@insurance-poc/common/grievance-history";
@@ -11,7 +11,7 @@ import { ClaimAudit, type ClaimAuditRow } from "@insurance-poc/common/claim-audi
 import { SpecialRemarks, type SpecialRemarksRow } from "@insurance-poc/common/special-remarks";
 import { UwGuidelines, type UwGuidelineRow } from "@insurance-poc/common/uw-guidelines";
 import { INITIAL_GUIDELINES } from "@insurance-poc/common/case-uw-decision";
-import { groupPaths, replaceUrl } from "@insurance-poc/routes";
+import { groupPaths } from "@insurance-poc/routes";
 import { QuickLinksModule } from "@insurance-poc/common/quick-links";
 import { RequirementMgmt } from "@insurance-poc/common/requirement-mgmt";
 import { RiskCards } from "@insurance-poc/common/risk-cards";
@@ -26,7 +26,6 @@ import {
   guwMemberDecisionKey,
   loadGuwSubmittedDecision,
   type GuwDrsRecord,
-  type GuwRiskCard,
 } from "../../services/guwService";
 
 // Placeholder profile image (inline SVG).
@@ -267,7 +266,6 @@ const GuwUser = () => {
               onDecisionSubmit={(_decision: string, _remarks: string) => {
                 // Submit API handler to be wired
               }}
-              onSubmit={() => replaceUrl(groupPaths.inbox)}
             />
 
             {/* Quick Links */}

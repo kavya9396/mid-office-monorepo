@@ -19,7 +19,6 @@ export {
   getSessionUser,
   getSessionValue,
   getToken,
-  getSessionValue,
   hasSession,
   mustChangePassword,
   removeSessionValue,
