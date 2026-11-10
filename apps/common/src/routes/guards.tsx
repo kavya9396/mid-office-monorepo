@@ -32,7 +32,7 @@ export function RedirectIfSession({ children }: { children: ReactNode }) {
 
 /**
  * Strict change-password (case A):
- * - Allowed only when login returned `firstLogin: true` and `mustChangePassword: true`.
+ * - Allowed only when login returned `mustChangePassword: true`.
  * - Refresh, manual URL, or missing gate → clear session and send to login.
  */
 export function RequirePasswordChange({ children }: { children: ReactNode }) {

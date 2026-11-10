@@ -140,9 +140,9 @@ export function readApiBoolean(value: unknown): boolean {
   return false;
 }
 
-/** Case A — redirect to change-password only when both login flags are true. */
-export function loginRequiresPasswordChange(firstLogin: boolean, mustChangePassword: boolean): boolean {
-  return firstLogin && mustChangePassword;
+/** Redirect to change-password when login returns `mustChangePassword: true`. */
+export function loginRequiresPasswordChange(mustChangePassword: boolean): boolean {
+  return mustChangePassword;
 }
 
 function failure(message: string): LoginResult {
@@ -288,7 +288,7 @@ function buildMockLoginEnvelope(userId: string, businessType: BusinessType): Log
   const firstLogin = mockUser?.firstLogin === true && !passwordAlreadyChanged;
   const mustChangePassword =
     mockUser?.mustChangePassword === true && !passwordAlreadyChanged;
-  const forcePasswordChange = firstLogin && mustChangePassword;
+  const forcePasswordChange = mustChangePassword;
   const token = (forcePasswordChange ? loginMock.token.restricted : loginMock.token.access).trim();
 
   if (token.length === 0) {

@@ -12,7 +12,7 @@ function readPendingFromStorage(): boolean {
 }
 
 /**
- * Set from login when `firstLogin && mustChangePassword` are both true.
+ * Set from login when `mustChangePassword` is true.
  * Persisted in sessionStorage so change-password survives full-page redirects (`replaceUrl`).
  */
 export function setFirstLoginChangePending(pending: boolean): void {
