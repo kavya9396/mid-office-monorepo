@@ -51,6 +51,24 @@ describe("InboxScreen", () => {
     expect(screen.getByText("Loading inbox...")).toBeInTheDocument();
   });
 
+  it("shows inbox when loading is false even if a stale navigation flag remains", () => {
+    sessionStorage.setItem("inboxNavigationLoading", "true");
+    renderUi(
+      <InboxScreen
+        businessType="GROUP"
+        data={landingData()}
+        loading={false}
+        error=""
+        onRetry={vi.fn()}
+      />,
+    );
+
+    expect(screen.queryByText("Switching application...")).not.toBeInTheDocument();
+    expect(screen.queryByText("Loading inbox...")).not.toBeInTheDocument();
+    expect(screen.getByText("ALL CASES Details")).toBeInTheDocument();
+    sessionStorage.removeItem("inboxNavigationLoading");
+  });
+
   it("shows an error and retries", async () => {
     const user = userEvent.setup();
     const onRetry = vi.fn();

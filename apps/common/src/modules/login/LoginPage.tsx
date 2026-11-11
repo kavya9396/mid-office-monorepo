@@ -5,7 +5,14 @@ import InputAdornment from "@mui/material/InputAdornment";
 import Link from "@mui/material/Link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { assignUrl, businessInboxUrl, commonPaths } from "@insurance-poc/routes";
-import { CustomButton, CustomSnackbar, CustomTextField, EyeIcon, EyeSlashIcon } from "@insurance-poc/ui";
+import {
+  CustomButton,
+  CustomLoader,
+  CustomSnackbar,
+  CustomTextField,
+  EyeIcon,
+  EyeSlashIcon,
+} from "@insurance-poc/ui";
 import {
   clearSession,
   setLastLoginAt,
@@ -284,6 +291,7 @@ export function LoginPage() {
 
   const onSubmit = async (credentials: LoginForm) => {
     setSnackbar(closedAuthSnackbar);
+    let awaitingInboxRedirect = false;
     try {
       const loginResult = await login({
         userId: credentials.username,
@@ -292,6 +300,7 @@ export function LoginPage() {
       }).unwrap();
       const needsPasswordChange = loginRequiresPasswordChange(loginResult.mustChangePassword);
       if (!needsPasswordChange) {
+        awaitingInboxRedirect = true;
         setLoadingMasters(true);
       }
       try {
@@ -306,17 +315,19 @@ export function LoginPage() {
           businessType,
           navigateToChangePassword: () => navigate(commonPaths.changePassword),
         });
+        // Inbox path: assignUrl navigates away — keep loader visible until unload.
+        return;
       } catch (reason: unknown) {
         clearSession();
         showNotify(readApiMessage(reason, "Unable to load master data."), "error");
-      } finally {
-        if (!needsPasswordChange) {
+        if (awaitingInboxRedirect) {
           setLoadingMasters(false);
         }
       }
     } catch (reason: unknown) {
       clearSession();
       showNotify(readApiMessage(reason, "Login failed."), "error");
+      setLoadingMasters(false);
     }
   };
 
@@ -328,6 +339,8 @@ export function LoginPage() {
 
   return (
     <>
+      {loadingMasters && <CustomLoader message="Opening inbox" fullScreen />}
+
       <AuthShell subtitle="Log in to access your account" showLegalLinks contentOverflow="hidden">
         <CredentialsForm
           businessType={businessType}

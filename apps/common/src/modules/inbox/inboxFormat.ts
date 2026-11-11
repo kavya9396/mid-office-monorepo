@@ -42,73 +42,6 @@ export const HIDDEN_COLUMNS = new Set([
 
 export const MAX_VISIBLE_COLUMNS = 8;
 
-const SHARED_DEFAULT_COLUMNS = [
-  "channelCode",
-  "channel",
-  "product",
-  "sumAssured",
-  "premium",
-  "clientType",
-  "caseType",
-];
-
-/** Default column hints when pool-columns API is unavailable (fallback). */
-const POOL_DEFAULT_COLUMNS: Partial<Record<string, string[]>> = {
-  CPT_POOL: ["medicalReceivedDate", "financialReceivedDate", "poolTAT"],
-  PIVV_POOL: ["pivvRaisedDate"],
-  EXCEPTIONAL_POOL: ["lastPool"],
-  SYSTEM_WAIT_POOL_NON_MEDICAL: ["lastPool", "requirementRaisedDate", "userId"],
-  AMR_NON_MEDICAL: ["lastPool", "requirementRaisedDate", "userId"],
-  RECONSIDERATION_POOL: ["lastPool", "userId", "uwDecisionDate", "poolTAT"],
-  CUW: [
-    "appliedSa",
-    "annualPremium",
-    "productType",
-    "drc",
-    "hniFlag",
-    "isMedical",
-    "munichReMedicalDecision",
-    "ptlr",
-  ],
-  PRE_LOGIN: ["poolTAT"],
-  POST_ISSUANCE_SERVICING: ["ct", "st", "source", "outliers"],
-  REINSTATEMENT: ["ct", "st", "source", "outliers"],
-  MMT_TASK: [
-    "nameOfProposer",
-    "nameOfLifeAssured",
-    "productOpted",
-    "plan",
-    "medicalRaisedDate",
-  ],
-  GRIEVANCE: ["nameOfProposer", "nameOfLifeAssured", "grievanceRaisedDate"],
-  GUW: [
-    "productCode",
-    "masterPlanNo",
-    "poolTAT",
-    "productType",
-    "typeOfGroupBusiness",
-    "caseReceivedDate",
-  ],
-  DVT_POOL: [
-    "productCode",
-    "masterPlanNo",
-    "poolTAT",
-    "productType",
-    "typeOfGroupBusiness",
-    "caseReceivedDate",
-  ],
-  GOPS_DVT: [
-    "productCode",
-    "masterPlanNo",
-    "poolTAT",
-    "productType",
-    "typeOfGroupBusiness",
-    "caseReceivedDate",
-  ],
-  DVT_FORMAL: ["policyNo", "productCode", "memberName", "poolTAT", "appliedCover"],
-  GUW_FORMAL: ["policyNo", "productCode", "memberName", "poolTAT", "appliedCover"],
-};
-
 /** Full UI labels for pool keys (sidebar, table title, DRS role, tooltips). */
 const POOL_DISPLAY_LABELS: Readonly<Record<string, string>> = {
   MMT_TASK: "MMT Task",
@@ -183,32 +116,26 @@ export function isApplicationColumn(column: string): boolean {
   return normalized === "applicationno" || normalized === "applicationnumber";
 }
 
-/** Column order follows fields that are actually present on the pool rows. */
-export function columnsForPool(columns: string[], poolKey?: string): string[] {
-  const applicationColumn = columns.find(isApplicationColumn);
-  const poolColumns = (POOL_DEFAULT_COLUMNS[poolKey ?? ""] ?? []).filter(
-    (column) => columns.includes(column) && column !== applicationColumn,
-  );
-  const rest = columns.filter((column) => column !== applicationColumn && !poolColumns.includes(column));
-  return [...new Set([...(applicationColumn ? [applicationColumn] : []), ...poolColumns, ...rest])];
+/**
+ * Catalog / configure-columns field order: role-list keys minus hidden fields,
+ * application number first when present.
+ */
+export function columnsForPool(columns: string[]): string[] {
+  const withoutHidden = columns.filter((key) => !HIDDEN_COLUMNS.has(key));
+  const applicationColumn = withoutHidden.find(isApplicationColumn);
+  const rest = withoutHidden.filter((column) => column !== applicationColumn);
+  return applicationColumn ? [applicationColumn, ...rest] : withoutHidden;
 }
 
-export function defaultVisibleColumns(columns: string[], poolKey?: string): string[] {
-  const ordered = columnsForPool(columns, poolKey);
-  const applicationColumn = ordered.find(isApplicationColumn);
-  const poolColumns = (POOL_DEFAULT_COLUMNS[poolKey ?? ""] ?? []).filter(
-    (column) => ordered.includes(column) && column !== applicationColumn,
+/**
+ * Default visible table columns when pool-columns `selectedFields` is empty:
+ * first {@link MAX_VISIBLE_COLUMNS} role-list fields (pool order), hidden fields omitted,
+ * application number first.
+ */
+export function defaultVisibleColumns(roleListFieldKeys: string[]): string[] {
+  return orderedVisibleFromSelectedFields(
+    roleListFieldKeys.filter((key) => !HIDDEN_COLUMNS.has(key)),
   );
-  const shared = SHARED_DEFAULT_COLUMNS.filter(
-    (column) => ordered.includes(column) && column !== applicationColumn && !poolColumns.includes(column),
-  );
-  const rest = ordered.filter(
-    (column) => column !== applicationColumn && !poolColumns.includes(column) && !shared.includes(column),
-  );
-  const unique = [...poolColumns, ...shared, ...rest];
-  return applicationColumn
-    ? [applicationColumn, ...unique].slice(0, MAX_VISIBLE_COLUMNS)
-    : unique.slice(0, MAX_VISIBLE_COLUMNS);
 }
 
 /**

@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
@@ -19,6 +18,7 @@ import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import { readApiErrorMessage, useMock } from "@insurance-poc/utils";
 import {
+  colors,
   CustomButton,
   CustomCheckbox,
   CustomDialog,
@@ -70,24 +70,6 @@ type InboxTableProps = {
 };
 
 const PAGE_SIZES = [10, 25, 50, 100];
-
-const referenceOutlinedSx = {
-  borderColor: "#9A2529",
-  color: "#9A2529",
-  borderRadius: "4px",
-  "&:hover": {
-    borderColor: "#8f2026",
-    color: "#9A2529",
-    backgroundColor: "rgba(176,42,48,0.08)",
-  },
-} as const;
-
-const referenceContainedSx = {
-  backgroundColor: "#9A2529",
-  color: "#ffffff",
-  borderRadius: "4px",
-  "&:hover": { backgroundColor: "#8f2026" },
-} as const;
 
 function cellText(value: InboxFieldValue | undefined): string {
   if (value === undefined || value === null || value === "") return "-";
@@ -199,7 +181,9 @@ function resolveColumnsResolved(params: Readonly<ResolveColumnsResolvedInput>): 
   }
   if (realPoolStatus === null) return [];
   if (realPoolStatus === "loading" || realPoolStatus === "error") return [];
-  if (realPoolFields.length === 0) return [];
+  if (realPoolFields.length === 0) {
+    return defaultColumns.filter((field) => catalogAll.includes(field));
+  }
   return orderedVisibleFromSelectedFields(realPoolFields).filter((field) => catalogAll.includes(field));
 }
 
@@ -230,7 +214,9 @@ function selectedFieldsForConfigureModal(params: Readonly<SelectedFieldsForConfi
       apiSelectedFields !== null && apiSelectedFields.length > 0
         ? apiSelectedFields
         : realPoolFields;
-    if (fromApi.length === 0) return [];
+    if (fromApi.length === 0) {
+      return columns.filter((field) => catalogAll.includes(field));
+    }
     return orderedVisibleFromSelectedFields(fromApi).filter((field) => catalogAll.includes(field));
   }
   if (apiSelectedFields !== null && apiSelectedFields.length > 0) {
@@ -261,6 +247,7 @@ function sortInboxRows(
 type PoolColumnsLoaderParams = {
   useMockMode: boolean;
   catalogAll: string[];
+  defaultColumnKeys: string[];
   configurePoolKey: string | undefined;
   columnContextKey: string | null | undefined;
   loadPoolColumnsFromApi: boolean;
@@ -282,8 +269,16 @@ type PoolColumnsLoaderResult = {
 };
 
 function usePoolColumnsLoader(params: Readonly<PoolColumnsLoaderParams>): PoolColumnsLoaderResult {
-  const { useMockMode, catalogAll, configurePoolKey, columnContextKey, loadPoolColumnsFromApi, onLoadColumns, onColumnNotice } =
-    params;
+  const {
+    useMockMode,
+    catalogAll,
+    defaultColumnKeys,
+    configurePoolKey,
+    columnContextKey,
+    loadPoolColumnsFromApi,
+    onLoadColumns,
+    onColumnNotice,
+  } = params;
   const [visible, setVisible] = useState<string[]>([]);
   const [apiSelectedFields, setApiSelectedFields] = useState<string[] | null>(null);
   const [realPoolStatus, setRealPoolStatus] = useState<RealPoolColumnsStatus | null>(null);
@@ -292,7 +287,7 @@ function usePoolColumnsLoader(params: Readonly<PoolColumnsLoaderParams>): PoolCo
 
   useEffect(() => {
     if (useMockMode) {
-      const defaults = defaultVisibleColumns(catalogAll, configurePoolKey);
+      const defaults = defaultVisibleColumns(defaultColumnKeys);
       setVisible(defaults);
       setApiSelectedFields(null);
       setRealPoolStatus(null);
@@ -323,7 +318,7 @@ function usePoolColumnsLoader(params: Readonly<PoolColumnsLoaderParams>): PoolCo
     }
 
     if (!loadPoolColumnsFromApi) {
-      const defaults = defaultVisibleColumns(catalogAll, configurePoolKey);
+      const defaults = defaultVisibleColumns(defaultColumnKeys);
       setVisible(defaults);
       setApiSelectedFields(null);
       setRealPoolStatus(null);
@@ -365,6 +360,7 @@ function usePoolColumnsLoader(params: Readonly<PoolColumnsLoaderParams>): PoolCo
     catalogAll,
     columnContextKey,
     configurePoolKey,
+    defaultColumnKeys,
     loadPoolColumnsFromApi,
     onColumnNotice,
     onLoadColumns,
@@ -510,18 +506,28 @@ function InboxTableToolbar(props: Readonly<InboxTableToolbarProps>) {
     showConfigureColumns,
     onConfigureClick,
   } = props;
+  const toolbarIconSx = {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: 32,
+    height: 32,
+    flexShrink: 0,
+    cursor: "pointer",
+  } as const;
+
   return (
     <Box
       sx={{
-        height: "36px",
-        minHeight: "36px",
         flexShrink: 0,
+        height: "48px",
+        minHeight: "48px",
         px: 1,
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        backgroundColor: "#fff",
-        borderBottom: "1px solid #e3e6e8",
+        backgroundColor: colors.white,
+        borderBottom: `1px solid ${colors.borderSoft}`,
         boxSizing: "border-box",
       }}
     >
@@ -530,36 +536,66 @@ function InboxTableToolbar(props: Readonly<InboxTableToolbarProps>) {
           size="small"
           variant="outlined"
           onClick={() => downloadCsv(title, columns, sorted)}
-          sx={{ ...referenceOutlinedSx, fontSize: "10px", flexShrink: 0 }}
+          sx={{ fontSize: "10px", flexShrink: 0 }}
         >
           Download Excel
         </CustomButton>
         <PriorityLegend cases={cases} active={priorityFilter} onSelect={onTogglePriority} />
       </Box>
-      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-        {searchOpen ? (
+      <Box
+        sx={{
+          position: "relative",
+          display: "flex",
+          alignItems: "center",
+          gap: 0.5,
+          flexShrink: 0,
+        }}
+      >
+        <Box
+          sx={{
+            position: "absolute",
+            right: "calc(100% + 4px)",
+            top: "50%",
+            transform: "translateY(-50%)",
+            width: "200px",
+            visibility: searchOpen ? "visible" : "hidden",
+            opacity: searchOpen ? 1 : 0,
+            pointerEvents: searchOpen ? "auto" : "none",
+            zIndex: 1,
+          }}
+        >
           <CustomTextField
             size="small"
             value={searchText}
             placeholder="Search..."
+            tabIndex={searchOpen ? 0 : -1}
+            aria-hidden={!searchOpen}
             onChange={(event) => {
               onSearchTextChange(event.target.value);
             }}
             sx={{
               width: "200px",
-              "& .MuiInputBase-root": { height: "28px", fontSize: "11px", borderRadius: "5px" },
-              "& .MuiOutlinedInput-input": { padding: "5px 8px" },
+              backgroundColor: colors.white,
+              "& .MuiOutlinedInput-root": {
+                height: "32px",
+                minHeight: "32px",
+                fontSize: "11px",
+              },
+              "& .MuiOutlinedInput-input": {
+                py: 0.5,
+                px: 1,
+              },
             }}
           />
-        ) : null}
-        <Box aria-label="Search cases" onClick={onToggleSearch} sx={{ cursor: "pointer", mt: 0.5 }}>
+        </Box>
+        <Box aria-label="Search cases" onClick={onToggleSearch} sx={toolbarIconSx}>
           <SearchIcon width={32} height={32} />
         </Box>
-        <Box aria-label="Filter cases" onClick={onFilterClick} sx={{ cursor: "pointer", mt: 0.5 }}>
+        <Box aria-label="Filter cases" onClick={onFilterClick} sx={toolbarIconSx}>
           <FilterIcon width={32} />
         </Box>
         {showConfigureColumns ? (
-          <Box aria-label="Configure columns" onClick={onConfigureClick} sx={{ cursor: "pointer", mt: 0.5 }}>
+          <Box aria-label="Configure columns" onClick={onConfigureClick} sx={toolbarIconSx}>
             <SettingsIcon width={32} />
           </Box>
         ) : null}
@@ -829,10 +865,10 @@ function InboxFilterDialog(props: Readonly<InboxFilterDialogProps>) {
       actionsSx={{ justifyContent: "center", gap: 2, pb: 3 }}
       actions={
         <>
-          <CustomButton variant="outlined" onClick={() => setDraftFilters({})} sx={{ ...referenceOutlinedSx, borderRadius: "50px", px: 4 }}>
+          <CustomButton variant="outlined" onClick={() => setDraftFilters({})} sx={{ px: 4 }}>
             Clear All
           </CustomButton>
-          <CustomButton variant="contained" onClick={onApply} sx={{ ...referenceContainedSx, borderRadius: "50px", px: 4 }}>
+          <CustomButton variant="contained" onClick={onApply} sx={{ px: 4 }}>
             Apply
           </CustomButton>
         </>
@@ -850,7 +886,7 @@ function InboxFilterDialog(props: Readonly<InboxFilterDialogProps>) {
           sx={{
             width: "40%",
             flexShrink: 0,
-            borderRight: "1px solid #eee",
+            borderRight: `1px solid ${colors.borderLight}`,
             overflow: "hidden",
           }}
         >
@@ -862,16 +898,17 @@ function InboxFilterDialog(props: Readonly<InboxFilterDialogProps>) {
                 padding: "12px",
                 cursor: "pointer",
                 fontSize: "14px",
-                color: "#333333",
-                backgroundColor: filterColumn === column ? "#f0f3f8" : "transparent",
-                borderLeft: filterColumn === column ? "4px solid #004A80" : "4px solid transparent",
+                color: colors.textLabel,
+                backgroundColor: filterColumn === column ? colors.surfaceHover : "transparent",
+                borderLeft:
+                  filterColumn === column ? `4px solid ${colors.primary}` : "4px solid transparent",
               }}
             >
               {formatColumnName(column)}
             </Box>
           ))}
           {columns.length === 0 ? (
-            <Box sx={{ padding: "12px", color: "#666" }}>No visible columns to filter</Box>
+            <Box sx={{ padding: "12px", color: colors.textMuted }}>No visible columns to filter</Box>
           ) : null}
         </Box>
         <Box
@@ -902,7 +939,7 @@ function InboxFilterDialog(props: Readonly<InboxFilterDialogProps>) {
             </Box>
           ))}
           {filterColumn.length > 0 && filterOptions.length === 0 ? (
-            <Box sx={{ color: "#666", fontSize: "14px" }}>No values available for this column</Box>
+            <Box sx={{ color: colors.textMuted, fontSize: "14px" }}>No values available for this column</Box>
           ) : null}
         </Box>
       </Box>
@@ -952,7 +989,7 @@ function InboxConfigureColumnsDialog(props: Readonly<InboxConfigureColumnsDialog
       actionsSx={{ justifyContent: "center", pb: 2 }}
       actions={
         <Box sx={{ display: "flex", justifyContent: "center", gap: 1, width: "100%" }}>
-          <CustomButton size="small" variant="outlined" disabled={savingColumns} onClick={onReset} sx={{ ...referenceOutlinedSx, fontSize: "12px", borderRadius: "8px", px: 2 }}>
+          <CustomButton size="small" variant="outlined" disabled={savingColumns} onClick={onReset} sx={{ fontSize: "12px", px: 2 }}>
             {savingColumns ? "Saving..." : "Reset"}
           </CustomButton>
           <CustomButton
@@ -960,7 +997,7 @@ function InboxConfigureColumnsDialog(props: Readonly<InboxConfigureColumnsDialog
             variant="contained"
             disabled={draftSelected.length === 0 || savingColumns}
             onClick={onSave}
-            sx={{ ...referenceContainedSx, fontSize: "12px", borderRadius: "8px", px: 2 }}
+            sx={{ fontSize: "12px", px: 2 }}
           >
             {savingColumns ? "Saving..." : "Save"}
           </CustomButton>
@@ -995,7 +1032,7 @@ function InboxConfigureColumnsDialog(props: Readonly<InboxConfigureColumnsDialog
 
         <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 1 }}>
           <CustomButton
-            sx={{ ...referenceOutlinedSx, my: 1 }}
+            sx={{ my: 1 }}
             variant="outlined"
             size="small"
             aria-label="Move checked columns to selected"
@@ -1005,7 +1042,7 @@ function InboxConfigureColumnsDialog(props: Readonly<InboxConfigureColumnsDialog
             <KeyRightArrowIcon />
           </CustomButton>
           <CustomButton
-            sx={{ ...referenceOutlinedSx, my: 1 }}
+            sx={{ my: 1 }}
             variant="outlined"
             size="small"
             aria-label="Move checked columns to available"
@@ -1019,7 +1056,7 @@ function InboxConfigureColumnsDialog(props: Readonly<InboxConfigureColumnsDialog
         <ColumnPickerPane
           title="Selected Columns"
           countLabel={`${draftSelected.length} / ${MAX_VISIBLE_COLUMNS}`}
-          countColor={draftSelected.length >= MAX_VISIBLE_COLUMNS ? "#9A2529" : "#777"}
+          countColor={draftSelected.length >= MAX_VISIBLE_COLUMNS ? colors.brandRed : colors.textNeutral}
           columns={draftSelected}
           emptyLabel="Select columns from the left"
           renderItem={(column, index) => {
@@ -1044,7 +1081,9 @@ function InboxConfigureColumnsDialog(props: Readonly<InboxConfigureColumnsDialog
                   }
                 />
                 <Box sx={{ display: "flex", alignItems: "center", gap: 0.25, ml: 1 }}>
-                  <Button
+                  <CustomButton
+                    variant="outlined"
+                    size="small"
                     aria-label="Move column up"
                     onClick={(event) => {
                       event.stopPropagation();
@@ -1054,8 +1093,10 @@ function InboxConfigureColumnsDialog(props: Readonly<InboxConfigureColumnsDialog
                     sx={reorderButtonSx}
                   >
                     <KeyUpArrowIcon />
-                  </Button>
-                  <Button
+                  </CustomButton>
+                  <CustomButton
+                    variant="outlined"
+                    size="small"
                     aria-label="Move column down"
                     onClick={(event) => {
                       event.stopPropagation();
@@ -1065,7 +1106,7 @@ function InboxConfigureColumnsDialog(props: Readonly<InboxConfigureColumnsDialog
                     sx={reorderButtonSx}
                   >
                     <KeyDownArrowIcon />
-                  </Button>
+                  </CustomButton>
                 </Box>
               </ListItemButton>
             );
@@ -1080,11 +1121,8 @@ const reorderButtonSx = {
   minWidth: "24px",
   width: "24px",
   height: "24px",
-  padding: 0,
-  border: "1px solid #e1e4e7",
-  borderRadius: "4px",
-  color: "#555",
-  fontSize: "13px",
+  p: 0,
+  borderRadius: "8px",
 } as const;
 
 type ColumnPickerPaneProps = {
@@ -1097,11 +1135,26 @@ type ColumnPickerPaneProps = {
 };
 
 function ColumnPickerPane(props: Readonly<ColumnPickerPaneProps>) {
-  const { title, countLabel, countColor = "#777", columns, emptyLabel, renderItem } = props;
+  const { title, countLabel, countColor = colors.textNeutral, columns, emptyLabel, renderItem } = props;
   return (
-    <Box sx={{ flex: 1, backgroundColor: "#fff", border: "1px solid #dfe3e8", borderRadius: "8px", overflow: "hidden" }}>
-      <Box sx={{ px: 1.5, py: 1, borderBottom: "1px solid #e5e7eb", backgroundColor: "#f3f5f7" }}>
-        <Typography sx={{ fontSize: "12px", fontWeight: 600, color: "#333" }}>{title}</Typography>
+    <Box
+      sx={{
+        flex: 1,
+        backgroundColor: colors.white,
+        border: `1px solid ${colors.borderControl}`,
+        borderRadius: "8px",
+        overflow: "hidden",
+      }}
+    >
+      <Box
+        sx={{
+          px: 1.5,
+          py: 1,
+          borderBottom: `1px solid ${colors.borderLight}`,
+          backgroundColor: colors.surfaceMuted,
+        }}
+      >
+        <Typography sx={{ fontSize: "12px", fontWeight: 600, color: colors.textLabel }}>{title}</Typography>
         <Typography sx={{ fontSize: "10px", color: countColor, mt: 0.2 }}>{countLabel}</Typography>
       </Box>
       <List dense sx={{ height: "300px", overflowY: "auto", p: 1 }}>
@@ -1145,7 +1198,14 @@ export function InboxTable({
       configurePoolKey !== undefined && inboxData
         ? fieldKeysForPool(inboxData, configurePoolKey)
         : fieldKeysFromCases;
-    return columnsForPool(fromData, configurePoolKey);
+    return columnsForPool(fromData);
+  }, [configurePoolKey, fieldKeysFromCases, inboxData]);
+
+  const defaultColumnKeys = useMemo(() => {
+    if (configurePoolKey !== undefined && inboxData) {
+      return fieldKeysForPool(inboxData, configurePoolKey);
+    }
+    return fieldKeysFromCases;
   }, [configurePoolKey, fieldKeysFromCases, inboxData]);
 
   const loadPoolColumnsFromApi = Boolean(columnContextKey && onLoadColumns);
@@ -1164,6 +1224,7 @@ export function InboxTable({
   } = usePoolColumnsLoader({
     useMockMode: mockModeForPoolColumns,
     catalogAll,
+    defaultColumnKeys,
     configurePoolKey,
     columnContextKey,
     loadPoolColumnsFromApi,
@@ -1196,8 +1257,8 @@ export function InboxTable({
   }, [catalogAll, columnContextKey, configurePoolKey]);
 
   const defaultColumns = useMemo(
-    () => defaultVisibleColumns(catalogAll, configurePoolKey),
-    [catalogAll, configurePoolKey],
+    () => defaultVisibleColumns(defaultColumnKeys),
+    [defaultColumnKeys],
   );
   const columnsResolved = useMemo(
     () =>
