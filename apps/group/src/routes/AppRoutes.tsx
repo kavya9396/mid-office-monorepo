@@ -11,15 +11,12 @@ import { AuthNavigation } from "../app/AuthNavigation";
 import { GroupInboxPage } from "../modules/inbox/GroupInboxPage";
 import { GroupAppLayout } from "./GroupAppLayout";
 import { RequireSession } from "./RequireSession";
+import GroupDrsPage from "../modules/drs/GroupDrsPage";
 import { GroupAuditTrailPage } from "../modules/auditTrail/GroupAuditTrailPage";
 // import { GroupApplicantProfilePage } from "../modules/applicantProfile/GroupApplicantProfilePage";
 import { GroupOpenTasksPage } from "../modules/openTasks/GroupOpenTasksPage";
 import { GroupPreviousPolicyPage } from "../modules/previousPolicy/GroupPreviousPolicyPage";
 import { GroupRiskDetailsPage } from "../modules/riskDetails/GroupRiskDetailsPage";
-import GroupDrsRouter from "../modules/drs/GroupDrsRouter";
-import { GuwMemberSelection } from "../modules/guw/GuwMemberSelection";
-import { ReferralMemberSelection } from "../modules/referral-uw/ReferralMemberSelection";
-import GroupDrsPage from "../modules/drs/GroupDrsPage";
 
 export function AppRoutes() {
   return (
@@ -36,14 +33,6 @@ export function AppRoutes() {
         >
           <Route index element={<Navigate to="/inbox" replace />} />
           <Route path="/inbox" element={<GroupInboxPage />} />
-          <Route path="/drs" element={<GroupDrsRouter />} />
-          <Route path="/guw/member-selection" element={<GuwMemberSelection />} />
-          <Route path="/guw/drs" element={<GroupDrsRouter />} />
-          <Route path="/referral/member-selection" element={<ReferralMemberSelection />} />
-          <Route path="/referral/drs" element={<GroupDrsRouter />} />
-          <Route path="/drs" element={<GroupDrsPage />} />
-          <Route path="/drs/financial" element={<GroupDrsPage />} />
-          <Route path="/drs/medical" element={<GroupDrsPage />} />
           <Route path="/app/:applicationNo/drs" element={<GroupDrsPage />} />
           <Route path="/app/:applicationNo/drs/financial" element={<GroupDrsPage />} />
           <Route path="/app/:applicationNo/drs/medical" element={<GroupDrsPage />} />

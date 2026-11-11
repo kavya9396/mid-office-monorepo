@@ -80,17 +80,6 @@ const POOL_DEFAULT_COLUMNS: Partial<Record<string, string[]>> = {
     "plan",
     "medicalRaisedDate",
   ],
-  MEDICAL_TPA_ERROR: [
-    "caseType",
-    "proposalAcceptanceDate",
-    "newBusinessServicing",
-    "policyStatus",
-    "productCode",
-    "productType",
-    "hniShni",
-    "branchCode",
-    "tpaApiFailureReason",
-  ],
   GRIEVANCE: ["nameOfProposer", "nameOfLifeAssured", "grievanceRaisedDate"],
   GUW: [
     "productCode",
@@ -118,22 +107,6 @@ const POOL_DEFAULT_COLUMNS: Partial<Record<string, string[]>> = {
   ],
   DVT_FORMAL: ["policyNo", "productCode", "memberName", "poolTAT", "appliedCover"],
   GUW_FORMAL: ["policyNo", "productCode", "memberName", "poolTAT", "appliedCover"],
-  SR_UW_TASK: [
-    "productCode",
-    "masterPlanNo",
-    "poolTAT",
-    "productType",
-    "typeOfGroupBusiness",
-    "caseReceivedDate",
-  ],
-  HOD_TASK: [
-    "productCode",
-    "masterPlanNo",
-    "poolTAT",
-    "productType",
-    "typeOfGroupBusiness",
-    "caseReceivedDate",
-  ],
 };
 
 /** Full UI labels for pool keys (sidebar, table title, DRS role, tooltips). */
@@ -170,7 +143,6 @@ const COLUMN_LABELS: Record<string, string> = {
   appliedSa: "Applied SA",
   drc: "DRC",
   hniFlag: "HNI Flags",
-  hniShni: "HNI SHNI",
   ptlr: "PTLR",
 };
 
