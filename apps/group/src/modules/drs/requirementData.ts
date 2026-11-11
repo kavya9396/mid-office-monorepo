@@ -11,7 +11,7 @@ const normaliseStatus = (status: string) => {
   return "Accept";
 };
 
-export type RawRequirement = Omit<RequirementItem, "id" | "profile" | "extraRemarks"> & {
+export type RawRequirement = Omit<RequirementItem, "id"> & {
   requirementId: number;
 };
 
@@ -20,8 +20,6 @@ export function mapRequirements(rawRequirements: RawRequirement[]): RequirementI
     ...rest,
     id: requirementId,
     status: normaliseStatus(rest.status),
-    profile: "",
-    extraRemarks: "",
   }));
 }
 

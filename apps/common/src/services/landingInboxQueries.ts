@@ -1,6 +1,14 @@
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
-import type { BusinessRequest } from "@insurance-poc/utils";
-import { getSessionUser, isFirstLoginChangePending, useMock } from "@insurance-poc/utils";
+import type { BusinessRequest, SessionBusinessType } from "@insurance-poc/utils";
+import {
+  getSessionBusinessType,
+  getSessionUser,
+  isApiFailureBody,
+  isFirstLoginChangePending,
+  readApiErrorMessage,
+  toCustomQueryError,
+  useMock,
+} from "@insurance-poc/utils";
 import {
   parsePoolColumnsResponse,
   rememberPoolColumns,
@@ -26,11 +34,41 @@ export type RoleListQueryConfig = {
   businessLabel: string;
 };
 
+export type RoleListRequestBody = {
+  request: {
+    businessType: SessionBusinessType;
+  };
+};
+
+function businessTypeForLabel(businessLabel: string): SessionBusinessType {
+  return businessLabel === "Group" ? "GROUP" : "RETAIL";
+}
+
+/** Role-list POST body: session business line, with label fallback when unset. */
+export function resolveRoleListBusinessType(businessLabel: string): SessionBusinessType {
+  return getSessionBusinessType() ?? businessTypeForLabel(businessLabel);
+}
+
+export function buildRoleListRequestBody(businessType: SessionBusinessType): RoleListRequestBody {
+  return { request: { businessType } };
+}
+
 export async function queryLandingRoleList(
   baseQuery: LandingBaseQuery,
   config: RoleListQueryConfig,
 ): Promise<{ data: InboxData } | { error: FetchBaseQueryError }> {
+  const businessType = resolveRoleListBusinessType(config.businessLabel);
+  const requestBody = buildRoleListRequestBody(businessType);
+  const appBusinessType = businessTypeForLabel(config.businessLabel);
+
   if (useMock) {
+    if (businessType !== appBusinessType) {
+      return {
+        error: customError(
+          `Role-list businessType (${businessType}) does not match the ${config.businessLabel} inbox.`,
+        ),
+      };
+    }
     return { data: config.mapInboxPayload(config.mockData) };
   }
   if (config.roleListUrl.length === 0) {
@@ -51,7 +89,7 @@ export async function queryLandingRoleList(
   const result = await baseQuery({
     url: config.roleListUrl,
     method: "POST",
-    body: {},
+    body: requestBody,
     headers: { accept: "*/*", "Content-Type": "application/json" },
     encryptRequest: false,
     decryptResponse: false,
@@ -91,7 +129,12 @@ export async function queryLandingPoolColumns(
     encryptRequest: false,
     decryptResponse: false,
   });
-  if ("error" in result) return result;
+  if ("error" in result) {
+    return { error: toCustomQueryError(result.error) };
+  }
+  if (isApiFailureBody(result.data)) {
+    return { error: customError(readApiErrorMessage(result.data)) };
+  }
   const parsed = parsePoolColumnsResponse(result.data);
   const fields = storedPoolColumns(config.scope, poolKey, {
     username: parsed.username,
@@ -129,7 +172,12 @@ export async function mutateLandingSavePoolColumns(
     encryptRequest: false,
     decryptResponse: false,
   });
-  if ("error" in saved) return saved;
+  if ("error" in saved) {
+    return { error: toCustomQueryError(saved.error) };
+  }
+  if (isApiFailureBody(saved.data)) {
+    return { error: customError(readApiErrorMessage(saved.data)) };
+  }
   const fetched = await baseQuery({
     url: config.poolColumnsUrl,
     method: "GET",
@@ -137,7 +185,12 @@ export async function mutateLandingSavePoolColumns(
     encryptRequest: false,
     decryptResponse: false,
   });
-  if ("error" in fetched) return fetched;
+  if ("error" in fetched) {
+    return { error: toCustomQueryError(fetched.error) };
+  }
+  if (isApiFailureBody(fetched.data)) {
+    return { error: customError(readApiErrorMessage(fetched.data)) };
+  }
   const parsed = parsePoolColumnsResponse(fetched.data);
   const fields = storedPoolColumns(config.scope, request.poolKey, {
     username: parsed.username,
@@ -168,4 +221,54 @@ export function mockSavePoolColumns(
   }
   rememberPoolColumns(config.scope, request.poolKey, request.selectedFields);
   return { data: storedPoolColumns(config.scope, request.poolKey, config.columnConfigFetchMock) };
+}
+
+export type ClaimTaskRequest = {
+  taskId: string;
+};
+
+export type ClaimTaskResponse = {
+  id?: string;
+  state?: string;
+  message?: string;
+  success?: boolean;
+  errorCode?: string;
+};
+
+export type ClaimTaskMutationConfig = {
+  claimTaskUrl: string;
+  businessLabel?: string;
+};
+
+export type MockClaimTaskConfig = {
+  claimTaskMock: ClaimTaskResponse;
+};
+
+export async function mutateLandingClaimTask(
+  request: ClaimTaskRequest,
+  baseQuery: LandingBaseQuery,
+  config: ClaimTaskMutationConfig,
+): Promise<{ data: ClaimTaskResponse } | { error: FetchBaseQueryError }> {
+  if (config.claimTaskUrl.length === 0) {
+    return {
+      error: customError("Claim task API is not configured."),
+    };
+  }
+  const result = await baseQuery({
+    url: config.claimTaskUrl,
+    method: "POST",
+    body: { taskId: request.taskId },
+    headers: { accept: "*/*", "Content-Type": "application/json" },
+    encryptRequest: false,
+    decryptResponse: false,
+  });
+  if ("error" in result) return result;
+  return { data: result.data as ClaimTaskResponse };
+}
+
+export function mockClaimTask(
+  _request: ClaimTaskRequest,
+  config: MockClaimTaskConfig,
+): { data: ClaimTaskResponse } {
+  return { data: config.claimTaskMock };
 }

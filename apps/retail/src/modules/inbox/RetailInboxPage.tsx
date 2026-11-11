@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { InboxScreen } from "@insurance-poc/common/inbox-screen";
 import {
+  useClaimRetailTaskMutation,
   useGetRetailInboxQuery,
   useLazyFetchRetailPoolColumnsQuery,
   useSaveRetailPoolColumnsMutation,
@@ -22,6 +23,7 @@ export function RetailInboxPage() {
   const inbox = useGetRetailInboxQuery();
   const [loadColumns] = useLazyFetchRetailPoolColumnsQuery();
   const [saveColumns] = useSaveRetailPoolColumnsMutation();
+  const [claimTask] = useClaimRetailTaskMutation();
   const onLoadColumns = useCallback(
     (poolKey: string) => loadColumns(poolKey).unwrap(),
     [loadColumns],
@@ -29,6 +31,10 @@ export function RetailInboxPage() {
   const onSaveColumns = useCallback(
     (poolKey: string, selectedFields: string[]) => saveColumns({ poolKey, selectedFields }).unwrap(),
     [saveColumns],
+  );
+  const onClaimTask = useCallback(
+    (taskId: string) => claimTask({ taskId }).unwrap(),
+    [claimTask],
   );
 
   return (
@@ -42,6 +48,7 @@ export function RetailInboxPage() {
       }}
       onLoadColumns={onLoadColumns}
       onSaveColumns={onSaveColumns}
+      onClaimTask={onClaimTask}
     />
   );
 }

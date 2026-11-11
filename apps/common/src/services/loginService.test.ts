@@ -291,6 +291,41 @@ describe("login module", () => {
       expect(result.mustChangePassword).toBe(true);
     });
 
+    it("parses mustChangePassword for redirect even when firstLogin is false", async () => {
+      authMode.useMock = false;
+      vi.useRealTimers();
+      vi.stubGlobal(
+        "fetch",
+        vi.fn<typeof fetch>().mockResolvedValue(
+          jsonResponse({
+            response_code: 200,
+            error: false,
+            message: "Login successful",
+            data: {
+              token: "restricted-token",
+              username: "UAT001",
+              displayName: "UAT User",
+              firstLogin: false,
+              mustChangePassword: "true",
+              refreshToken: null,
+            },
+          }),
+        ),
+      );
+      const { fetchLogin, loginRequiresPasswordChange } = await loadLogin();
+
+      const result = await fetchLogin({
+        userId: "UAT001",
+        password: "secret",
+        businessType: "RETAIL",
+      });
+
+      expectSuccess(result);
+      expect(result.firstLogin).toBe(false);
+      expect(result.mustChangePassword).toBe(true);
+      expect(loginRequiresPasswordChange(result.mustChangePassword)).toBe(true);
+    });
+
     it("returns the API failure message", async () => {
       authMode.useMock = false;
       vi.useRealTimers();
@@ -646,6 +681,14 @@ describe("login module", () => {
       expect(readString(posted.body, "refreshToken")).toBe(
         "UNySFLgYgMokV7ty3i7bK_K-0amHmAjhDqx8DXXwwis",
       );
+    });
+  });
+
+  describe("loginRequiresPasswordChange", () => {
+    it("depends only on mustChangePassword", async () => {
+      const { loginRequiresPasswordChange } = await loadLogin();
+      expect(loginRequiresPasswordChange(true)).toBe(true);
+      expect(loginRequiresPasswordChange(false)).toBe(false);
     });
   });
 });

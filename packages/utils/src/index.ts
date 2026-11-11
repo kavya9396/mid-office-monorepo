@@ -42,6 +42,12 @@ export {
   setSessionUser,
   setSessionValue,
   setToken,
+  clearDrsTaskIds,
+  getDrsTaskIds,
+  hasDrsTaskIds,
+  removeDrsTaskContext,
+  setDrsTaskIds,
+  type DrsTaskContext,
   type SessionBusinessType,
   type SessionUser,
 } from "./auth";
@@ -54,9 +60,14 @@ export {
   encodeBase64,
   encryptPayload,
   resetUnauthorizedHandling,
+  isApiFailureBody,
+  readApiErrorMessage,
+  readApiFailureText,
+  readApiMessageFromBody,
+  toCustomQueryError,
   type BusinessRequest,
 } from "./api";
-export { formatIndianCurrency, default } from "./format";
+export { formatDateTime, formatIndianCurrency, default } from "./format";
 export {
   isLikelyEmail,
   isValidEmailAddress,

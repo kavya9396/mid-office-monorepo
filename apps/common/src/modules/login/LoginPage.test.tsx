@@ -164,7 +164,7 @@ describe("LoginPage", () => {
     expect(routes.assignUrl).not.toHaveBeenCalled();
   });
 
-  it("opens the inbox when only one of firstLogin or mustChangePassword is true", async () => {
+  it("opens the inbox when mustChangePassword is false even if firstLogin is true", async () => {
     auth.login.mockReturnValue(
       loginSuccess({ firstLogin: true, mustChangePassword: false }),
     );
@@ -175,6 +175,33 @@ describe("LoginPage", () => {
     await waitFor(() => {
       expect(routes.assignUrl).toHaveBeenCalledWith("/retail/inbox");
     });
+  });
+
+  it("sends the user to change password when mustChangePassword is true and firstLogin is false", async () => {
+    auth.login.mockReturnValue(
+      loginSuccess({ firstLogin: false, mustChangePassword: true }),
+    );
+    renderUi(
+      <MemoryRouter initialEntries={["/login"]}>
+        <Routes>
+          <Route
+            path="/login"
+            element={
+              <RedirectIfSession>
+                <LoginPage />
+              </RedirectIfSession>
+            }
+          />
+          <Route path="/change-password" element={<div>Change password screen</div>} />
+        </Routes>
+      </MemoryRouter>,
+    );
+    const user = await fillValidLogin();
+    await user.click(screen.getByRole("button", { name: "Log In" }));
+
+    expect(await screen.findByText("Change password screen")).toBeInTheDocument();
+    expect(masters.fetchAndStoreMasterData).not.toHaveBeenCalled();
+    expect(routes.assignUrl).not.toHaveBeenCalled();
   });
 
   it("shows the API error and keeps the user on login after a failed sign-in", async () => {

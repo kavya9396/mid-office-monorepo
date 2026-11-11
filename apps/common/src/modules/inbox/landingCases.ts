@@ -8,6 +8,8 @@ export function landingCases(): InboxCase[] {
       applicationNo: "RET-CVT-001",
       fields: {
         applicationNo: "RET-CVT-001",
+        taskId: "RT-1001",
+        instanceId: "RI-1001",
         channel: "Agency",
         product: "iProtect",
         dueDate: "2020-01-01T10:00:00Z",

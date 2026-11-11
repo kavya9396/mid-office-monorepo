@@ -92,7 +92,6 @@ function applyLoginSession({
 
 async function completeLoginAfterAuth(args: LoginSuccessHandlerArgs): Promise<void> {
   const {
-    firstLogin,
     mustChangePassword,
     businessType,
     navigateToChangePassword,
@@ -102,7 +101,7 @@ async function completeLoginAfterAuth(args: LoginSuccessHandlerArgs): Promise<vo
     user,
     lastLoginAt,
   } = args;
-  const needsPasswordChange = loginRequiresPasswordChange(firstLogin, mustChangePassword);
+  const needsPasswordChange = loginRequiresPasswordChange(mustChangePassword);
 
   if (needsPasswordChange) {
     setFirstLoginChangePending(true);
@@ -291,10 +290,7 @@ export function LoginPage() {
         password: credentials.password,
         businessType,
       }).unwrap();
-      const needsPasswordChange = loginRequiresPasswordChange(
-        loginResult.firstLogin,
-        loginResult.mustChangePassword,
-      );
+      const needsPasswordChange = loginRequiresPasswordChange(loginResult.mustChangePassword);
       if (!needsPasswordChange) {
         setLoadingMasters(true);
       }

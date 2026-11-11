@@ -17,7 +17,7 @@ import TableRow from "@mui/material/TableRow";
 import TableSortLabel from "@mui/material/TableSortLabel";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
-import { useMock } from "@insurance-poc/utils";
+import { readApiErrorMessage, useMock } from "@insurance-poc/utils";
 import {
   CustomButton,
   CustomCheckbox,
@@ -131,11 +131,11 @@ function columnKeys(cases: InboxCase[]): string[] {
 }
 
 function columnError(reason: unknown): string {
-  return reason instanceof Error ? reason.message : "Unable to update the column configuration.";
+  return readApiErrorMessage(reason);
 }
 
 function poolColumnsLoadError(reason: unknown): string {
-  return reason instanceof Error ? reason.message : "Unable to load column configuration.";
+  return readApiErrorMessage(reason);
 }
 
 function compareText(left: string, right: string, direction: SortDirection): number {
@@ -313,7 +313,9 @@ function usePoolColumnsLoader(params: Readonly<PoolColumnsLoaderParams>): PoolCo
           if (matched.length > 0) setVisible(matched);
         })
         .catch((reason: unknown) => {
-          if (current) onColumnNotice?.(poolColumnsLoadError(reason));
+          if (!current) return;
+          const message = poolColumnsLoadError(reason);
+          if (message.length > 0) onColumnNotice?.(message);
         });
       return () => {
         current = false;
@@ -1361,7 +1363,8 @@ export function InboxTable({
         applyDraft(next);
       }
     } catch (reason: unknown) {
-      onColumnNotice?.(columnError(reason));
+      const message = columnError(reason);
+      if (message.length > 0) onColumnNotice?.(message);
     } finally {
       setSavingColumns(false);
     }
@@ -1397,7 +1400,8 @@ export function InboxTable({
       }
       setSettingsOpen(false);
     } catch (reason: unknown) {
-      onColumnNotice?.(columnError(reason));
+      const message = columnError(reason);
+      if (message.length > 0) onColumnNotice?.(message);
     } finally {
       setSavingColumns(false);
     }
