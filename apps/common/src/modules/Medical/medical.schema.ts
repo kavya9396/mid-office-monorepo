@@ -393,8 +393,6 @@ export type MedicalDobutamineStressEchoValues = z.input<
 export const medicalExerciseStressEchoSchema =
   medicalDobutamineStressEchoSchema;
 
-export type MedicalExerciseStressEchoValues = MedicalDobutamineStressEchoValues;
-
 /* ------------------------------------------------------------------ */
 /* Section: Special Medical - ECG                                     */
 /* ------------------------------------------------------------------ */
@@ -481,18 +479,12 @@ export type MedicalCxrValues = z.input<typeof medicalCxrSchema>;
 export const medicalMammogramSchema = medicalCxrSchema;
 export const medicalPapSmearSchema = medicalCxrSchema;
 
-export type MedicalMammogramValues = MedicalCxrValues;
-export type MedicalPapSmearValues = MedicalCxrValues;
-
 /** STOOL TEST uses the same fields and rules as CXR. */
 export const medicalStoolTestSchema = medicalCxrSchema;
-export type MedicalStoolTestValues = MedicalCxrValues;
 
 /** USG and Fundoscopy Test use the same fields and rules as CXR. */
 export const medicalUsgSchema = medicalCxrSchema;
 export const medicalFundoscopyTestSchema = medicalCxrSchema;
-export type MedicalUsgValues = MedicalCxrValues;
-export type MedicalFundoscopyTestValues = MedicalCxrValues;
 
 /* ------------------------------------------------------------------ */
 /* Section: Special Medical - TMT                                     */

@@ -609,6 +609,20 @@ const RequiredMark = memo(function RequiredMark() {
   );
 });
 
+function RequiredHeader({ label }: Readonly<{ label: string }>) {
+  return (
+    <Box component="span" sx={INCOME_HEADER_SX}>
+      {label}
+      <RequiredMark />
+    </Box>
+  );
+}
+
+const renderSelectedMonthHeader = () => (
+  <RequiredHeader label="Selected Month" />
+);
+const renderIncomeHeader = () => <RequiredHeader label="Income" />;
+
 interface FinancialControlProps {
   id: string;
   ariaLabel: string;
@@ -976,12 +990,7 @@ function MonthlyIncomeBody({
       },
       {
         key: "selected",
-        headerRender: () => (
-          <Box component="span" sx={INCOME_HEADER_SX}>
-            Selected Month
-            <RequiredMark />
-          </Box>
-        ),
+        headerRender: renderSelectedMonthHeader,
         render: (_value, row) => (
           <FinancialControl
             id={`${section.key}-entry-month-${row.number}`}
@@ -996,12 +1005,7 @@ function MonthlyIncomeBody({
       },
       {
         key: "income",
-        headerRender: () => (
-          <Box component="span" sx={INCOME_HEADER_SX}>
-            Income
-            <RequiredMark />
-          </Box>
-        ),
+        headerRender: renderIncomeHeader,
         render: (_value, row) => (
           <FinancialControl
             id={`${section.key}-entry-income-${row.number}`}
