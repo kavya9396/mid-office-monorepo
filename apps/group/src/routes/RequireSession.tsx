@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { authorizeBusiness } from "@insurance-poc/common/auth";
+import { CustomLoader } from "@insurance-poc/ui";
 import {
   businessInboxUrl,
   commonPaths,
@@ -65,6 +66,8 @@ export function RequireSession({ children }: { children: ReactNode }) {
     };
   }, [hasCredentials, userId]);
 
-  if (!allowed) return null;
+  if (!allowed) {
+    return <CustomLoader message="Loading" />;
+  }
   return children;
 }

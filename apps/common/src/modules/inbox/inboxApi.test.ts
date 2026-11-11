@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   casesForTask,
+  fieldKeysForPool,
   firstPoolKey,
   mapRoleListPayload,
   parsePoolColumnsResponse,
@@ -217,82 +218,91 @@ describe("landing task selection", () => {
 });
 
 describe("landing column configuration", () => {
-  it("keeps Application Number first and prioritizes pool-specific fields in eight defaults", () => {
-    const columns = [
+  it("builds defaults from role-list field order: hidden omitted, application first, max eight", () => {
+    const roleListKeys = [
       "applicationNo",
+      "taskId",
       "channel",
+      "product",
       "sumAssured",
       "medicalReceivedDate",
       "financialReceivedDate",
       "poolTAT",
-      "product",
       "premium",
       "clientType",
+      "caseType",
     ];
 
-    expect(defaultVisibleColumns(columns, "CPT_POOL")).toEqual([
+    expect(defaultVisibleColumns(roleListKeys)).toEqual([
       "applicationNo",
-      "medicalReceivedDate",
-      "financialReceivedDate",
-      "poolTAT",
       "channel",
       "product",
       "sumAssured",
+      "medicalReceivedDate",
+      "financialReceivedDate",
+      "poolTAT",
       "premium",
     ]);
   });
 
   it("does not invent columns that the response omitted", () => {
-    expect(defaultVisibleColumns([], "DVT_POOL")).toEqual([]);
-    expect(defaultVisibleColumns(["channel", "product"], "CVT_POOL")).toEqual(["channel", "product"]);
-    expect(columnsForPool(["applicationNo", "productCode"], "DVT_POOL")).toEqual([
+    expect(defaultVisibleColumns([])).toEqual(["applicationNo"]);
+    expect(defaultVisibleColumns(["channel", "product"])).toEqual(["applicationNo", "channel", "product"]);
+    expect(columnsForPool(["applicationNo", "taskId", "productCode"])).toEqual([
       "applicationNo",
       "productCode",
     ]);
   });
 
-  it("prioritizes group pool fields that the response actually sent", () => {
-    expect(
-      defaultVisibleColumns(
-        [
-          "applicationNo",
-          "channel",
-          "product",
-          "sumAssured",
-          "productCode",
-          "masterPlanNo",
-          "poolTAT",
-          "productType",
-          "typeOfGroupBusiness",
-          "caseReceivedDate",
-        ],
-        "GUW",
-      ),
-    ).toEqual([
+  it("uses each pool's own role-list keys instead of shared hard-coded defaults", () => {
+    const guwKeys = [
       "applicationNo",
+      "channel",
+      "product",
       "productCode",
       "masterPlanNo",
-      "poolTAT",
       "productType",
       "typeOfGroupBusiness",
       "caseReceivedDate",
-      "channel",
-    ]);
-    expect(
-      defaultVisibleColumns(
-        ["applicationNo", "policyNo", "productCode", "memberName", "poolTAT", "appliedCover", "channel", "product"],
-        "DVT_FORMAL",
-      ),
-    ).toEqual([
+      "sumAssured",
+    ];
+    const formalKeys = [
       "applicationNo",
-      "policyNo",
-      "productCode",
-      "memberName",
-      "poolTAT",
-      "appliedCover",
       "channel",
       "product",
+      "policyNo",
+      "memberName",
+      "poolTAT",
+    ];
+
+    expect(defaultVisibleColumns(guwKeys)).toEqual([
+      "applicationNo",
+      "channel",
+      "product",
+      "productCode",
+      "masterPlanNo",
+      "productType",
+      "typeOfGroupBusiness",
+      "caseReceivedDate",
     ]);
+    expect(defaultVisibleColumns(formalKeys)).toEqual([
+      "applicationNo",
+      "channel",
+      "product",
+      "policyNo",
+      "memberName",
+      "poolTAT",
+    ]);
+  });
+
+  it("derives defaults from fieldKeysForPool for the active pool key", () => {
+    const data = sampleInbox();
+    const guwDefaults = defaultVisibleColumns(fieldKeysForPool(data, "GUW"));
+    const formalDefaults = defaultVisibleColumns(fieldKeysForPool(data, "DVT_FORMAL"));
+
+    expect(guwDefaults).toEqual(["applicationNo", "productCode", "masterPlanNo"]);
+    expect(formalDefaults).toEqual(["applicationNo", "policyNo", "memberName", "appliedCover"]);
+    expect(formalDefaults).not.toEqual(guwDefaults);
   });
 
   it("reads saved column order and ignores blank field names", () => {

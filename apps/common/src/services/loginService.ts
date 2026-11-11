@@ -378,6 +378,7 @@ async function realLogin(request: LoginRequest): Promise<LoginResult> {
     response = await postAuth(authUrls.login, {
       username: encodeBase64(request.userId),
       password: encodeBase64(request.password),
+      businessType: request.businessType,
     });
   } catch (reason: unknown) {
     const detail = reason instanceof Error ? reason.message : "Network error";

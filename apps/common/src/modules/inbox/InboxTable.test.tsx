@@ -158,7 +158,7 @@ describe("InboxTable", () => {
     expect(onLoadColumns).toHaveBeenCalledWith("GUW");
   });
 
-  it("falls back to default columns when pool-columns returns an empty list in mock mode", async () => {
+  it("falls back to role-list defaults when pool-columns returns an empty list in mock mode", async () => {
     const onLoadColumns = vi.fn(async () => []);
     renderTable({
       useMockOverride: true,
@@ -168,11 +168,11 @@ describe("InboxTable", () => {
       onLoadColumns,
     });
 
-    expect(await screen.findByText("Product Code")).toBeInTheDocument();
-    expect(screen.getByText("Channel")).toBeInTheDocument();
+    expect(await screen.findByText("Channel")).toBeInTheDocument();
+    expect(screen.getByText("Product Code")).toBeInTheDocument();
   });
 
-  it("shows no columns when pool-columns returns an empty list in real API mode", async () => {
+  it("falls back to selected pool role-list defaults when pool-columns is empty in real API mode", async () => {
     const onLoadColumns = vi.fn(async () => []);
     renderTable({
       useMockOverride: false,
@@ -182,7 +182,44 @@ describe("InboxTable", () => {
       onLoadColumns,
     });
 
-    expect(await screen.findByText("No columns returned for this pool")).toBeInTheDocument();
+    expect(await screen.findByText("Channel")).toBeInTheDocument();
+    expect(screen.getByText("Product Code")).toBeInTheDocument();
+    expect(screen.queryByText("No columns returned for this pool")).not.toBeInTheDocument();
+  });
+
+  it("uses the selected pool's field order for defaults, not another pool", async () => {
+    const formalCase = landingCases()[2]!;
+    const formalData: InboxData = {
+      username: "UW001",
+      poolData: { DVT_FORMAL: [formalCase] },
+    };
+    const onLoadColumns = vi.fn(async () => []);
+    renderTable({
+      useMockOverride: false,
+      title: "DVT FORMAL Details",
+      columnContextKey: "DVT_FORMAL",
+      inboxData: formalData,
+      cases: [formalCase],
+      onLoadColumns,
+    });
+
+    expect(await screen.findByText("Policy No")).toBeInTheDocument();
+    expect(screen.getByText("Member Name")).toBeInTheDocument();
+    expect(screen.queryByText("Master Plan No")).not.toBeInTheDocument();
+  });
+
+  it("uses API selectedFields when pool-columns is non-empty", async () => {
+    const onLoadColumns = vi.fn(async () => ["applicationNo", "caseType"]);
+    renderTable({
+      useMockOverride: false,
+      columnContextKey: "GUW",
+      inboxData: guwInboxData,
+      cases: [guwCase],
+      onLoadColumns,
+    });
+
+    await waitFor(() => expect(onLoadColumns).toHaveBeenCalledWith("GUW"));
+    expect(await screen.findByText("Case Type")).toBeInTheDocument();
     expect(screen.queryByText("Product Code")).not.toBeInTheDocument();
   });
 

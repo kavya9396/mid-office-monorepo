@@ -17,6 +17,8 @@ import {
   setFirstLoginChangePending,
 } from "./firstLoginFlow";
 import { clearMasterData } from "../masterData/session";
+import { clearBreRetriggerCount } from "./breRetriggerCount";
+import { clearInboxNavigationLoading } from "./inboxNavigationLoading";
 import { removeDrsTaskContext } from "./drsTaskContext";
 
 export type SessionBusinessType = "RETAIL" | "GROUP";
@@ -67,6 +69,8 @@ export function clearToken(): void {
   storage?.removeItem(LEGACY_PASSWORD_CHANGED_KEY);
   clearMasterData();
   removeDrsTaskContext();
+  clearBreRetriggerCount();
+  clearInboxNavigationLoading();
 }
 
 export function setSessionId(sessionId: string): void {
