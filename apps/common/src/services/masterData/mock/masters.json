@@ -3967,10 +3967,7 @@
     ],
     "requirement_mst": {
       "level": "team",
-      "teams": [
-        "COPS",
-        "UW"
-      ]
+      "teams": ["COPS", "UW"]
     },
     "bre": [
       {
@@ -5768,6 +5765,22 @@
       }
     ],
     "misc": [
+      {
+        "code": "Y",
+        "description": "Yes",
+        "value": "Yes",
+        "isActive": "Y",
+        "miscMastId": "156",
+        "type": "YESNO"
+      },
+      {
+        "code": "N",
+        "description": "No",
+        "value": "No",
+        "isActive": "Y",
+        "miscMastId": "157",
+        "type": "YESNO"
+      },
       {
         "code": "STD",
         "description": "Standard",
@@ -7849,6 +7862,54 @@
         "type": "MED_DOC_TABLE"
       },
       {
+        "code": "Waived",
+        "description": "Waived",
+        "value": "Waived",
+        "isActive": "Y",
+        "miscMastId": "1",
+        "type": "REQT_ST"
+      },
+      {
+        "code": "Cancelled",
+        "description": "Cancelled",
+        "value": "Cancelled",
+        "isActive": "Y",
+        "miscMastId": "115",
+        "type": "REQT_ST"
+      },
+      {
+        "code": "Received",
+        "description": "Received",
+        "value": "Received",
+        "isActive": "Y",
+        "miscMastId": "116",
+        "type": "REQT_ST"
+      },
+      {
+        "code": "Reject",
+        "description": "Reject",
+        "value": "Reject",
+        "isActive": "Y",
+        "miscMastId": "125",
+        "type": "REQT_ST"
+      },
+      {
+        "code": "Accept",
+        "description": "Accept",
+        "value": "Accept",
+        "isActive": "Y",
+        "miscMastId": "3",
+        "type": "REQT_ST"
+      },
+      {
+        "code": "Pending",
+        "description": "Pending",
+        "value": "Pending",
+        "isActive": "Y",
+        "miscMastId": "7",
+        "type": "REQT_ST"
+      },
+      {
         "code": "010.01",
         "description": "MER",
         "value": "mer",
@@ -8215,6 +8276,102 @@
         "isActive": "Y",
         "miscMastId": "MED_DOC_TABLE",
         "type": "MED_DOC_TABLE"
+      },
+      {
+        "code": "April",
+        "description": "April",
+        "value": "April",
+        "isActive": "Y",
+        "miscMastId": "MONTHS",
+        "type": "month"
+      },
+      {
+        "code": "August",
+        "description": "August",
+        "value": "August",
+        "isActive": "Y",
+        "miscMastId": "MONTHS",
+        "type": "month"
+      },
+      {
+        "code": "December",
+        "description": "December",
+        "value": "December",
+        "isActive": "Y",
+        "miscMastId": "MONTHS",
+        "type": "month"
+      },
+      {
+        "code": "February",
+        "description": "February",
+        "value": "February",
+        "isActive": "Y",
+        "miscMastId": "MONTHS",
+        "type": "month"
+      },
+      {
+        "code": "January",
+        "description": "January",
+        "value": "January",
+        "isActive": "Y",
+        "miscMastId": "MONTHS",
+        "type": "month"
+      },
+      {
+        "code": "July",
+        "description": "July",
+        "value": "July",
+        "isActive": "Y",
+        "miscMastId": "MONTHS",
+        "type": "month"
+      },
+      {
+        "code": "June",
+        "description": "June",
+        "value": "June",
+        "isActive": "Y",
+        "miscMastId": "MONTHS",
+        "type": "month"
+      },
+      {
+        "code": "March",
+        "description": "March",
+        "value": "March",
+        "isActive": "Y",
+        "miscMastId": "MONTHS",
+        "type": "month"
+      },
+      {
+        "code": "May",
+        "description": "May",
+        "value": "May",
+        "isActive": "Y",
+        "miscMastId": "MONTHS",
+        "type": "month"
+      },
+      {
+        "code": "November",
+        "description": "November",
+        "value": "November",
+        "isActive": "Y",
+        "miscMastId": "MONTHS",
+        "type": "month"
+      },
+      {
+        "code": "October",
+        "description": "October",
+        "value": "October",
+        "isActive": "Y",
+        "miscMastId": "MONTHS",
+        "type": "month"
+      },
+      {
+        "code": "September",
+        "description": "September",
+        "value": "September",
+        "isActive": "Y",
+        "miscMastId": "MONTHS",
+        "type": "month"
       }
     ],
     "reason": [

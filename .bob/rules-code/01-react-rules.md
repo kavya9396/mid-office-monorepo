@@ -1,4 +1,4 @@
-﻿# React / TypeScript coding rules (Code / Agent mode)
+# React / TypeScript coding rules (Code / Agent mode)
 
 These rules apply when implementing screens for the ICICI Prudential mid-office platform.
 The project is a **pnpm + Turborepo TypeScript monorepo**. Read
@@ -47,13 +47,9 @@ writing any code.
 
 ## Component usage rules
 
-- `packages/ui/src` holds **all** UI components to be used. Check `packages/ui/src/index.ts` for an
-  existing wrapper **before** writing new MUI markup.
+- Check `packages/ui/src/index.ts` for an existing wrapper **before** writing new MUI markup.
 - Use `Custom*` wrappers (`CustomButton`, `CustomDialog`, `CustomTable`, etc.) in all app code.
-  Do not use bare MUI `Button`, `Dialog`, `Table*`, `Select`, `MenuItem`, `TextField`, `Paper`, etc.
-  directly in app or shared component files. Use `CustomBox` / `CustomTypography` from `@insurance-poc/ui` for layout.
-  Dropdowns: `CustomSelect` with an `options` array (its `onChange` receives the value, not an event).
-  Data grids: `CustomTable` with `columns` / `data`; put inputs in cells via the column `render`.
+  Do not use bare MUI `Button`, `Dialog`, `Table`, etc. directly in app or shared component files.
 - Icons: never add `@mui/icons-material` imports in app code. Export from `packages/ui/src/icons/Icons.tsx` and consume via `@insurance-poc/ui`.
 - Name collision check: search `packages/ui/src/index.ts` before adding any new export.
   `CustomButton`, `RequirementBadgeVariant`, `BadgeVariant`, `LegacyBadgeVariant` are taken.
@@ -74,27 +70,27 @@ writing any code.
 
 ### DRS / detail screens
 ```tsx
-<CustomBox sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+<Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
   <AppHeader showBack onBack={...} userName={...} />          {/* h=57px, sticky, z-index:100 */}
-  <CustomBox component="main" sx={{ height: 'calc(100dvh - 57px)', overflowY: 'auto' }}>
+  <Box component="main" sx={{ height: 'calc(100dvh - 57px)', overflowY: 'auto' }}>
     <ApplicantBanner {...} />                                  {/* sticky, top:0, z-index:20 */}
     {/* screen-specific content */}
     <DecisionFooter ... />                                     {/* sticky, bottom:0 if present */}
-  </CustomBox>
-</CustomBox>
+  </Box>
+</Box>
 ```
 
 ### Landing / Inbox screens
 ```tsx
-<CustomBox sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+<Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
   <AppHeader showBack={false} userName={...} />
-  <CustomBox sx={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+  <Box sx={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
     <Sidebar sections={...} collapsed={...} onToggle={...} onTaskSelect={...} />  {/* 220px/60px */}
-    <CustomBox component="main" sx={{ flex: 1, overflowY: 'auto' }}>
+    <Box component="main" sx={{ flex: 1, overflowY: 'auto' }}>
       {/* role table */}
-    </CustomBox>
-  </CustomBox>
-</CustomBox>
+    </Box>
+  </Box>
+</Box>
 ```
 
 ---

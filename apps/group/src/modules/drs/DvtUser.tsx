@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { drsRoutePath } from "@insurance-poc/routes";
-import { clearDrsTaskIds, formatDateTime, readApiErrorMessage } from "@insurance-poc/utils";
+import { clearDrsTaskIds, formatDateTime, getMasterList, readApiErrorMessage } from "@insurance-poc/utils";
 
 import { Box, Typography } from "@mui/material";
 import { CustomSnackbar, CustomDialog, DeleteIcon, EditIcon } from "@insurance-poc/ui";
-import { DecisionBar, DecisionComparisonTable } from "@insurance-poc/common/decision-bar";
+import {
+  DecisionBar,
+  DecisionComparisonTable,
+  type ComparisonRow,
+} from "@insurance-poc/common/decision-bar";
 import { DetailCard } from "@insurance-poc/common/detail-card";
 import { DecisionSection, type DecisionSubmitPayload } from "@insurance-poc/common/decision-section";
 import { LifeAssured } from "@insurance-poc/common/life-assured";
@@ -15,10 +19,10 @@ import { RequirementMgmt } from "@insurance-poc/common/requirement-mgmt";
 import { QuickLinksModule } from "@insurance-poc/common/quick-links";
 import { ApplicantProfile } from "@insurance-poc/common/applicant-profile";
 import {
-  requirementStatusOptions,
   requirementStatusOrder,
   requirementStatusVariants,
 } from "./requirementData";
+import { readEditOptions } from "./lifeAssuredData";
 import { useRetriggerGroupBreMutation } from "../../services/breRetriggerApi";
 import { useCompleteGroupTaskMutation } from "../../services/completeTaskApi";
 import { useGetGroupDrsQuery } from "../../services/drsApi";
@@ -28,7 +32,6 @@ import {
 } from "../../services/financialApi";
 import type { CardType } from "../../services/drsService";
 import { GROUP_QUICK_LINKS_CONFIG } from "../config/quickLinks.config";
-import { buildBreRows } from "./breFormat";
 
 const CARD_TITLES: Record<CardType, string> = {
   APPLICATION: "Application Detail",
@@ -41,6 +44,12 @@ const CARD_TITLES: Record<CardType, string> = {
 const quickLinksConfig = GROUP_QUICK_LINKS_CONFIG.dvt;
 
 const APPLICANT_ID_PARAM = "applicantId";
+
+/** DVT decision dropdown options from the post-login master data (`misc` list, type `DVT_TERM_DESC`). */
+const readDvtDecisionOptions = () =>
+  getMasterList("misc", "DVT_TERM_DESC")
+    .filter((entry) => entry.isActive === "Y")
+    .map((entry) => ({ label: entry.description, value: entry.code }));
 
 export interface DvtUserProps {
   previousPolicyMode?: "page" | "modal";
@@ -200,6 +209,8 @@ const DvtUser = () => {
   }
 
   const { cardDetails, breDecision, dvtDecision, requirements } = drs.data;
+  // Master data first, then the DRS response; undefined lets DecisionSection use its defaults.
+  const decisionOptions = [readDvtDecisionOptions(), dvtDecision.decisionOptions].find((options) => options.length > 0);
 
   const detailCards = (
     <Box
@@ -312,7 +323,6 @@ const DvtUser = () => {
 
       <RequirementMgmt
         requirements={requirements}
-        statusOptions={requirementStatusOptions}
         statusOrder={requirementStatusOrder}
         statusVariants={requirementStatusVariants}
         addButton={{
@@ -342,13 +352,14 @@ const DvtUser = () => {
 
       <LifeAssured
         applicants={applicants}
+        editOptions={readEditOptions()}
         onEdit={handleApplicantAction("Edit")}
         onViewMedical={openMedical}
         onViewFinancial={openFinancial}
       />
 
       <DecisionSection
-        decisionOptions={dvtDecision.decisionOptions.length > 0 ? dvtDecision.decisionOptions : undefined}
+        decisionOptions={decisionOptions}
         decision={decision}
         remarks={remarks}
         onDecisionChange={setDecision}

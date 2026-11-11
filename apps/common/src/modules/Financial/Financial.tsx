@@ -27,6 +27,7 @@ import {
   type Column,
 } from "@insurance-poc/ui";
 import {
+  buildFinancialMonthOptions,
   buildFinancialYesNoOptions,
   FINANCIAL_DATE_FORMAT,
   FINANCIAL_DECISION_OPTIONS,
@@ -34,7 +35,6 @@ import {
   FINANCIAL_EDIT_ONLY_SECTION_KEYS,
   FINANCIAL_LOCKED_FIELDS,
   FINANCIAL_MESSAGES,
-  FINANCIAL_MONTH_OPTIONS,
   FINANCIAL_MONTHLY_INCOME_LAYOUTS,
   FINANCIAL_NON_REVIEWABLE_SECTION_KEYS,
   FINANCIAL_SECTIONS,
@@ -634,6 +634,12 @@ const FinancialControl = memo(function FinancialControl({
   const store = useFinancialStore();
   const value = useFieldValue(id);
   const error = useFieldError(id);
+  // Master lists are read from session storage, so resolve them once per kind / value.
+  const selectOptions = useMemo(() => {
+    if (kind === "decision") return FINANCIAL_DECISION_OPTIONS;
+    if (kind === "month") return buildFinancialMonthOptions();
+    return buildFinancialYesNoOptions(value);
+  }, [kind, value]);
   const onChange = useCallback(
     (next: string) => {
       store.set(id, next);
@@ -662,13 +668,10 @@ const FinancialControl = memo(function FinancialControl({
   }
 
   if (kind === "decision" || kind === "yesNo" || kind === "month") {
-    let options = buildFinancialYesNoOptions(value);
-    if (kind === "decision") options = FINANCIAL_DECISION_OPTIONS;
-    if (kind === "month") options = FINANCIAL_MONTH_OPTIONS;
     return (
       <Box sx={EDITABLE_CONTROL_SX} data-field={id}>
         <CustomSelect
-          options={options}
+          options={selectOptions}
           value={value}
           placeholder={selectPlaceholder(kind)}
           onChange={onChange}

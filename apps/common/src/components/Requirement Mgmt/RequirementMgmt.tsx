@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Box } from "@mui/material";
 import { colors, CustomTable } from "@insurance-poc/ui";
+import { getMasterList } from "@insurance-poc/utils";
 import { buildTableColumns } from "./buildTableColumns";
 import {
   DEFAULT_LABELS,
@@ -32,6 +33,12 @@ export { defaultRequirementColumns, defaultRequirementFilterFields } from "./def
 
 const EMPTY_BADGE_VARIANTS = {};
 
+/** Status options from the post-login master data (`misc` list, type `REQT_ST`). */
+const readMasterStatusOptions = (): RequirementStatusOption[] =>
+  getMasterList("misc", "REQT_ST")
+    .filter((entry) => entry.isActive === "Y")
+    .map((entry) => ({ label: entry.description, value: entry.code }));
+
 const uniqueStatusOptions = (rows: RequirementItem[]): RequirementStatusOption[] =>
   Array.from(new Set(rows.map((row) => row.status).filter(Boolean))).map((value) => ({
     label: value,
@@ -58,6 +65,7 @@ export function RequirementMgmt({
   onSave,
 }: Readonly<RequirementMgmtProps>) {
   const labels: RequirementLabels = { ...DEFAULT_LABELS, ...labelOverrides };
+  const masterStatusOptions = readMasterStatusOptions();
   const filterConfig = resolveFilterConfig(filter, readOnly);
 
   const { rows, saving, updateRow, removeRow, save } = useRequirementRows(requirements, onSave);
@@ -92,7 +100,8 @@ export function RequirementMgmt({
     readOnly,
     onRemoveRow: removeRow,
     cellContext: {
-      statusOptions: statusOptions ?? uniqueStatusOptions(rows),
+      statusOptions:
+        statusOptions ?? (masterStatusOptions.length > 0 ? masterStatusOptions : uniqueStatusOptions(rows)),
       labels,
       onValueChange: handleValueChange,
       onOpenDialog: (dialogTitle, value) => setDialogValue({ title: dialogTitle, value }),

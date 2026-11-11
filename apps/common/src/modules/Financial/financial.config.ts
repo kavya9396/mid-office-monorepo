@@ -1,3 +1,5 @@
+import { getMasterList } from "@insurance-poc/utils";
+
 /**
  * Configuration for the View Financial section (DVT / Group).
  * Section order, field order, layouts and locked fields mirror the
@@ -941,23 +943,19 @@ export const FINANCIAL_EDIT_ONLY_SECTION_KEYS: readonly string[] = [
   "credit_bureau_details",
 ];
 
-export const FINANCIAL_MONTH_OPTIONS: FinancialOption[] = [
-  { label: "Select month", value: "" },
-  ...[
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ].map((month) => ({ label: month, value: month })),
-];
+/** Active entries of a `misc` master list; the description is the stored value (e.g. "Yes", "April"). */
+const readMiscOptions = (type: string): FinancialOption[] =>
+  getMasterList("misc", type)
+    .filter((entry) => entry.isActive === "Y")
+    .map((entry) => ({ label: entry.description, value: entry.description }));
+
+const monthIndex = (name: string) => new Date(`${name} 1, 2000`).getMonth();
+
+/** Month dropdown options from the `misc` master (type `month`), in calendar order. */
+export function buildFinancialMonthOptions(): FinancialOption[] {
+  const months = readMiscOptions("month").sort((a, b) => monthIndex(a.value) - monthIndex(b.value));
+  return [{ label: "Select month", value: "" }, ...months];
+}
 
 export const FINANCIAL_DECISION_OPTIONS: FinancialOption[] = [
   { label: "Select financial decision", value: "" },
@@ -993,13 +991,9 @@ export function resolveFinancialControlKind(sectionKey: string, label: string): 
   return "text";
 }
 
-/** Yes / No options; an unexpected existing value is kept as an extra option. */
+/** Yes / No options from the `misc` master (type `YESNO`); an unexpected existing value is kept as an extra option. */
 export function buildFinancialYesNoOptions(value: string): FinancialOption[] {
-  const options: FinancialOption[] = [
-    { label: "Select", value: "" },
-    { label: "Yes", value: "Yes" },
-    { label: "No", value: "No" },
-  ];
+  const options: FinancialOption[] = [{ label: "Select", value: "" }, ...readMiscOptions("YESNO")];
   if (value && !options.some((option) => option.value === value)) {
     options.splice(1, 0, { label: value, value });
   }
