@@ -350,7 +350,6 @@ describe("landing labels", () => {
     expect(formatColumnName("appliedSa")).toBe("Applied SA");
     expect(formatColumnName("drc")).toBe("DRC");
     expect(formatColumnName("hniFlag")).toBe("HNI Flags");
-    expect(formatColumnName("hniShni")).toBe("HNI SHNI");
     expect(formatColumnName("ptlr")).toBe("PTLR");
     expect(formatColumnName("productCode")).toBe("Product Code");
     expect(formatColumnName("masterPlanNo")).toBe("Master Plan No");

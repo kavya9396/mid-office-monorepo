@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -13,17 +13,10 @@ import {
   QuickLinksModule,
   type QuickLinkItem,
 } from "@insurance-poc/common/quick-links";
-import { MmtGrievanceDrsPage } from "../mmt-grievance/MmtGrievanceDrsPage";
-import { TpaDrsPage } from "../tpa/TpaDrsPage";
 import {
   fetchRetailDrsRecord,
   type DrsRecord,
 } from "../../services/drsService";
-
-/** Inbox pool key is MMT; the screen spec also uses MMT_TASK. */
-const MMT_ROLE_TYPES = new Set(["MMT", "MMT_TASK"]);
-
-const MEDICAL_TPA_ROLE_TYPES = new Set(["MEDICAL_TPA_ERROR"]);
 
 type Status =
   | { kind: "missing-id" }
@@ -149,7 +142,7 @@ const RETAIL_QUICK_LINKS: QuickLinkItem[] = [
   { id: "audit-trail", label: "Audit Trail" },
 ];
 
-function RetailDrsRecordPage() {
+export function RetailDrsPage() {
   const navigate = useNavigate();
   const { applicationNo: applicationNoParam } = useParams();
   const applicationNo = applicationNoParam?.trim() ?? "";
@@ -230,26 +223,6 @@ function RetailDrsRecordPage() {
       />
     </Container>
   );
-}
-
-/**
- * Same URL as every Retail task (`/drs`). `roleType` from the inbox picks the screen.
- * MMT and MMT_TASK open the grievance DRS; MEDICAL_TPA_ERROR opens Medical TPA DRS;
- * every other role keeps the retail record page.
- */
-export function RetailDrsPage() {
-  const [params] = useSearchParams();
-  const roleType = params.get("roleType")?.trim().toUpperCase() ?? "";
-
-  if (MMT_ROLE_TYPES.has(roleType)) {
-    return <MmtGrievanceDrsPage />;
-  }
-
-  if (MEDICAL_TPA_ROLE_TYPES.has(roleType)) {
-    return <TpaDrsPage />;
-  }
-
-  return <RetailDrsRecordPage />;
 }
 
 export default RetailDrsPage;

@@ -10,9 +10,6 @@ import { RouteScrollReset } from "@insurance-poc/common/route-scroll-reset";
 import { AuthNavigation } from "../app/AuthNavigation";
 import { RetailDrsPage } from "../modules/drs/RetailDrsPage";
 import { RetailInboxPage } from "../modules/inbox/RetailInboxPage";
-import { MasDrsPage } from "../modules/mas/MasDrsPage";
-import { MmtGrievanceDrsPage } from "../modules/mmt-grievance/MmtGrievanceDrsPage";
-import { PivvDrsPage } from "../modules/pivv/PivvDrsPage";
 import { RetailPreviousPolicyPage } from "../modules/previousPolicy/RetailPreviousPolicyPage";
 import { RetailOpenTasksPage } from "../modules/openTasks/RetailOpenTasksPage";
 import { RetailAuditTrailPage } from "../modules/auditTrail/RetailAuditTrailPage";
@@ -36,10 +33,6 @@ export function AppRoutes() {
         >
           <Route index element={<Navigate to="/inbox" replace />} />
           <Route path="/inbox" element={<RetailInboxPage />} />
-          <Route path="/drs" element={<RetailDrsPage />} />
-          <Route path="/mas/drs" element={<MasDrsPage />} />
-          <Route path="/mmt-grievance/drs" element={<MmtGrievanceDrsPage />} />
-          <Route path="/pivv/drs" element={<PivvDrsPage />} />
           <Route path="/app/:applicationNo/drs" element={<RetailDrsPage />} />
           <Route path="/drs" element={<LegacyDrsRedirect />} />
           <Route path="/previous-policy" element={<RetailPreviousPolicyPage />} />

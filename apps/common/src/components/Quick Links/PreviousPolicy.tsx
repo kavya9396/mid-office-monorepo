@@ -23,31 +23,9 @@ type Policy = {
   riders: Row[];
 };
 
-export type PreviousPolicyRow = Row;
-
-export type PreviousPolicyMember = {
-  key: string;
-  label: string;
-  dedupe: Row[];
-  /** Each row carries `riderIndex` (its position in this list) so the rider dialog can find `riders`. */
-  ipru: Row[];
-  /** `riders[i]` belongs to `ipru[i]`. */
-  riders: Row[][];
-  /** IIB / Non IPRU rows (negative match columns included). */
-  iib: Row[];
-  applicationForm: Row[];
-};
-
-export type PreviousPolicyData = {
-  members: PreviousPolicyMember[];
-  familyPolicies: Row[];
-};
-
 export type PreviousPolicyProps = {
   /** Same role switch as the prototype: DVT_FORMAL_TASK hides "Details as per application form". */
   roleType?: string;
-  /** Members and family policies to show. Defaults to the prototype's static data. */
-  data?: PreviousPolicyData;
 };
 
 /* -------------------------------------------------------------------------- */
@@ -159,7 +137,6 @@ const FAMILY_POLICIES: Row[] = [
 
 const ipruRows = (memberKey: string): Row[] =>
   POLICIES.map((policy, index) => ({
-    riderIndex: index,
     clientId: `CID-${102841 + index * 73}`,
     applicationNo: `APP-2026-${String(10421 + index).padStart(5, "0")}`,
     policyNumber: policy.policyNumber,
@@ -176,19 +153,6 @@ const ipruRows = (memberKey: string): Row[] =>
     yearOfIssueApplication: `FY ${index % 2 ? "2023-24" : "2024-25"}`,
     fundValue: policy.fundValue,
   }));
-
-const DEFAULT_PREVIOUS_POLICY_DATA: PreviousPolicyData = {
-  members: MEMBERS.map((member) => ({
-    key: member.key,
-    label: member.label,
-    dedupe: DEDUPE_POSIDEX,
-    ipru: ipruRows(member.key),
-    riders: POLICIES.map((policy) => policy.riders),
-    iib: IIB_COMBINED,
-    applicationForm: APPLICATION_FORM,
-  })),
-  familyPolicies: FAMILY_POLICIES,
-};
 
 /* -------------------------------------------------------------------------- */
 /* Formatters                                                                 */
@@ -248,7 +212,7 @@ const DEDUPE_COLUMNS: Column<Row>[] = [
   col("riskIndicator", "Risk Indicator"),
 ];
 
-const IPRU_COLUMNS = (onShowRiders: (row: Row) => void): Column<Row>[] => [
+const IPRU_COLUMNS = (onShowRiders: (policyNumber: string) => void): Column<Row>[] => [
   {
     key: "riders",
     header: "Riders",
@@ -258,7 +222,7 @@ const IPRU_COLUMNS = (onShowRiders: (row: Row) => void): Column<Row>[] => [
         variant="outlined"
         aria-label="Show rider details"
         title="Show all rider details"
-        onClick={() => onShowRiders(row)}
+        onClick={() => onShowRiders(String(row.policyNumber))}
         sx={{ width: 30, minHeight: 28, p: 0.5, borderRadius: "6px" }}
       >
         <EyeIcon />
@@ -425,38 +389,37 @@ const PagedTable = ({ title, columns, rows, wide = false }: Readonly<PagedTableP
 /* Screen                                                                     */
 /* -------------------------------------------------------------------------- */
 
-export function PreviousPolicy({
-  roleType = "CUW_TASK",
-  data = DEFAULT_PREVIOUS_POLICY_DATA,
-}: Readonly<PreviousPolicyProps>) {
+export function PreviousPolicy({ roleType = "CUW_TASK" }: Readonly<PreviousPolicyProps>) {
   const [riderView, setRiderView] = useState<{ title: string; rows: Row[] } | null>(null);
   const showApplicationForm = roleType.trim().toUpperCase() !== "DVT_FORMAL_TASK";
 
-  const openRiders = (member: PreviousPolicyMember, ipruRow: Row) => {
-    const clientRole = member.key === "proposer" ? "Proposer" : "Life Assured";
-    const riders = member.riders[Number(ipruRow.riderIndex)] ?? [];
+  const openRiders = (memberKey: string, memberLabel: string, policyNumber: string) => {
+    const clientRole = memberKey === "proposer" ? "Proposer" : "Life Assured";
+    const policy = POLICIES.find((p) => p.policyNumber === policyNumber);
     setRiderView({
-      title: `Rider Details - ${member.label}`,
-      rows: riders.map((rider) => ({ clientRole, ...rider, policyNumber: ipruRow.policyNumber })),
+      title: `Rider Details - ${memberLabel}`,
+      rows: (policy?.riders ?? []).map((rider) => ({ ...rider, policyNumber, clientRole })),
     });
   };
 
   return (
     <div style={{ width: "100%", padding: "8px 0 32px", backgroundColor: background.default }}>
-      {data.members.map((member, memberIndex) => (
+      {MEMBERS.map((member) => (
         <div key={member.key} style={{ marginBottom: 16 }}>
           <CustomAccordion
             title={`Previous Policies - ${member.label}`}
             titleFontSize={12}
-            defaultExpanded={memberIndex === 0}
+            defaultExpanded={member.key === "lifeAssured1"}
           >
-            <PagedTable title="Dedupe - Posidex" columns={DEDUPE_COLUMNS} rows={member.dedupe} />
+            <PagedTable title="Dedupe - Posidex" columns={DEDUPE_COLUMNS} rows={DEDUPE_POSIDEX} />
 
             <div style={{ marginTop: 20 }}>
               <PagedTable
                 title="IPRU"
-                columns={IPRU_COLUMNS((ipruRow) => openRiders(member, ipruRow))}
-                rows={member.ipru}
+                columns={IPRU_COLUMNS((policyNumber) =>
+                  openRiders(member.key, member.label, policyNumber),
+                )}
+                rows={ipruRows(member.key)}
               />
             </div>
 
@@ -464,7 +427,7 @@ export function PreviousPolicy({
               <PagedTable
                 title="IIB / Non IPRU and Negative Match Details"
                 columns={IIB_COLUMNS}
-                rows={member.iib}
+                rows={IIB_COMBINED}
                 wide
               />
             </div>
@@ -474,7 +437,7 @@ export function PreviousPolicy({
                 <PagedTable
                   title="Details as per application form"
                   columns={APPLICATION_FORM_COLUMNS}
-                  rows={member.applicationForm}
+                  rows={APPLICATION_FORM}
                 />
               </div>
             )}
@@ -486,7 +449,7 @@ export function PreviousPolicy({
         <PagedTable
           title="Parents / Husbands / Siblings"
           columns={FAMILY_COLUMNS}
-          rows={data.familyPolicies}
+          rows={FAMILY_POLICIES}
         />
       </div>
 
