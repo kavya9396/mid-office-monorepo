@@ -1,48 +1,34 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import dayjs from "dayjs";
 import { Controller, useForm, type ControllerRenderProps } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Box, Typography } from "@mui/material";
 import { Calendar, CustomButton, CustomDialog, CustomSelect, CustomSnackbar, CustomTextField } from "@insurance-poc/ui";
 import { isNomineeBlank, NomineeDetails, type NomineeEditRow } from "./NomineeDetails";
 import { isRiderBlank, RiderDetails, type RiderEditRow } from "./RiderDetails";
-import { EMPTY_LOAN, LoanDetails, loanSchema, type LoanEditValues } from "./LoanDetails";
+import { EMPTY_LOAN, LoanDetails, type LoanEditValues } from "./LoanDetails";
+import {
+  buildNsdlNotice,
+  editFormSchema,
+  isPanValidated,
+  PAN_VALID_YES,
+  panFlagFromValidation,
+  nsdlSelectValues,
+  resetPanFlagOnChange,
+  type EditApplicantValues,
+  type EditFormValues,
+  type PanStatus,
+  type PanValidationInput,
+  type PanValidationResult,
+} from "./editApplicant.validation";
+import {
+  BLANK_NOMINEE_MESSAGE,
+  BLANK_RIDER_MESSAGE,
+  PAN_NOT_VALIDATED_MESSAGE,
+  PAN_VALIDATION_FAILED_MESSAGE,
+} from "./editApplicant.messages";
 
-export type { NomineeEditRow, RiderEditRow, LoanEditValues };
-
-const required = (label: string) => z.string().trim().min(1, `${label} is required`);
-
-// Required rules / messages copied from the DVT branch of the prototype validator (vhe)
-const editApplicantSchema = z.object({
-  dobDocument: required("DOB Document"),
-  genderDocument: required("Gender Document"),
-  pincodeDocument: required("Pincode Document"),
-  dob: required("Birthdate"),
-  gender: required("Gender"),
-  zipCode: required("Zip Code"),
-  mobileNo: required("Mobile No"),
-  immigrationStatus: required("Immigration Status"),
-  panNumber: required("PAN No"),
-  isPanValid: required("Is PAN Valid"),
-  aadharSeedingStatus: required("Aadhar Seeding Status"),
-  nsdlNameMatching: required("Is NSDL Name Matching"),
-  nsdlDobMatching: required("Is NSDL DOB Matching"),
-  nsdlTab: z.string(),
-  // All Edit Profile fields are mandatory
-  emailId: required("Email ID"),
-  height: required("Height"),
-  weight: required("Weight"),
-  lifestyleHabits: required("Lifestyle Habits"),
-  annualIncome: required("Annual Income"),
-  applicantStatus: required("Applicant Status"),
-});
-
-// Base & Loan Details live in the same form under `loan`
-const editFormSchema = editApplicantSchema.extend({ loan: loanSchema });
-
-export type EditApplicantValues = z.infer<typeof editApplicantSchema>;
-type EditFormValues = z.infer<typeof editFormSchema>;
+export type { NomineeEditRow, RiderEditRow, LoanEditValues, EditApplicantValues };
 
 export type EditSelectOption = { label: string; value: string };
 
@@ -62,6 +48,18 @@ export type EditApplicantDialogProps = {
   initialRiders?: RiderEditRow[];
   initialLoan?: LoanEditValues;
   options?: Partial<EditApplicantOptions>;
+  /**
+   * Validates the PAN with NSDL. When given, the NSDL button calls it, "Is PAN Valid?" is set only by its
+   * result, and Save is refused until the PAN is validated. It must not reject: report failures in the result.
+   */
+  onValidatePan?: (input: PanValidationInput) => Promise<PanValidationResult>;
+  /**
+   * PAN, Birthdate and flag remembered by the app from the last NSDL validation. Applied each time the dialog
+   * opens, so the state survives closing and reopening. Changing it while the dialog is open does not reset the form.
+   */
+  panStatus?: PanStatus;
+  /** Fires when the PAN flag changes (NSDL result, or PAN No / Birthdate edited after a successful validation). */
+  onPanStatusChange?: (status: PanStatus) => void;
   onSave: (
     values: EditApplicantValues,
     nominees: NomineeEditRow[],
@@ -128,6 +126,14 @@ const AUDIT_FIELDS: FieldConfig[] = [
   { name: "nsdlDobMatching", label: "Is NSDL DOB Matching?", select: "yesNo" },
 ];
 
+// Filled only from the NSDL API response; disabled once the app supplies onValidatePan
+const READ_ONLY_API_FIELDS: ReadonlyArray<string> = [
+  "isPanValid",
+  "aadharSeedingStatus",
+  "nsdlNameMatching",
+  "nsdlDobMatching",
+];
+
 const PROFILE_FIELDS: FieldConfig[] = [
   { name: "emailId", label: "Email ID" },
   { name: "height", label: "Height" },
@@ -160,16 +166,27 @@ export function EditApplicantDialog({
   initialRiders,
   initialLoan,
   options,
+  onValidatePan,
+  panStatus,
+  onPanStatusChange,
   onSave,
 }: Readonly<EditApplicantDialogProps>) {
+  const panStatusRef = useRef(panStatus);
+  panStatusRef.current = panStatus;
+  const onValidatePanRef = useRef(onValidatePan);
+  onValidatePanRef.current = onValidatePan;
   const [nominees, setNominees] = useState<NomineeEditRow[]>([]);
   const [riders, setRiders] = useState<RiderEditRow[]>([]);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<{ message: string; severity: "error" | "success" } | null>(null);
+  const [validatingPan, setValidatingPan] = useState(false);
+  const notifyError = (message: string) => setNotice({ message, severity: "error" });
   const {
     control,
     handleSubmit,
     reset,
     setValue,
+    getValues,
+    trigger,
     formState: { errors },
   } = useForm<EditFormValues>({
     resolver: zodResolver(editFormSchema),
@@ -178,23 +195,92 @@ export function EditApplicantDialog({
 
   useEffect(() => {
     if (open) {
-      reset({ ...EMPTY_VALUES, ...initialValues, loan: initialLoan ?? EMPTY_LOAN });
+      const status = panStatusRef.current;
+      reset({
+        ...EMPTY_VALUES,
+        ...initialValues,
+        ...(onValidatePanRef.current
+          ? {
+              // Only the last NSDL response may fill these; values from initialValues are dropped.
+              nsdlNameMatching: status?.nsdlNameMatching ?? "",
+              nsdlDobMatching: status?.nsdlDobMatching ?? "",
+              aadharSeedingStatus: status?.aadharSeedingStatus ?? "",
+            }
+          : {}),
+        ...status,
+        loan: initialLoan ?? EMPTY_LOAN,
+      });
       setNominees(initialNominees ?? []);
       setRiders(initialRiders ?? []);
     }
   }, [open, initialValues, initialNominees, initialRiders, initialLoan, reset]);
 
-  const handleSave = handleSubmit(({ loan, ...values }) => {
+  const submit = handleSubmit(({ loan, ...values }) => {
     if (nominees.some((nominee) => isNomineeBlank(nominee))) {
-      setNotice("Blank nominee values cannot be added. Please complete or delete the nominee row.");
+      notifyError(BLANK_NOMINEE_MESSAGE);
       return;
     }
     if (riders.some((rider) => isRiderBlank(rider))) {
-      setNotice("Blank rider values cannot be added. Please complete or delete the rider row.");
+      notifyError(BLANK_RIDER_MESSAGE);
       return;
     }
     onSave(values, nominees, riders, loan);
   });
+
+  const handleSave = () => {
+    if (onValidatePan && !isPanValidated(getValues("isPanValid"))) {
+      notifyError(PAN_NOT_VALIDATED_MESSAGE);
+      return;
+    }
+    return submit();
+  };
+
+  // Editing PAN No or Birthdate after a successful validation sends the flag back to NO (nsdl-pan-validate.md, Q10).
+  // The app is told about every such edit once it holds a status, so it can drop a "PAN invalid" block.
+  const resetPanFlagIfEdited = (next: { panNumber: string; dob: string }) => {
+    if (!onValidatePan) return;
+    const current = getValues();
+    const flag = current.isPanValid === PAN_VALID_YES ? resetPanFlagOnChange(current, next) : current.isPanValid;
+    if (flag !== current.isPanValid) setValue("isPanValid", flag);
+    const known = panStatusRef.current;
+    if (known && (known.panNumber !== next.panNumber || known.dob !== next.dob)) {
+      onPanStatusChange?.({
+        ...next,
+        isPanValid: flag,
+        nsdlNameMatching: current.nsdlNameMatching,
+        nsdlDobMatching: current.nsdlDobMatching,
+        aadharSeedingStatus: current.aadharSeedingStatus,
+      });
+    }
+  };
+
+  const handleNsdl = async () => {
+    if (!onValidatePan) {
+      setValue("nsdlTab", "Y");
+      return;
+    }
+    if (!(await trigger(["panNumber", "dob"]))) return;
+    const { panNumber, dob } = getValues();
+    setValidatingPan(true);
+    try {
+      const result = await onValidatePan({ panNumber, dob });
+      // The three NSDL selects follow the response; data that is not available gives NO (add-on #17).
+      const matched = nsdlSelectValues(result.matches);
+      setValue("nsdlNameMatching", matched.nsdlNameMatching);
+      setValue("nsdlDobMatching", matched.nsdlDobMatching);
+      setValue("aadharSeedingStatus", matched.aadharSeedingStatus);
+      if (result.panValid !== undefined) {
+        const flag = panFlagFromValidation(result.panValid);
+        setValue("isPanValid", flag);
+        onPanStatusChange?.({ panNumber, dob, isPanValid: flag, ...matched });
+      }
+      const apiMessage = result.message.trim() || (result.panValid === true ? "" : PAN_VALIDATION_FAILED_MESSAGE);
+      const text = buildNsdlNotice(apiMessage, result.raisePendcode);
+      if (text) setNotice({ message: text, severity: result.panValid === true ? "success" : "error" });
+    } finally {
+      setValidatingPan(false);
+    }
+  };
 
   const optionsFor = (select: NonNullable<FieldConfig["select"]>) => {
     switch (select) {
@@ -218,7 +304,11 @@ export function EditApplicantDialog({
         <Calendar
           label={field.label}
           value={controlled.value ? dayjs(controlled.value) : null}
-          onChange={(date) => controlled.onChange(date?.isValid() ? date.format("YYYY-MM-DD") : "")}
+          onChange={(date) => {
+            const value = date?.isValid() ? date.format("YYYY-MM-DD") : "";
+            if (field.name === "dob") resetPanFlagIfEdited({ panNumber: getValues("panNumber"), dob: value });
+            controlled.onChange(value);
+          }}
           disableTodayAndFuture={false}
           maxDate={dayjs()}
           error={error}
@@ -234,6 +324,7 @@ export function EditApplicantDialog({
           value={controlled.value}
           onChange={controlled.onChange}
           options={optionsFor(field.select)}
+          disabled={Boolean(onValidatePan) && READ_ONLY_API_FIELDS.includes(field.name)}
           error={error}
           helperText={helperText}
         />
@@ -244,7 +335,11 @@ export function EditApplicantDialog({
       <CustomTextField
         labelText={field.label}
         value={controlled.value}
-        onChange={(e) => controlled.onChange(sanitize(field, e.target.value))}
+        onChange={(e) => {
+          const value = sanitize(field, e.target.value);
+          if (field.name === "panNumber") resetPanFlagIfEdited({ panNumber: value, dob: getValues("dob") });
+          controlled.onChange(value);
+        }}
         onBlur={controlled.onBlur}
         error={error}
         helperText={helperText}
@@ -292,7 +387,8 @@ export function EditApplicantDialog({
             <CustomButton
               type="button"
               variant="outlined"
-              onClick={() => setValue("nsdlTab", "Y")}
+              onClick={handleNsdl}
+              disabled={validatingPan}
               // sx={{ minWidth: 64, height: 36 }}
             >
               NSDL
@@ -307,11 +403,11 @@ export function EditApplicantDialog({
 
         <Box sx={{ my: 2, borderTop: "1px solid rgba(0, 0, 0, 0.12)" }} />
 
-        <NomineeDetails nominees={nominees} onChange={setNominees} onNotify={setNotice} />
+        <NomineeDetails nominees={nominees} onChange={setNominees} onNotify={notifyError} />
 
         <Box sx={{ my: 2, borderTop: "1px solid rgba(0, 0, 0, 0.12)" }} />
 
-        <RiderDetails riders={riders} onChange={setRiders} onNotify={setNotice} />
+        <RiderDetails riders={riders} onChange={setRiders} onNotify={notifyError} />
 
         <Box sx={{ my: 2, borderTop: "1px solid rgba(0, 0, 0, 0.12)" }} />
 
@@ -324,8 +420,8 @@ export function EditApplicantDialog({
 
       <CustomSnackbar
         open={Boolean(notice)}
-        message={notice ?? ""}
-        severity="error"
+        message={notice?.message ?? ""}
+        severity={notice?.severity ?? "error"}
         onClose={() => setNotice(null)}
       />
     </CustomDialog>

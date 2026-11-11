@@ -5,6 +5,7 @@ import { groupDrsApi } from "../services/drsApi";
 import { groupFinancialApi } from "../services/financialApi";
 import { groupCompleteTaskApi } from "../services/completeTaskApi";
 import { groupInboxApi } from "../services/inboxApi";
+import { groupNsdlApi } from "../services/nsdlApi";
 
 const listenerMiddleware = createListenerMiddleware();
 
@@ -15,6 +16,7 @@ listenerMiddleware.startListening({
     listenerApi.dispatch(groupDrsApi.util.resetApiState());
     listenerApi.dispatch(groupFinancialApi.util.resetApiState());
     listenerApi.dispatch(groupCompleteTaskApi.util.resetApiState());
+    listenerApi.dispatch(groupNsdlApi.util.resetApiState());
   },
 });
 
@@ -26,6 +28,7 @@ export const store = configureStore({
     [groupDrsApi.reducerPath]: groupDrsApi.reducer,
     [groupFinancialApi.reducerPath]: groupFinancialApi.reducer,
     [groupCompleteTaskApi.reducerPath]: groupCompleteTaskApi.reducer,
+    [groupNsdlApi.reducerPath]: groupNsdlApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
@@ -36,6 +39,7 @@ export const store = configureStore({
         groupDrsApi.middleware,
         groupFinancialApi.middleware,
         groupCompleteTaskApi.middleware,
+        groupNsdlApi.middleware,
       ),
 });
 

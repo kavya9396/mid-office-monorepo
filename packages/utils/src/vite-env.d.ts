@@ -27,6 +27,8 @@ interface ImportMetaEnv {
   readonly VITE_FINANCE_SERVICE?: string;
   readonly VITE_GROUP_FINANCIAL_FETCH_API?: string;
   readonly VITE_GROUP_FINANCIAL_SAVE_API?: string;
+  readonly VITE_EXTERNAL_EVENT_SERVICE?: string;
+  readonly VITE_NSDL_PAN_VALIDATE_API?: string;
 }
 
 interface ImportMeta {

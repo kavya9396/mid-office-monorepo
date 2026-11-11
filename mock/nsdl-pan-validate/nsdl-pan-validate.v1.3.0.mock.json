@@ -1,0 +1,18 @@
+{
+  "error": false,
+  "message": "Existing and Valid PAN",
+  "data": {
+    "panValidation": {
+      "aadharSeedingStatus": "Y",
+      "dob": "N",
+      "fathername": {},
+      "name": "Y",
+      "pan": "ACBPJ4468N",
+      "responseCode": "1: Success",
+      "validity": "Existing and Valid PAN "
+    }
+  },
+  "pan_validation": true,
+  "event_name": "NSDL",
+  "response_code": 200
+}

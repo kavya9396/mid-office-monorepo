@@ -14,6 +14,7 @@ import {
   TickIcon,
   type Column,
 } from "@insurance-poc/ui";
+import { FILL_ALL_NOMINEE_FIELDS_MESSAGE } from "./editApplicant.messages";
 
 export type NomineeEditRow = {
   firstName: string;
@@ -95,7 +96,7 @@ export function NomineeDetails({ nominees, onChange, onNotify }: Readonly<Nomine
   const saveEdit = () => {
     if (editingIndex === null) return;
     if (isNomineeBlank(draft)) {
-      onNotify("Please fill all nominee fields before saving");
+      onNotify(FILL_ALL_NOMINEE_FIELDS_MESSAGE);
       return;
     }
     onChange(nominees.map((nominee, index) => (index === editingIndex ? { ...draft } : nominee)));

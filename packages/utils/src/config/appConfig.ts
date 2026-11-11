@@ -96,5 +96,12 @@ export const groupBusinessUrls = {
   },
 };
 
+/** NSDL external-event-service URLs from .env. Empty when unset — mock mode skips them. */
+export const nsdlUrls = {
+  get panValidate(): string {
+    return configuredUrl(import.meta.env.VITE_NSDL_PAN_VALIDATE_API);
+  },
+};
+
 /** RTK base URL when each request uses a full URL from `landingUrls` or `authUrls`. */
 export const absoluteApiBaseUrl = "";

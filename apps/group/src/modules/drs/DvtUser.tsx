@@ -12,7 +12,15 @@ import {
 } from "@insurance-poc/common/decision-bar";
 import { DetailCard } from "@insurance-poc/common/detail-card";
 import { DecisionSection, type DecisionSubmitPayload } from "@insurance-poc/common/decision-section";
-import { LifeAssured } from "@insurance-poc/common/life-assured";
+import {
+  hasPendingPanPendcode,
+  LifeAssured,
+  PAN_INVALID_SUBMIT_BLOCKED_MESSAGE,
+  type LifeAssuredApplicant,
+  type PanStatus,
+  type PanValidationInput,
+  type PanValidationResult,
+} from "@insurance-poc/common/life-assured";
 import { Financial } from "@insurance-poc/common/financial";
 import { Medical } from "@insurance-poc/common/medical";
 import { RequirementMgmt } from "@insurance-poc/common/requirement-mgmt";
@@ -30,6 +38,8 @@ import {
   useSaveGroupFinancialMutation,
 } from "../../services/financialApi";
 import type { CardType } from "../../services/drsService";
+import { useValidateNsdlPanMutation } from "../../services/nsdlApi";
+import { createNsdlPanValidateRequest, resolveNsdlOutcome } from "../../services/nsdlService";
 import { GROUP_QUICK_LINKS_CONFIG } from "../config/quickLinks.config";
 
 const CARD_TITLES: Record<CardType, string> = {
@@ -67,6 +77,11 @@ const BRE_DIFF_BY_ROW_ID: Record<string, ComparisonRow["diff"]> = {
   discrepancy: "tokens",
 };
 
+const readApplicantName = (applicant: LifeAssuredApplicant | undefined): string => {
+  const value = applicant?.personalFields.find((field) => field.label === "Applicant Name")?.value;
+  return value === null || value === undefined ? "" : String(value);
+};
+
 const DvtUser = () => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -101,6 +116,62 @@ const DvtUser = () => {
   const [decision, setDecision] = useState("");
   const [remarks, setRemarks] = useState("");
   const [completeGroupTask, completeGroupTaskState] = useCompleteGroupTaskMutation();
+  const [validateNsdlPan] = useValidateNsdlPanMutation();
+  // Last NSDL result per applicant; kept here so it survives closing the dialog and the submit step can read it.
+  const [panStatusByApplicant, setPanStatusByApplicant] = useState<Record<string, PanStatus>>({});
+  // Applicants whose PAN NSDL found invalid (API ok, pan_validation false). Any of them blocks case submission.
+  // Cleared when that applicant's PAN or Birthdate changes, or when a later validation succeeds.
+  const [invalidPanByApplicant, setInvalidPanByApplicant] = useState<Record<string, PanValidationInput>>({});
+  const [panBlockedNoticeOpen, setPanBlockedNoticeOpen] = useState(false);
+  const handlePanStatusChange = (applicantId: string, status: PanStatus) => {
+    setPanStatusByApplicant((current) => ({ ...current, [applicantId]: status }));
+    setInvalidPanByApplicant((current) => {
+      const invalid = current[applicantId];
+      if (!invalid || (invalid.panNumber === status.panNumber && invalid.dob === status.dob)) return current;
+      const { [applicantId]: _removed, ...rest } = current;
+      return rest;
+    });
+  };
+  const handleValidatePan = async (
+    applicantId: string,
+    input: PanValidationInput,
+  ): Promise<PanValidationResult> => {
+    const applicant = applicants.find((item) => item.id === applicantId);
+    const request = createNsdlPanValidateRequest({
+      applicationNumber: applicationNo,
+      pan: input.panNumber,
+      name: readApplicantName(applicant),
+      dob: input.dob,
+      fatherName: "",
+    });
+    const pendingPanPendcode = hasPendingPanPendcode(drs.data?.requirements ?? []);
+    const response = await validateNsdlPan(request);
+    // A failed call is an API error: the message is the API's, or the error text.
+    const result =
+      "data" in response && response.data
+        ? response.data
+        : {
+            apiSuccess: false,
+            panValid: false,
+            message: readApiErrorMessage(response.error),
+            matches: { nameMatching: false, dobMatching: false, aadharSeeding: false },
+          };
+    const outcome = resolveNsdlOutcome(result, pendingPanPendcode);
+    if (outcome === "blocked") {
+      setInvalidPanByApplicant((current) => ({ ...current, [applicantId]: input }));
+    } else if (outcome !== "apiErrorShowMessage") {
+      setInvalidPanByApplicant((current) => {
+        const { [applicantId]: _removed, ...rest } = current;
+        return rest;
+      });
+    }
+    return {
+      message: result.message,
+      matches: result.matches,
+      panValid: outcome === "apiErrorShowMessage" ? undefined : outcome === "success",
+      raisePendcode: outcome === "apiErrorRaisePendcode",
+    };
+  };
   const openFinancial = (applicantId: string) => {
     const next = new URLSearchParams(params);
     next.set(APPLICANT_ID_PARAM, applicantId);
@@ -134,6 +205,10 @@ const DvtUser = () => {
   const handleApplicantAction = (action: string) => (applicantId: string) =>
     console.log(`${action} clicked`, applicantId);
   const handleDecisionSubmit = async (payload: DecisionSubmitPayload) => {
+    if (Object.keys(invalidPanByApplicant).length > 0) {
+      setPanBlockedNoticeOpen(true);
+      return;
+    }
     const appNo = applicationNo.trim();
     if (appNo.length === 0) {
       setSnackbarMessage("Application number is missing.");
@@ -261,6 +336,14 @@ const DvtUser = () => {
         onClose={() => setSnackbarMessage(null)}
       />
 
+      <CustomSnackbar
+        open={panBlockedNoticeOpen}
+        message={PAN_INVALID_SUBMIT_BLOCKED_MESSAGE}
+        severity="error"
+        autoHideDuration={8000}
+        onClose={() => setPanBlockedNoticeOpen(false)}
+      />
+
       <DecisionBar
         title="BRE Decision"
         items={[
@@ -307,6 +390,9 @@ const DvtUser = () => {
         onEdit={handleApplicantAction("Edit")}
         onViewMedical={openMedical}
         onViewFinancial={openFinancial}
+        onValidatePan={handleValidatePan}
+        panStatusByApplicant={panStatusByApplicant}
+        onPanStatusChange={handlePanStatusChange}
       />
 
       <DecisionSection
