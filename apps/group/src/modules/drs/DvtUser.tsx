@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { drsRoutePath } from "@insurance-poc/routes";
 import { clearDrsTaskIds, formatDateTime, readApiErrorMessage } from "@insurance-poc/utils";
@@ -23,6 +23,7 @@ import {
   requirementStatusOrder,
   requirementStatusVariants,
 } from "./requirementData";
+import { useRetriggerGroupBreMutation } from "../../services/breRetriggerApi";
 import { useCompleteGroupTaskMutation } from "../../services/completeTaskApi";
 import { useGetGroupDrsQuery } from "../../services/drsApi";
 import {
@@ -67,6 +68,10 @@ const BRE_DIFF_BY_ROW_ID: Record<string, ComparisonRow["diff"]> = {
   discrepancy: "tokens",
 };
 
+type BreRetriggerFinalOverrides = Partial<
+  Record<"status" | "decision" | "remarks" | "discrepancy" | "timestamp", string>
+>;
+
 const DvtUser = () => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -101,6 +106,15 @@ const DvtUser = () => {
   const [decision, setDecision] = useState("");
   const [remarks, setRemarks] = useState("");
   const [completeGroupTask, completeGroupTaskState] = useCompleteGroupTaskMutation();
+  const [retriggerGroupBre, retriggerGroupBreState] = useRetriggerGroupBreMutation();
+  const [breRetriggerFinals, setBreRetriggerFinals] = useState<BreRetriggerFinalOverrides>({});
+  const [breRetriggerBarDecision, setBreRetriggerBarDecision] = useState<string | null>(null);
+
+  useEffect(() => {
+    setBreRetriggerFinals({});
+    setBreRetriggerBarDecision(null);
+  }, [applicationNo]);
+
   const openFinancial = (applicantId: string) => {
     const next = new URLSearchParams(params);
     next.set(APPLICANT_ID_PARAM, applicantId);
@@ -130,7 +144,24 @@ const DvtUser = () => {
     navigate({ pathname: financialPath, search: `?${next.toString()}` }, { replace: true });
   };
 
-  const handleBreRetrigger = () => console.log("BRE Retrigger clicked");
+  const handleBreRetrigger = async () => {
+    const appNo = applicationNo.trim();
+    if (appNo.length === 0) {
+      setSnackbarMessage("Application number is missing.");
+      return;
+    }
+    if (retriggerGroupBreState.isLoading) return;
+
+    try {
+      const mapped = await retriggerGroupBre({ applicationNumber: appNo }).unwrap();
+      setBreRetriggerBarDecision(mapped.barDecision);
+      setBreRetriggerFinals(mapped.rows);
+    } catch (reason: unknown) {
+      setBreRetriggerFinals((previous) => ({ ...previous, status: "" }));
+      const message = readApiErrorMessage(reason);
+      setSnackbarMessage(message.length > 0 ? message : "Unable to retrigger BRE.");
+    }
+  };
   const handleApplicantAction = (action: string) => (applicantId: string) =>
     console.log(`${action} clicked`, applicantId);
   const handleDecisionSubmit = async (payload: DecisionSubmitPayload) => {
@@ -228,12 +259,22 @@ const DvtUser = () => {
     );
   }
 
-  const breRows: ComparisonRow[] = breDecision.rows.map((row) => ({
-    label: row.label,
-    initial: row.id === "timestamp" ? formatDateTime(row.initial) : row.initial,
-    final: row.id === "timestamp" ? formatDateTime(row.final) : row.final,
-    diff: BRE_DIFF_BY_ROW_ID[row.id],
-  }));
+  const readBreRowFinal = (rowId: string, defaultFinal: string): string => {
+    if (Object.hasOwn(breRetriggerFinals, rowId)) {
+      return breRetriggerFinals[rowId as keyof BreRetriggerFinalOverrides] ?? "";
+    }
+    return defaultFinal;
+  };
+
+  const breRows: ComparisonRow[] = breDecision.rows.map((row) => {
+    const finalRaw = readBreRowFinal(row.id, row.final);
+    return {
+      label: row.label,
+      initial: row.id === "timestamp" ? formatDateTime(row.initial) : row.initial,
+      final: row.id === "timestamp" ? formatDateTime(finalRaw) : finalRaw,
+      diff: BRE_DIFF_BY_ROW_ID[row.id],
+    };
+  });
 
   return (
     <Box sx={{ position: "relative", minHeight: "100%", p:2, display: "flex", gap:2, flexDirection: "column" }}>
@@ -265,7 +306,7 @@ const DvtUser = () => {
         title="BRE Decision"
         items={[
           { label: "Initial", value: breDecision.initialDecision },
-          { label: "Final", value: breDecision.decision, tone: "success" },
+          { label: "Final", value: breRetriggerBarDecision ?? breDecision.decision, tone: "success" },
         ]}
         onRefresh={handleBreRetrigger}
         refreshLabel="BRE Retrigger"

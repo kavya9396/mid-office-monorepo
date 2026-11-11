@@ -1,0 +1,27 @@
+{
+  "data": {
+    "breOutput": {
+      "systemDecision": "Non-STP",
+      "decisionTypes": {
+        "breDecision": "FR",
+        "breAction": "Financial Requirement",
+        "breRequirement": "GCD",
+        "stpCaseDecision": "Non-STP"
+      },
+      "requirements": [
+        {
+          "requirementType": "GCD",
+          "requirementValue": "GCD",
+          "ruleId": "",
+          "ruleName": "Credit_Assure_198",
+          "isSTP": false,
+          "metaphorName": ""
+        }
+      ],
+      "systemDecisionDateTime": "2026-11-07T10:22:45Z",
+      "reTriggerCount": 0,
+      "errorResp": "",
+      "breRemarks": "Financially Not Eligible.#TSA gt 20lakhs height weight value blank received#Single Pay Policy"
+    }
+  }
+}
