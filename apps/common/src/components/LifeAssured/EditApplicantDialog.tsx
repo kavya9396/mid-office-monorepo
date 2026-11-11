@@ -46,10 +46,16 @@ type EditFormValues = z.infer<typeof editFormSchema>;
 
 export type EditSelectOption = { label: string; value: string };
 
-/** Dropdown sources. In the prototype these come from the masterData API (gender, id_proof_type, resident_status). */
+/**
+ * Dropdown sources from the masterData API: gender, resident_status and the `misc` list filtered by
+ * type (AGE -> DOB Document, IDENTITY -> Gender Document, ADDRESS -> Pincode Document, YESNO -> Yes/No fields).
+ */
 export type EditApplicantOptions = {
   gender: EditSelectOption[];
-  idProofType: EditSelectOption[];
+  yesNo: EditSelectOption[];
+  dobDocument: EditSelectOption[];
+  genderDocument: EditSelectOption[];
+  pincodeDocument: EditSelectOption[];
   residentStatus: EditSelectOption[];
 };
 
@@ -75,17 +81,11 @@ type FieldName = keyof EditApplicantValues;
 type FieldConfig = {
   name: FieldName;
   label: string;
-  select?: "gender" | "idProofType" | "residentStatus" | "yesNo";
+  select?: "gender" | "dobDocument" | "genderDocument" | "pincodeDocument" | "residentStatus" | "yesNo";
   type?: "date";
   maxLength?: number;
   numeric?: boolean;
 };
-
-// Prototype C$ list: codes YES / NO
-const YES_NO_OPTIONS: EditSelectOption[] = [
-  { label: "Yes", value: "YES" },
-  { label: "No", value: "NO" },
-];
 
 const EMPTY_VALUES: EditFormValues = {
   dobDocument: "",
@@ -113,9 +113,9 @@ const EMPTY_VALUES: EditFormValues = {
 
 // Same order as the prototype's "Audit Fields" grid (the NSDL button follows nsdlDobMatching)
 const AUDIT_FIELDS: FieldConfig[] = [
-  { name: "dobDocument", label: "DOB Document", select: "idProofType" },
-  { name: "genderDocument", label: "Gender Document", select: "idProofType" },
-  { name: "pincodeDocument", label: "Pincode Document", select: "idProofType" },
+  { name: "dobDocument", label: "DOB Document", select: "dobDocument" },
+  { name: "genderDocument", label: "Gender Document", select: "genderDocument" },
+  { name: "pincodeDocument", label: "Pincode Document", select: "pincodeDocument" },
   { name: "dob", label: "Birthdate", type: "date" },
   { name: "gender", label: "Gender", select: "gender" },
   { name: "zipCode", label: "Zip Code", maxLength: 6, numeric: true },
@@ -200,12 +200,16 @@ export function EditApplicantDialog({
     switch (select) {
       case "gender":
         return options?.gender ?? [];
-      case "idProofType":
-        return options?.idProofType ?? [];
+      case "dobDocument":
+        return options?.dobDocument ?? [];
+      case "genderDocument":
+        return options?.genderDocument ?? [];
+      case "pincodeDocument":
+        return options?.pincodeDocument ?? [];
       case "residentStatus":
         return options?.residentStatus ?? [];
       case "yesNo":
-        return YES_NO_OPTIONS;
+        return options?.yesNo ?? [];
     }
   };
 

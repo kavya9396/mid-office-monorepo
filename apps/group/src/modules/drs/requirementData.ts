@@ -1,7 +1,4 @@
-import type {
-  RequirementItem,
-  RequirementStatusOption,
-} from "@insurance-poc/common/requirement-mgmt";
+import type { RequirementItem } from "@insurance-poc/common/requirement-mgmt";
 
 // Same normalisation as the prototype: anything that is not Pending / Waived is Accept.
 const normaliseStatus = (status: string) => {
@@ -22,12 +19,6 @@ export function mapRequirements(rawRequirements: RawRequirement[]): RequirementI
     status: normaliseStatus(rest.status),
   }));
 }
-
-export const requirementStatusOptions: RequirementStatusOption[] = [
-  { label: "Pending", value: "Pending" },
-  { label: "Accept", value: "Accept" },
-  { label: "Waived", value: "Waived" },
-];
 
 export const requirementStatusOrder = ["Accept", "Reject", "Cancelled", "Waived", "Received", "Pending"];
 

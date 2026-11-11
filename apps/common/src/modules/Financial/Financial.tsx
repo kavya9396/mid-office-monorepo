@@ -27,20 +27,22 @@ import {
   type Column,
 } from "@insurance-poc/ui";
 import {
+  buildFinancialMonthOptions,
   buildFinancialYesNoOptions,
   FINANCIAL_DATE_FORMAT,
   FINANCIAL_DECISION_OPTIONS,
   FINANCIAL_DEFAULT_APPLICANTS,
-  FINANCIAL_EDIT_ONLY_SECTION_KEYS,
   FINANCIAL_LOCKED_FIELDS,
   FINANCIAL_MESSAGES,
-  FINANCIAL_MONTH_OPTIONS,
   FINANCIAL_MONTHLY_INCOME_LAYOUTS,
   FINANCIAL_NON_REVIEWABLE_SECTION_KEYS,
   FINANCIAL_SECTIONS,
   FINANCIAL_STATEMENT_LAYOUTS,
   FINANCIAL_TABLE_LAYOUTS,
+  resolveFinancialActionMode,
   resolveFinancialControlKind,
+  type FinancialActionMode,
+  type FinancialActionsConfig,
   type FinancialApplicantTab,
   type FinancialControlKind,
   type FinancialLabelRef,
@@ -63,7 +65,7 @@ import {
 export * from "./financial.config";
 export * from "./financialSavePayload";
 
-type ReviewDecision = "agree" | "disagree";
+type ReviewDecision = "agree";
 
 export interface FinancialProps {
   applicationNumber?: string;
@@ -76,6 +78,8 @@ export interface FinancialProps {
   initialApplicantKey?: string;
   /** Sections to render; defaults to the DVT financial configuration. */
   sections?: readonly FinancialSection[];
+  /** Which buttons each section shows (Edit / Reset / Save, Agree or none). */
+  actions?: FinancialActionsConfig;
   onApplicantChange?: (applicantKey: string) => void;
   onBack?: () => void;
   onViewDocuments?: () => void;
@@ -215,7 +219,7 @@ const createFinancialStore = (
 };
 
 const StoreContext = createContext<FinancialStore | null>(null);
-/** Whether the section that owns a field is currently editable (after "Disagree"). */
+/** Whether the section that owns a field is currently editable (after "Edit"). */
 const EditingContext = createContext(false);
 
 function useFinancialStore(): FinancialStore {
@@ -543,8 +547,6 @@ const reviewButtonSx = (
 
 const AGREE_SX = reviewButtonSx("#027A48", "#05603A", false);
 const AGREE_SELECTED_SX = reviewButtonSx("#027A48", "#05603A", true);
-const DISAGREE_SX = reviewButtonSx("#B42318", "#912018", false);
-const DISAGREE_SELECTED_SX = reviewButtonSx("#B42318", "#912018", true);
 
 const NAV_SX = {
   width: "100%",
@@ -634,6 +636,12 @@ const FinancialControl = memo(function FinancialControl({
   const store = useFinancialStore();
   const value = useFieldValue(id);
   const error = useFieldError(id);
+  // Master lists are read from session storage, so resolve them once per kind / value.
+  const selectOptions = useMemo(() => {
+    if (kind === "decision") return FINANCIAL_DECISION_OPTIONS;
+    if (kind === "month") return buildFinancialMonthOptions();
+    return buildFinancialYesNoOptions(value);
+  }, [kind, value]);
   const onChange = useCallback(
     (next: string) => {
       store.set(id, next);
@@ -662,13 +670,10 @@ const FinancialControl = memo(function FinancialControl({
   }
 
   if (kind === "decision" || kind === "yesNo" || kind === "month") {
-    let options = buildFinancialYesNoOptions(value);
-    if (kind === "decision") options = FINANCIAL_DECISION_OPTIONS;
-    if (kind === "month") options = FINANCIAL_MONTH_OPTIONS;
     return (
       <Box sx={EDITABLE_CONTROL_SX} data-field={id}>
         <CustomSelect
-          options={options}
+          options={selectOptions}
           value={value}
           placeholder={selectPlaceholder(kind)}
           onChange={onChange}
@@ -1154,6 +1159,7 @@ const SectionBody = memo(function SectionBody({
 
 interface SectionCardProps {
   section: FinancialSection;
+  mode: FinancialActionMode;
   editing: boolean;
   review?: ReviewDecision;
   onReview: (sectionKey: string, decision: ReviewDecision) => void;
@@ -1165,6 +1171,7 @@ interface SectionCardProps {
 
 const SectionCard = memo(function SectionCard({
   section,
+  mode,
   editing,
   review,
   onReview,
@@ -1173,10 +1180,8 @@ const SectionCard = memo(function SectionCard({
   onReset,
   registerRef,
 }: Readonly<SectionCardProps>) {
-  const hasReviewActions = !FINANCIAL_NON_REVIEWABLE_SECTION_KEYS.includes(
-    section.key,
-  );
-  const hasEditActions = FINANCIAL_EDIT_ONLY_SECTION_KEYS.includes(section.key);
+  const hasReviewActions = mode === "review" || mode === "editAndReview";
+  const hasEditActions = mode === "edit" || mode === "editAndReview";
   const setRef = useCallback(
     (element: HTMLElement | null) => registerRef(section.key, element),
     [registerRef, section.key],
@@ -1195,7 +1200,7 @@ const SectionCard = memo(function SectionCard({
           <Box component="h3" sx={CARD_TITLE_SX}>
             {section.title}
           </Box>
-          {(hasReviewActions || hasEditActions) && (
+          {hasEditActions && (
             <Box sx={CARD_HEAD_ACTIONS_SX}>
               {editing ? (
                 <>
@@ -1241,14 +1246,6 @@ const SectionCard = memo(function SectionCard({
               sx={review === "agree" ? AGREE_SELECTED_SX : AGREE_SX}
             >
               Agree
-            </CustomButton>
-            <CustomButton
-              variant="outlined"
-              aria-pressed={review === "disagree"}
-              onClick={() => onReview(section.key, "disagree")}
-              sx={review === "disagree" ? DISAGREE_SELECTED_SX : DISAGREE_SX}
-            >
-              Disagree
             </CustomButton>
           </Box>
         )}
@@ -1303,12 +1300,22 @@ export function Financial({
   summary,
   applicants = FINANCIAL_DEFAULT_APPLICANTS,
   initialApplicantKey,
-  sections = FINANCIAL_SECTIONS,
+  sections: allSections = FINANCIAL_SECTIONS,
+  actions,
   onApplicantChange,
   onViewDocuments,
   onSaveSection,
   onSubmit,
 }: Readonly<FinancialProps>) {
+  // Sections listed in `actions.hiddenSectionKeys` are dropped even when the API returns them.
+  const hiddenSectionKeys = actions?.hiddenSectionKeys;
+  const sections = useMemo(
+    () =>
+      hiddenSectionKeys?.length
+        ? allSections.filter((section) => !hiddenSectionKeys.includes(section.key))
+        : allSections,
+    [allSections, hiddenSectionKeys],
+  );
   const [activeApplicantKey, setActiveApplicantKey] = useState(
     initialApplicantKey ?? applicants[0]?.key ?? "",
   );
@@ -1327,14 +1334,21 @@ export function Financial({
     severity: "success" | "warning" | "error";
   } | null>(null);
 
+  // Reload values and clear edit / review state only when the sections themselves change
+  // (not when the highlighted section changes while scrolling).
   useEffect(() => {
     store.resetAll(createInitialValues(sections));
+    editingRef.current = {};
+    originalsRef.current = {};
     setEditing({});
     setReviews({});
+  }, [sections, store]);
+
+  useEffect(() => {
     if (sections.length > 0 && !sections.some((s) => s.key === activeSectionKey)) {
       setActiveSectionKey(sections[0].key);
     }
-  }, [sections, store, activeSectionKey]);
+  }, [sections, activeSectionKey]);
 
   useEffect(() => {
     if (initialApplicantKey && initialApplicantKey !== activeApplicantKey) {
@@ -1442,15 +1456,14 @@ export function Financial({
 
   const handleReview = useCallback(
     (sectionKey: string, decision: ReviewDecision) => {
-      if (decision === "disagree") startEditing(sectionKey);
-      else stopEditing(sectionKey, true);
+      stopEditing(sectionKey, true);
       setReviews((current) =>
         current[sectionKey] === decision
           ? current
           : { ...current, [sectionKey]: decision },
       );
     },
-    [startEditing, stopEditing],
+    [stopEditing],
   );
 
   const handleReset = useCallback(
@@ -1622,16 +1635,17 @@ export function Financial({
     const visible = activeApplicant ? [activeApplicant] : applicants;
     return visible.map(({ key, label }) => ({ key, label }));
   }, [activeApplicant, applicants]);
-  /** Only sections with Edit/Save or Agree/Disagree buttons can be opened from the dropdown. */
+  /** Only sections with Edit/Save or Agree buttons can be opened from the dropdown. */
   const editableOptions = useMemo(
     () =>
       sections
         .filter(
           (section) =>
-            !FINANCIAL_NON_REVIEWABLE_SECTION_KEYS.includes(section.key),
+            !FINANCIAL_NON_REVIEWABLE_SECTION_KEYS.includes(section.key) &&
+            resolveFinancialActionMode(section.key, actions) !== "readOnly",
         )
         .map((section) => ({ label: section.title, value: section.key })),
-    [sections],
+    [sections, actions],
   );
   return (
     <StoreContext.Provider value={store}>
@@ -1777,6 +1791,7 @@ export function Financial({
               <SectionCard
                 key={section.key}
                 section={section}
+                mode={resolveFinancialActionMode(section.key, actions)}
                 editing={Boolean(editing[section.key])}
                 review={reviews[section.key]}
                 onReview={handleReview}

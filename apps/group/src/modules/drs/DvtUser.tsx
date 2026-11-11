@@ -8,6 +8,7 @@ import {
   canInvokeBreRetrigger,
   readApiErrorMessage,
   setBreRetriggerCount,
+  getMasterList,
 } from "@insurance-poc/utils";
 
 import { Box, Typography } from "@mui/material";
@@ -33,10 +34,10 @@ import { RequirementMgmt } from "@insurance-poc/common/requirement-mgmt";
 import { QuickLinksModule } from "@insurance-poc/common/quick-links";
 import { ApplicantProfile } from "@insurance-poc/common/applicant-profile";
 import {
-  requirementStatusOptions,
   requirementStatusOrder,
   requirementStatusVariants,
 } from "./requirementData";
+import { readEditOptions } from "./lifeAssuredData";
 import { useRetriggerGroupBreMutation } from "../../services/breRetriggerApi";
 import { useCompleteGroupTaskMutation } from "../../services/completeTaskApi";
 import { useGetGroupDrsQuery } from "../../services/drsApi";
@@ -45,6 +46,7 @@ import {
   useSaveGroupFinancialMutation,
 } from "../../services/financialApi";
 import type { CardType } from "../../services/drsService";
+import { GROUP_FINANCIAL_ACTIONS_CONFIG } from "../config/financialActions.config";
 import { GROUP_QUICK_LINKS_CONFIG } from "../config/quickLinks.config";
 
 const CARD_TITLES: Record<CardType, string> = {
@@ -57,7 +59,20 @@ const CARD_TITLES: Record<CardType, string> = {
 
 const quickLinksConfig = GROUP_QUICK_LINKS_CONFIG.dvt;
 
-const APPLICANT_ID_PARAM = "applicantId";
+/** The selected applicant travels in the router's navigation state, so the URL stays `/financial` / `/medical`. */
+type ApplicantRouteState = { applicantId?: string };
+
+const readApplicantId = (state: unknown): string | undefined => {
+  if (typeof state !== "object" || state === null || !("applicantId" in state)) return undefined;
+  const { applicantId } = state as ApplicantRouteState;
+  return typeof applicantId === "string" && applicantId.trim().length > 0 ? applicantId.trim() : undefined;
+};
+
+/** DVT decision dropdown options from the post-login master data (`misc` list, type `DVT_TERM_DESC`). */
+const readDvtDecisionOptions = () =>
+  getMasterList("misc", "DVT_TERM_DESC")
+    .filter((entry) => entry.isActive === "Y")
+    .map((entry) => ({ label: entry.description, value: entry.code }));
 
 export interface DvtUserProps {
   previousPolicyMode?: "page" | "modal";
@@ -88,7 +103,7 @@ type BreRetriggerFinalOverrides = Partial<
 
 const DvtUser = () => {
   const navigate = useNavigate();
-  const { pathname } = useLocation();
+  const { pathname, search, state: locationState } = useLocation();
   const [params] = useSearchParams();
   const { applicationNo: applicationNoParam } = useParams();
   const lowerPath = pathname.toLowerCase();
@@ -103,9 +118,9 @@ const DvtUser = () => {
   const medicalPath = applicationNo.length > 0 ? drsRoutePath(applicationNo, "medical") : "";
 
   const applicants = drs.data?.applicants ?? [];
-  const currentApplicantParam = params.get(APPLICANT_ID_PARAM)?.trim();
+  const currentApplicantId = readApplicantId(locationState);
   const selectedApplicant =
-    applicants.find((a) => a.id === currentApplicantParam) ?? applicants[0];
+    applicants.find((a) => a.id === currentApplicantId) ?? applicants[0];
   const activePartyId = selectedApplicant?.partyId ?? "";
 
   const financialQuery = useGetGroupFinancialDetailsQuery(
@@ -136,32 +151,19 @@ const DvtUser = () => {
   }, [applicationNo]);
 
   const openFinancial = (applicantId: string) => {
-    const next = new URLSearchParams(params);
-    next.set(APPLICANT_ID_PARAM, applicantId);
-    navigate({ pathname: financialPath, search: `?${next.toString()}` });
+    navigate({ pathname: financialPath, search }, { state: { applicantId } satisfies ApplicantRouteState });
   };
-  const closeFinancial = () => {
-    const next = new URLSearchParams(params);
-    next.delete(APPLICANT_ID_PARAM);
-    const query = next.toString();
-    navigate({ pathname: drsBasePath, search: query ? `?${query}` : "" });
-  };
+  const closeFinancial = () => navigate({ pathname: drsBasePath, search });
   const openMedical = (applicantId: string) => {
-    const next = new URLSearchParams(params);
-    next.set(APPLICANT_ID_PARAM, applicantId);
-    navigate({ pathname: medicalPath, search: `?${next.toString()}` });
+    navigate({ pathname: medicalPath, search }, { state: { applicantId } satisfies ApplicantRouteState });
   };
-  const closeMedical = () => {
-    const next = new URLSearchParams(params);
-    next.delete(APPLICANT_ID_PARAM);
-    const query = next.toString();
-    navigate({ pathname: drsBasePath, search: query ? `?${query}` : "" });
-  };
+  const closeMedical = () => navigate({ pathname: drsBasePath, search });
 
   const handleFinancialApplicantChange = (applicantKey: string) => {
-    const next = new URLSearchParams(params);
-    next.set(APPLICANT_ID_PARAM, applicantKey);
-    navigate({ pathname: financialPath, search: `?${next.toString()}` }, { replace: true });
+    navigate(
+      { pathname: financialPath, search },
+      { replace: true, state: { applicantId: applicantKey } satisfies ApplicantRouteState },
+    );
   };
 
   const handleBreRetrigger = async () => {
@@ -225,6 +227,8 @@ const DvtUser = () => {
   }
 
   const { cardDetails, breDecision, dvtDecision, requirements } = drs.data;
+  // Master data first, then the DRS response; undefined lets DecisionSection use its defaults.
+  const decisionOptions = [readDvtDecisionOptions(), dvtDecision.decisionOptions].find((options) => options.length > 0);
 
   const detailCards = (
     <Box
@@ -260,6 +264,7 @@ const DvtUser = () => {
         applicants={financialApplicants.length > 0 ? financialApplicants : undefined}
         initialApplicantKey={selectedApplicant?.id || undefined}
         sections={financialQuery.data}
+        actions={GROUP_FINANCIAL_ACTIONS_CONFIG.dvt}
         onApplicantChange={handleFinancialApplicantChange}
         onBack={closeFinancial}
         onSaveSection={(saveRequest) => saveFinancial(saveRequest).unwrap()}
@@ -274,7 +279,7 @@ const DvtUser = () => {
       <Medical
         summary={detailCards}
         applicants={medicalApplicants.length > 0 ? medicalApplicants : undefined}
-        initialApplicantKey={params.get(APPLICANT_ID_PARAM)?.trim() || undefined}
+        initialApplicantKey={currentApplicantId}
         onBack={closeMedical}
         onSubmit={(payload) => console.log("Submit medical", payload)}
       />
@@ -341,7 +346,6 @@ const DvtUser = () => {
 
       <RequirementMgmt
         requirements={requirements}
-        statusOptions={requirementStatusOptions}
         statusOrder={requirementStatusOrder}
         statusVariants={requirementStatusVariants}
         addButton={{
@@ -371,13 +375,14 @@ const DvtUser = () => {
 
       <LifeAssured
         applicants={applicants}
+        editOptions={readEditOptions()}
         onEdit={handleApplicantAction("Edit")}
         onViewMedical={openMedical}
         onViewFinancial={openFinancial}
       />
 
       <DecisionSection
-        decisionOptions={dvtDecision.decisionOptions.length > 0 ? dvtDecision.decisionOptions : undefined}
+        decisionOptions={decisionOptions}
         decision={decision}
         remarks={remarks}
         onDecisionChange={setDecision}
