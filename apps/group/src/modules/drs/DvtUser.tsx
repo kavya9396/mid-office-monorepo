@@ -409,12 +409,11 @@ const DvtUser = () => {
       <CustomDialog
         open={breRetriggerLimitDialogOpen}
         onClose={() => setBreRetriggerLimitDialogOpen(false)}
-        severity="error"
         showCloseIcon={false}
         disableEscapeKeyDown
         title="BRE Retrigger"
         actions={
-          <CustomButton variant="contained" color="error" onClick={goToInbox}>
+          <CustomButton variant="contained" onClick={goToInbox}>
             Ok
           </CustomButton>
         }
