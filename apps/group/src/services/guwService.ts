@@ -13,6 +13,7 @@ import type { GrievanceHistoryRow } from "@insurance-poc/common/grievance-histor
 import type { ClaimAuditRow } from "@insurance-poc/common/claim-audit";
 import type { SpecialRemarksRow } from "@insurance-poc/common/special-remarks";
 import type { UwGuidelineRow } from "@insurance-poc/common/uw-guidelines";
+import { mapQuickLinksSubSections, type QuickLinksSubSections } from "../modules/drs/quickLinksData";
 import { mapRequirements, type RawRequirement } from "../modules/drs/requirementData";
 import { formatBreTimestamp, splitDiscrepancies } from "../modules/drs/breFormat";
 import { grievanceColumns } from "@insurance-poc/common/grievance-history";
@@ -186,6 +187,8 @@ export interface GuwDrsRecord {
   sections: GuwDialogSections;
   uwData?: GuwUwData;
   requirements: RequirementItem[];
+  /** `data.subSections[]` mapped for the Quick Links dialogs. */
+  quickLinks: QuickLinksSubSections;
 }
 
 /* ------------------------------------------------------------------ */
@@ -565,6 +568,7 @@ export function mapGuwDrsPayload(payload: unknown): GuwDrsRecord {
     breData: mapBreData(findSection(sections, "latestBreDecision"), rawReqs),
     sections: dialogSections,
     requirements,
+    quickLinks: mapQuickLinksSubSections(data.subSections),
     uwData: {
       breOverallDecision: fieldValue(caseDecisionFields, "BRE Overall Decision"),
       breOverallRemarks: fieldValue(caseDecisionFields, "BRE Overall Remarks"),

@@ -8,6 +8,8 @@ import { BreCard } from "@insurance-poc/common/bre-card";
 import { ApplicantBanner, type RowDetailsOptions } from "@insurance-poc/common/applicant-banner";
 import { groupPaths } from "@insurance-poc/routes";
 import { QuickLinksModule } from "@insurance-poc/common/quick-links";
+import { useNavigate } from "react-router-dom";
+import { buildQuickLinkItems } from "./guwQuickLinks";
 import { RequirementMgmt } from "@insurance-poc/common/requirement-mgmt";
 import { RiskCards } from "@insurance-poc/common/risk-cards";
 import { GuwSdtRow } from "../guw/GuwSdtRow";
@@ -55,6 +57,7 @@ const QUICK_ITEMS = [
 
 const GuwUser = () => {
   const [params] = useSearchParams();
+  const navigate = useNavigate();
   const applicationNo = params.get("applicationNo")?.trim() ?? "";
   // Multi-life case (more than one member): after submit go to the member summary page, else the inbox
   const isMultiLife = parseInt(params.get("memberCount") ?? "0", 10) > 1;
@@ -85,11 +88,6 @@ const GuwUser = () => {
     setSnackbarMessage(message);
     setSnackbarOpen(true);
   };
-
-  const linkItems = QUICK_ITEMS.map((link) => ({
-    ...link,
-    onClick: () => notify(`Navigating to ${link.label}`),
-  }));
 
   useEffect(() => {
     if (!applicationNo) {
@@ -194,7 +192,13 @@ const GuwUser = () => {
             />
 
             {/* Quick Links */}
-            <QuickLinksModule items={linkItems} title="Quick Links" />
+            <QuickLinksModule
+              items={buildQuickLinkItems(QUICK_ITEMS, notify)}
+              title="Quick Links"
+              applicationNo={applicationNo}
+              onNavigate={(path) => navigate(path)}
+              onNotify={notify}
+            />
           </>
         ) : null}
 

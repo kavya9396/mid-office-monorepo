@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { DecisionComparisonTable } from "@insurance-poc/common/decision-bar";
@@ -13,6 +13,7 @@ import { groupPaths } from "@insurance-poc/routes";
 import { CustomDialog, CustomSnackbar } from "@insurance-poc/ui";
 import { fetchGuwDrs, type GuwDrsRecord } from "../../services/guwService";
 import   { QuickLinksModule }  from "@insurance-poc/common/quick-links";
+import { buildQuickLinkItems } from "../drs/guwQuickLinks";
 
 // Row 1 (Product line) is bold; row 2 is Riders; row 4 is Sum at Risk; row 0 values rendered without repeating Name / App No. in the line.
 const GUW_BANNER_OPTIONS: RowDetailsOptions = {
@@ -39,6 +40,7 @@ type PageState =
  */
 export function GuwDrsPage() {
   const [params] = useSearchParams();
+  const navigate = useNavigate();
   const applicationNo = params.get("applicationNo")?.trim() ?? "";
   // Multi-life case (more than one member): after submit go to the member summary page, else the inbox
   const isMultiLife = parseInt(params.get("memberCount") ?? "0", 10) > 1;
@@ -73,16 +75,6 @@ export function GuwDrsPage() {
     { id: "audit-trail", label: "Audit Trail" },
     { id: "raise-grievance", label: "Raise Grievance" },
   ];
-
-  const handleQuickLinkClick = (item: { id: string; label: string }) => {
-    setSnackbarMessage(`Navigating to ${item.label}`);
-    setSnackbarOpen(true);
-  };
-
-  const linkItems = quickItems.map((link) => ({
-    ...link,
-    onClick: () => handleQuickLinkClick(link),
-  }));
 
   useEffect(() => {
     if (!applicationNo) {
@@ -188,7 +180,13 @@ export function GuwDrsPage() {
             />
 
             {/* Quick Links Floating Action Button */}
-            <QuickLinksModule items={linkItems} title="Quick Links" />
+            <QuickLinksModule
+              items={buildQuickLinkItems(quickItems, notify)}
+              title="Quick Links"
+              applicationNo={applicationNo}
+              onNavigate={(path) => navigate(path)}
+              onNotify={notify}
+            />
           </>
         ) : null}
 
