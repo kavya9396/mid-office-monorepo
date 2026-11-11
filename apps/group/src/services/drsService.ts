@@ -264,7 +264,8 @@ export function mapGroupDrsPayload(value: unknown): GroupDrsData {
   return {
     applicationNo,
     cardDetails: readCards(data.cardDetails),
-    breDecision: readBre(breSection),
+    // The API now sends the BRE comparison as `latestBreDecision`; `breDecision` is the older name.
+    breDecision: readBre(breSection ?? latestBreSection),
     latestBreDecision: latestBreSection != null ? readBre(latestBreSection) : undefined,
     requirements: mapRequirements(readRequirements(requirementSection)),
     riskCards: mapRiskCards(summarySection),

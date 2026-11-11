@@ -14,7 +14,7 @@ import {
   type InboxCase,
   type InboxData,
 } from "./inboxApi";
-import { taskDetailsTitle } from "./inboxFormat";
+import { taskDetailsTitle, toDisplayLabel } from "./inboxFormat";
 import { InboxSidebar } from "./InboxSidebar";
 import { InboxTable } from "./InboxTable";
 
@@ -99,6 +99,13 @@ export function InboxScreen({
       setNotice("This task is missing an application number.");
       return;
     }
+    // The DRS screen is picked from `roleType` (e.g. GUW vs DVT), so it must travel with the route.
+    const drsQuery = new URLSearchParams({
+      applicationNo: item.applicationNo,
+      role: toDisplayLabel(item.poolName),
+      roleType: readFieldText(item.fields.roleType) || item.poolName,
+    });
+    const drsTarget = `${drsRoutePath(item.applicationNo)}?${drsQuery.toString()}`;
     const taskId = readFieldText(item.fields.taskId);
     const instanceId = readFieldText(item.fields.instanceId);
 
@@ -118,7 +125,7 @@ export function InboxScreen({
           errorCode === "200" || (response?.success === true && errorCode !== "400");
         if (isSuccess) {
           persistTaskContext();
-          navigate(drsRoutePath(item.applicationNo));
+          navigate(drsTarget);
           return;
         }
         const apiMessage = String(response?.message ?? "").trim();
@@ -132,7 +139,7 @@ export function InboxScreen({
     }
 
     persistTaskContext();
-    navigate(drsRoutePath(item.applicationNo));
+    navigate(drsTarget);
   }
 
   if (loading) {
