@@ -12,10 +12,14 @@ import type { ReactNode } from "react";
 
 import { CloseIcon } from "../icons/Icons";
 
+export type CustomDialogSeverity = "default" | "error";
+
 interface CustomDialogProps extends Omit<DialogProps, "title"> {
   title?: ReactNode;
   children: ReactNode;
   actions?: ReactNode;
+  /** `error` uses the theme error palette for the title bar and default message styling. */
+  severity?: CustomDialogSeverity;
 
   showCloseIcon?: boolean;
   onClose: () => void;
@@ -33,6 +37,7 @@ const CustomDialog = ({
   title,
   children,
   actions,
+  severity = "default",
   showCloseIcon = true,
   contentSx,
   paperSx,
@@ -44,6 +49,7 @@ const CustomDialog = ({
   ...rest
 }: CustomDialogProps) => {
   const hasTitle = Boolean(title);
+  const isError = severity === "error";
 
   return (
     <Dialog
@@ -56,6 +62,7 @@ const CustomDialog = ({
           sx: {
             position: "relative",
             borderRadius: "16px",
+            ...(isError ? { border: (theme) => `2px solid ${theme.palette.error.main}` } : {}),
             ...paperSx,
           },
         },
@@ -91,7 +98,7 @@ const CustomDialog = ({
             p: 1.5,
             fontWeight: 700,
             color: "#fff",
-            backgroundColor: "#E45F14",
+            backgroundColor: isError ? "error.main" : "#E45F14",
             ...titleSx,
           }}
         >
@@ -105,6 +112,13 @@ const CustomDialog = ({
           pr: showCloseIcon ? 6 : 3,
           p: 0,
           m: 2,
+          ...(isError
+            ? {
+                color: "error.main",
+                fontWeight: 600,
+                fontSize: 14,
+              }
+            : {}),
           ...contentSx,
         }}
       >

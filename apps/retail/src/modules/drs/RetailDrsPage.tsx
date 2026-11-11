@@ -2,12 +2,11 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
-import CircularProgress from "@mui/material/CircularProgress";
 import Container from "@mui/material/Container";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import { CustomButton, CustomSnackbar } from "@insurance-poc/ui";
+import { CustomButton, CustomLoader, CustomSnackbar } from "@insurance-poc/ui";
 import { formatIndianCurrency } from "@insurance-poc/utils";
 import {
   QuickLinksModule,
@@ -99,11 +98,7 @@ function DrsBody({
 }>) {
   switch (status.kind) {
     case "loading":
-      return (
-        <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
-          <CircularProgress />
-        </Box>
-      );
+      return <CustomLoader message="Loading application" />;
     case "missing-id":
       return (
         <Alert severity="info">

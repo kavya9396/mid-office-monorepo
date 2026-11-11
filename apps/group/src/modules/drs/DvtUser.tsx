@@ -1,10 +1,24 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { drsRoutePath } from "@insurance-poc/routes";
-import { clearDrsTaskIds, formatDateTime, readApiErrorMessage } from "@insurance-poc/utils";
+import {
+  clearBreRetriggerCount,
+  clearDrsTaskIds,
+  formatDateTime,
+  canInvokeBreRetrigger,
+  readApiErrorMessage,
+  setBreRetriggerCount,
+} from "@insurance-poc/utils";
 
 import { Box, Typography } from "@mui/material";
-import { CustomSnackbar, CustomDialog, DeleteIcon, EditIcon } from "@insurance-poc/ui";
+import {
+  CustomButton,
+  CustomDialog,
+  CustomLoader,
+  CustomSnackbar,
+  DeleteIcon,
+  EditIcon,
+} from "@insurance-poc/ui";
 import {
   DecisionBar,
   DecisionComparisonTable,
@@ -109,6 +123,12 @@ const DvtUser = () => {
   const [retriggerGroupBre, retriggerGroupBreState] = useRetriggerGroupBreMutation();
   const [breRetriggerFinals, setBreRetriggerFinals] = useState<BreRetriggerFinalOverrides>({});
   const [breRetriggerBarDecision, setBreRetriggerBarDecision] = useState<string | null>(null);
+  const [breRetriggerLimitDialogOpen, setBreRetriggerLimitDialogOpen] = useState(false);
+
+  const goToInbox = () => {
+    clearBreRetriggerCount();
+    navigate("/inbox", { replace: true });
+  };
 
   useEffect(() => {
     setBreRetriggerFinals({});
@@ -152,8 +172,14 @@ const DvtUser = () => {
     }
     if (retriggerGroupBreState.isLoading) return;
 
+    if (!canInvokeBreRetrigger()) {
+      setBreRetriggerLimitDialogOpen(true);
+      return;
+    }
+
     try {
       const mapped = await retriggerGroupBre({ applicationNumber: appNo }).unwrap();
+      setBreRetriggerCount(mapped.reTriggerCount);
       setBreRetriggerBarDecision(mapped.barDecision);
       setBreRetriggerFinals(mapped.rows);
     } catch (reason: unknown) {
@@ -177,7 +203,7 @@ const DvtUser = () => {
         remarks: payload.remarks,
       }).unwrap();
       clearDrsTaskIds();
-      navigate("/inbox", { replace: true });
+      goToInbox();
     } catch (reason: unknown) {
       const apiMessage = readApiErrorMessage(reason);
       if (apiMessage.length > 0) {
@@ -187,11 +213,7 @@ const DvtUser = () => {
   };
 
   if (drs.isLoading) {
-    return (
-      <Box sx={{ p: 2 }}>
-        <Typography>Loading application...</Typography>
-      </Box>
-    );
+    return <CustomLoader message="Loading application" />;
   }
 
   if (drs.isError || !drs.data) {
@@ -278,6 +300,10 @@ const DvtUser = () => {
 
   return (
     <Box sx={{ position: "relative", minHeight: "100%", p:2, display: "flex", gap:2, flexDirection: "column" }}>
+      {retriggerGroupBreState.isLoading && (
+        <CustomLoader message="Retriggering BRE" fullScreen />
+      )}
+
       {detailCards}
 
       <QuickLinksModule
@@ -378,6 +404,22 @@ const DvtUser = () => {
           headers={breDecision.headers}
           rows={breRows}
         />
+      </CustomDialog>
+
+      <CustomDialog
+        open={breRetriggerLimitDialogOpen}
+        onClose={() => setBreRetriggerLimitDialogOpen(false)}
+        severity="error"
+        showCloseIcon={false}
+        disableEscapeKeyDown
+        title="BRE Retrigger"
+        actions={
+          <CustomButton variant="contained" color="error" onClick={goToInbox}>
+            Ok
+          </CustomButton>
+        }
+      >
+        Kindly raise ticket with IT team
       </CustomDialog>
     </Box>
   );
