@@ -642,11 +642,11 @@ export async function fetchGuwDrs(applicationNo: string): Promise<GuwDrsRecord |
   const payload = guwDrsMock as unknown;
   const record = mapGuwDrsPayload(payload);
   const submittedDecision = loadGuwSubmittedDecision(applicationNo) ?? undefined;
-  // Patch the applicationNo to match what was requested so the banner is correct.
+  const resolvedAppNo = record.applicationNo || applicationNo;
   return {
     ...record,
-    applicationNo,
-    applicationLabel: `App No. - ${applicationNo}`,
+    applicationNo: resolvedAppNo,
+    applicationLabel: `App No. - ${resolvedAppNo}`,
     uwData: submittedDecision
       ? {
           breOverallDecision: record.uwData?.breOverallDecision ?? "",

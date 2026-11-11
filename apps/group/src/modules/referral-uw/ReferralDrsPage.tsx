@@ -27,8 +27,13 @@ import {
 import { ReferralDecisionSection } from "./ReferralDecisionSection";
 import { REFERRAL_PROFILE_IMAGE_URL } from "./profileImage";
 
-// Row 0 (Name / App No.) is already shown as the heading + badge; row 2 (product) is bold.
-const REFERRAL_BANNER_OPTIONS: RowDetailsOptions = { skipRowIds: [0], emphasisRowIds: [2] };
+// Row 1 (Product line) is bold; row 2 is Riders; row 4 is Sum at Risk; row 0 values rendered without repeating Name / App No. in the line.
+const REFERRAL_BANNER_OPTIONS: RowDetailsOptions = {
+  emphasisRowIds: [1],
+  skipFieldNames: ["Name", "App No.", "App No"],
+  valueOnlyRowIds: [0],
+  rowLabels: { 2: "Riders", 4: "Sum at Risk" },
+};
 
 // Underwriting Decision History columns (prototype `Mxe`).
 const DECISION_HISTORY_COLUMNS: Column<ReferralDecisionHistoryRow>[] = [

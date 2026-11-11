@@ -10,7 +10,7 @@
         "fields": [
           {
             "name": "Name",
-            "value": "Rudra Prakash Sangha"
+            "value": "Rudra Sangha"
           },
           {
             "name": "App No.",
@@ -75,11 +75,11 @@
           },
           {
             "name": "Sum Assured",
-            "value": "â‚¹10,68,000"
+            "value": "₹10,68,000"
           },
           {
             "name": "MPH Name",
-            "value": ""
+            "value": "Group policy 1"
           },
           {
             "name": "Policy Term",
@@ -144,23 +144,23 @@
         "fields": [
           {
             "name": "WOP - SA",
-            "value": "â‚¹15,00,000"
+            "value": "₹15,00,000"
           },
           {
             "name": "BTBB - SA",
-            "value": "â‚¹25,00,000"
+            "value": "₹25,00,000"
           },
           {
             "name": "TI Rider - SA",
-            "value": "â‚¹25,00,000"
+            "value": "₹25,00,000"
           },
           {
             "name": "ADBR - SA",
-            "value": "â‚¹25,00,000"
+            "value": "₹25,00,000"
           },
           {
             "name": "CI Rider - SA",
-            "value": "â‚¹25,00,000"
+            "value": "₹25,00,000"
           }
         ]
       },
@@ -169,43 +169,43 @@
         "fields": [
           {
             "name": "TSA",
-            "value": "â‚¹10,00,000"
+            "value": "₹10,00,000"
           },
           {
             "name": "TRSA",
-            "value": "â‚¹5,00,000"
+            "value": "₹5,00,000"
           },
           {
             "name": "TPSA",
-            "value": "â‚¹10,00,000"
+            "value": "₹10,00,000"
           },
           {
             "name": "TFSA",
-            "value": "â‚¹10,00,000"
+            "value": "₹10,00,000"
           },
           {
             "name": "TSSA",
-            "value": "â‚¹10,00,000"
+            "value": "₹10,00,000"
           },
           {
             "name": "ADBR TSA",
-            "value": "â‚¹5,00,000"
+            "value": "₹5,00,000"
           },
           {
             "name": "ATPD TSA",
-            "value": "â‚¹5,00,000"
+            "value": "₹5,00,000"
           },
           {
             "name": "CI Rider TSA",
-            "value": "â‚¹3,00,000"
+            "value": "₹3,00,000"
           },
           {
             "name": "CI Rider TRSA",
-            "value": "â‚¹3,00,000"
+            "value": "₹3,00,000"
           },
           {
             "name": "BTBB TSA",
-            "value": "â‚¹5,00,000"
+            "value": "₹5,00,000"
           }
         ]
       }
@@ -221,15 +221,15 @@
           },
           {
             "name": "Financial Eligibility",
-            "value": "â‚¹4,80,000"
+            "value": "₹4,80,000"
           },
           {
             "name": "Derived Income",
-            "value": "â‚¹16,00,000"
+            "value": "₹16,00,000"
           },
           {
             "name": "Counter Offer Value",
-            "value": "â‚¹50,00,000"
+            "value": "₹50,00,000"
           },
           {
             "name": "Additional SA",
@@ -241,7 +241,7 @@
           },
           {
             "name": "Final Bureau Income",
-            "value": "â‚¹16,00,000"
+            "value": "₹16,00,000"
           },
           {
             "name": "Reinsurer Case",

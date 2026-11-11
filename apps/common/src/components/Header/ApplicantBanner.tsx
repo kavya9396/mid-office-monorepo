@@ -44,6 +44,7 @@ export function toBannerRows(lines: readonly BannerLine[]): BannerRow[] {
 /** A row exactly as returned by the API (`data.rowDetails[]`). */
 export interface BannerRowDetail {
   id: string | number;
+  label?: string;
   fields: readonly { name: string; value?: string | number | null }[];
 }
 
@@ -56,6 +57,12 @@ export interface RowDetailsOptions {
   separator?: string;
   /** Separator between a field name and its value. Default " - ". */
   nameValueSeparator?: string;
+  /** Field names to omit within rows (e.g. "Name", "App No.") when already shown in banner header. */
+  skipFieldNames?: readonly string[];
+  /** Optional custom labels to prefix on specific row ids (e.g. { 2: "Riders", 4: "Sum at Risk" }). */
+  rowLabels?: Record<string | number, string>;
+  /** Row ids where only the value should be shown (without name - value prefix). */
+  valueOnlyRowIds?: readonly (string | number)[];
 }
 
 /**
@@ -71,21 +78,38 @@ export function rowDetailsToBannerRows(
     emphasisRowIds = [],
     separator = " / ",
     nameValueSeparator = " - ",
+    skipFieldNames = [],
+    rowLabels = {},
+    valueOnlyRowIds = [],
   } = options;
   return (rowDetails ?? [])
     .filter((row) => !skipRowIds.includes(row.id))
-    .map((row) => ({
-      id: String(row.id),
-      separator,
-      emphasis: emphasisRowIds.includes(row.id),
-      fields: row.fields.map((field, index) => {
-        const value = field.value == null ? "" : String(field.value);
-        return {
-          id: `${row.id}-${index}`,
-          value: value ? `${field.name}${nameValueSeparator}${value}` : `${field.name} -`,
-        };
-      }),
-    }));
+    .map((row) => {
+      const isValueOnly = valueOnlyRowIds.includes(row.id);
+      const fields = row.fields
+        .filter((field) => !skipFieldNames.includes(field.name))
+        .map((field, index) => {
+          const value = field.value == null ? "" : String(field.value);
+          if (isValueOnly) {
+            return {
+              id: `${row.id}-${index}`,
+              value: value || "—",
+            };
+          }
+          return {
+            id: `${row.id}-${index}`,
+            value: value ? `${field.name}${nameValueSeparator}${value}` : `${field.name} -`,
+          };
+        });
+
+      return {
+        id: String(row.id),
+        label: row.label ?? rowLabels[row.id],
+        separator,
+        emphasis: emphasisRowIds.includes(row.id),
+        fields,
+      };
+    });
 }
 
 export interface ApplicantBannerProps {
