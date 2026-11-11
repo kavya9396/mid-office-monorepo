@@ -255,6 +255,43 @@ describe("login module", () => {
       expect(posted.headers.get("Authorization")).toBeNull();
       expect(readString(posted.body, "username")).toBe(encodeBase64("UW001"));
       expect(readString(posted.body, "password")).toBe(encodeBase64("secret"));
+      expect(readString(posted.body, "businessType")).toBe("RETAIL");
+    });
+
+    it("posts the login business type selected on the form", async () => {
+      authMode.useMock = false;
+      vi.useRealTimers();
+      const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+        jsonResponse({
+          response_code: 200,
+          error: false,
+          message: "Login successful",
+          data: {
+            token: "access-token",
+            refreshToken: "refresh-token",
+            username: "UW002",
+            displayName: "Group Underwriter",
+            firstLogin: false,
+            mustChangePassword: false,
+            lastLoginAt: "2026-10-06T14:10:20",
+            roles: ["GUW"],
+            authorizedBusinessTypes: ["GROUP"],
+          },
+        }),
+      );
+      vi.stubGlobal("fetch", fetchMock);
+      const { fetchLogin } = await loadLogin();
+
+      const result = await fetchLogin({
+        userId: "UW002",
+        password: "secret",
+        businessType: "GROUP",
+      });
+
+      expectSuccess(result);
+      expect(result.businessType).toBe("GROUP");
+      const posted = postedRequest(fetchMock);
+      expect(readString(posted.body, "businessType")).toBe("GROUP");
     });
 
     it("reads first-login flags from common SIT wire formats", async () => {
