@@ -1,0 +1,21 @@
+{
+  "records": [
+    {
+      "applicationNo": "MAS1001",
+      "applicantName": "Rudra Prakash Sangha",
+      "applicationLabel": "App No. - OB90377122",
+      "lines": [
+        {
+          "text": "38 years / Male / Graduate / ₹50,00,000 p.a. / mumbai - maharashtra - 400064 / India / IND"
+        },
+        {
+          "text": "ICICI Pru GIFT Pro - E36 / Channel: Agency / SA - ₹10,68,000 / WOP - SA ₹15,00,000 / BTBB - SA ₹25,00,000 / TI Rider - SA ₹25,00,000 / ADBR - SA ₹25,00,000 / CI Rider - SA ₹25,00,000",
+          "emphasis": true
+        },
+        {
+          "text": "TSA - ₹10,00,000 / TRSA - ₹5,00,000 / TPSA - ₹10,00,000 / TFSA - ₹10,00,000 / TSSA - ₹10,00,000 / ADBR TSA - ₹5,00,000 / ATPD TSA - ₹5,00,000 / CI Rider TSA - ₹3,00,000 / CI Rider TRSA - ₹3,00,000 / WOP TSA - ₹10,00,000 / BTBB TSA - ₹5,00,000 / Total Premium - ₹10,000"
+        }
+      ]
+    }
+  ]
+}

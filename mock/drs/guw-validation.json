@@ -1,0 +1,224 @@
+{
+  "_comment": "Mock responses of the GUW decision-validation API, keyed by the selected Case UW Decision code. Any code not listed (STD, HOLD, REFERRAL, APPROVER ...) uses 'default' (SUCCESS). The decision is a mock-only selector; the real request has no decision field.",
+  "default": {
+    "applicationNo": "OS90377300",
+    "correlationId": "b36778ee-523c-4700-b852-52ddc7988322",
+    "status": "SUCCESS",
+    "counterSignReqd": "N",
+    "referralReqd": "N",
+    "SoftAlert": [],
+    "HardAlert": [],
+    "justifications": []
+  },
+  "EP": {
+    "applicationNo": "OS90377300",
+    "correlationId": "b36778ee-523c-4700-b852-52ddc7988322",
+    "status": "FAIL",
+    "counterSignReqd": "N",
+    "referralReqd": "N",
+    "SoftAlert": [
+      {
+        "validationId": 1,
+        "reason": "Extra premium case",
+        "remarks": "Extra premium applied - kindly verify the loading before submission"
+      }
+    ],
+    "HardAlert": [],
+    "justifications": []
+  },
+  "CO": {
+    "applicationNo": "OS90377300",
+    "correlationId": "b36778ee-523c-4700-b852-52ddc7988322",
+    "status": "FAIL",
+    "counterSignReqd": "Y",
+    "referralReqd": "N",
+    "SoftAlert": [
+      {
+        "validationId": 1,
+        "reason": "Counter offer case",
+        "remarks": "Counter offer issued - customer acceptance is pending"
+      }
+    ],
+    "HardAlert": [
+      {
+        "validationId": 5,
+        "reason": "Counter offer above authority",
+        "remarks": "Counter offer needs counter sign",
+        "action": "Counter Sign"
+      },
+      {
+        "validationId": 5,
+        "reason": "Decline above authority",
+        "remarks": "Decline needs counter sign",
+        "action": "Blocker"
+      }
+    ],
+    "justifications": []
+  },
+  "BOR_STD": {
+    "applicationNo": "OS90377300",
+    "correlationId": "b36778ee-523c-4700-b852-52ddc7988322",
+    "status": "FAIL",
+    "counterSignReqd": "Y",
+    "referralReqd": "Y",
+    "SoftAlert": [
+      {
+        "validationId": 1,
+        "reason": "Borderline standard case",
+        "remarks": "Borderline standard - kindly verify the medical findings"
+      }
+    ],
+    "HardAlert": [
+      {
+        "validationId": 3,
+        "reason": "Borderline standard above authority",
+        "remarks": "Borderline case - Kindly take HOD approval",
+        "action": "Refer to HOD"
+      },
+      {
+        "validationId": 4,
+        "reason": "Borderline standard above authority",
+        "remarks": "Borderline case - Kindly take Reinsurer opinion",
+        "action": "Refer to Reinsurer"
+      },
+      {
+        "validationId": 5,
+        "reason": "Borderline standard above authority",
+        "remarks": "Borderline case - Kindly counter sign",
+        "action": "Counter Sign"
+      }
+    ],
+    "justifications": []
+  },
+  "REJ": {
+    "applicationNo": "OS90377300",
+    "correlationId": "b36778ee-523c-4700-b852-52ddc7988322",
+    "status": "FAIL",
+    "counterSignReqd": "N",
+    "referralReqd": "N",
+    "SoftAlert": [
+      {
+        "validationId": 1,
+        "reason": "Reject case",
+        "remarks": "Reject decision - kindly verify the rejection reason"
+      }
+    ],
+    "HardAlert": [],
+    "justifications": [
+      {
+        "validationId": 98,
+        "justificationReason": "Medical Sub standard",
+        "justificationRemarks": "Medical sub standard , Please provide Justification.",
+        "action": null,
+        "reason": [
+          { "reasonCode": 1, "reasonText": "As per Reinsurer Manual no rating applicable" },
+          { "reasonCode": 2, "reasonText": "Incorrect Medical data entry done" },
+          { "reasonCode": 3, "reasonText": "Other Reason" },
+          { "reasonCode": 4, "reasonText": "Income proof not required as customer financially viable basis income bureau." }
+        ]
+      }
+    ]
+  },
+  "DC": {
+    "applicationNo": "OS90377300",
+    "correlationId": "b36778ee-523c-4700-b852-52ddc7988322",
+    "status": "FAIL",
+    "counterSignReqd": "Y",
+    "referralReqd": "N",
+    "SoftAlert": [
+      {
+        "validationId": 1,
+        "reason": "Decline case",
+        "remarks": "Decline decision - kindly verify the decline reason"
+      }
+    ],
+    "HardAlert": [
+      {
+        "validationId": 5,
+        "reason": "Decline above authority",
+        "remarks": "Decline needs counter sign",
+        "action": "Counter Sign"
+      }
+    ],
+    "justifications": [
+      {
+        "validationId": 98,
+        "justificationReason": "Medical Sub standard",
+        "justificationRemarks": "Medical sub standard , Please provide Justification.",
+        "action": null,
+        "reason": [
+          { "reasonCode": 1, "reasonText": "As per Reinsurer Manual no rating applicable" },
+          { "reasonCode": 2, "reasonText": "Incorrect Medical data entry done" },
+          { "reasonCode": 3, "reasonText": "Other Reason" },
+          { "reasonCode": 4, "reasonText": "Income proof not required as customer financially viable basis income bureau." }
+        ]
+      }
+    ],
+    "checklist": [
+      {
+        "validationId": 98,
+        "justificationReason": "Medical Sub standard",
+        "justificationRemarks": "Medical sub standard , Please provide Justification.",
+        "action": null,
+        "reason": [
+            { "reasonCode": 1, "reasonText": "Yes" },
+            { "reasonCode": 2, "reasonText": "No" }
+          ]
+      }
+    ]
+  },
+  "POSTP": {
+    "applicationNo": "OS90377300",
+    "correlationId": "b36778ee-523c-4700-b852-52ddc7988322",
+    "status": "FAIL",
+    "counterSignReqd": "Y",
+    "referralReqd": "Y",
+    "SoftAlert": [
+      {
+        "validationId": 1,
+        "reason": "PEP case",
+        "remarks": "PEP case - Kindly take HOD approval"
+      }
+    ],
+    "HardAlert": [
+      {
+        "validationId": 2,
+        "reason": "PEP yes",
+        "remarks": "PEP case - Kindly take HOD approval",
+        "action": "Refer to HOD"
+      },
+      {
+        "validationId": 3,
+        "reason": "PEP yes",
+        "remarks": "PEP case - Kindly take HOD approval",
+        "action": "Refer to CMO"
+      },
+      {
+        "validationId": 4,
+        "reason": "PEP yes",
+        "remarks": "PEP case - Kindly take HOD approval",
+        "action": "Refer to Reinsurer"
+      },
+      {
+        "validationId": 5,
+        "reason": "PEP yes",
+        "remarks": "PEP case - Kindly take HOD approval",
+        "action": "Counter Sign"
+      }
+    ],
+    "justifications": [
+      {
+        "validationId": 98,
+        "justificationReason": "Medical Sub standard",
+        "justificationRemarks": "Medical sub standard , Please provide Justification.",
+        "action": null,
+        "reason": [
+          { "reasonCode": 1, "reasonText": "As per Reinsurer Manual no rating applicable" },
+          { "reasonCode": 2, "reasonText": "Incorrect Medical data entry done" },
+          { "reasonCode": 3, "reasonText": "Other Reason" },
+          { "reasonCode": 4, "reasonText": "Income proof not required as customer financially viable basis income bureau." }
+        ]
+      }
+    ]
+  }
+}

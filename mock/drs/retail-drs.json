@@ -1,6 +1,30 @@
 {
   "records": [
     {
+      "applicationNo": "MAS1001",
+      "taskId": "TSK-MAS-001",
+      "customerName": "Priya Sharma",
+      "productName": "Retail Term Life",
+      "businessType": "RETAIL",
+      "appliedSa": 2000000,
+      "annualPremium": 22400,
+      "policyTerm": 20,
+      "premiumPayingTerm": 20,
+      "status": "Medical Pending"
+    },
+    {
+      "applicationNo": "MAS1002",
+      "taskId": "TSK-MAS-002",
+      "customerName": "Suresh Nair",
+      "productName": "Retail Whole Life",
+      "businessType": "RETAIL",
+      "appliedSa": 1000000,
+      "annualPremium": 15600,
+      "policyTerm": 25,
+      "premiumPayingTerm": 25,
+      "status": "Financial Pending"
+    },
+    {
       "applicationNo": "RET1001",
       "taskId": "TSK-CVT-001",
       "customerName": "Asha Rao",

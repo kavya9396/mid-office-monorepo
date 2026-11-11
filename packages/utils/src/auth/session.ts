@@ -69,6 +69,18 @@ export function clearToken(): void {
   removeDrsTaskContext();
 }
 
+/** Generic string values kept for the browser session (cleared by `clearSession`). */
+export function getSessionValue(key: string): string | null {
+  return readStorage()?.getItem(key) ?? null;
+}
+
+export function setSessionValue(key: string, value: string): void {
+  readStorage()?.setItem(key, value);
+}
+
+export function removeSessionValue(key: string): void {
+  readStorage()?.removeItem(key);
+}
 export function setSessionId(sessionId: string): void {
   const storage = readStorage();
   if (!storage) return;

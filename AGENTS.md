@@ -1,4 +1,4 @@
-# AGENTS.md
+﻿# AGENTS.md
 
 This file provides guidance to agents when working with code in this repository.
 
@@ -74,7 +74,7 @@ Services wrap JSON from `mock/` with a `wait(ms)` helper. Screens never import m
 
 - **All styling via MUI `sx` prop.** No CSS files, no CSS modules.
 - Theme: `packages/ui/src/theme.ts` — primary `#E45F14` (brand orange), font `Mulish`, bg `#fff8f3`.
-- Custom MUI wrappers in `packages/ui` are prefixed `Custom` (e.g. `CustomButton`, `CustomDialog`, `CustomTable`). Use these; do not use bare MUI primitives in app code.
+- `packages/ui/src` holds all UI components to be used. Wrappers are prefixed `Custom` (e.g. `CustomButton`, `CustomDialog`, `CustomTable`, `CustomSelect`, `CustomTextField`). Use these; do not use bare MUI primitives (`Table*`, `Select`, `MenuItem`, `TextField`, `Paper`, …) in app code — use `CustomBox` / `CustomTypography` for layout. Full export list: `docs/spec/02-folder-structure.md` §2.
 - When implementing from a prototype, copy `sx` values verbatim. Only `#e45f14` → `theme.palette.primary.main` is substituted.
 
 ## Design Tokens (from prototypes / `docs/spec/screens/00-shared-layout.md`)

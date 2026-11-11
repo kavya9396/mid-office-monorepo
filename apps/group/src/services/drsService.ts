@@ -1,8 +1,10 @@
 import type { DetailAttribute, DetailTable } from "@insurance-poc/common/detail-card";
 import type { LifeAssuredApplicant, RiderEditRow } from "@insurance-poc/common/life-assured";
 import type { RequirementItem } from "@insurance-poc/common/requirement-mgmt";
+import type { RiskCardData } from "@insurance-poc/common/risk-cards";
 import { mapApplicants } from "../modules/drs/lifeAssuredData";
 import { mapRequirements, type RawRequirement } from "../modules/drs/requirementData";
+import { mapRiskCards } from "../modules/drs/riskCardsData";
 
 export type CardType = "APPLICATION" | "SOURCE" | "GROUP" | "RISK";
 
@@ -40,9 +42,11 @@ export type GroupDrsData = {
   applicationNo: string;
   cardDetails: CardDetail[];
   breDecision: BreDecision;
+  latestBreDecision?: BreDecision;
   dvtDecision: DvtDecision;
   requirements: RequirementItem[];
   applicants: LifeAssuredApplicant[];
+  riskCards: RiskCardData[];
 };
 
 // `cardDetails[].type` as sent by the API -> internal card type
@@ -252,13 +256,19 @@ export function mapGroupDrsPayload(value: unknown): GroupDrsData {
   if (applicationNo.length === 0) throw invalidResponse();
 
   const sections = data.sections;
+  const breSection = findSection(sections, "breDecision");
+  const latestBreSection = findSection(sections, "latestBreDecision");
+  const summarySection = findSection(sections, "summary");
+  const requirementSection = findSection(sections, "requirementManagement");
 
   return {
     applicationNo,
     cardDetails: readCards(data.cardDetails),
-    breDecision: readBre(findSection(sections, "latestBreDecision")),
+    breDecision: readBre(breSection),
+    latestBreDecision: latestBreSection != null ? readBre(latestBreSection) : undefined,
+    requirements: mapRequirements(readRequirements(requirementSection)),
+    riskCards: mapRiskCards(summarySection),
     dvtDecision: readDvtDecision(findSection(sections, "dvtDecision")),
-    requirements: mapRequirements(readRequirements(findSection(sections, "requirementManagement"))),
     applicants: mapApplicants({
       members: readApplicantMembers(findSection(sections, "applicantProfile")),
       riders: readRiders(data.cardDetails),

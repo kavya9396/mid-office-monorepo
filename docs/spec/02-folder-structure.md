@@ -16,9 +16,20 @@ mid-office-monorepo/
 │   │   │   ├── App.tsx
 │   │   │   ├── main.tsx
 │   │   │   ├── vite-env.d.ts
-│   │   │   ├── assets/                # IBM Logo.svg, ICICI_Logo.svg, Login-Image.svg
-│   │   │   ├── components/
-│   │   │   │   └── DetailCard.tsx     # Shared business component (exported via subpath)
+│   │   │   ├── assets/                # IBM Logo.svg, ICICI_Logo.svg, ICICI_Logo_BG.svg, Login-Image.svg
+│   │   │   ├── components/            # Shared business components (exported via subpaths)
+│   │   │   │   ├── AppHeader.tsx      # AppHeader (exported as @insurance-poc/common/app-header)
+│   │   │   │   ├── DvtSectionViewer.tsx # DvtSectionViewer (exported as @insurance-poc/common/dvt-section-viewer)
+│   │   │   │   ├── DvtReportPage.tsx  # DvtReportPage type="medical|financial" (exported as @insurance-poc/common/dvt-report-page)
+│   │   │   │   ├── DecisionBar.tsx    # DecisionBar, DecisionComparisonTable
+│   │   │   │   ├── DetailCard.tsx
+│   │   │   │   ├── PreviousPolicy.tsx # PreviousPolicy, PreviousPolicyDialog
+│   │   │   │   ├── QuickLinks.tsx
+│   │   │   │   └── LifeAssured/
+│   │   │   │       ├── LifeAssured.tsx
+│   │   │   │       ├── ProfileImage.tsx
+│   │   │   │       └── Applicant Profile/   # Contact & Address, Fields, Image Details,
+│   │   │   │                                #   Lifestyle, Nominee, Personal & KYC, Product Details
 │   │   │   ├── modules/
 │   │   │   │   └── login/
 │   │   │   │       ├── LoginPage.tsx
@@ -28,10 +39,12 @@ mid-office-monorepo/
 │   │   │   │   └── guards.tsx         # RedirectIfSession guard
 │   │   │   └── services/
 │   │   │       ├── jwtService.ts      # Mock JWT fetch
-│   │   │       └── loginService.ts    # Mock auth (exported as @insurance-poc/common/auth)
+│   │   │       ├── loginService.ts    # Mock auth (exported as @insurance-poc/common/auth)
+│   │   │       └── dvtReportService.ts # DVT report data service (BFF placeholder; used by DvtSectionViewer)
 │   │   ├── Dockerfile
 │   │   ├── index.html
-│   │   ├── package.json               # exports map: ./auth, ./detail-card
+│   │   ├── package.json               # exports map: ./auth, ./app-header, ./dvt-section-viewer, ./dvt-report-page,
+│   │   │                              #   ./decision-bar, ./detail-card, ./quick-links, ./previous-policy, ./life-assured (+ 2 stale, see §1)
 │   │   ├── tsconfig.json
 │   │   └── vite.config.ts             # Dev gateway — proxies /retail and /group
 │   │
@@ -43,15 +56,31 @@ mid-office-monorepo/
 │   │   │   ├── modules/
 │   │   │   │   ├── drs/
 │   │   │   │   │   └── RetailDrsPage.tsx
-│   │   │   │   └── inbox/
-│   │   │   │       └── RetailInboxPage.tsx
+│   │   │   │   ├── inbox/
+│   │   │   │   │   └── RetailInboxPage.tsx
+│   │   │   │   ├── mas/
+│   │   │   │   │   ├── MasDrsPage.tsx             # MAS DRS shell: AppHeader + empty <main> (route /mas/drs; opened from Inbox MAS_TASK)
+│   │   │   │   │   ├── MASAuditTrailPage.tsx
+│   │   │   │   │   ├── MASMedicalReportPage.tsx  # thin wrapper → DvtReportPage type="medical"
+│   │   │   │   │   └── MASFinancialReportPage.tsx # thin wrapper → DvtReportPage type="financial"
+│   │   │   │   ├── mmt-grievance/
+│   │   │   │   │   ├── MmtGrievanceDecision.tsx   # "TPA Grievance Details" grid, pager, Submit (validation only)
+│   │   │   │   │   └── MmtGrievanceDrsPage.tsx    # MMT Grievance DRS: AppHeader + ApplicantBanner + GrievanceHistory + MmtGrievanceDecision (route /mmt-grievance/drs; opened from Inbox MMT_TASK)
+│   │   │   │   ├── pivv/
+│   │   │   │   │   ├── PivvDrsPage.tsx            # PIVV DRS: AppHeader + ApplicantBanner + PivvDecisionForm (route /pivv/drs; opened from Inbox PIVV_TASK)
+│   │   │   │   │   └── PivvDecisionForm.tsx       # "PIVV Details" table, Submit, Confirm Submit dialog
+│   │   │   │   └── previousPolicy/
+│   │   │   │       └── RetailPreviousPolicyPage.tsx
 │   │   │   ├── routes/
 │   │   │   │   ├── AppRoutes.tsx
 │   │   │   │   ├── RequireSession.tsx # Re-verifies RETAIL authorization on mount
 │   │   │   │   └── RetailAppLayout.tsx
 │   │   │   └── services/
 │   │   │       ├── drsService.ts
-│   │   │       └── inboxService.ts
+│   │   │       ├── inboxService.ts
+│   │   │       ├── masAuditTrailService.ts
+│   │   │       ├── pivvService.ts
+│   │   │       └── mmtGrievanceService.ts
 │   │   ├── Dockerfile
 │   │   ├── index.html
 │   │   ├── package.json
@@ -65,9 +94,12 @@ mid-office-monorepo/
 │       │   ├── vite-env.d.ts
 │       │   ├── modules/
 │       │   │   ├── drs/
-│       │   │   │   └── DvtUser.tsx
-│       │   │   └── inbox/
-│       │   │       └── GroupInboxPage.tsx
+│       │   │   │   ├── DvtUser.tsx
+│       │   │   │   └── lifeAssuredData.ts
+│       │   │   ├── inbox/
+│       │   │   │   └── GroupInboxPage.tsx
+│       │   │   └── previousPolicy/
+│       │   │       └── GroupPreviousPolicyPage.tsx
 │       │   ├── routes/
 │       │   │   ├── AppRoutes.tsx
 │       │   │   ├── GroupAppLayout.tsx
@@ -91,6 +123,8 @@ mid-office-monorepo/
 │   │   │   ├── Badge/
 │   │   │   │   ├── Badge.tsx          # Badge, BadgeVariant, LegacyBadgeVariant, RequirementBadgeVariant
 │   │   │   │   └── BadgeWithCount.tsx
+│   │   │   ├── Box/
+│   │   │   │   └── Box.tsx            # CustomBox
 │   │   │   ├── Button/
 │   │   │   │   └── Button.tsx         # CustomButton
 │   │   │   ├── Calendar/
@@ -99,10 +133,12 @@ mid-office-monorepo/
 │   │   │   │   └── Checkbox.tsx       # CustomCheckbox
 │   │   │   ├── Dialog/
 │   │   │   │   └── Dialog.tsx         # CustomDialog
-│   │   │   ├── Icons/
+│   │   │   ├── icons/
 │   │   │   │   └── Icons.tsx          # All SVG icons — proxy here, never import @mui/icons-material directly
 │   │   │   ├── KeyValueTable/
 │   │   │   │   └── KeyValueTable.tsx  # KeyValueTable, KeyValueRow
+│   │   │   ├── Pagination/
+│   │   │   │   └── Pagination.tsx     # CustomPagination
 │   │   │   ├── Radio/
 │   │   │   │   └── Radio.tsx          # CustomRadioGroup
 │   │   │   ├── SearchBar/
@@ -120,8 +156,10 @@ mid-office-monorepo/
 │   │   │   │   └── Tabs.tsx           # CustomTabs, TabItem
 │   │   │   ├── TextField/
 │   │   │   │   └── TextField.tsx      # CustomTextField
-│   │   │   └── Tooltip/
-│   │   │       └── Tooltip.tsx        # CustomTooltip
+│   │   │   ├── Tooltip/
+│   │   │   │   └── Tooltip.tsx        # CustomTooltip
+│   │   │   └── Typography/
+│   │   │       └── Typography.tsx     # CustomTypography
 │   │   ├── package.json               # exports: "." → src/index.ts (no build step)
 │   │   └── tsconfig.json
 │   │
@@ -129,7 +167,7 @@ mid-office-monorepo/
 │   │   ├── src/
 │   │   │   ├── dev-config.json        # Single source of truth: ports, base paths, host
 │   │   │   └── index.ts               # commonPaths, retailPaths, groupPaths, businessInboxUrl,
-│   │   │                              #   drsUrl, replaceUrl, assignUrl, appBasename
+│   │   │                              #   drsUrl, previousPolicyUrl, replaceUrl, assignUrl, appBasename
 │   │   ├── package.json               # exports: "." → src/index.ts (no build step)
 │   │   └── tsconfig.json
 │   │
@@ -161,7 +199,8 @@ mid-office-monorepo/
 ├── design-reference/                  # UI source of truth — never imported into the app build
 │   └── ui-prototypes/
 │       ├── Retail/                    # CUW, Pre issuance CUW, CVT, Pre issuance CVT, SUW/Reinstatement,
-│       │                              #   MAS, PIVV, IT Task, MMT Grievance, Claim Audit, Ref Screens
+│       │                              #   MAS, PIVV, IT Task, MMT Grievance, Claim Audit, Ref Screens,
+│       │                              #   Reinsurer
 │       ├── Group/                     # DVT Informal, GUW Formal, GUW Informal
 │       └── search-application/        # Search Application (read-only cross-line)
 │
@@ -182,6 +221,8 @@ mid-office-monorepo/
 │       └── screens/                   # Per-screen specs (component tree, routes, API shapes)
 │           ├── README.md
 │           ├── 00-shared-layout.md    # AppHeader, Sidebar, ApplicantBanner, design tokens
+│           ├── context-ingestion-manifest.md
+│           ├── shared-login.md
 │           ├── retail-cuw.md
 │           ├── retail-pre-issuance-cuw.md
 │           ├── retail-cvt.md
@@ -200,7 +241,7 @@ mid-office-monorepo/
 │           └── search-application.md
 │
 ├── .bob/                              # Bob AI assistant configuration
-│   ├── commands/                      # Slash commands: /annotate /spec /build /build-like /check /inventory
+│   ├── commands/                      # annotate.md spec.md build.md build-like.md check.md inventory.md pipeline.md (interactive orchestrator)
 │   ├── rules/                         # 01-spec-rules.md — annotation schema, design tokens, template
 │   ├── rules-agent/AGENTS.md          # Non-obvious coding rules (Agent/Code mode)
 │   ├── rules-ask/AGENTS.md            # Documentation context (Ask mode)
@@ -213,7 +254,10 @@ mid-office-monorepo/
 ├── .dockerignore
 ├── .gitignore
 ├── .npmrc
+├── AGENTS.md                          # Repo-wide guidance for agents
+├── README.md
 ├── package.json                       # Root: pnpm@10.15.0, turbo scripts, devDependencies
+├── pnpm-lock.yaml
 ├── pnpm-workspace.yaml                # Workspace globs: apps/*, packages/*
 ├── tsconfig.base.json                 # Shared TS config: strict, noUnusedLocals, moduleResolution:bundler
 └── turbo.json                         # Pipeline: build → ^typecheck; dev (no cache); globalDependencies: mock/**
@@ -234,9 +278,23 @@ mid-office-monorepo/
   | Subpath | Source file | Contents |
   |---|---|---|
   | `@insurance-poc/common/auth` | `src/services/loginService.ts` | `fetchLogin`, `authorizeBusiness`, `AuthenticatedUser`, `BusinessType` |
+  | `@insurance-poc/common/app-header` | `src/components/AppHeader.tsx` | `AppHeader`, `AppHeaderProps`, `ProfileMenuItem` |
+  | `@insurance-poc/common/dvt-section-viewer` | `src/components/DvtSectionViewer.tsx` | `DvtSectionViewer`, `DvtSectionViewerProps` |
+  | `@insurance-poc/common/dvt-report-page` | `src/components/DvtReportPage.tsx` | `DvtReportPage`, `DvtReportPageProps` |
   | `@insurance-poc/common/detail-card` | `src/components/DetailCard.tsx` | `DetailCard`, `DetailCardProps`, `DetailAttribute`, `DetailTable` |
+  | `@insurance-poc/common/grievance-history` | `src/components/GrievanceHistory.tsx` | `GrievanceHistory`, `grievanceColumns`, `GrievanceHistoryRow`, `GrievanceHistoryProps` - "Grievance History" table + pager (uses `CustomTable`, `CustomPagination`, `usePagination`); reused by MMT Grievance and other grievance screens |
+  | `@insurance-poc/common/use-pagination` | `src/components/Requirement Mgmt/usePagination.ts` | `usePagination`, `UsePaginationResult` |
+  | `@insurance-poc/common/decision-bar` | `src/components/DecisionBar.tsx` | `DecisionBar`, `DecisionComparisonTable`, `DecisionBarItem`, `DecisionBarProps`, `ComparisonRow` |
+  | `@insurance-poc/common/quick-links` | `src/components/QuickLinks.tsx` | `QuickLinks`, `QuickLinkItem`, `QuickLinksProps` |
+  | `@insurance-poc/common/previous-policy` | `src/components/PreviousPolicy.tsx` | `PreviousPolicy`, `PreviousPolicyDialog`, `PreviousPolicyProps` |
+  | `@insurance-poc/common/life-assured` | `src/components/LifeAssured/LifeAssured.tsx` | `LifeAssured`, `LifeAssuredApplicant`, `LifeAssuredProps`, `FieldData`, `ImageDetailRecord`, `NomineeRow`, `AppointeeRow` |
 
-- **Workstreams owned**: Login, shared summary screen (future).
+  > **Stale exports:** `./applicant-profile` (`src/components/ApplicantProfile.tsx`) and
+  > `./profile-fields` (`src/components/ProfileFields.tsx`) are declared in `package.json` but the
+  > target files do not exist (superseded by `LifeAssured/`). Remove them or restore the files.
+
+- **Workstreams owned**: Login, shared business components (decision bar, quick links, previous
+  policy, life assured).
 
 ### `apps/retail` — Retail Underwriting SPA (`@insurance-poc/retail`)
 
@@ -266,19 +324,30 @@ Vite in each consuming app transpiles them at build time.
 
 Wraps MUI v6 + Emotion. All components are exported from `packages/ui/src/index.ts`.
 
+> **`packages/ui/src` is the single source of UI components.** Screens in `apps/*` must compose
+> these exports (and `apps/common` components) and must **not** import table, select, text-field,
+> dialog or button primitives (`Table*`, `Select`, `MenuItem`, `TextField`, `Dialog`, `Button`,
+> `Paper`) from `@mui/material`. Use `CustomBox` / `CustomTypography` for layout and text. For a dropdown pass `options` to `CustomSelect`; for a data grid pass `columns` / `data` to
+> `CustomTable`. Before writing any markup, open `packages/ui/src/index.ts` and pick the matching
+> export below. If none renders the prototype acceptably, record it under "Open questions" — do not
+> fall back to bare MUI.
+
 | Export name | Source file | Description |
 |---|---|---|
 | `appTheme` | `theme.ts` | MUI theme: primary `#E45F14`, font `Mulish`, bg `#fff8f3` |
+| `CustomBox` | `Box/Box.tsx` | MUI Box wrapper (layout) |
+| `CustomTypography` | `Typography/Typography.tsx` | MUI Typography wrapper |
 | `CustomButton` | `Button/Button.tsx` | MUI Button wrapper |
 | `CustomDialog` | `Dialog/Dialog.tsx` | MUI Dialog wrapper |
-| `CustomTable`, `Column` | `Table/Table.tsx` | Generic data table |
+| `CustomTable`, `Column` | `Table/Table.tsx` | Generic data table: orange title bar (`title`), optional `headerAction`, per-column `width` / `render` / `headerRender` / `sticky`. Use `render` to put inputs inside cells. Used by `PivvDecisionForm` ("PIVV Details") |
 | `CustomTabs`, `TabItem` | `Tabs/Tabs.tsx` | MUI Tabs wrapper |
 | `CustomTextField` | `TextField/TextField.tsx` | MUI TextField wrapper |
-| `CustomSelect` | `Select/Select.tsx` | MUI Select wrapper |
+| `CustomSelect` | `Select/Select.tsx` | Single/multiple select. Props: `options: {label,value,disabled?}[]`, `value`, `onChange(value)` (receives the value, not an event), `placeholder`, `label`, `error`, `helperText`, `disabled`. Used by `PivvDecisionForm` (PIVV Decision) |
 | `CustomMultiSelect` | `Select/MultiSelect.tsx` | Multi-select dropdown |
 | `CustomSearchSelect`, `SearchSelectOption` | `Select/CustomSearchSelect.tsx` | Search-enabled select |
 | `CustomApiAutocomplete`, `ApiAutocompleteOption` | `Select/CustomApiAutocomplete.tsx` | API-driven autocomplete |
 | `CustomCheckbox` | `Checkbox/Checkbox.tsx` | MUI Checkbox wrapper |
+| `CustomPagination` | `Pagination/Pagination.tsx` | MUI Pagination wrapper (rounded, small, selected page white on `#E45F14`). `onChange(page)` receives the page number. Used by `GrievanceHistory` |
 | `CustomRadioGroup` | `Radio/Radio.tsx` | MUI RadioGroup wrapper |
 | `CustomSnackbar` | `SnackBar/Snackbar.tsx` | Toast notification |
 | `CustomTooltip` | `Tooltip/Tooltip.tsx` | MUI Tooltip wrapper |
@@ -288,7 +357,8 @@ Wraps MUI v6 + Emotion. All components are exported from `packages/ui/src/index.
 | `BadgeWithCount` | `Badge/BadgeWithCount.tsx` | Badge with numeric counter |
 | `SearchBar` | `SearchBar/SearchBar.tsx` | Search input |
 | `Calendar`, `CalendarProps` | `Calendar/Calendar.tsx` | Date picker (MUI x-date-pickers + dayjs) |
-| `CloseIcon`, `KeyRightArrowIcon`, `EyeIcon`, `EyeSlashIcon` | `Icons/Icons.tsx` | SVG icons |
+| `CloseIcon`, `KeyDownArrowIcon`, `KeyLeftArrowIcon`, `KeyRightArrowIcon`, `LinkIcon`, `LogoutIcon`, `RefreshIcon`, `UserProfileIcon`, `DeleteIcon`, `EditIcon`, `EyeIcon`, `EyeSlashIcon`, `FilterIcon`, `TickIcon` | `icons/Icons.tsx` | SVG icons |
+| `colors` | `theme.ts` | Shared colour token map |
 
 ### `@insurance-poc/routes` — Route Constants & URL Helpers
 
@@ -298,10 +368,11 @@ Single source of truth for all ports, base paths, and cross-SPA navigation.
 |---|---|
 | `dev-config.json` | `host`, `ports` (common: 5183, retail: 5184, group: 5185), `viteBase`, `previewPort` (8080) |
 | `commonPaths` | `{ home: "/", login: "/login" }` |
-| `retailPaths` | `{ root, inbox, drs }` |
-| `groupPaths` | `{ root, inbox, drs }` |
+| `retailPaths` | `{ root, inbox, drs, masDrs, previousPolicy }` |
+| `groupPaths` | `{ root, inbox, drs, previousPolicy }` |
 | `businessInboxUrl(businessType)` | Returns inbox URL for `"RETAIL"` or `"GROUP"` |
 | `drsUrl(businessType, applicationNo)` | Returns DRS URL with `?applicationNo=` query param |
+| `previousPolicyUrl(businessType, applicationNo)` | Returns previous-policy URL with `?applicationNo=` query param |
 | `replaceUrl(url)` | `window.location.replace(url)` — use for cross-SPA navigation |
 | `assignUrl(url)` | `window.location.assign(url)` — use for cross-SPA navigation |
 | `appBasename(base)` | Strips trailing slash for React Router basename |
@@ -337,6 +408,9 @@ Local JSON files consumed exclusively through service modules. `mock/` is declar
 | `mock/inbox/inbox.json` | `apps/retail` + `apps/group` inboxService | `poolData` by category; `businessType` field filters per app |
 | `mock/drs/retail-drs.json` | `apps/retail` drsService | DRS records keyed by `applicationNo` |
 | `mock/drs/group-drs.json` | `apps/group` drsService | DRS records keyed by `applicationNo` |
+| `mock/drs/mmt-grievance-drs.json` | `apps/retail` mmtGrievanceService | MMT Grievance DRS banner records keyed by `applicationNo` |
+| `mock/drs/mmt-grievance-rows.json` | `apps/retail` mmtGrievanceService | MMT Grievance history (`history`) and TPA decision (`decision`) rows keyed by `applicationNo`. Mock is default; set `VITE_USE_MOCK=false` plus `VITE_MMT_GRIEVANCE_HISTORY_URL` / `VITE_MMT_GRIEVANCE_DECISION_URL` (typed in `apps/retail/src/vite-env.d.ts`) for the real API |
+| `mock/mas/mas-audit-trail.json` | `apps/retail` masAuditTrailService | MAS audit trail entries (mock; BFF placeholder) |
 
 **Service pattern** (all services follow this pattern — screens never import mock JSON directly):
 

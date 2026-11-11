@@ -5,11 +5,7 @@ import { clearDrsTaskIds, formatDateTime, readApiErrorMessage } from "@insurance
 
 import { Box, Typography } from "@mui/material";
 import { CustomSnackbar, CustomDialog, DeleteIcon, EditIcon } from "@insurance-poc/ui";
-import {
-  DecisionBar,
-  DecisionComparisonTable,
-  type ComparisonRow,
-} from "@insurance-poc/common/decision-bar";
+import { DecisionBar, DecisionComparisonTable } from "@insurance-poc/common/decision-bar";
 import { DetailCard } from "@insurance-poc/common/detail-card";
 import { DecisionSection, type DecisionSubmitPayload } from "@insurance-poc/common/decision-section";
 import { LifeAssured } from "@insurance-poc/common/life-assured";
@@ -32,6 +28,7 @@ import {
 } from "../../services/financialApi";
 import type { CardType } from "../../services/drsService";
 import { GROUP_QUICK_LINKS_CONFIG } from "../config/quickLinks.config";
+import { buildBreRows } from "./breFormat";
 
 const CARD_TITLES: Record<CardType, string> = {
   APPLICATION: "Application Detail",

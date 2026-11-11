@@ -1,0 +1,1504 @@
+{
+  "success": true,
+  "data": {
+    "applicationNo": "OB90377122",
+    "screenType": "GUW_INFORMAL",
+    "businessType": "GROUP",
+    "rowDetails": [
+      {
+        "id": 0,
+        "fields": [
+          {
+            "name": "Name",
+            "value": "Rudra Sangha"
+          },
+          {
+            "name": "App No.",
+            "value": "OB90377122"
+          },
+          {
+            "name": "Member",
+            "value": "Life Assured 1"
+          },
+          {
+            "name": "Marital status",
+            "value": "Married"
+          },
+          {
+            "name": "Gender",
+            "value": "Male"
+          },
+          {
+            "name": "Age",
+            "value": "40"
+          },
+          {
+            "name": "Education",
+            "value": "Graduate"
+          },
+          {
+            "name": "Occupation",
+            "value": "Salaried"
+          },
+          {
+            "name": "Organisation",
+            "value": "3I INFOTECH"
+          },
+          {
+            "name": "Declared income",
+            "value": "1000000"
+          },
+          {
+            "name": "City, State",
+            "value": "Pune, Maharashtra"
+          },
+          {
+            "name": "Residence Status",
+            "value": "Indian"
+          },
+          {
+            "name": "Residing Country",
+            "value": "India"
+          }
+        ]
+      },
+      {
+        "id": 1,
+        "fields": [
+          {
+            "name": "Product Name - Product Code",
+            "value": "ICICI Pru GIFT Pro"
+          },
+          {
+            "name": "Channel",
+            "value": "Agency"
+          },
+          {
+            "name": "Sum Assured",
+            "value": "₹10,68,000"
+          },
+          {
+            "name": "MPH Name",
+            "value": "Group policy 1"
+          },
+          {
+            "name": "Policy Term",
+            "value": ""
+          },
+          {
+            "name": "Annual Premium",
+            "value": ""
+          },
+          {
+            "name": "PAD",
+            "value": ""
+          },
+          {
+            "name": "Date of loan disbursement",
+            "value": ""
+          },
+          {
+            "name": "Coverage option",
+            "value": ""
+          },
+          {
+            "name": "Loan type",
+            "value": ""
+          },
+          {
+            "name": "Bank type",
+            "value": ""
+          },
+          {
+            "name": "Loan term",
+            "value": ""
+          },
+          {
+            "name": "Loan Account No.",
+            "value": ""
+          },
+          {
+            "name": "Share of loan",
+            "value": ""
+          },
+          {
+            "name": "Applicant status",
+            "value": ""
+          },
+          {
+            "name": "Loan amount",
+            "value": ""
+          },
+          {
+            "name": "Master policy holder code",
+            "value": ""
+          },
+          {
+            "name": "Type of loan",
+            "value": ""
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "fields": [
+          {
+            "name": "WOP - SA",
+            "value": "₹15,00,000"
+          },
+          {
+            "name": "BTBB - SA",
+            "value": "₹25,00,000"
+          },
+          {
+            "name": "TI Rider - SA",
+            "value": "₹25,00,000"
+          },
+          {
+            "name": "ADBR - SA",
+            "value": "₹25,00,000"
+          },
+          {
+            "name": "CI Rider - SA",
+            "value": "₹25,00,000"
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "fields": [
+          {
+            "name": "TSA",
+            "value": "₹10,00,000"
+          },
+          {
+            "name": "TRSA",
+            "value": "₹5,00,000"
+          },
+          {
+            "name": "TPSA",
+            "value": "₹10,00,000"
+          },
+          {
+            "name": "TFSA",
+            "value": "₹10,00,000"
+          },
+          {
+            "name": "TSSA",
+            "value": "₹10,00,000"
+          },
+          {
+            "name": "ADBR TSA",
+            "value": "₹5,00,000"
+          },
+          {
+            "name": "ATPD TSA",
+            "value": "₹5,00,000"
+          },
+          {
+            "name": "CI Rider TSA",
+            "value": "₹3,00,000"
+          },
+          {
+            "name": "CI Rider TRSA",
+            "value": "₹3,00,000"
+          },
+          {
+            "name": "BTBB TSA",
+            "value": "₹5,00,000"
+          }
+        ]
+      }
+    ],
+    "cardDetails": [
+      {
+        "type": "FINANCIAL",
+        "label": "Financial",
+        "expandedAttributes": [
+          {
+            "name": "BRE Financial decision",
+            "value": "NON-FSTP"
+          },
+          {
+            "name": "Financial Eligibility",
+            "value": "₹4,80,000"
+          },
+          {
+            "name": "Derived Income",
+            "value": "₹16,00,000"
+          },
+          {
+            "name": "Counter Offer Value",
+            "value": "₹50,00,000"
+          },
+          {
+            "name": "Additional SA",
+            "value": "0.0"
+          },
+          {
+            "name": "BIU Financial status (Match/Mismatch)",
+            "value": "Match"
+          },
+          {
+            "name": "Final Bureau Income",
+            "value": "₹16,00,000"
+          },
+          {
+            "name": "Reinsurer Case",
+            "value": "No"
+          },
+          {
+            "name": "BRE Remark",
+            "value": "Financial assessment completed"
+          }
+        ],
+        "tables": []
+      },
+      {
+        "type": "MEDICAL",
+        "label": "Medical",
+        "expandedAttributes": [
+          {
+            "name": "BRE Physical Medical Decision",
+            "value": "STP"
+          },
+          {
+            "name": "BRE Tele/Video MER Decision",
+            "value": ""
+          },
+          {
+            "name": "MunichRe Medical decision",
+            "value": ""
+          },
+          {
+            "name": "MunichRe Rating",
+            "value": ""
+          },
+          {
+            "name": "BIU Medical status (Match/Mismatch)",
+            "value": "Match"
+          },
+          {
+            "name": "BRE Physical Medical Remark",
+            "value": ""
+          },
+          {
+            "name": "BRE Tele/Video MER Remark",
+            "value": ""
+          }
+        ],
+        "tables": []
+      },
+      {
+        "type": "RISK_PARAMETERS",
+        "label": "Risk Parameters",
+        "expandedAttributes": [
+          {
+            "name": "PEP Question Response (LA)",
+            "value": "No"
+          },
+          {
+            "name": "PEP Question Response (PR)",
+            "value": "No"
+          },
+          {
+            "name": "FATF/OFAC Country Login",
+            "value": "No"
+          },
+          {
+            "name": "Claim Registered",
+            "value": "No"
+          },
+          {
+            "name": "Adverse IIB",
+            "value": "No"
+          },
+          {
+            "name": "Adverse ACR",
+            "value": "No"
+          },
+          {
+            "name": "Criminal Question Response (LA)",
+            "value": "No"
+          },
+          {
+            "name": "Criminal Question Response (PR)",
+            "value": "No"
+          },
+          {
+            "name": "Face Match Score < 75%",
+            "value": "No"
+          },
+          {
+            "name": "Distance < acceptable range",
+            "value": "No"
+          },
+          {
+            "name": "Adverse App OID",
+            "value": "No"
+          },
+          {
+            "name": "Previous Policy Substandard",
+            "value": "No"
+          },
+          {
+            "name": "Avocation Related Disclosure",
+            "value": "No"
+          },
+          {
+            "name": "Hazardous Occupation",
+            "value": "No"
+          },
+          {
+            "name": "Employment in Risky Industry",
+            "value": "No"
+          },
+          {
+            "name": "Health Question Positive",
+            "value": "Yes"
+          }
+        ],
+        "tables": []
+      }
+    ],
+    "sections": [
+      {
+        "name": "grievanceHistory",
+        "label": "Grievance History",
+        "value": {
+          "columns": [
+            {
+                "label":"User Name"
+            },
+            {
+                "label":"User Role"
+            },
+            {
+                "label":"FUP Code"
+            },
+            {
+                "label":"Grievance Raised Remark"
+            },
+            {
+                "label":"Grievance Raised Date"
+            },
+            {
+                "label":"TPA Remarks"
+            }
+          ],
+          "rows": [
+            {
+              "userName": "Premanand Sawant",
+              "userRole": "UW",
+              "fupCode": "ECG",
+              "grievanceRaisedRemark": "ECG graph is blurry",
+              "grievanceRaisedDate": "7 Sep 2026",
+              "tpaRemarks": "Provided new ECG graph"
+            }
+          ]
+        }
+      },
+      {
+        "name": "requirementManagement",
+        "label": "Requirement Management",
+        "value": [
+          {
+            "status": "",
+            "requirementPoolType": "",
+            "profile": "",
+            "category": "",
+            "subCategory": "",
+            "document": "",
+            "reason": "",
+            "fupCode": "",
+            "description": "",
+            "extraRemark": ""
+          }
+        ]
+      },
+      {
+        "name": "latestBreDecision",
+        "label": "BRE Decision",
+        "value": {
+          "code": "ST",
+          "columns": [
+            {
+              "key": "label",
+              "header": "BRE"
+            },
+            {
+              "key": "initial",
+              "header": "Initial BRE"
+            },
+            {
+              "key": "final",
+              "header": "Final BRE"
+            }
+          ],
+          "rows": [
+            {
+              "id": "status",
+              "label": "BRE Status",
+              "initial": "Success",
+              "final": "Success"
+            },
+            {
+              "id": "decision",
+              "label": "BRE Decision",
+              "initial": [
+                "DC"
+              ],
+              "final": [
+                "ST"
+              ]
+            },
+            {
+              "id": "remarks",
+              "label": "BRE Remarks",
+              "initial": "Product Non Eligible",
+              "final": "Product Non Eligible"
+            },
+            {
+              "id": "discrepancy",
+              "label": "BRE Discrepancy",
+              "initial": "ACR#OCD#PAN#ADP#AGE#IDM#KYP",
+              "final": "ACR#OCD#PAN#ADP#AGE#IDM#KYP#NYC"
+            },
+            {
+              "id": "timestamp",
+              "label": "BRE Timestamp",
+              "initial": "2026-08-14T11:08:00+05:30",
+              "final": "2026-08-14T11:08:00+05:30"
+            }
+          ]
+        }
+      },
+      {
+        "name": "sdtDecision",
+        "value": {
+          "fields": [
+            {
+              "name": "Financial Decision",
+              "value": "Standard"
+            },
+            {
+              "name": "Medical Decision",
+              "value": "Standard"
+            }
+          ]
+        }
+      },
+      {
+        "name": "claimAudit",
+        "value": {
+          "title": "Claim Audit",
+          "columns": [
+            {
+                "label":"Policy Number"
+            },
+            {
+                "label":"Product Code"
+            },
+            {
+                "label":"Claim Key"
+            },
+            {
+                "label":"Canonical ID"
+            },
+            {
+                "label":"Patient Name"
+            },
+            {
+                "label":"Ailment for Communication"
+            },
+            {
+                "label":"Claim Type"
+            },
+            {
+                "label":"Subtype"
+            },
+            {
+                "label":"Intimation Date"
+            },
+            {
+                "label":"DOA"
+            },
+            {
+                "label":"DOD"
+            },
+            {
+                "label":"Decision Status"
+            }
+          ],
+          "rows": []
+        }
+      },
+      {
+        "name": "uwGuidelines",
+        "value": {
+          "reasons": [
+            {
+              "reason": "Income document waived or not received",
+              "remark": "Income document waived or not raised. Please provide justification",
+              "systemAction": "",
+              "justificationReason": "",
+              "justificationRemarks": ""
+            },
+            {
+              "reason": "Medical requirement waived or not received",
+              "remark": "Medical document waived or not raised. Please provide justification",
+              "systemAction": "",
+              "justificationReason": "",
+              "justificationRemarks": ""
+            },
+            {
+              "reason": "Financially not viable",
+              "remark": "Justification required as financial eligibility is less than TFSA",
+              "systemAction": "",
+              "justificationReason": "",
+              "justificationRemarks": ""
+            },
+            {
+              "reason": "DRC Risk Blank or Null Risk",
+              "remark": "DRC Risk value is Blank or Null Risk â€” kindly take counter signing",
+              "systemAction": "REFER_TO_CS",
+              "justificationReason": "",
+              "justificationRemarks": ""
+            },
+            {
+              "reason": "TSA above your UW limit",
+              "remark": "Case above your underwriting limit, please take counter signing",
+              "systemAction": "REFER_TO_CS",
+              "justificationReason": "",
+              "justificationRemarks": ""
+            },
+            {
+              "reason": "Application form validity expired",
+              "remark": "Please call for fresh medical questionnaire",
+              "systemAction": "REFER_TO_HOD",
+              "justificationReason": "",
+              "justificationRemarks": ""
+            },
+            {
+              "reason": "BIU model response field is blank",
+              "remark": "BIU models predict response is blank â€” cannot take STD, XRT or COF decision. Kindly get the BIU response",
+              "systemAction": "",
+              "justificationReason": "",
+              "justificationRemarks": ""
+            }
+          ],
+          "justificationChoices": [
+            "Requirement waived",
+            "Document pending",
+            "Financial assessment",
+            "Medical assessment",
+            "Counter signing",
+            "Other"
+          ]
+        }
+      },
+      {
+        "name": "specialRemarks",
+        "value": {
+          "title": "Special Remarks",
+          "columns": [
+            "Comments",
+            "Updated Date",
+            "Updated By"
+          ],
+          "rows": [
+            {
+              "comments": "Medical documents require verification before the final decision.",
+              "updatedDate": "07/09/2026 11:36:09",
+              "updatedBy": "ipru75474"
+            },
+            {
+              "comments": "Customer was contacted for additional financial information.",
+              "updatedDate": "07/09/2026 10:52:41",
+              "updatedBy": "CUW Team"
+            },
+            {
+              "comments": "Previous claim history reviewed and no adverse concern identified.",
+              "updatedDate": "08/09/2026 09:18:27",
+              "updatedBy": "DRS Reviewer"
+            }
+          ]
+        }
+      },
+      {
+        "name": "caseUwDecision",
+        "value": {
+          "fields": [
+            {
+              "name": "BRE Overall Decision",
+              "value": ""
+            },
+            {
+              "name": "BRE Overall Remarks",
+              "value": ""
+            },
+            {
+              "name": "Case UW Decision",
+              "value": ""
+            }
+          ],
+          "choices": [
+            "Standard",
+            "Counter Offer",
+            "Decline",
+            "Reject",
+            "Postpone",
+            "Hold",
+            "Refer to Risk",
+            "Refer to Accuity",
+            "Refer to Reinsurer",
+            "Refer to HO CMO",
+            "Refer to Sr.UW",
+            "Refer to HoD",
+            "Refer to CUW Claim Audit",
+            "Refer to IT",
+            "Raise Requirements",
+            "Refer to Tele MER",
+            "Refer to Video MER",
+            "Refer to DVT"
+          ]
+        }
+      }
+    ],
+    "subSections": [
+      {
+        "name": "applicantProfile",
+        "value": [
+          {
+            "memberType": "lifeassured1",
+            "lifeType": "LA",
+            "customerType": "HNI",
+            "partyId": "3202e174-2338-4970-a7e8-253831e31274",
+            "jontFlag": false,
+            "lifeNumber": "01",
+            "clientId": "NA",
+            "proposerLaRelation": "Self",
+            "jointLARelation": "",
+            "jointPRRelation": "",
+            "nriFlag": false,
+            "fatfFlag": false,
+            "image_details": {
+              "label": "Image Details",
+              "value": {
+                "columns": [
+                  {
+                    "label": "Image Type"
+                  },
+                  {
+                    "label": "Document"
+                  },
+                  {
+                    "label": "Face Match Score"
+                  },
+                  {
+                    "label": "Image Quality"
+                  },
+                  {
+                    "label": "Remarks"
+                  }
+                ],
+                "rows": [
+                  {
+                    "imageType": "Live photograph",
+                    "document": "Applicant selfie",
+                    "faceMatchScore": "98.6%",
+                    "imageQuality": "Good",
+                    "remarks": "Face matched successfully"
+                  }
+                ]
+              }
+            },
+            "personal_kyc": {
+              "label": "Personal & KYC",
+              "groups": [
+                [
+                  {
+                    "label": "Applicant Name",
+                    "value": "Rudra Prakash Sangha"
+                  },
+                  {
+                    "label": "Date of Birth",
+                    "value": "9 Aug 1988"
+                  },
+                  {
+                    "label": "Age",
+                    "value": "38 Years"
+                  },
+                  {
+                    "label": "Gender",
+                    "value": "Male"
+                  },
+                  {
+                    "label": "Marital Status",
+                    "value": ""
+                  },
+                  {
+                    "label": "Nationality",
+                    "value": "India"
+                  },
+                  {
+                    "label": "Country of Residence",
+                    "value": "India"
+                  },
+                  {
+                    "label": "Education",
+                    "value": "Graduate"
+                  },
+                  {
+                    "label": "Resident Status",
+                    "value": "IND"
+                  },
+                  {
+                    "label": "Designation",
+                    "value": "Manager"
+                  },
+                  {
+                    "label": "Disabled",
+                    "value": ""
+                  },
+                  {
+                    "label": "Percentage Of Impairment",
+                    "value": ""
+                  },
+                  {
+                    "label": "Type Of Impairment",
+                    "value": ""
+                  },
+                  {
+                    "label": "UDID Number",
+                    "value": "UDID-98765"
+                  },
+                  {
+                    "label": "UDS Link",
+                    "value": ""
+                  }
+                ],
+                [
+                  {
+                    "label": "PRAN Number",
+                    "value": "XXXXXXXX9012"
+                  },
+                  {
+                    "label": "PRAN Number Verification",
+                    "value": "Verified"
+                  },
+                  {
+                    "label": "PAN Number",
+                    "value": ""
+                  },
+                  {
+                    "label": "PAN Flag",
+                    "value": "Verified"
+                  },
+                  {
+                    "label": "PAN Aadhar Seeding Status",
+                    "value": "Y"
+                  },
+                  {
+                    "label": "Identity Proof Type",
+                    "value": "Aadhaar"
+                  },
+                  {
+                    "label": "Identity Proof Expiry Date",
+                    "value": "31 Dec 2099"
+                  },
+                  {
+                    "label": "Identity Proof Number",
+                    "value": "XXXXXX111A"
+                  },
+                  {
+                    "label": "Address Proof",
+                    "value": "Aadhaar"
+                  },
+                  {
+                    "label": "Income Proof",
+                    "value": "Aadhaar"
+                  },
+                  {
+                    "label": "CKYC Number",
+                    "value": "NA"
+                  },
+                  {
+                    "label": "PEP",
+                    "value": "No"
+                  },
+                  {
+                    "label": "Criminal Proceedings",
+                    "value": "No"
+                  }
+                ]
+              ]
+            },
+            "contact_and_address": {
+              "label": "Contact & Address",
+              "value": [
+                {
+                  "label": "Communication Address",
+                  "value": [
+                    {
+                      "label": "Address Line 1",
+                      "value": "malad"
+                    },
+                    {
+                      "label": "Address Line 2",
+                      "value": "malad"
+                    },
+                    {
+                      "label": "Address Line 3",
+                      "value": ""
+                    },
+                    {
+                      "label": "Landmark",
+                      "value": "prism"
+                    },
+                    {
+                      "label": "City",
+                      "value": "mumbai"
+                    },
+                    {
+                      "label": "State",
+                      "value": "maharashtra"
+                    },
+                    {
+                      "label": "Country",
+                      "value": ""
+                    },
+                    {
+                      "label": "Pincode",
+                      "value": "400064"
+                    }
+                  ]
+                },
+                {
+                  "label": "Permanent Address",
+                  "value": [
+                    {
+                      "label": "Address Line 1",
+                      "value": "RFRF"
+                    },
+                    {
+                      "label": "Address Line 2",
+                      "value": "FGHJK"
+                    },
+                    {
+                      "label": "Address Line 3",
+                      "value": "FGHJKL"
+                    },
+                    {
+                      "label": "Landmark",
+                      "value": ""
+                    },
+                    {
+                      "label": "City",
+                      "value": "THANE"
+                    },
+                    {
+                      "label": "State",
+                      "value": "Maharashtra"
+                    },
+                    {
+                      "label": "Country",
+                      "value": "India"
+                    },
+                    {
+                      "label": "Pincode",
+                      "value": "400709"
+                    }
+                  ]
+                },
+                {
+                  "label": "Contact Details",
+                  "value": [
+                    {
+                      "label": "Mobile No.",
+                      "value": "9878716726"
+                    },
+                    {
+                      "label": "Email ID",
+                      "value": "TRSTR@GMAIL.COM"
+                    },
+                    {
+                      "label": "Alternate Mobile",
+                      "value": ""
+                    },
+                    {
+                      "label": "STD/ISD Code",
+                      "value": ""
+                    },
+                    {
+                      "label": "Landline Number",
+                      "value": ""
+                    },
+                    {
+                      "label": "Email Pref",
+                      "value": "Y"
+                    },
+                    {
+                      "label": "SMS Pref",
+                      "value": "Y"
+                    }
+                  ]
+                }
+              ]
+            },
+            "nominee": {
+              "label": "Nominee",
+              "value": [
+                {
+                  "label": "Nominee Details",
+                  "columns": [
+                    {
+                      "label": "Nominee Name"
+                    },
+                    {
+                      "label": "Nominee DOB"
+                    },
+                    {
+                      "label": "Gender"
+                    },
+                    {
+                      "label": "Relationship"
+                    },
+                    {
+                      "label": "Share %"
+                    }
+                  ],
+                  "rows": [
+                    {
+                      "name": "Smit Sangha",
+                      "dob": "12 Mar 1991",
+                      "gender": "Male",
+                      "relationship": "",
+                      "share": "0"
+                    },
+                    {
+                      "name": "",
+                      "dob": "",
+                      "gender": "",
+                      "relationship": "",
+                      "share": ""
+                    }
+                  ]
+                }
+              ]
+            },
+            "generic": {
+              "label": "Generic",
+              "value": {
+                "label": "Generic",
+                "value": [
+                  {
+                    "label": "Existing Policy Number",
+                    "value": "NA"
+                  },
+                  {
+                    "label": "Client ID",
+                    "value": "NA"
+                  },
+                  {
+                    "label": "Self Proposed",
+                    "value": "Yes"
+                  },
+                  {
+                    "label": "Type of Proposer",
+                    "value": "Individual"
+                  },
+                  {
+                    "label": "Relationship with Life Assured",
+                    "value": "Self"
+                  },
+                  {
+                    "label": "Type of Proposal",
+                    "value": "Retail New Business"
+                  },
+                  {
+                    "label": "OID App form",
+                    "value": ""
+                  },
+                  {
+                    "label": "OID IIB",
+                    "value": ""
+                  },
+                  {
+                    "label": "Previous policy",
+                    "value": ""
+                  }
+                ]
+              }
+            },
+            "product_details": {
+              "label": "Product Details",
+              "value": {
+                "label": "Product Details",
+                "value": [
+                  {
+                    "label": "Top Advisor Flag",
+                    "value": "-"
+                  },
+                  {
+                    "label": "Partner Type",
+                    "value": "-"
+                  },
+                  {
+                    "label": "Benefit Option",
+                    "value": "-"
+                  },
+                  {
+                    "label": "Policy Term",
+                    "value": "-"
+                  },
+                  {
+                    "label": "Premium Paying Term",
+                    "value": "-"
+                  },
+                  {
+                    "label": "Proposer Type",
+                    "value": "-"
+                  },
+                  {
+                    "label": "Annual Premium",
+                    "value": "-"
+                  },
+                  {
+                    "label": "Sum Assured to Premium Ratio",
+                    "value": "-"
+                  }
+                ]
+              }
+            },
+            "eia": {
+              "label": "eIA",
+              "value": {
+                "label": "eIA",
+                "value": [
+                  {
+                    "label": "Open eIA",
+                    "value": "No"
+                  },
+                  {
+                    "label": "Existing eIA Number",
+                    "value": "NA"
+                  },
+                  {
+                    "label": "Preferred Repository",
+                    "value": ""
+                  },
+                  {
+                    "label": "Convert Policies",
+                    "value": "No"
+                  }
+                ]
+              }
+            },
+            "payment_and_payout": {
+              "label": "Payment & Payout",
+              "value": [
+                {
+                  "label": "Payment Details",
+                  "value": [
+                    {
+                      "label": "Is it a Third Party payment",
+                      "value": "false"
+                    },
+                    {
+                      "label": "Payment Options",
+                      "value": ""
+                    }
+                  ]
+                },
+                {
+                  "label": "Payout Details",
+                  "value": [
+                    {
+                      "label": "Account Type",
+                      "value": "Savings"
+                    },
+                    {
+                      "label": "Bank Type",
+                      "value": ""
+                    },
+                    {
+                      "label": "Branch",
+                      "value": ""
+                    },
+                    {
+                      "label": "MICR Code",
+                      "value": "1234"
+                    },
+                    {
+                      "label": "IFSC code",
+                      "value": "ABKV998"
+                    },
+                    {
+                      "label": "Account Number",
+                      "value": "129894543"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "auditTrail",
+        "label": "Audit Trail",
+        "value": {
+          "columns": [
+            {
+              "label": "User ID"
+            },
+            {
+              "label": "User Name"
+            },
+            {
+              "label": "Pool Name"
+            },
+            {
+              "label": "Case Status"
+            },
+            {
+              "label": "Decision"
+            },
+            {
+              "label": "Date Updated On"
+            },
+            {
+              "label": "Comments/Remarks"
+            }
+          ],
+          "rows": [
+            {
+              "userId": "",
+              "userName": "",
+              "poolName": "",
+              "caseStatus": "",
+              "Decision": "",
+              "updatedDate": "",
+              "comments": ""
+            }
+          ]
+        }
+      },
+      {
+        "name": "raiseGrievance",
+        "value": {
+          "title": "Raise Grievance",
+          "section": "Medical Requirements",
+          "columns": [
+            {
+                "label":"FUP Code"
+            },
+            {
+                "label":"Profile"
+            },
+            {
+                "label":"Remarks By User"
+            }
+          ],
+          "rows": [
+            {
+              "fupCode": "",
+              "profile": "",
+              "Remarks": ""
+            }
+          ]
+        }
+      },
+      {
+        "name": "previousPolicies",
+        "label": "Previous Policies",
+        "value": {
+          "members": [
+            {
+              "memberKey": "lifeAssured1",
+              "label": "Life Assured 1",
+              "dedupePosidex": [
+                {
+                  "clientId": "",
+                  "firstName": "",
+                  "surname": "",
+                  "state": "",
+                  "city": "",
+                  "dob": "",
+                  "mobileNo": "",
+                  "landlineNo": "",
+                  "recordType": "",
+                  "matchPercentage": "",
+                  "riskIndicator": ""
+                }
+              ],
+              "ipru": [
+                {
+                  "policyNumber": "",
+                  "productName": "",
+                  "sumAssured": "",
+                  "policyStatus": "",
+                  "uwDecision": "",
+                  "applicationDate": "",
+                  "claimsFlag": "",
+                  "mortalityClass": "",
+                  "installmentPremium": "",
+                  "clientRole": "",
+                  "companyName": "",
+                  "yearOfIssueApplication": "",
+                  "riderDetails": [
+                    {
+                      "riderCode": "",
+                      "riderName": "",
+                      "riderSubType": "",
+                      "faceValue": "",
+                      "mortalityClass": "",
+                      "uwMortalityClassBase": "",
+                      "sumAssured": "",
+                      "rating": "",
+                      "sarConsideration": "",
+                      "clientRole": ""
+                    }
+                  ]
+                }
+              ],
+              "iibNonIpru": [
+                {
+                  "questDbNo": "",
+                  "questSumAssured": "",
+                  "questPolicyStatus": "",
+                  "questCompanyName": "",
+                  "matchingParameter": "",
+                  "questDopDoc": "",
+                  "questDateOfDeath": "",
+                  "questCauseOfDeath": "",
+                  "questRecordLastUpdated": "",
+                  "questEntityCautionStatus": "",
+                  "intermediaryCautionStatus": "",
+                  "isNegativeMatch": "",
+                  "whetherStandardLife": "",
+                  "medicalNonmedical": "",
+                  "reasonForDecline": "",
+                  "reasonForPostpone": "",
+                  "reasonForRepudiation": "",
+                  "linkedNonLinked": "",
+                  "productType": "",
+                  "remarks": "",
+                  "broadReason": "",
+                  "granularReason1": "",
+                  "granularReason2": ""
+                }
+              ],
+              "applicationFormDetails": [
+                {
+                  "companyName": "",
+                  "policyNumber": "",
+                  "baseSumAssured": "",
+                  "proposalDate": "",
+                  "policyDecision": ""
+                }
+              ]
+            }
+          ],
+          "familyPolicies": [
+            {
+              "type": "",
+              "relationWithLifeAssured": "",
+              "insuranceCompany": "",
+              "sumAssured": "",
+              "annualIncome": "",
+              "policyStatus": ""
+            }
+          ]
+        }
+      },
+      {
+        "name": "openOtherTasks",
+        "label": "Open Tasks",
+        "value": {
+          "columns": [
+            {
+              "label": "Call log date"
+            },
+            {
+              "label": "Service call ID"
+            },
+            {
+              "label": "CT"
+            },
+            {
+              "label": "ST"
+            },
+            {
+              "label": "Call Details"
+            },
+            {
+              "label": "User Pool"
+            },
+            {
+              "source": ""
+            }
+          ],
+          "rows": [
+            {
+              "callLogDate": "",
+              "callId": "",
+              "ct": "",
+              "st": "",
+              "callDetails": "",
+              "userPoll": "",
+              "source": ""
+            },
+            {
+              "callLogDate": "",
+              "callId": "",
+              "ct": "",
+              "st": "",
+              "callDetails": "",
+              "userPoll": "",
+              "source": ""
+            }
+          ]
+        }
+      },
+      {
+        "name": "riskDetails",
+        "value": [
+          {
+            "risk_details": {
+              "member": "Life Assured1",
+              "label": "Risk Details",
+              "memberDetails": {
+				"label": "Member Details",
+				"value": [
+					{
+						"label":"KRN No",
+						"value": ""
+					},
+					{
+						"label":"Application No",
+						"value": ""
+					},
+					{
+						"label":"Customer Name",
+						"value": ""
+					},
+					{
+						"label":"Vendor Name",
+						"value": ""
+					},
+					{
+						"label":"Report Revised Date",
+						"value": ""
+					}
+				]
+			  },
+			  "riskAssessament": {
+				"label": "Risk Assessment",
+				"value": [
+					{
+						"label":"Name, address & stay confirmed",
+						"value": ""
+					},
+					{
+						"label":"Standard of living",
+						"value": ""
+					},
+					{
+						"label":"Life assured existence",
+						"value": ""
+					},
+					{
+						"label":"Educational qualification",
+						"value": ""
+					},
+					{
+						"label":"Contactability established",
+						"value": ""
+					},
+					{
+						"label":"Occupation category",
+						"value": ""
+					},
+					{
+						"label":"Computer applied for policy",
+						"value": ""
+					},
+					{
+						"label":"Annual income",
+						"value": ""
+					},
+					{
+						"label":"Met with whom",
+						"value": ""
+					},
+					{
+						"label":"Availability of LC at current address",
+						"value": ""
+					},
+					{
+						"label":"Hobbies",
+						"value": ""
+					},
+					{
+						"label":"Hobbies",
+						"value": ""
+					},
+					{
+						"label":"Previous medical history",
+						"value": ""
+					},
+					{
+						"label":"Photo availability of life assured",
+						"value": ""
+					},
+					{
+						"label":"Vitality check",
+						"value": ""
+					},
+					{
+						"label":"Geo tagging",
+						"value": ""
+					},
+					{
+						"label":"Type of house",
+						"value": ""
+					},
+					{
+						"label":"Face match",
+						"value": ""
+					},
+					{
+						"label":"Have Life Insurance",
+						"value": ""
+					},
+					{
+						"label":"Investigation score",
+						"value": ""
+					},
+					{
+						"label":"FE remarks",
+						"value": ""
+					}
+				]
+			  },
+			  "riskDecision": {
+				"label": "Risk Decision",
+				"riskRemark": "",
+				"riskCode": ""
+			}
+		  }
+    }
+		]
+    
+      }
+    ],
+    "sectionType": [
+      "Header",
+      "Card",
+      "Section",
+      "quickLinks"
+    ]
+  }
+}
