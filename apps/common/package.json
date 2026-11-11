@@ -179,6 +179,11 @@
       "import": "./src/services/completeTask.ts",
       "default": "./src/services/completeTask.ts"
     },
+    "./bre-retrigger": {
+      "types": "./src/services/breRetrigger.ts",
+      "import": "./src/services/breRetrigger.ts",
+      "default": "./src/services/breRetrigger.ts"
+    },
     "./master-data": {
       "types": "./src/services/masterDataService.ts",
       "import": "./src/services/masterDataService.ts",
