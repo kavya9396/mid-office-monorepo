@@ -199,7 +199,9 @@ function resolveColumnsResolved(params: Readonly<ResolveColumnsResolvedInput>): 
   }
   if (realPoolStatus === null) return [];
   if (realPoolStatus === "loading" || realPoolStatus === "error") return [];
-  if (realPoolFields.length === 0) return [];
+  if (realPoolFields.length === 0) {
+    return defaultColumns.filter((field) => catalogAll.includes(field));
+  }
   return orderedVisibleFromSelectedFields(realPoolFields).filter((field) => catalogAll.includes(field));
 }
 
@@ -230,7 +232,9 @@ function selectedFieldsForConfigureModal(params: Readonly<SelectedFieldsForConfi
       apiSelectedFields !== null && apiSelectedFields.length > 0
         ? apiSelectedFields
         : realPoolFields;
-    if (fromApi.length === 0) return [];
+    if (fromApi.length === 0) {
+      return columns.filter((field) => catalogAll.includes(field));
+    }
     return orderedVisibleFromSelectedFields(fromApi).filter((field) => catalogAll.includes(field));
   }
   if (apiSelectedFields !== null && apiSelectedFields.length > 0) {
@@ -261,6 +265,7 @@ function sortInboxRows(
 type PoolColumnsLoaderParams = {
   useMockMode: boolean;
   catalogAll: string[];
+  defaultColumnKeys: string[];
   configurePoolKey: string | undefined;
   columnContextKey: string | null | undefined;
   loadPoolColumnsFromApi: boolean;
@@ -282,8 +287,16 @@ type PoolColumnsLoaderResult = {
 };
 
 function usePoolColumnsLoader(params: Readonly<PoolColumnsLoaderParams>): PoolColumnsLoaderResult {
-  const { useMockMode, catalogAll, configurePoolKey, columnContextKey, loadPoolColumnsFromApi, onLoadColumns, onColumnNotice } =
-    params;
+  const {
+    useMockMode,
+    catalogAll,
+    defaultColumnKeys,
+    configurePoolKey,
+    columnContextKey,
+    loadPoolColumnsFromApi,
+    onLoadColumns,
+    onColumnNotice,
+  } = params;
   const [visible, setVisible] = useState<string[]>([]);
   const [apiSelectedFields, setApiSelectedFields] = useState<string[] | null>(null);
   const [realPoolStatus, setRealPoolStatus] = useState<RealPoolColumnsStatus | null>(null);
@@ -292,7 +305,7 @@ function usePoolColumnsLoader(params: Readonly<PoolColumnsLoaderParams>): PoolCo
 
   useEffect(() => {
     if (useMockMode) {
-      const defaults = defaultVisibleColumns(catalogAll, configurePoolKey);
+      const defaults = defaultVisibleColumns(defaultColumnKeys);
       setVisible(defaults);
       setApiSelectedFields(null);
       setRealPoolStatus(null);
@@ -323,7 +336,7 @@ function usePoolColumnsLoader(params: Readonly<PoolColumnsLoaderParams>): PoolCo
     }
 
     if (!loadPoolColumnsFromApi) {
-      const defaults = defaultVisibleColumns(catalogAll, configurePoolKey);
+      const defaults = defaultVisibleColumns(defaultColumnKeys);
       setVisible(defaults);
       setApiSelectedFields(null);
       setRealPoolStatus(null);
@@ -365,6 +378,7 @@ function usePoolColumnsLoader(params: Readonly<PoolColumnsLoaderParams>): PoolCo
     catalogAll,
     columnContextKey,
     configurePoolKey,
+    defaultColumnKeys,
     loadPoolColumnsFromApi,
     onColumnNotice,
     onLoadColumns,
@@ -1145,7 +1159,14 @@ export function InboxTable({
       configurePoolKey !== undefined && inboxData
         ? fieldKeysForPool(inboxData, configurePoolKey)
         : fieldKeysFromCases;
-    return columnsForPool(fromData, configurePoolKey);
+    return columnsForPool(fromData);
+  }, [configurePoolKey, fieldKeysFromCases, inboxData]);
+
+  const defaultColumnKeys = useMemo(() => {
+    if (configurePoolKey !== undefined && inboxData) {
+      return fieldKeysForPool(inboxData, configurePoolKey);
+    }
+    return fieldKeysFromCases;
   }, [configurePoolKey, fieldKeysFromCases, inboxData]);
 
   const loadPoolColumnsFromApi = Boolean(columnContextKey && onLoadColumns);
@@ -1164,6 +1185,7 @@ export function InboxTable({
   } = usePoolColumnsLoader({
     useMockMode: mockModeForPoolColumns,
     catalogAll,
+    defaultColumnKeys,
     configurePoolKey,
     columnContextKey,
     loadPoolColumnsFromApi,
@@ -1196,8 +1218,8 @@ export function InboxTable({
   }, [catalogAll, columnContextKey, configurePoolKey]);
 
   const defaultColumns = useMemo(
-    () => defaultVisibleColumns(catalogAll, configurePoolKey),
-    [catalogAll, configurePoolKey],
+    () => defaultVisibleColumns(defaultColumnKeys),
+    [defaultColumnKeys],
   );
   const columnsResolved = useMemo(
     () =>
