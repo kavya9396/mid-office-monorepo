@@ -513,13 +513,73 @@ function mapSdtRow(sdtSection: unknown, dialogs: GuwDialogSections): GuwSdtRow {
 }
 
 /* ------------------------------------------------------------------ */
+/* Member list (one entry per object in `data[]`)                        */
+/* ------------------------------------------------------------------ */
+
+export interface GuwMemberSummary {
+  /** e.g. "Life Assured 1" — also the member id used in the DRS url and decision storage key */
+  memberId: string;
+  name: string;
+  /** e.g. "31 yrs / Male / Graduate / PROF / CHENNAI" */
+  demographics: string;
+  /** `sections.caseUwDecision` "Case UW Decision" value ("" when none yet) */
+  uwDecision: string;
+}
+
+/** The per-member objects of the payload (`data[]`, or the single `data` object / bare payload). */
+function memberRecords(payload: unknown): Record<string, unknown>[] {
+  const root = recordOf(payload);
+  return Array.isArray(root.data) ? root.data.filter(isRecord) : [isRecord(root.data) ? root.data : root];
+}
+
+/** Member id of one `data[]` object: the "Member" field of `rowDetails` id 1 (e.g. "Life Assured 1"). */
+function memberIdOf(data: Record<string, unknown>, index: number): string {
+  const memberFields = mapRowDetails(data.rowDetails).find((r) => r.id === 1)?.fields;
+  return fieldValue(memberFields, "Member") || str(data.memberType) || `Life Assured ${index + 1}`;
+}
+
+/** Member rows for the member selection screen, from `rowDetails` id 0 (name) and id 1 (member / demographics). */
+export function mapGuwMembers(payload: unknown): GuwMemberSummary[] {
+  return memberRecords(payload).map((data, index) => {
+    const rows = mapRowDetails(data.rowDetails);
+    const nameFields = rows.find((r) => r.id === 0)?.fields;
+    const memberFields = rows.find((r) => r.id === 1)?.fields;
+    const detail = (name: string) => fieldValue(memberFields, name) || "-";
+    const age = fieldValue(memberFields, "Age");
+    const caseDecisionFields = recordOf(findSection(data.sections, "caseUwDecision")).fields;
+    return {
+      memberId: memberIdOf(data, index),
+      name: fieldValue(nameFields, "Name") || "-",
+      demographics: [
+        age ? `${age} yrs` : "-",
+        detail("Gender"),
+        detail("Education"),
+        detail("Occupation"),
+        detail("City, State"),
+      ].join(" / "),
+      uwDecision: fieldValue(caseDecisionFields, "Case UW Decision"),
+    };
+  });
+}
+
+export async function fetchGuwMembers(applicationNo: string): Promise<GuwMemberSummary[]> {
+  await wait(250);
+  // The mock is served for any applicationNo to allow local dev with any inbox task.
+  return applicationNo ? mapGuwMembers(guwDrsMock as unknown) : [];
+}
+
+/* ------------------------------------------------------------------ */
 /* Public mapper                                                         */
 /* ------------------------------------------------------------------ */
 
-export function mapGuwDrsPayload(payload: unknown): GuwDrsRecord {
-  const root = recordOf(payload);
-  // Support both wrapped { success, data } and bare data shapes
-  const data = isRecord(root.data) ? root.data : root;
+/**
+ * Maps one member's `data[]` object. `memberId` (e.g. "Life Assured 2") picks the member; when it is
+ * omitted or matches nothing, the first member is used.
+ */
+export function mapGuwDrsPayload(payload: unknown, memberId?: string): GuwDrsRecord {
+  const records = memberRecords(payload);
+  const data =
+    (memberId ? records.find((r, i) => memberIdOf(r, i) === memberId) : undefined) ?? records[0] ?? {};
 
   const applicationNo = str(data.applicationNo);
   const sections = Array.isArray(data.sections) ? data.sections : [];
@@ -639,12 +699,13 @@ export function clearGuwSubmittedDecision(applicationNo: string): void {
   notifyDecisionChanged();
 }
 
-export async function fetchGuwDrs(applicationNo: string): Promise<GuwDrsRecord | null> {
+/** DRS record of one member (`memberId`, e.g. "Life Assured 2"); the first member when omitted. */
+export async function fetchGuwDrs(applicationNo: string, memberId?: string): Promise<GuwDrsRecord | null> {
   await wait(250);
-  // The mock file is now a single API response object (not a records array).
+  // The mock file holds one `data[]` object per member.
   // We serve it for any applicationNo to allow local dev with any inbox task.
   const payload = guwDrsMock as unknown;
-  const record = mapGuwDrsPayload(payload);
+  const record = mapGuwDrsPayload(payload, memberId);
   const submittedDecision = loadGuwSubmittedDecision(applicationNo) ?? undefined;
   const resolvedAppNo = record.applicationNo || applicationNo;
   return {

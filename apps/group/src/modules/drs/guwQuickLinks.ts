@@ -32,6 +32,7 @@ export interface GuwQuickLinksState {
 export function useGuwQuickLinks(): GuwQuickLinksState {
   const [params] = useSearchParams();
   const applicationNo = params.get("applicationNo")?.trim() ?? "";
+  const memberId = params.get("memberId")?.trim() ?? "";
   const roleType = params.get("roleType")?.trim().toUpperCase() ?? "";
   const shouldLoad = applicationNo !== "" && !DVT_ROLE_TYPES.has(roleType);
   const [state, setState] = useState<GuwQuickLinksState>({ loading: shouldLoad });
@@ -43,13 +44,13 @@ export function useGuwQuickLinks(): GuwQuickLinksState {
     }
     let active = true;
     setState({ loading: true });
-    void fetchGuwDrs(applicationNo).then((record) => {
+    void fetchGuwDrs(applicationNo, memberId).then((record) => {
       if (active) setState({ loading: false, data: record?.quickLinks });
     });
     return () => {
       active = false;
     };
-  }, [applicationNo, shouldLoad]);
+  }, [applicationNo, memberId, shouldLoad]);
 
   return state;
 }

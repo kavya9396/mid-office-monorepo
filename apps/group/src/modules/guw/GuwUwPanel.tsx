@@ -18,6 +18,7 @@ import {
   TaskIcon,
 } from "@insurance-poc/ui";
 import { groupPaths, replaceUrl } from "@insurance-poc/routes";
+import { getMasterList } from "@insurance-poc/utils";
 import eyeIconSrc from "../../assets/eye.svg";
 import {
   clearGuwSubmittedDecision,
@@ -103,15 +104,23 @@ interface SubmittedDecision {
   validationRows?: GuwSavedValidationRow[];
 }
 
-const DECISION_OPTIONS = [
-  { value: "STD", label: "Standard" },
-  { value: "BOR_STD", label: "Borderline Standard" },
-  { value: "REJ", label: "Reject" },
-  { value: "DC", label: "Decline" },
-  { value: "POSTP", label: "Postpone" },
-  { value: "CO", label: "Counter Offer" },
-  { value: "EP", label: "Extra Premium" },
-];
+// Case UW Decision options come from master data (misc / GUW_TERM_DESC). Three master codes differ from the
+// codes used by the decision rules, validation and saved decisions, so they are translated to those codes here.
+const DECISION_CODE_BY_MASTER_CODE: Record<string, string | undefined> = {
+  BSD_STD: "BOR_STD",
+  DEC: "DC",
+  POS_PON: "POSTP",
+};
+
+const DECISION_OPTIONS = getMasterList("misc", "GUW_TERM_DESC").map((entry) => ({
+  value: DECISION_CODE_BY_MASTER_CODE[entry.code] ?? entry.code,
+  label: entry.value ?? entry.description,
+}));
+
+const SMOKER_FLAG_OPTIONS = getMasterList("misc", "GUW_STD_SMOK").map((entry) => ({
+  value: entry.value ?? entry.description,
+  label: entry.value ?? entry.description,
+}));
 
 // Decisions raised from the action buttons below the Case UW Decision dropdown
 const ACTION_DECISION_OPTIONS = [
@@ -1960,10 +1969,7 @@ export function GuwUwPanel({
                 <CustomSelect
                   value={smokerFlag}
                   onChange={(val) => setSmokerFlag(val)}
-                  options={[
-                    { value: "Smoker", label: "Smoker" },
-                    { value: "Non Smoker", label: "Non Smoker" },
-                  ]}
+                  options={SMOKER_FLAG_OPTIONS}
                   placeholder="Select"
                   fullWidth
                 />

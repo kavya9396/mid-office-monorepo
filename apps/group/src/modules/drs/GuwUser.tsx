@@ -96,12 +96,12 @@ const GuwUser = () => {
     }
     let active = true;
     setPage({ kind: "loading" });
-    void fetchGuwDrs(applicationNo).then((record) => {
+    void fetchGuwDrs(applicationNo, memberId).then((record) => {
       if (!active) return;
       setPage(record ? { kind: "ready", record } : { kind: "not-found" });
     });
     return () => { active = false; };
-  }, [applicationNo]);
+  }, [applicationNo, memberId]);
 
   return (
     <Box

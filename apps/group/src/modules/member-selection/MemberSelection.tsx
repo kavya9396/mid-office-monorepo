@@ -3,19 +3,23 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { CustomButton } from "@insurance-poc/ui";
-import { groupPaths } from "@insurance-poc/routes";
-import { ApplicantBanner, type BannerRow } from "@insurance-poc/common/applicant-banner";
+import { groupPaths, replaceUrl } from "@insurance-poc/routes";
+import { ApplicantBanner, type RowDetailsOptions } from "@insurance-poc/common/applicant-banner";
 import {
   fetchGuwDrs,
+  fetchGuwMembers,
   GUW_DECISION_CHANGED_EVENT,
   guwMemberDecisionKey,
   loadGuwSubmittedDecision,
   type GuwDrsRecord,
+  type GuwMemberSummary,
   type GuwSubmittedDecision,
 } from "../../services/guwService";
 import { deriveCaseUwDecision } from "../../services/guwCaseDecisionRules";
+import { referralConfigForRoleType, referralDecisionTone } from "../../services/referralUwService";
 import eyeIconSrc from "../../assets/eye.svg";
-import { GuwDecisionDetailsDialog, GuwUwPanel } from "./GuwUwPanel";
+import { GuwDecisionDetailsDialog, GuwUwPanel } from "../guw/GuwUwPanel";
+import { ReferralDecisionSection } from "../referral-uw/ReferralDecisionSection";
 
 /* ------------------------------------------------------------------ */
 /* Types                                                                */
@@ -23,30 +27,22 @@ import { GuwDecisionDetailsDialog, GuwUwPanel } from "./GuwUwPanel";
 
 type DecisionTone = "refer" | "decline" | "standard" | "default";
 
-type MemberDetail = { label: string; value: string };
-
-export type GuwMember = {
-  /** e.g. "Life Assured 1" */
-  memberType: string;
-  /** display index starting from 1 — controls pill colour tone */
-  toneIndex: number;
-  name: string;
-  /** e.g. "31 yrs / Male / Graduate / PROF / CHENNAI" */
-  demographics: string;
-  /** Short decision label shown in the pill */
-  uwDecision: string;
-  /** Tone class drives the pill colour */
-  tone: DecisionTone;
-  /** Key-value rows shown in the eye-icon dialog */
-  details: MemberDetail[];
-};
-
 /* ------------------------------------------------------------------ */
 /* Decision pill colours (matching prototype)                          */
 /* ------------------------------------------------------------------ */
-/** Pill label + tone of the Case UW Decision selected for a member ("-" until one is selected). */
-function memberDecisionPill(saved: GuwSubmittedDecision | null): { label: string; tone: DecisionTone } {
-  if (!saved) return { label: "-", tone: "default" };
+/**
+ * Pill label + tone of a member's decision: the decision saved on the member DRS page when there is
+ * one, else the "Case UW Decision" value from the member's `data[]` object ("-" when neither).
+ */
+function memberDecisionPill(
+  saved: GuwSubmittedDecision | null,
+  dataDecision: string,
+): { label: string; tone: DecisionTone } {
+  if (!saved) {
+    return dataDecision
+      ? { label: dataDecision, tone: referralDecisionTone(dataDecision) }
+      : { label: "-", tone: "default" };
+  }
   const label = saved.fields.find((f) => f.label === "Case UW Decision")?.value || "-";
   if (["STD", "BOR_STD"].includes(saved.decisionCode)) return { label, tone: "standard" };
   if (["REJ", "DC"].includes(saved.decisionCode)) return { label, tone: "decline" };
@@ -67,125 +63,90 @@ const TONE_PILL_STYLE: Record<number, { border: string; bg: string; color: strin
 };
 
 /* ------------------------------------------------------------------ */
-/* Mock members derived from guw-informal-drs.json summary[0]          */
+/* Banner rows (application-level strip, no name, no photo)            */
+/* Two rows from the first record's `rowDetails`: Product (id 2) and   */
+/* Riders (id 3). Other rows (name, member, sum at risk) are skipped.  */
 /* ------------------------------------------------------------------ */
-const MOCK_MEMBERS: GuwMember[] = [
-  {
-    memberType: "Life Assured 1",
-    toneIndex: 1,
-    name: "GANESH CHAVAN",
-    demographics: "31 yrs / Male / Graduate / PROF / CHENNAI",
-    uwDecision: "Refer to HOD",
-    tone: "refer",
-    details: [
-      { label: "Case UW Decision", value: "Refer to HOD" },
-      { label: "Outlier", value: "Medical history requires senior underwriting review" },
-      { label: "BRE Decision", value: "ST" },
-      { label: "Decision Type", value: "Counter Sign" },
-      { label: "1st UW Decision", value: "Standard" },
-      { label: "1st UW Decision Code", value: "STD" },
-      { label: "1st UW Smoker Status", value: "Non Smoker" },
-    ],
-  },
-  {
-    memberType: "Life Assured 2",
-    toneIndex: 2,
-    name: "PRIYA CHAVAN",
-    demographics: "29 yrs / Female / Graduate / SPVT / CHENNAI",
-    uwDecision: "Standard",
-    tone: "standard",
-    details: [
-      { label: "Case UW Decision", value: "Standard" },
-      { label: "Outlier", value: "-" },
-      { label: "BRE Decision", value: "STP" },
-      { label: "1st UW Decision", value: "Standard" },
-      { label: "1st UW Decision Code", value: "STD" },
-      { label: "1st UW Smoker Status", value: "Non Smoker" },
-    ],
-  },
-];
+const MEMBER_SELECTION_BANNER_OPTIONS: RowDetailsOptions = {
+  skipRowIds: [0, 1, 4],
+  rowLabels: { 3: "Riders" },
+};
 
 /* ------------------------------------------------------------------ */
-/* Banner rows (application-level strip, no photo)                     */
+/* MemberSelection — common to GUW, HOD and Sr UW                       */
 /* ------------------------------------------------------------------ */
-const BANNER_ROWS: BannerRow[] = [
-  {
-    id: "product",
-    fields: [{ id: "product", value: "Product: ICICI Pru GIFT Assure - E40 / Channel: OB / SA - ₹50,00,000" }],
-  },
-  {
-    id: "riders",
-    fields: [{ id: "riders", value: "Riders: WOP - SA ₹15,00,000 / BTBB - SA ₹25,00,000 / TI Rider - SA ₹25,00,000" }],
-  },
-  {
-    id: "risk",
-    fields: [{ id: "risk", value: "Sum at Risk: TSA - ₹50,00,000 / TRSA - ₹50,00,000 / Total Premium - ₹5,00,000" }],
-  },
-];
-
-/* ------------------------------------------------------------------ */
-/* GuwMemberSelection                                                   */
-/* ------------------------------------------------------------------ */
-export function GuwMemberSelection() {
+/**
+ * Members come from the `data[]` objects of guw-informal-drs.json. The screen is shown only when
+ * there is more than one object; with one object the user goes straight to that member's DRS.
+ * HOD / Sr UW (`referralConfigForRoleType`) open `/referral/drs` and show the referral decision
+ * card below the list; GUW opens `/guw/drs` and shows the Case UW Decision panel.
+ */
+export function MemberSelection() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const applicationNo = params.get("applicationNo")?.trim() ?? "";
   const roleType = params.get("roleType")?.trim() ?? "";
   const role = params.get("role")?.trim() ?? "";
+  const referralConfig = referralConfigForRoleType(roleType);
+  const drsPath = referralConfig ? "/referral/drs" : "/guw/drs";
 
+  // Members come from the `data[]` objects of guw-informal-drs.json (null until loaded)
+  const [members, setMembers] = useState<GuwMemberSummary[] | null>(null);
   // Member whose saved decision is shown in the details dialog (same dialog as the Case UW Decision eye icon)
-  const [detailMember, setDetailMember] = useState<GuwMember | null>(null);
+  const [detailMember, setDetailMember] = useState<GuwMemberSummary | null>(null);
   // Each member's own saved decision, shown against that member
   const loadMemberDecisions = (): Record<string, GuwSubmittedDecision | null> =>
     Object.fromEntries(
-      MOCK_MEMBERS.map((m) => [
-        m.memberType,
-        loadGuwSubmittedDecision(guwMemberDecisionKey(applicationNo, m.memberType)),
+      (members ?? []).map((m) => [
+        m.memberId,
+        loadGuwSubmittedDecision(guwMemberDecisionKey(applicationNo, m.memberId)),
       ]),
     );
-  const [memberDecisions, setMemberDecisions] = useState(loadMemberDecisions);
+  const [memberDecisions, setMemberDecisions] = useState<Record<string, GuwSubmittedDecision | null>>({});
   // Case UW Decision code derived from the member decisions (undefined until first derived)
   const [derivedDecision, setDerivedDecision] = useState<string | undefined>(undefined);
   const [record, setRecord] = useState<GuwDrsRecord | null>(null);
   // Case-level decision is held under its own key so it never overwrites a member's own decision
   const summaryStorageKey = `${applicationNo}:summary`;
 
+  useEffect(() => {
+    if (!applicationNo) return;
+    let active = true;
+    void fetchGuwMembers(applicationNo).then((list) => {
+      if (active) setMembers(list);
+    });
+    void fetchGuwDrs(applicationNo).then((r) => {
+      if (active) setRecord(r);
+    });
+    return () => { active = false; };
+  }, [applicationNo]);
+
   // Refresh member decisions whenever any decision is saved / cleared, or the page is shown again
   useEffect(() => {
     const refresh = () => setMemberDecisions(loadMemberDecisions());
+    refresh();
     window.addEventListener(GUW_DECISION_CHANGED_EVENT, refresh);
     window.addEventListener("pageshow", refresh);
     return () => {
       window.removeEventListener(GUW_DECISION_CHANGED_EVENT, refresh);
       window.removeEventListener("pageshow", refresh);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadMemberDecisions only depends on applicationNo
-  }, [applicationNo]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadMemberDecisions only depends on applicationNo and members
+  }, [applicationNo, members]);
 
   // Derive the Case UW Decision from the member decisions (logic lives in guwCaseDecisionRules.ts)
   useEffect(() => {
     let active = true;
     void deriveCaseUwDecision(
-      MOCK_MEMBERS.map((m) => ({
-        memberId: m.memberType,
-        decisionCode: memberDecisions[m.memberType]?.decisionCode ?? "",
+      (members ?? []).map((m) => ({
+        memberId: m.memberId,
+        decisionCode: memberDecisions[m.memberId]?.decisionCode ?? "",
       })),
     ).then((code) => {
       if (active) setDerivedDecision(code);
     });
     return () => { active = false; };
-  }, [memberDecisions]);
-
-  useEffect(() => {
-    if (!applicationNo) return;
-    let active = true;
-    if (applicationNo) {
-      void fetchGuwDrs(applicationNo).then((r) => {
-        if (active) setRecord(r);
-      });
-    }
-    return () => { active = false; };
-  }, [applicationNo]);
+  }, [members, memberDecisions]);
 
   /** Build DRS query params, preserving the role display label for the header. */
   const makeDrsQuery = (memberId: string, memberCount: number): string => {
@@ -196,26 +157,27 @@ export function GuwMemberSelection() {
 
   /** If only one member, skip selection and go straight to DRS. */
   useEffect(() => {
-    if (MOCK_MEMBERS.length === 1) {
-      const q = new URLSearchParams({ applicationNo, roleType, memberId: MOCK_MEMBERS[0].memberType, memberCount: "1" });
-      if (role) q.set("role", role);
-      navigate(`/guw/drs?${q.toString()}`, { replace: true });
+    if (members?.length === 1) {
+      navigate(`${drsPath}?${makeDrsQuery(members[0].memberId, 1)}`, { replace: true });
     }
-  }, [applicationNo, roleType, role, navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- makeDrsQuery only depends on the listed values
+  }, [members, applicationNo, roleType, role, drsPath, navigate]);
 
-  /** Navigate to GuwUser DRS for the selected member. */
-  const openMember = (member: GuwMember) => {
-    navigate(`/guw/drs?${makeDrsQuery(member.memberType, MOCK_MEMBERS.length)}`);
+  if (!members || members.length <= 1) return null;
+
+  /** Navigate to the DRS for the selected member. */
+  const openMember = (member: GuwMemberSummary) => {
+    navigate(`${drsPath}?${makeDrsQuery(member.memberId, members.length)}`);
   };
 
   return (
     <Box sx={{ minHeight: "100%", background: "#fff8f3", pb: 8 }}>
 
-      {/* ApplicantBanner — no photoUrl prop → only data strip is shown */}
+      {/* ApplicantBanner — no name, no photo → only the product / riders strip is shown */}
       <ApplicantBanner
-        name="GANESH CHAVAN"
-        applicationNo={applicationNo || "OB90311125"}
-        rows={BANNER_ROWS}
+        applicationNo={applicationNo || record?.applicationNo}
+        rowDetails={record?.rowDetails}
+        rowDetailsOptions={MEMBER_SELECTION_BANNER_OPTIONS}
       />
 
       {/* Member selection card */}
@@ -235,7 +197,7 @@ export function GuwMemberSelection() {
               Select Member
             </Typography>
             <Typography sx={{ mt: "1.5px", fontSize: 9.5, color: "#817773" }}>
-              {MOCK_MEMBERS.length} members are available in this application
+              {members.length} members are available in this application
             </Typography>
           </Box>
 
@@ -251,7 +213,7 @@ export function GuwMemberSelection() {
               color: "#8a817c",
             }}
           >
-            {["Life", "Name", "Details", "Case UW Decision", ""].map((h, i) => (
+            {["Life", "Name", "Details", referralConfig ? "UW Decision" : "Case UW Decision", ""].map((h, i) => (
               <Typography key={i} sx={{ fontSize: 8, fontWeight: 900, letterSpacing: 0.4 }}>
                 {h}
               </Typography>
@@ -259,15 +221,15 @@ export function GuwMemberSelection() {
           </Box>
 
           {/* Member rows */}
-          {MOCK_MEMBERS.map((member) => {
-            const tonePill = TONE_PILL_STYLE[member.toneIndex] ?? TONE_PILL_STYLE[1];
-            const saved = memberDecisions[member.memberType] ?? null;
-            const pillInfo = memberDecisionPill(saved);
+          {members.map((member, index) => {
+            const tonePill = TONE_PILL_STYLE[(index % 2) + 1];
+            const saved = memberDecisions[member.memberId] ?? null;
+            const pillInfo = memberDecisionPill(saved, member.uwDecision);
             const decisionPill = PILL_STYLE[pillInfo.tone] ?? PILL_STYLE.default;
 
             return (
               <Box
-                key={member.memberType}
+                key={member.memberId}
                 sx={{
                   display: "grid",
                   gridTemplateColumns: "minmax(0,1fr) 150px 34px",
@@ -283,7 +245,7 @@ export function GuwMemberSelection() {
                 <Box
                   role="button"
                   tabIndex={0}
-                  aria-label={`Open ${member.memberType} ${member.name}`}
+                  aria-label={`Open ${member.memberId} ${member.name}`}
                   onClick={() => openMember(member)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
@@ -318,7 +280,7 @@ export function GuwMemberSelection() {
                       whiteSpace: "nowrap",
                     }}
                   >
-                    {member.memberType}
+                    {member.memberId}
                   </Box>
 
                   {/* Name */}
@@ -378,7 +340,7 @@ export function GuwMemberSelection() {
                 <Box sx={{ display: "grid", placeItems: "center" }}>
                   <CustomButton
                     variant="outlined"
-                    aria-label={`View decision details for ${member.memberType} ${member.name}`}
+                    aria-label={`View decision details for ${member.memberId} ${member.name}`}
                     title="View decision details"
                     onClick={() => setDetailMember(member)}
                     sx={{ width: 30, minWidth: 30, minHeight: 28, p: 0.5, borderRadius: "6px", flexShrink: 0 }}
@@ -426,8 +388,22 @@ export function GuwMemberSelection() {
         </Box>
       </Box>
 
-      {/* Case UW Decision - same functionality as the member DRS page; final submit goes to the inbox */}
-      {record && (
+      {/* HOD / Sr UW: role decision card — final submit goes to the inbox */}
+      {referralConfig && (
+        <Box sx={{ m: "8px 12px 0" }}>
+          <ReferralDecisionSection
+            roleLabel={referralConfig.label}
+            decisionOptions={referralConfig.decisionOptions}
+            onSubmit={() => {
+              // Submit API handler to be wired
+              replaceUrl(groupPaths.inbox);
+            }}
+          />
+        </Box>
+      )}
+
+      {/* GUW: Case UW Decision - same functionality as the member DRS page; final submit goes to the inbox */}
+      {!referralConfig && record && (
         <GuwUwPanel
           applicationNo={applicationNo}
           storageKey={summaryStorageKey}
@@ -447,9 +423,11 @@ export function GuwMemberSelection() {
       <GuwDecisionDetailsDialog
         open={detailMember !== null}
         onClose={() => setDetailMember(null)}
-        submittedDecision={detailMember ? (memberDecisions[detailMember.memberType] ?? null) : null}
+        submittedDecision={detailMember ? (memberDecisions[detailMember.memberId] ?? null) : null}
       />
 
     </Box>
   );
 }
+
+export default MemberSelection;

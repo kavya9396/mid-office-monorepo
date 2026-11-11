@@ -1,5 +1,5 @@
-/* ------------------------------------------------------------------ */
-/* Referral UW (HOD / Sr UW) DRS — decision history, options, members   */
+﻿/* ------------------------------------------------------------------ */
+/* Referral UW (HOD / Sr UW) DRS â€” decision history, options, members   */
 /* Source: design-reference/ui-prototypes/Group/Ref Screens/            */
 /*         hod-drs-prototype.html, sr-uw-drs-prototype.html             */
 /* ------------------------------------------------------------------ */
@@ -85,67 +85,6 @@ export async function fetchReferralDecisionHistory(
 ): Promise<ReferralDecisionHistoryRow[]> {
   await wait(150);
   return DECISION_HISTORY_MOCK.map((row) => ({ ...row }));
-}
-
-/* ------------------------------ Members ---------------------------- */
-
-export interface ReferralMemberDetail {
-  label: string;
-  value: string;
-}
-
-export interface ReferralMember {
-  /** e.g. "Life Assured 1" — also the `memberId` query param. */
-  memberType: string;
-  /** Display index starting from 1 — controls the life pill colour. */
-  toneIndex: number;
-  name: string;
-  demographics: string;
-  /** UW decision shown in the pill. */
-  uwDecision: string;
-  /** Rows shown in the eye-icon dialog. */
-  details: ReferralMemberDetail[];
-}
-
-const MEMBERS_MOCK: ReferralMember[] = [
-  {
-    memberType: "Life Assured 1",
-    toneIndex: 1,
-    name: "GANESH CHAVAN",
-    demographics: "31 yrs / Male / Graduate / PROF / CHENNAI",
-    uwDecision: "Refer to HOD",
-    details: [
-      { label: "Case UW Decision", value: "Refer to HOD" },
-      { label: "Outlier", value: "Medical history requires senior underwriting review" },
-      { label: "Name of HoD", value: "Amit Shah (Demo HOD)" },
-      { label: "Decision Type", value: "Counter Sign" },
-      { label: "HOD Reasons", value: "Approval required beyond the underwriter's authority limit" },
-      { label: "1st UW Decision", value: "Standard" },
-      { label: "1st UW Decision Code", value: "STD" },
-      { label: "1st UW Smoker Status", value: "Non Smoker" },
-    ],
-  },
-  {
-    memberType: "Life Assured 2",
-    toneIndex: 2,
-    name: "PRIYA CHAVAN",
-    demographics: "29 yrs / Female / Graduate / SPVT / CHENNAI",
-    uwDecision: "Decline",
-    details: [
-      { label: "Case UW Decision", value: "Decline" },
-      { label: "Outlier", value: "Elevated HbA1c" },
-      { label: "Decision Code", value: "XXR" },
-      {
-        label: "Decline Reason",
-        value: "High than normal level of sugar as per Hemoglobin A1c test",
-      },
-    ],
-  },
-];
-
-export async function fetchReferralMembers(_applicationNo: string): Promise<ReferralMember[]> {
-  await wait(150);
-  return MEMBERS_MOCK.map((m) => ({ ...m, details: m.details.map((d) => ({ ...d })) }));
 }
 
 export type ReferralDecisionTone = "decline" | "standard" | "refer" | "default";
