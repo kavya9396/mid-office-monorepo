@@ -20,6 +20,7 @@ import {
   type PanStatus,
   type PanValidationInput,
   type PanValidationResult,
+  PAN_VALID_NO,
 } from "./editApplicant.validation";
 import {
   BLANK_NOMINEE_MESSAGE,
@@ -85,6 +86,12 @@ type FieldConfig = {
   numeric?: boolean;
 };
 
+// Master codes are Y / N; the user sees Yes / No
+const YES_NO_OPTIONS: EditSelectOption[] = [
+  { label: "Yes", value: PAN_VALID_YES },
+  { label: "No", value: PAN_VALID_NO },
+];
+
 const EMPTY_VALUES: EditFormValues = {
   dobDocument: "",
   genderDocument: "",
@@ -127,12 +134,12 @@ const AUDIT_FIELDS: FieldConfig[] = [
 ];
 
 // Filled only from the NSDL API response; disabled once the app supplies onValidatePan
-const READ_ONLY_API_FIELDS: ReadonlyArray<string> = [
+const READ_ONLY_API_FIELDS: ReadonlySet<string> = new Set([
   "isPanValid",
   "aadharSeedingStatus",
   "nsdlNameMatching",
   "nsdlDobMatching",
-];
+]);
 
 const PROFILE_FIELDS: FieldConfig[] = [
   { name: "emailId", label: "Email ID" },
@@ -227,7 +234,9 @@ export function EditApplicantDialog({
     onSave(values, nominees, riders, loan);
   });
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    // Inline field validation first; the PAN-not-validated notice only shows once the fields are valid.
+    if (!(await trigger())) return;
     if (onValidatePan && !isPanValidated(getValues("isPanValid"))) {
       notifyError(PAN_NOT_VALIDATED_MESSAGE);
       return;
@@ -295,7 +304,7 @@ export function EditApplicantDialog({
       case "residentStatus":
         return options?.residentStatus ?? [];
       case "yesNo":
-        return options?.yesNo ?? [];
+        return YES_NO_OPTIONS;
     }
   };
 
@@ -328,7 +337,7 @@ export function EditApplicantDialog({
           value={controlled.value}
           onChange={controlled.onChange}
           options={optionsFor(field.select)}
-          disabled={Boolean(onValidatePan) && READ_ONLY_API_FIELDS.includes(field.name)}
+          disabled={Boolean(onValidatePan) && READ_ONLY_API_FIELDS.has(field.name)}
           error={error}
           helperText={helperText}
         />

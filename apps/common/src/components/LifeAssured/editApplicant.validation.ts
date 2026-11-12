@@ -1,15 +1,15 @@
 import { z } from "zod";
 import { loanSchema } from "./LoanDetails";
 import { RAISE_PAN_PENDCODE_MESSAGE, requiredMessage } from "./editApplicant.messages";
-
+ 
 /**
  * Every validation rule of the Edit Applicant dialog lives in this file
  * (NSDL PAN validation add-on #6, design-reference/Integration/nsdl-pan-validate.md).
  * Message text lives in `editApplicant.messages.ts`.
  */
-
+ 
 const required = (label: string) => z.string().trim().min(1, requiredMessage(label));
-
+ 
 // Required rules / messages copied from the DVT branch of the prototype validator (vhe)
 export const editApplicantSchema = z.object({
   dobDocument: required("DOB Document"),
@@ -34,17 +34,17 @@ export const editApplicantSchema = z.object({
   annualIncome: required("Annual Income"),
   applicantStatus: required("Applicant Status"),
 });
-
+ 
 // Base & Loan Details live in the same form under `loan`
 export const editFormSchema = editApplicantSchema.extend({ loan: loanSchema });
-
+ 
 export type EditApplicantValues = z.infer<typeof editApplicantSchema>;
 export type EditFormValues = z.infer<typeof editFormSchema>;
-
-/** Value of `isPanValid` once NSDL confirmed the PAN (the select uses YES / NO). */
-export const PAN_VALID_YES = "YES";
-export const PAN_VALID_NO = "NO";
-
+ 
+/** Master codes for the Yes / No selects of the dialog: "Y" is shown as Yes, "N" as No. */
+export const PAN_VALID_YES = "Y";
+export const PAN_VALID_NO = "N";
+ 
 /**
  * The PAN flag is YES only when NSDL returned `pan_validation = true`; every other result is NO
  * (nsdl-pan-validate.md, open question 9).
@@ -52,7 +52,7 @@ export const PAN_VALID_NO = "NO";
 export function panFlagFromValidation(panValid: boolean): typeof PAN_VALID_YES | typeof PAN_VALID_NO {
   return panValid ? PAN_VALID_YES : PAN_VALID_NO;
 }
-
+ 
 /**
  * Editing PAN No or Birthdate resets the flag to NO so the PAN has to be validated again
  * (open question 10). Returns the flag to keep: the current one, or NO after such an edit.
@@ -64,12 +64,12 @@ export function resetPanFlagOnChange(
   const changed = current.panNumber !== next.panNumber || current.dob !== next.dob;
   return changed ? PAN_VALID_NO : current.isPanValid;
 }
-
+ 
 /** Save is allowed only while the PAN flag is YES ("validate PAN before Save"). */
 export function isPanValidated(isPanValid: string): boolean {
   return isPanValid === PAN_VALID_YES;
 }
-
+ 
 /**
  * Text shown in the dialog's snackbar after an NSDL call (open question 11): the API message, followed by the
  * "raise a PAN pendcode" line only when the API errored and no pending PAN pendcode exists.
@@ -78,7 +78,7 @@ export function buildNsdlNotice(apiMessage: string, askToRaisePendcode: boolean)
   const lines = [apiMessage.trim(), askToRaisePendcode ? RAISE_PAN_PENDCODE_MESSAGE : ""].filter(Boolean);
   return lines.join(" ");
 }
-
+ 
 /**
  * A requirement row is a pending PAN pendcode when its `fupCode` is PAN and its `status` is "pending",
  * both compared case-insensitively (open question 16).
@@ -88,11 +88,11 @@ export function hasPendingPanPendcode(requirements: ReadonlyArray<{ fupCode?: st
     (row) => row.fupCode?.trim().toUpperCase() === "PAN" && row.status?.trim().toLowerCase() === "pending",
   );
 }
-
+ 
 /** Whether NSDL reported a match for each of the three NSDL selects (true = "Y"). */
 export type NsdlMatchSelection = { nameMatching: boolean; dobMatching: boolean; aadharSeeding: boolean };
-
-/** The three NSDL selects as `YES` / `NO` values; missing matches (data not available) give NO for all (add-on #17). */
+ 
+/** The three NSDL selects as `Y` / `N` master codes; missing matches (data not available) give N for all (add-on #17). */
 export function nsdlSelectValues(matches: NsdlMatchSelection | undefined): {
   nsdlNameMatching: string;
   nsdlDobMatching: string;
@@ -105,10 +105,10 @@ export function nsdlSelectValues(matches: NsdlMatchSelection | undefined): {
     aadharSeedingStatus: flag(matches?.aadharSeeding),
   };
 }
-
+ 
 /** What the dialog hands to the app when the NSDL button is clicked. */
 export type PanValidationInput = { panNumber: string; dob: string };
-
+ 
 /**
  * What the app hands back after calling NSDL. The dialog never sees API shapes.
  * `panValid`: true sets the flag to YES, false sets it to NO, undefined leaves the flag as it is
@@ -123,7 +123,7 @@ export type PanValidationResult = {
   /** API error with no pending PAN pendcode: add the "raise a PAN pendcode" line. */
   raisePendcode: boolean;
 };
-
+ 
 /**
  * PAN, Birthdate, flag and the three NSDL selects of the last NSDL validation; the app keeps it so it survives
  * closing the dialog. The NSDL selects are read-only and only ever filled from the API response.

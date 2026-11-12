@@ -11,15 +11,15 @@ Run with: `/integrate-api nsdl-pan-validate [sub-task number] [add-on: extra inf
 Add-on info: anything the user adds later goes in "Add-on requests" below (the command records it there).
 User status: **waiting for further info from the user** before any UI work starts. The user will "drill down" the
 PAN flag scenarios further (add-on #9); until then flag handling stays as listed and open question 9 stays open.
-
+ 
 ## Overview
-
+ 
 Validate a PAN against NSDL for an application, from the **NSDL button** in
 `apps/common/src/components/LifeAssured/EditApplicantDialog.tsx` (decided, add-on #3).
 That dialog is also the **source of the request data** (add-on #3).
-
+ 
 Decided behaviour (add-ons #3 to #13):
-
+ 
 1. The NSDL button calls the API with data from the dialog.
 2. The response is read as follows (add-on #7; add-on #8 adds the outcomes below):
    - `error` says whether the **API call** succeeded (`false`) or failed (`true`).
@@ -30,17 +30,17 @@ Decided behaviour (add-ons #3 to #13):
      `data` is ignored. They fill "Is NSDL Name Matching?", "Is NSDL DOB Matching?" and "Aadhar Seeding Status?":
      `"Y"` -> `YES`; a missing structure, a missing value or any other value -> `NO`.
 3. **Outcome table (add-on #8).** Success = `pan_validation = true`. Every other scenario is a failure.
-
+ 
    | Scenario | Result |
    |---|---|
    | `pan_validation = true` | **Success.** Flag = Y. Message shown. |
    | API succeeded (HTTP 200, `error = false`) but `pan_validation = false` | **Failure and a BLOCKER**: the user cannot submit the case or the audit field modification. Flag = No. Message shown. |
    | API error (`error = true`, or the call itself fails) **and** there is no PAN pendcode with status "pending" | **Failure.** Ask the user to **raise a PAN pendcode** to proceed further. Flag = No. |
    | API error (`error = true`, or the call itself fails) **and** a PAN pendcode with status "pending" already exists | **Failure. Just show the error message to the user** (add-on #9). No "raise a PAN pendcode" prompt. No blocker is applied by this rule. What the PAN flag becomes here is part of the flag drill-down (open question 9). |
-
+ 
    The two API-error rows are told apart only by whether a pending PAN pendcode exists. Who counts as a PAN
    pendcode is open question 16.
-
+ 
 4. If the PAN is already validated and the user then **modifies** it, the flag is reset to **No**.
 5. The user must **validate the PAN before submitting** the audit field modification; Save shows a validation
    error telling the user to validate the PAN otherwise.
@@ -48,14 +48,14 @@ Decided behaviour (add-ons #3 to #13):
    **case submission** (the Group decision submit, `handleDecisionSubmit` in `DvtUser.tsx` via `DecisionSection`).
    Where the "PAN not valid" state is kept between the dialog and the decision footer is open question 15.
 7. All screen-specific validation for this dialog lives in **one file** so it is easy to change and look up.
-
+ 
 Fields already in the dialog: **PAN No** (`panNumber`), **Is PAN Valid?** (`isPanValid`),
 **Is NSDL Name Matching?** (`nsdlNameMatching`), **Is NSDL DOB Matching?** (`nsdlDobMatching`), and a hidden-style
 `nsdlTab` value that the NSDL button sets to `"Y"` today. Which of these is "the PAN validation flag" is open
 question 9.
-
+ 
 ## Endpoint
-
+ 
 | Item | Value |
 |---|---|
 | Method / URL | `POST https://midoffice-uat-api.icicilife.com/icic-external-event-service/v1/nsdl/pan/validate` |
@@ -64,9 +64,9 @@ question 9.
 | Response | `{ error, message, data, pan_validation, event_name, response_code }` (see OpenAPI v1.3.0); from `data` only `panValidation.{name, dob, aadharSeedingStatus}` is read |
 | Body encryption / response decryption | **No encryption** (add-on #11): `encryptRequest: false` and `decryptResponse: false`, plain JSON both ways, as for BRE. |
 | Auth headers | Standard business headers via `createBusinessBaseQuery` unless told otherwise |
-
+ 
 ## Request fields (from the sample)
-
+ 
 | Field | Sample | Notes |
 |---|---|---|
 | `applicationNumber` | `OS94845380` | DRS application number |
@@ -74,11 +74,11 @@ question 9.
 | `name` | `SACHIN NARAYAN JOSHI` | **Mapping OPEN** (add-on #12): the user will provide it later. Intended source is `EditApplicantDialog.tsx` (add-on #11), but the dialog form has no `name` field today. Do not map or invent a source (open question 5) |
 | `dob` | `03/06/1967` | From the dialog's Birthdate (`dob`). The dialog stores it as `YYYY-MM-DD`; the API sample is `DD/MM/YYYY`, so convert (open question 5) |
 | `fatherName` | `""` | **Mapping OPEN** (add-on #12): the user will provide it later. Intended source is `EditApplicantDialog.tsx` (add-on #11), but the dialog form has no father name field today and the Group DRS mock has no father-name value; empty in the sample. Do not map or invent a source (open question 5) |
-
+ 
 ## Response (from the sample) and outcome rules
-
+ 
 Current structure (add-ons #17 and #18, OpenAPI v1.3.0):
-
+ 
 ```json
 {
   "error": false,
@@ -99,7 +99,7 @@ Current structure (add-ons #17 and #18, OpenAPI v1.3.0):
   "response_code": 200
 }
 ```
-
+ 
 | Field | Used for |
 |---|---|
 | `error` | API call outcome: `false` = the API call succeeded, `true` = the API call failed |
@@ -110,7 +110,7 @@ Current structure (add-ons #17 and #18, OpenAPI v1.3.0):
 | `data.panValidation.aadharSeedingStatus` | `"Y"` -> "Aadhar Seeding Status?" = `YES`, anything else or missing -> `NO` (add-on #17). Replaces the top-level `aadharSeedingStatus` of v1.1.0, which is no longer read |
 | Rest of `data` (`fathername`, `pan`, `responseCode`, `validity`) | Not read (add-on #18: only the match and Aadhar seeding data are mapped, `responseCode` is not used) |
 | `event_name`, `response_code` | "HTTP 200" in the outcome table means the API call itself returned 200; whether to also read `response_code` from the body is open question 2 |
-
+ 
 - Superseded: the earlier rule (add-on #5) "`error: false` sets the flag to Y, `error: true` shows 'PAN validation failed'
   plus the `panValidation` errors" no longer applies. The message text now comes from `message`, and the
   `panValidation` list is not read, so open question 7 is no longer needed.
@@ -122,13 +122,13 @@ Current structure (add-ons #17 and #18, OpenAPI v1.3.0):
 - Not specified, so **not built**: the combination `error: true` with `pan_validation: true`; an empty `message`;
   what the flag becomes in each scenario beyond Y for success and No for "other" (open question 9, being drilled
   down by the user); and what happens to "Is NSDL Name Matching?" and "Is NSDL DOB Matching?" (open question 2).
-
+ 
 ## Add-on requests
-
+ 
 Extra instructions given after this document was written. The `/integrate-api` command appends a row
 for each add-on it receives (or the user may add one by hand), then updates the affected sections and
 sub-tasks. An add-on never silently overrides a "decided" item above; conflicts are raised as a question first.
-
+ 
 | # | Date | Add-on (user wording, shortened) | Effect | Sections / sub-tasks changed |
 |---|---|---|---|---|
 | 1 | 2026-11-11 | Plan like the BRE API: md file + mock + OpenAPI spec for the NSDL PAN validate URL, with the given sample request and response | Created this document, the OpenAPI file and the mock | All |
@@ -149,17 +149,19 @@ sub-tasks. An add-on never silently overrides a "decided" item above; conflicts 
 | 16 | 2026-11-11 | Give a user-friendly message when case submission is refused | Wording (in `editApplicant.messages.ts`, `PAN_INVALID_SUBMIT_BLOCKED_MESSAGE`): "We couldn't verify the PAN with NSDL. Please correct the PAN details and validate them again before submitting this case." Shown in its own red snackbar on the Group DRS screen when Submit is clicked while an applicant's PAN is invalid | Sub-task 7 |
 | 17 | 2026-11-11 | Map "Is NSDL Name Matching?", "Is NSDL DOB Matching?" and "Aadhar Seeding Status?" from `panValidation` (`name`, `dob`, `aadharSeedingStatus`). If the structure is not proper or the data is not available, map N instead of Y | Open question 13 resolved. Each value `"Y"` -> `YES`, everything else (wrong structure, missing, not "Y", API error) -> `NO`. OpenAPI bumped to v1.2.0 (v1.1.0 kept), mock renamed to v1.2.0 (superseded by add-on #18). The three selects are set on every NSDL click, including API errors | Overview, endpoint, response section, sub-tasks 2, 3, 6, open questions 13, 18 |
 | 18 | 2026-11-11 | Answers to the add-on #17 follow-ups: (1) the three selects also go to `NO` when the API errors; (2) only the match and Aadhar seeding data are mapped, so `responseCode` is not used; (3) the location is `data.panValidation` | Open question 18 resolved. `return` level removed from the reader, mock and spec. OpenAPI bumped to v1.3.0 (v1.2.0 kept), mock renamed to v1.3.0. Sub-task 6 "decision to confirm" on API errors is now confirmed | Overview, endpoint, response section, sub-tasks 2, 3, 6, open question 18 |
-
-
-
-
-
+| 19 | 2026-11-12 | The Yes/No selects showed the wrong value: master codes are Y / N, the screen must show Yes / No | The four Yes/No selects (`isPanValid`, `nsdlNameMatching`, `nsdlDobMatching`, `aadharSeedingStatus`) now use the codes `Y` and `N` (`PAN_VALID_YES` / `PAN_VALID_NO` in `editApplicant.validation.ts`) with the labels Yes / No. Earlier add-ons that say `YES` / `NO` mean these codes. API contract unchanged | Sub-tasks 5, 6, open question 9 |
+ 
+ 
+ 
+ 
+ 
+ 
 ## Sub-tasks
-
+ 
 Each sub-task is independent and reviewable on its own. Run in order.
-
+ 
 ### 1. Config and env wiring
-
+ 
 - **Intent:** Add the NSDL PAN validate URL the same way other business URLs are configured.
 - **Expected outcomes:** URL read from `.env`, empty in mock mode, no hard-coded host.
 - **Todo list:**
@@ -177,9 +179,9 @@ Each sub-task is independent and reviewable on its own. Run in order.
   Note for later sub-tasks: the `breUrls` getter that the BRE integration added earlier is no longer in the repo
   (`git status` shows only this sub-task's files modified), so the `breUrls` pattern is not available; the
   `groupBusinessUrls` pattern was used instead. `pnpm` is not on this shell's PATH; run `tsc` from the package folder.
-
+ 
 ### 2. Mock JSON
-
+ 
 - **Intent:** Mock mode returns the sample response.
 - **Expected outcomes:** `mock/nsdl-pan-validate/nsdl-pan-validate.v1.3.0.mock.json` holds the exact sample
   response (imported only by the API/service file, never by screens). Naming:
@@ -190,9 +192,9 @@ Each sub-task is independent and reviewable on its own. Run in order.
   3. (add-ons #7, #17) Each structure change replaced the previous mock file (v1.0.0 -> v1.1.0 -> v1.2.0 -> v1.3.0).
 - **Relevant context:** `mock/drs/`, `mock/inbox/` (pattern reference only).
 - **Status:** `[x] done` (v1.3.0 file holds the user's `data.panValidation` sample; older mock files were deleted; it is wired in by sub-task 4)
-
+ 
 ### 3. Service: request builder + response envelope reader
-
+ 
 - **Intent:** Pure code, no React. Builds the request and reads only what is known.
 - **Expected outcomes:** `createNsdlPanValidateRequest(...)` returning the request fields (including the
   `YYYY-MM-DD` -> `DD/MM/YYYY` conversion of `dob`). `name` and `fatherName` are plain input parameters of this
@@ -227,9 +229,9 @@ Each sub-task is independent and reviewable on its own. Run in order.
   failure"); only a missing or non-boolean `error` is rejected; this replaces the earlier plan to throw on a missing
   `pan_validation`. (2) `error: true` with `pan_validation: true` is treated as an API error, so an errored response
   can never pass the PAN gate (open question 2 still lists the combination as unspecified).
-
+ 
 ### 4. RTK Query mutation
-
+ 
 - **Intent:** Call the API through the shared business base query.
 - **Expected outcomes:** `useValidateNsdlPanMutation` in a new `apps/group/src/services/nsdlApi.ts`;
   `useMock` returns the mock; otherwise POST with `encryptRequest: false` and `decryptResponse: false` (add-on #11);
@@ -246,9 +248,9 @@ Each sub-task is independent and reviewable on its own. Run in order.
   Vitest file run from `apps/common` (5 cases: mock mode makes no `fetch`; missing URL; real POST of plain JSON to the
   URL; `error: true` returns an API-error result; HTTP 500 and a body without `error` return errors) and all passed.
   The file was not kept because `apps/group` has no test runner (open question 17).
-
+ 
 ### 5. Single validation file for the Edit Applicant dialog (add-on #6)
-
+ 
 - **Intent:** One place for every rule of this screen, so changing or looking up a rule never means searching the component.
 - **Expected outcomes:** One file (proposed `apps/common/src/components/LifeAssured/editApplicant.validation.ts`,
   name and location are open question 12) holds: the existing zod schema and its messages that are inline in
@@ -274,9 +276,9 @@ Each sub-task is independent and reviewable on its own. Run in order.
   `hasPendingPanPendcode` (`fupCode` PAN, `status` pending, case-insensitive). Message text is in
   `editApplicant.messages.ts` (add-on #14). Tests: `apps/common/src/test/editApplicantValidation.test.ts`, 11 of 11
   pass with Vitest; `apps/common` typecheck passes. The rules are not yet called by the dialog; that is sub-task 6.
-
+ 
 ### 6. UI hook-up in the Edit Applicant dialog — DONE
-
+ 
 - **Intent:** The NSDL button validates the PAN and the dialog behaves as in the Overview.
 - **Expected outcomes:** Clicking **NSDL** sends the request built from dialog data and applies the Overview
   outcome table: `pan_validation: true` sets the flag to Y; any other result sets it to No; the response `message`
@@ -297,7 +299,7 @@ Each sub-task is independent and reviewable on its own. Run in order.
   - **Dialog (`EditApplicantDialog.tsx`):** new optional props `onValidatePan(input) => Promise<PanValidationResult>`,
     `panStatus` and `onPanStatusChange`. Without `onValidatePan` the dialog behaves exactly as before (Retail is
     unchanged: the NSDL button still only sets `nsdlTab`). With it: the NSDL button checks PAN No and Birthdate,
-    calls the app, sets `isPanValid` to `YES`/`NO` (field becomes read-only, set only by NSDL), shows the API
+    calls the app, sets `isPanValid` to `Y`/`N` (shown as Yes/No; field becomes read-only, set only by NSDL), shows the API
     message plus the pendcode line in the snackbar (green for a valid PAN, red otherwise), and is disabled while
     the call runs. Editing PAN No or Birthdate while the flag is `YES` sets it back to `NO`. Save is refused with
     "Please validate PAN with NSDL before saving" unless the flag is `YES`. The new types `PanValidationInput`,
@@ -320,9 +322,9 @@ Each sub-task is independent and reviewable on its own. Run in order.
     `nsdlSelectValues(matches)` in `editApplicant.validation.ts` (`YES` for true, `NO` for false or missing). They are
     set on **every** NSDL click, including API errors and the `apiErrorShowMessage` case where `isPanValid` stays
     unchanged (confirmed by the user, add-on #18). A failed HTTP call also gives all `NO`.
-
+ 
 ### 7. Case submission blocker on the Group screen (add-on #8) — DONE
-
+ 
 - **Intent:** An invalid PAN (API ok, `pan_validation = false`) must stop **case submission**, not only the dialog Save.
 - **Expected outcomes:** The decision submit in `DvtUser.tsx` (`handleDecisionSubmit`, rendered through
   `DecisionSection`) is refused while the PAN is in the blocked state, with a message the user can read.
@@ -352,9 +354,9 @@ Each sub-task is independent and reviewable on its own. Run in order.
   - Edit to the dialog made for this: `resetPanFlagIfEdited` now tells the app about every PAN No or Birthdate edit
     once the app holds a status for that applicant (it previously only fired when the flag was YES), so the block can
     drop when the PAN is corrected.
-
+ 
 ### 8. Validate
-
+ 
 - **Todo list:** typecheck for `packages/utils`, `apps/common` and `apps/group` (note: `apps/group` had an unrelated
   pre-existing type error in `apps/common/src/modules/inbox/InboxScreen.tsx` when last checked), run the added tests,
   then `verify:deployments` if the shared packages changed.
@@ -364,9 +366,9 @@ Each sub-task is independent and reviewable on its own. Run in order.
   appears. `verify:deployments` was not run: it needs `pnpm`, which is not on this shell's PATH. Not covered by any
   automated test: the dialog wiring (NSDL button, flag reset, Save gate), `DvtUser.tsx` and the submit block; they
   need a manual check in the browser, and `nsdlService.ts` / `nsdlApi.ts` have no committed tests (open question 17).
-
+ 
 ## Open questions
-
+ 
 1. **Where is the API called from?** RESOLVED by add-on #3: the **NSDL** button in `EditApplicantDialog`.
 2. **Behaviour after the response** — MOSTLY RESOLVED by add-ons #7 and #8 (see the Overview outcome table). Still
    open: what happens to "Is NSDL Name Matching?" and "Is NSDL DOB Matching?"; whether a non-200 `response_code` in the
@@ -387,7 +389,7 @@ Each sub-task is independent and reviewable on its own. Run in order.
    now. Reopen only if the user later asks to read it.
 8. **Auth in the supplied info** — no headers were given; the standard business headers are assumed.
 9. **Which field is "the PAN validation flag", and what is its value in each scenario?** RESOLVED for the field
-   (2026-11-11): the flag is `isPanValid` ("Is PAN Valid?" select, `YES`/`NO`), it stays visible in the dialog.
+   (2026-11-11): the flag is `isPanValid` ("Is PAN Valid?" select, codes `Y`/`N` shown as Yes/No), it stays visible in the dialog.
    `pan_validation = true` -> `YES`; any other result -> `NO`. `nsdlTab` is not the flag. The user said earlier that
    further flag scenarios will be drilled down later. Still not decided: the flag after an API error when a PAN
    pendcode is pending (the user only said to show the error message); until told, that case leaves `isPanValid`
@@ -418,7 +420,7 @@ Each sub-task is independent and reviewable on its own. Run in order.
     Vitest (only `apps/common` does, and `.bob/rules/02-architecture-rules.md` says not to adopt a framework
     silently). Options: add Vitest to `apps/group` (a `test` script and devDependency), or place the NSDL service
     tests in `apps/common`, which cannot import from `apps/group`. Until answered, the service has no committed tests.
-
+ 
 18. **`responseCode` and the place of `return`** — RESOLVED by add-on #18 (2026-11-11). (a) `responseCode` is not
     used: only the match and Aadhar seeding data are mapped. (b) The location is `data.panValidation`; there is no
     `return` level.
