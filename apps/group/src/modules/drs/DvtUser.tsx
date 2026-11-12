@@ -48,6 +48,7 @@ import {
 import type { CardType } from "../../services/drsService";
 import { GROUP_FINANCIAL_ACTIONS_CONFIG } from "../config/financialActions.config";
 import { GROUP_QUICK_LINKS_CONFIG } from "../config/quickLinks.config";
+import { buildQuickLinkItems } from "./guwQuickLinks";
 
 const CARD_TITLES: Record<CardType, string> = {
   APPLICATION: "Application Detail",
@@ -312,7 +313,7 @@ const DvtUser = () => {
       {detailCards}
 
       <QuickLinksModule
-        items={quickLinksConfig.items}
+        items={buildQuickLinkItems(quickLinksConfig.items, (message) => setSnackbarMessage(message))}
         applicationNo={applicationNo}
         roleType={params.get("role")?.trim() || quickLinksConfig.defaultRoleType}
         onNavigate={(path) => navigate(path)}

@@ -1202,8 +1202,8 @@
                 "label": "Lifeassured1",
                 "dedupePosidex": [
                   {
-                    "clientId": "",
-                    "firstName": "",
+                    "clientId": "CL12",
+                    "firstName": "Chanda",
                     "surname": "",
                     "state": "",
                     "city": "",
@@ -2867,8 +2867,8 @@
                 "label": "Lifeassured1",
                 "dedupePosidex": [
                   {
-                    "clientId": "",
-                    "firstName": "",
+                    "clientId": "CL12",
+                    "firstName": "Chanda",
                     "surname": "",
                     "state": "",
                     "city": "",
@@ -3186,13 +3186,13 @@
           "label": "Open Tasks",
           "value": [
             {
-              "callLogDate": "",
-              "serviceCallId": "",
-              "ct": "",
-              "st": "",
-              "callDetails": "",
-              "userPool": "",
-              "source": ""
+             "callLogDate": "10-11-2026",
+              "callId": "CALL12",
+              "ct": "2",
+              "st": "4",
+              "callDetails": "no idea serously",
+              "userPoll": "no",
+              "source": "source1"
             }
           ]
         },

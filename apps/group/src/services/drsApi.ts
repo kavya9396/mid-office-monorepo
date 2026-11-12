@@ -6,7 +6,7 @@ import {
   groupBusinessUrls,
   useMock,
 } from "@insurance-poc/utils";
-import groupDrsMock from "../modules/drs/mock/groupDrs.json";
+import groupDrsMock from "../../../../mock/drs/group-drs.json";
 import { mapGroupDrsPayload, type GroupDrsData } from "./drsService";
 
 function readError(reason: unknown): string {

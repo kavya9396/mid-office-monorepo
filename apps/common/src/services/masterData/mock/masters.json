@@ -7831,8 +7831,8 @@
       },
       {
         "code": "AMR",
-        "description": "Raise Requirement",
-        "value": "Raise Requirement",
+        "description": "Raise Requirements",
+        "value": "Raise Requirements",
         "isActive": "Y",
         "miscMastId": "82",
         "type": "DVT_TERM_DESC"

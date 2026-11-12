@@ -95,15 +95,22 @@ function mapPreviousPolicies(value: unknown): PreviousPolicyData | undefined {
 
 function mapOpenTasks(value: unknown): OpenTaskItem[] | undefined {
   const section = asRecord(value);
-  if (!Array.isArray(section.rows)) return undefined;
-  return tableRows(section.rows).map((row, index) => ({
+  const rows = Array.isArray(value)
+    ? value
+    : Array.isArray(section.rows)
+      ? section.rows
+      : Array.isArray(section.value)
+        ? section.value
+        : null;
+  if (!rows) return undefined;
+  return tableRows(rows).map((row, index) => ({
     id: `open-task-${index}`,
     callLogDate: str(row.callLogDate),
-    serviceCallId: str(row.callId),
+    serviceCallId: str(row.callId) || str(row.serviceCallId),
     ct: str(row.ct),
     st: str(row.st),
     callDetails: str(row.callDetails),
-    userPool: str(row.userPoll),
+    userPool: str(row.userPoll) || str(row.userPool),
     source: str(row.source),
   }));
 }
@@ -112,8 +119,15 @@ function mapOpenTasks(value: unknown): OpenTaskItem[] | undefined {
 
 function mapAuditTrail(value: unknown): AuditTrailItem[] | undefined {
   const section = asRecord(value);
-  if (!Array.isArray(section.rows)) return undefined;
-  return tableRows(section.rows).map((row, index) => ({
+  const rows = Array.isArray(value)
+    ? value
+    : Array.isArray(section.rows)
+      ? section.rows
+      : Array.isArray(section.value)
+        ? section.value
+        : null;
+  if (!rows) return undefined;
+  return tableRows(rows).map((row, index) => ({
     id: `audit-${index}`,
     userId: str(row.userId),
     userName: str(row.userName),
@@ -121,7 +135,7 @@ function mapAuditTrail(value: unknown): AuditTrailItem[] | undefined {
     caseStatus: str(row.caseStatus),
     decision: str(row.Decision) || str(row.decision),
     comments: str(row.comments),
-    dateUpdatedOn: str(row.updatedDate),
+    dateUpdatedOn: str(row.updatedDate) || str(row.dateUpdatedOn) || str(row.updatedOn),
   }));
 }
 

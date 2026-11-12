@@ -1305,11 +1305,11 @@
               "label": "Life Assured 1",
               "dedupePosidex": [
                 {
-                  "clientId": "",
-                  "firstName": "",
+                  "clientId": "CL123",
+                  "firstName": "Rudra",
                   "surname": "",
                   "state": "",
-                  "city": "",
+                  "city": "Mumbai",
                   "dob": "",
                   "mobileNo": "",
                   "landlineNo": "",

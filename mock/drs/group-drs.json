@@ -1,28 +1,1833 @@
 {
-  "records": [
-    {
-      "applicationNo": "GRP2001",
-      "taskId": "TSK-CVT-002",
-      "customerName": "Northwind Industries",
-      "productName": "Group Term Life",
-      "businessType": "GROUP",
-      "appliedSa": 5000000,
-      "annualPremium": 92000,
-      "policyTerm": 1,
-      "premiumPayingTerm": 1,
-      "status": "Pending"
-    },
-    {
-      "applicationNo": "GRP2002",
-      "taskId": "TSK-DVT-001",
-      "customerName": "Harbor Credit Union",
-      "productName": "Group Credit Life",
-      "businessType": "GROUP",
-      "appliedSa": 2500000,
-      "annualPremium": "140000",
-      "policyTerm": 5,
-      "premiumPayingTerm": 5,
-      "status": "Pending"
-    }
-  ]
+  "success": true,
+  "data": {
+    "applicationNo": "APP123456789",
+    "screenType": "DVT_INFORMAL",
+    "businessType": "GROUP",
+    "roleType": "DVT_TASK",
+    "cardDetails": [
+      {
+        "type": "Application Detail",
+        "attributes": [
+          {
+            "name": "Product Name - Code",
+            "value": "ICICI Pru Super Protect Credit"
+          },
+          {
+            "name": "Channel",
+            "value": "Agency"
+          },
+          {
+            "name": "Sum Assured",
+            "value": "1500000"
+          },
+          {
+            "name": "MPH Name",
+            "value": "ABC Finance Ltd"
+          }
+        ],
+        "expandedAttributes": [
+          {
+            "name": "Product Name - Code",
+            "value": "ICICI Pru Super Protect Credit"
+          },
+          {
+            "name": "Channel",
+            "value": "Agency"
+          },
+          {
+            "name": "Sum Assured",
+            "value": "1500000"
+          },
+          {
+            "name": "MPH Name",
+            "value": "ABC Finance Ltd"
+          },
+          {
+            "name": "TI Rider - SA",
+            "value": "2500000"
+          },
+          {
+            "name": "ADBR SA",
+            "value": "2500000"
+          },
+          {
+            "name": "CI Rider SA",
+            "value": "2500000"
+          },
+          {
+            "name": "TFESA",
+            "value": "500000"
+          },
+          {
+            "name": "TRSA",
+            "value": "300000"
+          },
+          {
+            "name": "TSA",
+            "value": "4500000"
+          },
+          {
+            "name": "TPSA",
+            "value": "200000"
+          },
+          {
+            "name": "TFSA",
+            "value": "250000"
+          },
+          {
+            "name": "TMSA",
+            "value": "400000"
+          }
+        ],
+        "tables": [
+          {
+            "name": "Rider Details",
+            "columns": ["Rider", "Rider Code", "Sum Assured"],
+            "rows": [
+              {
+                "name": "WOP",
+                "sumAssured": "1500000",
+                "premium": "12000",
+                "policyTerm": "45",
+                "premiumTerm": "10"
+              },
+              {
+                "name": "BTBB",
+                "sumAssured": "2500000",
+                "premium": "12000",
+                "policyTerm": "45",
+                "premiumTerm": "10"
+              },
+              {
+                "name": "TI Rider",
+                "sumAssured": "2500000",
+                "premium": "12000",
+                "policyTerm": "45",
+                "premiumTerm": "10"
+              },
+              {
+                "name": "ADBR",
+                "sumAssured": "2500000",
+                "premium": "12000",
+                "policyTerm": "45",
+                "premiumTerm": "10"
+              },
+              {
+                "name": "CI Rider",
+                "sumAssured": "2500000",
+                "premium": "12000",
+                "policyTerm": "45",
+                "premiumTerm": "10"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Source Detail",
+        "attributes": [
+          {
+            "name": "Call ID",
+            "value": "CALL98765"
+          },
+          {
+            "name": "Policy No.",
+            "value": "APP123456789"
+          },
+          {
+            "name": "Agent Name / Code",
+            "value": "Ram / AG123"
+          },
+          {
+            "name": "Customer Type",
+            "value": "Individual"
+          }
+        ],
+        "expandedAttributes": [
+          {
+            "name": "Call ID",
+            "value": "CALL98765"
+          },
+          {
+            "name": "Policy No.",
+            "value": "APP123456789"
+          },
+          {
+            "name": "Agent Name / Code",
+            "value": "Ram / AG123"
+          },
+          {
+            "name": "Customer Type",
+            "value": "Individual"
+          },
+          {
+            "name": "Policy Type",
+            "value": "Saving"
+          },
+          {
+            "name": "Premium",
+            "value": "12000"
+          },
+          {
+            "name": "PT",
+            "value": "130"
+          },
+          {
+            "name": "PPT",
+            "value": "10"
+          },
+          {
+            "name": "Payment Mode",
+            "value": "Monthly"
+          },
+          {
+            "name": "Master Policy No.",
+            "value": "MP123"
+          },
+          {
+            "name": "LAN Number",
+            "value": "123456"
+          },
+          {
+            "name": "Login Date",
+            "value": "14 Sep 2026"
+          },
+          {
+            "name": "Bank Name",
+            "value": "MLCA"
+          },
+          {
+            "name": "Bank Branch",
+            "value": "JKMM"
+          },
+          {
+            "name": "Source",
+            "value": "MLFR"
+          }
+        ],
+        "tables": []
+      },
+      {
+        "type": "Group Policy Detail",
+        "attributes": [
+          {
+            "name": "Coverage Option",
+            "value": "Single Life"
+          },
+          {
+            "name": "Coverage Status",
+            "value": "Active"
+          },
+          {
+            "name": "Moratorium",
+            "value": "Yes"
+          },
+          {
+            "name": "Moratorium Period",
+            "value": "6 Months"
+          }
+        ],
+        "expandedAttributes": [
+          {
+            "name": "Coverage Option",
+            "value": "Single Life"
+          },
+          {
+            "name": "Coverage Status",
+            "value": "Active"
+          },
+          {
+            "name": "Moratorium",
+            "value": "Yes"
+          },
+          {
+            "name": "Moratorium Period",
+            "value": "6 Months"
+          },
+          {
+            "name": "Share of Loan",
+            "value": "100%"
+          },
+          {
+            "name": "Loan Type",
+            "value": "Home Loan"
+          },
+          {
+            "name": "Bank Type",
+            "value": "Private"
+          },
+          {
+            "name": "Type of Loan",
+            "value": "Secured"
+          },
+          {
+            "name": "Date of Loan Disbursement",
+            "value": "01 Aug 2026"
+          },
+          {
+            "name": "Loan Term",
+            "value": "20 Years"
+          },
+          {
+            "name": "Loan Amount",
+            "value": "1500000"
+          }
+        ],
+        "tables": []
+      },
+      {
+        "type": "Risk Detail",
+        "attributes": [
+          {
+            "name": "Accuity Risk Indicator",
+            "value": "Low"
+          },
+          {
+            "name": "Adverse IIB match",
+            "value": "No"
+          },
+          {
+            "name": "Risk Flag",
+            "value": "Green"
+          },
+          {
+            "name": "High Risk Category",
+            "value": "None"
+          }
+        ],
+        "expandedAttributes": [
+          {
+            "name": "Accuity Risk Indicator",
+            "value": "Low"
+          },
+          {
+            "name": "Adverse IIB match",
+            "value": "No"
+          },
+          {
+            "name": "Risk Flag",
+            "value": "Green"
+          },
+          {
+            "name": "High Risk Category",
+            "value": "None"
+          },
+          {
+            "name": "Source",
+            "value": "MLFR"
+          }
+        ],
+        "tables": []
+      }
+    ],
+    "sections": [
+      {
+        "name": "latestBreDecision",
+        "label": "BRE Decision",
+        "value": {
+          "code": "ST",
+          "columns": [
+            {
+              "key": "label",
+              "header": "BRE"
+            },
+            {
+              "key": "initial",
+              "header": "Initial BRE"
+            },
+            {
+              "key": "final",
+              "header": "Final BRE"
+            }
+          ],
+          "rows": [
+            {
+              "id": "status",
+              "label": "BRE Status",
+              "initial": "Success",
+              "final": "Success"
+            },
+            {
+              "id": "decision",
+              "label": "BRE Decision",
+              "initial": ["DC"],
+              "final": ["ST"]
+            },
+            {
+              "id": "remarks",
+              "label": "BRE Remarks",
+              "initial": "Product Non Eligible",
+              "final": "Product Non Eligible"
+            },
+            {
+              "id": "discrepancy",
+              "label": "BRE Discrepancy",
+              "initial": "ACR#OCD#PAN#ADP#AGE#IDM#KYP",
+              "final": "ACR#OCD#PAN#ADP#AGE#IDM#KYP#NYC"
+            },
+            {
+              "id": "timestamp",
+              "label": "BRE Timestamp",
+              "initial": "2026-08-14T11:08:00+05:30",
+              "final": "2026-08-14T11:08:00+05:30"
+            }
+          ]
+        }
+      },
+      {
+        "name": "applicantProfile",
+        "label": "Applicant Profile",
+        "value": [
+          {
+            "memberType": "lifeassured1",
+            "lifeType": "LA",
+            "customerType": "HNI",
+            "partyId": "3202e174-2338-4970-a7e8-253831e31274",
+            "jontFlag": false,
+            "lifeNumber": "01",
+            "clientId": "NA",
+            "proposerLaRelation": "Self",
+            "jointLARelation": "",
+            "jointPRRelation": "",
+            "nriFlag": false,
+            "fatfFlag": false,
+            "image_details": {
+              "label": "Image Details",
+              "value": {
+                "columns": [
+                  {
+                    "label": "Document"
+                  },
+                  {
+                    "label": "Face Match Score"
+                  },
+                  {
+                    "label": "Image Quality"
+                  },
+                  {
+                    "label": "Remarks"
+                  }
+                ],
+                "rows": [
+                  {
+                    "document": "Photo ID",
+                    "faceMatchScore": "92%",
+                    "imageQuality": "Good",
+                    "remarks": "Face matched"
+                  },
+                  {
+                    "document": "PAN Card",
+                    "faceMatchScore": "88%",
+                    "imageQuality": "Average",
+                    "remarks": "Minor glare on photo"
+                  }
+                ]
+              }
+            },
+            "personal_kyc": {
+              "label": "Personal & KYC",
+              "groups": [
+                [
+                  {
+                    "label": "Applicant Name",
+                    "value": "Rahul Sharma"
+                  },
+                  {
+                    "label": "Date of Birth",
+                    "value": "09 Aug 1988"
+                  },
+                  {
+                    "label": "Age",
+                    "value": "38 Years"
+                  },
+                  {
+                    "label": "Gender",
+                    "value": "Male"
+                  },
+                  {
+                    "label": "Marital Status",
+                    "value": "Married"
+                  },
+                  {
+                    "label": "Nationality",
+                    "value": "Indian"
+                  },
+                  {
+                    "label": "Country of Residence",
+                    "value": "India"
+                  },
+                  {
+                    "label": "Education",
+                    "value": "Graduate"
+                  },
+                  {
+                    "label": "Resident Status",
+                    "value": "Indian Resident"
+                  },
+                  {
+                    "label": "Designation",
+                    "value": "Manager"
+                  },
+                  {
+                    "label": "Disabled",
+                    "value": "No"
+                  },
+                  {
+                    "label": "Percentage Of Impairment",
+                    "value": "0"
+                  },
+                  {
+                    "label": "Type Of Impairment",
+                    "value": "NA"
+                  },
+                  {
+                    "label": "UDID Number",
+                    "value": "NA"
+                  },
+                  {
+                    "label": "UDS Link",
+                    "value": "NA"
+                  }
+                ],
+                [
+                  {
+                    "label": "PRAN Number",
+                    "value": "110012345678"
+                  },
+                  {
+                    "label": "PRAN Number Verification",
+                    "value": "Verified"
+                  },
+                  {
+                    "label": "PAN Number",
+                    "value": "ABCDE1234F"
+                  },
+                  {
+                    "label": "PAN Flag",
+                    "value": "Yes"
+                  },
+                  {
+                    "label": "PAN Aadhar Seeding Status",
+                    "value": "Seeded"
+                  },
+                  {
+                    "label": "Identity Proof Type",
+                    "value": "Aadhaar"
+                  },
+                  {
+                    "label": "Identity Proof Expiry Date",
+                    "value": "31 Dec 2035"
+                  },
+                  {
+                    "label": "Identity Proof Number",
+                    "value": "123456789012"
+                  },
+                  {
+                    "label": "Address Proof",
+                    "value": "Driving License"
+                  },
+                  {
+                    "label": "Income Proof",
+                    "value": "Salary Slip"
+                  },
+                  {
+                    "label": "CKYC Number",
+                    "value": "50012345678901"
+                  },
+                  {
+                    "label": "PEP",
+                    "value": "No"
+                  },
+                  {
+                    "label": "Criminal Proceedings",
+                    "value": "No"
+                  }
+                ]
+              ]
+            },
+            "contact_and_address": {
+              "label": "Contact And Address",
+              "value": [
+                {
+                  "label": "Communication Address",
+                  "value": [
+                    {
+                      "label": "Address Line 1",
+                      "value": "Flat 402, Sunrise Towers"
+                    },
+                    {
+                      "label": "Address Line 2",
+                      "value": "MG Road"
+                    },
+                    {
+                      "label": "Address Line 3",
+                      "value": "Andheri East"
+                    },
+                    {
+                      "label": "Landmark",
+                      "value": "Near Metro Station"
+                    },
+                    {
+                      "label": "City",
+                      "value": "Mumbai"
+                    },
+                    {
+                      "label": "State",
+                      "value": "Maharashtra"
+                    },
+                    {
+                      "label": "Country",
+                      "value": "India"
+                    },
+                    {
+                      "label": "Pin Code",
+                      "value": "400069"
+                    }
+                  ]
+                },
+                {
+                  "label": "Permanent Address",
+                  "value": [
+                    {
+                      "label": "Address Line 1",
+                      "value": "12, Green Park Colony"
+                    },
+                    {
+                      "label": "Address Line 2",
+                      "value": "Station Road"
+                    },
+                    {
+                      "label": "Address Line 3",
+                      "value": "Civil Lines"
+                    },
+                    {
+                      "label": "Landmark",
+                      "value": "Opposite City Mall"
+                    },
+                    {
+                      "label": "City",
+                      "value": "Jaipur"
+                    },
+                    {
+                      "label": "State",
+                      "value": "Rajasthan"
+                    },
+                    {
+                      "label": "Country",
+                      "value": "India"
+                    },
+                    {
+                      "label": "Pin Code",
+                      "value": "302006"
+                    }
+                  ]
+                },
+                {
+                  "label": "Contact Details",
+                  "value": [
+                    {
+                      "label": "Mobile Number",
+                      "value": "9876543210"
+                    },
+                    {
+                      "label": "Email Id",
+                      "value": "rahul.sharma@example.com"
+                    },
+                    {
+                      "label": "Alternate Mobile",
+                      "value": "9123456780"
+                    },
+                    {
+                      "label": "STD/ISD Code",
+                      "value": "+91"
+                    },
+                    {
+                      "label": "Land Line Number",
+                      "value": "02212345678"
+                    },
+                    {
+                      "label": "Email Pref",
+                      "value": "Yes"
+                    },
+                    {
+                      "label": "SMS Pref",
+                      "value": "Yes"
+                    }
+                  ]
+                }
+              ]
+            },
+            "financial_and_profession": {
+              "label": "Financial & Profession",
+              "value": [
+                {
+                  "label": "Occupation",
+                  "value": "Salaried"
+                },
+                {
+                  "label": "Annual Income",
+                  "value": "1800000"
+                },
+                {
+                  "label": "GSTIN",
+                  "value": "NA"
+                },
+                {
+                  "label": "Industry Type",
+                  "value": "Information Technology"
+                },
+                {
+                  "label": "Organization Type",
+                  "value": "Private Limited"
+                },
+                {
+                  "label": "Organization Name",
+                  "value": "Tech Solutions Pvt Ltd"
+                }
+              ]
+            },
+            "medical_and_lifestyle": {
+              "label": "Medical and Lifestyle",
+              "value": [
+                {
+                  "label": "Health Information",
+                  "value": [
+                    {
+                      "label": "Height",
+                      "value": "175 cm"
+                    },
+                    {
+                      "label": "Weight",
+                      "value": "72 kg"
+                    },
+                    {
+                      "label": "Other Medical History",
+                      "value": "None"
+                    }
+                  ]
+                },
+                {
+                  "label": "Lifestyle Habits",
+                  "value": "Non-smoker, Occasional alcohol"
+                }
+              ]
+            },
+            "nominee": {
+              "label": "Nominee",
+              "value": [
+                {
+                  "label": "Nominee Details",
+                  "columns": [
+                    {
+                      "label": "Nominee Name"
+                    },
+                    {
+                      "label": "Nominee DOB"
+                    },
+                    {
+                      "label": "Gender"
+                    },
+                    {
+                      "label": "Relationship"
+                    },
+                    {
+                      "label": "Share%"
+                    }
+                  ],
+                  "rows": [
+                    {
+                      "name": "Priya Sharma",
+                      "dob": "1990-05-15",
+                      "gender": "Female",
+                      "relationship": "Spouse",
+                      "share": "60"
+                    },
+                    {
+                      "name": "Aarav Sharma",
+                      "dob": "2015-03-18",
+                      "gender": "Male",
+                      "relationship": "Son",
+                      "share": "40"
+                    }
+                  ]
+                },
+                {
+                  "label": "Appointee Details",
+                  "columns": [
+                    {
+                      "label": "Appointee Name"
+                    },
+                    {
+                      "label": "Appointee DOB"
+                    },
+                    {
+                      "label": "Appointee Gender"
+                    },
+                    {
+                      "label": "Appointee Relationship"
+                    }
+                  ],
+                  "rows": [
+                    {
+                      "name": "Neha Verma",
+                      "dob": "1985-11-02",
+                      "gender": "Female",
+                      "relationship": "Sister"
+                    },
+                    {
+                      "name": "Karan Sharma",
+                      "dob": "1982-07-21",
+                      "gender": "Male",
+                      "relationship": "Brother"
+                    }
+                  ]
+                }
+              ]
+            },
+            "generic": {
+              "label": "Generic",
+              "value": {
+                "label": "Generic",
+                "value": [
+                  {
+                    "label": "Existing Policy Number",
+                    "value": "NA"
+                  },
+                  {
+                    "label": "Client Id",
+                    "value": "CL0012345"
+                  },
+                  {
+                    "label": "Self Proposed",
+                    "value": "Yes"
+                  },
+                  {
+                    "label": "Type Of Proposer",
+                    "value": "Individual"
+                  },
+                  {
+                    "label": "Relationship With Life Assured",
+                    "value": "Self"
+                  },
+                  {
+                    "label": "Type of Proposal",
+                    "value": "New Business"
+                  }
+                ]
+              }
+            },
+            "eia": {
+              "label": "eIA",
+              "value": {
+                "label": "eIA",
+                "value": [
+                  {
+                    "label": "Open eIA",
+                    "value": "No"
+                  },
+                  {
+                    "label": "Existing eIA Number",
+                    "value": "NA"
+                  },
+                  {
+                    "label": "Preferred Repository",
+                    "value": "NA"
+                  },
+                  {
+                    "label": "Convert policies",
+                    "value": "No"
+                  }
+                ]
+              }
+            },
+            "payment_and_payout": {
+              "label": "Payment and Payout",
+              "value": [
+                {
+                  "label": "Payment Details",
+                  "value": [
+                    {
+                      "label": "Is it a 3rd Party Payment",
+                      "value": "No"
+                    },
+                    {
+                      "label": "Payment Options",
+                      "value": "Net Banking"
+                    }
+                  ]
+                },
+                {
+                  "label": "Payout Details",
+                  "value": [
+                    {
+                      "label": "Account Type",
+                      "value": "Savings"
+                    },
+                    {
+                      "label": "Bank Type",
+                      "value": "Private"
+                    },
+                    {
+                      "label": "Branch",
+                      "value": "Andheri East"
+                    },
+                    {
+                      "label": "MICR Code",
+                      "value": "400240001"
+                    },
+                    {
+                      "label": "IFSC Code",
+                      "value": "ICIC0000001"
+                    },
+                    {
+                      "label": "Account Number",
+                      "value": "000401234567"
+                    }
+                  ]
+                }
+              ]
+            },
+           "product_details": {
+              "label": "Product Details",
+              "value": {
+                "columns": [
+                  {
+                    "label": "Product Code"
+                  },
+                  {
+                    "label": "Product Type"
+                  },
+                  {
+                    "label": "Fund Source"
+                  },
+                  {
+                    "label": "Partner Type"
+                  }
+                ],
+                "rows": [
+                  {
+                    "productCode": "GCL01",
+                    "productType": "Group Credit Life",
+                    "foundSource": "Salary",
+                    "partnertype": "Bank"
+                  },
+                  {
+                    "productCode": "GCL02",
+                    "productType": "Group Credit Life",
+                    "foundSource": "Business Income",
+                    "partnertype": "NBFC"
+                  }
+                ]
+              }
+            },
+            "base_and_loan_details": {
+              "label": "Base & Loan Details",
+              "value": [
+                {
+                  "name": "Base Summ Assured",
+                  "value": "1500000"
+                },
+                {
+                  "name": "Loan Amount",
+                  "value": "1500000"
+                },
+                {
+                  "name": "Date of Loan Disbursement",
+                  "value": "2026-08-01"
+                },
+                {
+                  "name": "Coverage Option",
+                  "value": "Single Life"
+                },
+                {
+                  "name": "Share of Loan",
+                  "value": "100"
+                },
+                {
+                  "name": "Loan Term",
+                  "value": "20"
+                },
+                {
+                  "name": "Policy Term",
+                  "value": "20"
+                },
+                {
+                  "name": "Master Code",
+                  "value": "MC1001"
+                },
+                {
+                  "name": "Loan Account Number",
+                  "value": "LN123456789"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "requirementManagement",
+        "label": "Requirement Management",
+        "columns": [
+          {
+            "label": "Actions"
+          },
+          {
+            "label": "Status"
+          },
+          {
+            "label": "OCR Status"
+          },
+          {
+            "label": "Team"
+          },
+          {
+            "label": "Profile"
+          },
+          {
+            "label": "Category"
+          },
+          {
+            "label": "Sub Category"
+          },
+          {
+            "label": "Document"
+          },
+          {
+            "label": "Reason"
+          },
+          {
+            "label": "FUP Code"
+          },
+          {
+            "label": "Extra Remarks"
+          },
+          {
+            "label": "Description"
+          }
+        ],
+        "rows": [
+          {
+            "requirementId": 11792,
+            "status": "pending",
+            "ocrStatus": "pass",
+            "team": "UW",
+            "requirementPoolType": "UW Pool",
+            "profile": "Life Assured",
+            "category": "Consent",
+            "subCategory": "Policy confirmation",
+            "document": "OTP",
+            "reason": "Document not uplaoded",
+            "fupCode": "OTP",
+            "description": "OTP-Policy confirmation/ consent code required",
+            "extraRemarks": "Follow up with customer"
+          },
+          {
+            "requirementId": 11790,
+            "status": "Accept",
+            "ocrStatus": "pass",
+            "team": "COPS",
+            "requirementPoolType": "COPS Pool",
+            "profile": "Proposer",
+            "category": "KYC",
+            "subCategory": "Ageproof",
+            "document": "PAN Card",
+            "reason": "Documents not submitted",
+            "fupCode": "AGE",
+            "description": "AGE-Age proof of life assured (Passport - front & back or Driving License or Pan Card or Aadhaar - front & back)",
+            "extraRemarks": "Follow up with customer"
+          },
+          {
+            "requirementId": 11791,
+            "status": "pending",
+            "ocrStatus": "pass",
+            "team": "COPS",
+            "requirementPoolType": "COPS Pool",
+            "profile": "Life Assured",
+            "category": "KYC",
+            "subCategory": "PAN Card",
+            "document": "PAN /Form 60",
+            "reason": "Documents not submitted",
+            "fupCode": "PAL",
+            "description": "PAL- Please submit PAN Card copy linked with your Aadhaar",
+            "extraRemarks": "Follow up with customer"
+          },
+          {
+            "requirementId": 11795,
+            "status": "pending",
+            "ocrStatus": "pass",
+            "team": "COPS",
+            "requirementPoolType": "COPS Pool",
+            "profile": "Proposer",
+            "category": "KYC",
+            "subCategory": "PAN Card",
+            "document": "Photo",
+            "reason": "Documents not submitted",
+            "fupCode": "KYP",
+            "description": "KYP- Upload recent photograph of proposer",
+            "extraRemarks": "Follow up with customer"
+          },
+          {
+            "requirementId": 11793,
+            "status": "waived",
+            "ocrStatus": "pass",
+            "team": "COPS",
+            "requirementPoolType": "COPS Pool",
+            "profile": "Life Assured",
+            "category": "KYC",
+            "subCategory": "ID proof",
+            "document": "Drving License",
+            "reason": "Documents not submitted",
+            "fupCode": "IDM",
+            "description": "IDM- Upload valid ID proof of proposer (Passport - front & back or Driving License or Pan Card or Aadhaar - front & back)",
+            "extraRemarks": "Follow up with customer"
+          },
+          {
+            "requirementId": 11794,
+            "status": "Accept",
+            "ocrStatus": "pass",
+            "team": "COPS",
+            "requirementPoolType": "COPS Pool",
+            "profile": "Proposer",
+            "category": "KYC",
+            "subCategory": "Address Proof",
+            "document": "Driving License",
+            "reason": "Documents not submitted",
+            "fupCode": "ADP",
+            "description": "ADP-Address proof of the proposer matching with application form (Passport - front & back or Aadhaar - front & back or Driving License or Voter id)",
+            "extraRemarks": "Follow up with customer"
+          },
+          {
+            "requirementId": 12069,
+            "status": "pending",
+            "ocrStatus": "",
+            "team": "COPS",
+            "requirementPoolType": "COPS Pool",
+            "profile": "Life Assured",
+            "category": "Medical",
+            "subCategory": "SPAARC call",
+            "document": "SPAARC call ID",
+            "reason": "Call ID to be raised for details mismatch in Application form",
+            "fupCode": "SCI",
+            "description": "SPAARC call ID to be raised (related to Name, address, DOB, Pin Code, gender & residential status mismatch as per the IUW form)",
+            "extraRemarks": "Follow up with customer"
+          }
+        ]
+      },
+      {
+        "name": "dvtDecision",
+        "label": "DVT Decision",
+        "value": {
+          "dvtRemarks": "",
+          "dvtDecision": "",
+          "decisionCode": "",
+          "decisionOptions": [
+            "Accept",
+            "Raise Requirements",
+            "Refer to Risk",
+            "Refer to IT",
+            "Refer to GUW"
+          ]
+        }
+      },
+      {
+        "name": "eligibilityParameters",
+        "value": {
+          "tmsa": "400000",
+          "trsa": "300000",
+          "tfesa": "500000",
+          "tsa": "4500000",
+          "tpsa": "200000",
+          "tfsa": "250000"
+        }
+      },
+      {
+        "name": "faceMatchDetails",
+        "value": [
+          {
+            "imageType": "Photograph",
+            "document": "Photo ID",
+            "faceMatchScore": "92%",
+            "imageQuality": "Good",
+            "remarks": "Face matched"
+          },
+          {
+            "imageType": "ID Proof",
+            "document": "PAN Card",
+            "faceMatchScore": "88%",
+            "imageQuality": "Average",
+            "remarks": "Minor glare on photo"
+          }
+        ]
+      },
+      {
+        "name": "personalAndKyc",
+        "value": {
+          "applicantName": "Rahul Sharma",
+          "dateOfBirth": "09 Aug 1988",
+          "age": "38 Years",
+          "gender": "Male",
+          "maritalStatus": "Married",
+          "nationality": "Indian",
+          "countryOfResidence": "India",
+          "education": "Graduate",
+          "residentStatus": "Resident Indian",
+          "designation": "Manager",
+          "disabled": "No",
+          "percentageOfImpairment": "0",
+          "typeOfImpairment": "NA",
+          "udidNumber": "NA",
+          "udsLink": "NA",
+          "pranNumber": "110012345678",
+          "pranNumberVerification": "Verified",
+          "panNumber": "ABCDE1234F",
+          "panFlag": "Yes",
+          "panAadharSeedingStatus": "Seeded",
+          "identityProofType": "Aadhaar",
+          "identityProofExpiryDate": "31 Dec 2035",
+          "identityProofNumber": "123456789012",
+          "addressProof": "Driving License",
+          "incomeProof": "Salary Slip",
+          "ckycNumber": "50012345678901",
+          "pep": "No",
+          "criminalProceedings": "No"
+        }
+      },
+      {
+        "name": "contactAndAddress",
+        "value": {
+          "communicationAddress": {
+            "addressLine1": "Flat 402, Sunrise Towers",
+            "addressLine2": "MG Road",
+            "addressLine3": "Andheri East",
+            "landmark": "Near Metro Station",
+            "city": "Mumbai",
+            "state": "Maharashtra",
+            "country": "India",
+            "pincode": "400069"
+          },
+          "permanentAddress": {
+            "addressLine1": "12, Green Park Colony",
+            "addressLine2": "Station Road",
+            "addressLine3": "Civil Lines",
+            "landmark": "Opposite City Mall",
+            "city": "Jaipur",
+            "state": "Rajasthan",
+            "country": "India",
+            "pincode": "302006"
+          },
+          "contactDetails": {
+            "mobileNo": "9876543210",
+            "emailId": "rahul.sharma@example.com",
+            "alternateMobile": "9123456780",
+            "stdIsdCode": "+91",
+            "landlineNumber": "02212345678",
+            "emailPref": "Yes",
+            "smsPref": "Yes"
+          }
+        }
+      },
+      {
+        "name": "financialAndProfession",
+        "value": {
+          "occupation": "Salaried",
+          "annualIncome": "1800000",
+          "gstin": "NA",
+          "industryType": "Information Technology",
+          "organisationType": "Private Limited",
+          "organisationName": "Tech Solutions Pvt Ltd"
+        }
+      },
+      {
+        "name": "medicalAndLifestyle",
+        "value": {
+          "height": "175 cm",
+          "weight": "72 kg",
+          "otherMedicalHistory": "None",
+          "lifestyleHabits": [
+            "Non-smoker",
+            "Occasional alcohol"
+          ]
+        }
+      },
+      {
+        "name": "nominee",
+        "value": {
+          "nomineeDetails": [
+            {
+              "nomineeName": "Priya Sharma",
+              "nomineeDOB": "1990-05-15",
+              "gender": "Female",
+              "relationship": "Spouse",
+              "sharePercentage": "60"
+            },
+            {
+              "nomineeName": "Aarav Sharma",
+              "nomineeDOB": "2015-03-18",
+              "gender": "Male",
+              "relationship": "Son",
+              "sharePercentage": "40"
+            }
+          ],
+          "appointeeDetails": [
+            {
+              "appointeeName": "Neha Verma",
+              "appointeeGender": "Female",
+              "appointeeDOB": "1985-11-02",
+              "appointeeRelationship": "Sister"
+            },
+            {
+              "appointeeName": "Karan Sharma",
+              "appointeeGender": "Male",
+              "appointeeDOB": "1982-07-21",
+              "appointeeRelationship": "Brother"
+            }
+          ]
+        }
+      }
+    ],
+    "subSections": [
+      {
+        "name": "proposalFormAndDocuments",
+        "label": "Proposal Form and Document",
+        "value": {
+          "link": "",
+          "errorMessage": ""
+        }
+      },
+     
+{
+  "name": "previousPolicies",
+  "label": "Previous Policies",
+  "value": {
+    "members": [
+      {
+        "memberKey": "lifeAssured1",
+        "label": "Life Assured 1",
+        "dedupePosidex": [
+          {
+            "clientId": "CL123",
+            "firstName": "Rudra",
+            "surname": "Shah",
+            "state": "Maharashtra",
+            "city": "Mumbai",
+            "dob": "1990-05-15",
+            "mobileNo": "9876543210",
+            "landlineNo": "02223456789",
+            "recordType": "Existing Customer",
+            "matchPercentage": "98.50",
+            "riskIndicator": "Low"
+          },
+          {
+            "clientId": "CL124",
+            "firstName": "Nea",
+            "surname": "Shah",
+            "state": "Maharashtra",
+            "city": "Pune",
+            "dob": "1990-05-15",
+            "mobileNo": "9876543211",
+            "landlineNo": "02023456789",
+            "recordType": "Potential Duplicate",
+            "matchPercentage": "87.25",
+            "riskIndicator": "Medium"
+          }
+        ],
+        "ipru": [
+          {
+            "policyNumber": "IPRU10023456",
+            "productName": "ICICI Pru iProtect Smart",
+            "sumAssured": "5000000",
+            "policyStatus": "In Force",
+            "uwDecision": "Standard",
+            "applicationDate": "2022-06-15",
+            "claimsFlag": "No",
+            "mortalityClass": "Standard",
+            "installmentPremium": "18500",
+            "clientRole": "Life Assured",
+            "companyName": "ICICI Prudential Life Insurance",
+            "yearOfIssueApplication": "2022",
+            "riderDetails": [
+              {
+                "riderCode": "R001",
+                "riderName": "Accidental Death Benefit",
+                "riderSubType": "ADB",
+                "faceValue": "1000000",
+                "mortalityClass": "Standard",
+                "uwMortalityClassBase": "Standard",
+                "sumAssured": "1000000",
+                "rating": "0",
+                "sarConsideration": "Yes",
+                "clientRole": "Life Assured"
+              },
+              {
+                "riderCode": "R002",
+                "riderName": "Critical Illness Benefit",
+                "riderSubType": "CI",
+                "faceValue": "500000",
+                "mortalityClass": "Standard",
+                "uwMortalityClassBase": "Standard",
+                "sumAssured": "500000",
+                "rating": "0",
+                "sarConsideration": "Yes",
+                "clientRole": "Life Assured"
+              }
+            ]
+          },
+          {
+            "policyNumber": "IPRU10056789",
+            "productName": "ICICI Pru Savings Suraksha",
+            "sumAssured": "1500000",
+            "policyStatus": "Paid Up",
+            "uwDecision": "Standard",
+            "applicationDate": "2019-09-20",
+            "claimsFlag": "No",
+            "mortalityClass": "Standard",
+            "installmentPremium": "25000",
+            "clientRole": "Policyholder",
+            "companyName": "ICICI Prudential Life Insurance",
+            "yearOfIssueApplication": "2019",
+            "riderDetails": [
+              {
+                "riderCode": "R003",
+                "riderName": "Waiver of Premium",
+                "riderSubType": "WOP",
+                "faceValue": "250000",
+                "mortalityClass": "Standard",
+                "uwMortalityClassBase": "Standard",
+                "sumAssured": "250000",
+                "rating": "0",
+                "sarConsideration": "No",
+                "clientRole": "Policyholder"
+              }
+            ]
+          }
+        ],
+        "iibNonIpru": [
+          {
+            "questDbNo": "IIB202400123",
+            "questSumAssured": "3000000",
+            "questPolicyStatus": "In Force",
+            "questCompanyName": "HDFC Life Insurance",
+            "matchingParameter": "PAN, DOB, Name",
+            "questDopDoc": "2021-04-10",
+            "questDateOfDeath": "",
+            "questCauseOfDeath": "",
+            "questRecordLastUpdated": "2026-09-15",
+            "questEntityCautionStatus": "No",
+            "intermediaryCautionStatus": "No",
+            "isNegativeMatch": "No",
+            "whetherStandardLife": "Yes",
+            "medicalNonmedical": "Medical",
+            "reasonForDecline": "",
+            "reasonForPostpone": "",
+            "reasonForRepudiation": "",
+            "linkedNonLinked": "Non-Linked",
+            "productType": "Term Insurance",
+            "remarks": "Active policy with standard underwriting",
+            "broadReason": "",
+            "granularReason1": "",
+            "granularReason2": ""
+          },
+          {
+            "questDbNo": "IIB202300456",
+            "questSumAssured": "2000000",
+            "questPolicyStatus": "Declined",
+            "questCompanyName": "SBI Life Insurance",
+            "matchingParameter": "PAN, Mobile, DOB",
+            "questDopDoc": "2023-08-12",
+            "questDateOfDeath": "",
+            "questCauseOfDeath": "",
+            "questRecordLastUpdated": "2026-08-20",
+            "questEntityCautionStatus": "Yes",
+            "intermediaryCautionStatus": "No",
+            "isNegativeMatch": "No",
+            "whetherStandardLife": "No",
+            "medicalNonmedical": "Medical",
+            "reasonForDecline": "Adverse medical findings",
+            "reasonForPostpone": "",
+            "reasonForRepudiation": "",
+            "linkedNonLinked": "Non-Linked",
+            "productType": "Term Insurance",
+            "remarks": "Proposal declined after medical assessment",
+            "broadReason": "Medical",
+            "granularReason1": "Abnormal Medical Report",
+            "granularReason2": "Elevated Blood Pressure"
+          }
+        ],
+        "applicationFormDetails": [
+          {
+            "companyName": "LIC of India",
+            "policyNumber": "LIC987654321",
+            "baseSumAssured": "1000000",
+            "proposalDate": "2018-03-10",
+            "policyDecision": "Accepted"
+          },
+          {
+            "companyName": "Max Life Insurance",
+            "policyNumber": "MAX123456789",
+            "baseSumAssured": "2500000",
+            "proposalDate": "2024-01-18",
+            "policyDecision": "Accepted"
+          }
+        ]
+      },
+      {
+        "memberKey": "lifeAssured2",
+        "label": "Life Assured 2",
+        "dedupePosidex": [
+          {
+            "clientId": "CL456",
+            "firstName": "Priya",
+            "surname": "Shah",
+            "state": "Maharashtra",
+            "city": "Mumbai",
+            "dob": "1993-11-22",
+            "mobileNo": "9876501234",
+            "landlineNo": "02224567890",
+            "recordType": "Existing Customer",
+            "matchPercentage": "99.10",
+            "riskIndicator": "Low"
+          }
+        ],
+        "ipru": [
+          {
+            "policyNumber": "IPRU20034567",
+            "productName": "ICICI Pru iProtect Smart",
+            "sumAssured": "2500000",
+            "policyStatus": "In Force",
+            "uwDecision": "Standard",
+            "applicationDate": "2023-02-14",
+            "claimsFlag": "No",
+            "mortalityClass": "Standard",
+            "installmentPremium": "12500",
+            "clientRole": "Life Assured",
+            "companyName": "ICICI Prudential Life Insurance",
+            "yearOfIssueApplication": "2023",
+            "riderDetails": [
+              {
+                "riderCode": "R004",
+                "riderName": "Accidental Death Benefit",
+                "riderSubType": "ADB",
+                "faceValue": "500000",
+                "mortalityClass": "Standard",
+                "uwMortalityClassBase": "Standard",
+                "sumAssured": "500000",
+                "rating": "0",
+                "sarConsideration": "Yes",
+                "clientRole": "Life Assured"
+              }
+            ]
+          }
+        ],
+        "iibNonIpru": [
+          {
+            "questDbNo": "IIB202500789",
+            "questSumAssured": "1500000",
+            "questPolicyStatus": "In Force",
+            "questCompanyName": "Tata AIA Life Insurance",
+            "matchingParameter": "PAN, Name, DOB",
+            "questDopDoc": "2024-05-20",
+            "questDateOfDeath": "",
+            "questCauseOfDeath": "",
+            "questRecordLastUpdated": "2026-10-01",
+            "questEntityCautionStatus": "No",
+            "intermediaryCautionStatus": "No",
+            "isNegativeMatch": "No",
+            "whetherStandardLife": "Yes",
+            "medicalNonmedical": "Non-Medical",
+            "reasonForDecline": "",
+            "reasonForPostpone": "",
+            "reasonForRepudiation": "",
+            "linkedNonLinked": "Linked",
+            "productType": "ULIP",
+            "remarks": "Policy active with no adverse findings",
+            "broadReason": "",
+            "granularReason1": "",
+            "granularReason2": ""
+          }
+        ],
+        "applicationFormDetails": [
+          {
+            "companyName": "Bajaj Life Insurance",
+            "policyNumber": "BAL123450987",
+            "baseSumAssured": "1200000",
+            "proposalDate": "2022-07-15",
+            "policyDecision": "Accepted"
+          }
+        ]
+      }
+    ],
+    "familyPolicies": [
+      {
+        "type": "Verified",
+        "relationWithLifeAssured": "Father",
+        "insuranceCompany": "LIC of India",
+        "sumAssured": "2000000",
+        "annualIncome": "1200000",
+        "policyStatus": "In Force"
+      },
+      {
+        "type": "Declared",
+        "relationWithLifeAssured": "Mother",
+        "insuranceCompany": "HDFC Life Insurance",
+        "sumAssured": "1000000",
+        "annualIncome": "600000",
+        "policyStatus": "In Force"
+      },
+      {
+        "type": "Verified",
+        "relationWithLifeAssured": "Spouse",
+        "insuranceCompany": "ICICI Prudential Life Insurance",
+        "sumAssured": "2500000",
+        "annualIncome": "900000",
+        "policyStatus": "In Force"
+      },
+      {
+        "type": "Declared",
+        "relationWithLifeAssured": "Sibling",
+        "insuranceCompany": "SBI Life Insurance",
+        "sumAssured": "1500000",
+        "annualIncome": "800000",
+        "policyStatus": "Lapsed"
+      }
+    ]
+  }
+},
+
+      {
+        "name": "openOtherTasks",
+        "label": "Open Tasks",
+        "value": {
+          "columns": [
+            {
+              "label": "Call log date"
+            },
+            {
+              "label": "Service call ID"
+            },
+            {
+              "label": "CT"
+            },
+            {
+              "label": "ST"
+            },
+            {
+              "label": "Call Details"
+            },
+            {
+              "label": "User Pool"
+            },
+            {
+              "source": ""
+            }
+          ],
+          "rows": [
+            {
+              "callLogDate": "11-11-2026",
+              "callId": "CALL123",
+              "ct": "2",
+              "st": "4",
+              "callDetails": "no idea",
+              "userPoll": "yes",
+              "source": "source"
+            },
+            {
+              "callLogDate": "",
+              "callId": "",
+              "ct": "",
+              "st": "",
+              "callDetails": "",
+              "userPoll": "",
+              "source": ""
+            }
+          ]
+        }
+      },
+      {
+        "name": "auditTrail",
+        "label": "Audit Trail",
+        "value": {
+          "columns": [
+            {
+              "label": "User ID"
+            },
+            {
+              "label": "User Name"
+            },
+            {
+              "label": "Pool Name"
+            },
+            {
+              "label": "Case Status"
+            },
+            {
+              "label": "Decision"
+            },
+            {
+              "label": "Date Updated On"
+            },
+            {
+              "label": "Comments/Remarks"
+            }
+          ],
+          "value": [
+            {
+              "userId": "ipru74574",
+              "userName": "pranay",
+              "poolName": "HOD",
+              "caseStatus": "active",
+              "Decision": "STD",
+              "updatedDate": "10-11-2026",
+              "comments": "test"
+            }
+          ]
+        }
+      },
+      {
+        "name": "riskDetails",
+        "value": [
+          {
+            "risk_details": {
+              "label": "Risk Details",
+              "memberDetails": {
+                "label": "Member Details",
+                "value": [
+                  {
+                    "label": "KRN No",
+                    "value": ""
+                  },
+                  {
+                    "label": "Application No",
+                    "value": ""
+                  },
+                  {
+                    "label": "Customer Name",
+                    "value": ""
+                  },
+                  {
+                    "label": "Vendor Name",
+                    "value": ""
+                  },
+                  {
+                    "label": "Report Revised Date",
+                    "value": ""
+                  }
+                ]
+              },
+              "riskAssessament": {
+                "label": "Risk Assessment",
+                "value": [
+                  {
+                    "label": "Name, address & stay confirmed",
+                    "value": ""
+                  },
+                  {
+                    "label": "Standard of living",
+                    "value": ""
+                  },
+                  {
+                    "label": "Life assured existence",
+                    "value": ""
+                  },
+                  {
+                    "label": "Educational qualification",
+                    "value": ""
+                  },
+                  {
+                    "label": "Contactability established",
+                    "value": ""
+                  },
+                  {
+                    "label": "Occupation category",
+                    "value": ""
+                  },
+                  {
+                    "label": "Computer applied for policy",
+                    "value": ""
+                  },
+                  {
+                    "label": "Annual income",
+                    "value": ""
+                  },
+                  {
+                    "label": "Met with whom",
+                    "value": ""
+                  },
+                  {
+                    "label": "Availability of LC at current address",
+                    "value": ""
+                  },
+                  {
+                    "label": "Hobbies",
+                    "value": ""
+                  },
+                  {
+                    "label": "Hobbies",
+                    "value": ""
+                  },
+                  {
+                    "label": "Previous medical history",
+                    "value": ""
+                  },
+                  {
+                    "label": "Photo availability of life assured",
+                    "value": ""
+                  },
+                  {
+                    "label": "Vitality check",
+                    "value": ""
+                  },
+                  {
+                    "label": "Geo tagging",
+                    "value": ""
+                  },
+                  {
+                    "label": "Type of house",
+                    "value": ""
+                  },
+                  {
+                    "label": "Face match",
+                    "value": ""
+                  },
+                  {
+                    "label": "Have Life Insurance",
+                    "value": ""
+                  },
+                  {
+                    "label": "Investigation score",
+                    "value": ""
+                  },
+                  {
+                    "label": "FE remarks",
+                    "value": ""
+                  }
+                ]
+              },
+              "riskDecision": {
+                "label": "Risk Decision",
+                "riskRemark": "",
+                "riskCode": ""
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "raiseGrievance",
+        "value": {
+          "title": "Raise Grievance",
+          "section": "Medical Requirements",
+          "columns": ["FUP Code", "Profile", "Remarks By User"],
+          "rows": [
+            {
+              "fupCode": "",
+              "profile": "",
+              "Remarks": ""
+            }
+          ]
+        }
+      }
+    ],
+    "sectionType": ["Header", "Card", "Section", "quickLinks"]
+  }
 }
