@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { getDrsRoleType } from "@insurance-poc/utils";
+import { MmtGrievanceDrsPage } from "./MmtGrievanceDrsPage";
+import { TpaDrsPage } from "./TpaDrsPage";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
@@ -137,7 +140,23 @@ const RETAIL_QUICK_LINKS: QuickLinkItem[] = [
   { id: "audit-trail", label: "Audit Trail" },
 ];
 
+const SCREEN_BY_ROLE: Record<string, () => JSX.Element> = {
+  "MMT TASK": MmtGrievanceDrsPage,
+  MMT_TASK: MmtGrievanceDrsPage,
+  AMR_NON_MEDICAL: TpaDrsPage,
+  MEDICAL_TPA_ERROR: TpaDrsPage,
+};
+
 export function RetailDrsPage() {
+  const roleType = getDrsRoleType().trim().toUpperCase();
+  const Screen = SCREEN_BY_ROLE[roleType];
+  if (Screen) {
+    return <Screen />;
+  }
+  return <RetailDrsRecordPage />;
+}
+
+function RetailDrsRecordPage() {
   const navigate = useNavigate();
   const { applicationNo: applicationNoParam } = useParams();
   const applicationNo = applicationNoParam?.trim() ?? "";

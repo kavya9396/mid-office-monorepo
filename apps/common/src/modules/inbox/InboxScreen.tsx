@@ -8,7 +8,7 @@ import {
   clearDrsTaskIds,
   getLastLoginAt,
   readApiErrorMessage,
-  setDrsTaskIds,
+  setDrsOpenContext,
 } from "@insurance-poc/utils";
 import type { ClaimTaskResponse } from "../../services/landingInboxQueries";
 import {
@@ -28,6 +28,14 @@ function readFieldText(value: InboxCase["fields"][string]): string {
   if (typeof value === "string") return value.trim();
   if (value === undefined || value === null) return "";
   return String(value).trim();
+}
+
+function drsRoleFromInboxCase(item: InboxCase): string {
+  const fromApi = readFieldText(item.fields.roleType) || readFieldText(item.fields.role);
+  if (fromApi.length > 0) {
+    return fromApi;
+  }
+  return item.poolName;
 }
 
 type InboxScreenProps = {
@@ -114,8 +122,9 @@ export function InboxScreen({
     const instanceId = readFieldText(item.fields.instanceId);
 
     const persistTaskContext = () => {
-      if (taskId.length > 0 && instanceId.length > 0) {
-        setDrsTaskIds(taskId, instanceId);
+      const roleType = drsRoleFromInboxCase(item);
+      if (taskId.length > 0 || instanceId.length > 0 || roleType.length > 0) {
+        setDrsOpenContext({ taskId, instanceId, roleType });
       } else {
         clearDrsTaskIds();
       }

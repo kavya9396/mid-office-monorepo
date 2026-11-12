@@ -1,0 +1,48 @@
+{
+  "records": [
+    {
+      "applicationNo": "RET-AMR-001",
+      "failureReason": "TPA API Failure",
+      "failureDetail": "Connection timed out while fetching medical schedule.",
+      "details": {
+        "Sr_no": "1",
+        "Application_no": "RET-AMR-001",
+        "Case_Type": "Non Medical",
+        "Reschedule_Flag": "N",
+        "Request_Date": "2026-10-25",
+        "Request_time": "10:30",
+        "Proposal_Acceptance_Date": "2026-10-20",
+        "New_Business_Servicing": "New Business",
+        "Policy_status": "Pending",
+        "Product_code": "PROT-01",
+        "Product_type": "Term",
+        "Email_ID": "proposer@example.com",
+        "DC_Name": "City Diagnostics",
+        "DC_City": "Mumbai"
+      },
+      "defaultServiceProvider": "MEDIASSIST"
+    },
+    {
+      "applicationNo": "GRP-AMR-001",
+      "failureReason": "TPA API Failure",
+      "failureDetail": "Group TPA gateway returned HTTP 503.",
+      "details": {
+        "Sr_no": "1",
+        "Application_no": "GRP-AMR-001",
+        "Case_Type": "Non Medical",
+        "Reschedule_Flag": "N",
+        "Request_Date": "2026-10-28",
+        "Request_time": "14:15",
+        "Proposal_Acceptance_Date": "2026-10-22",
+        "New_Business_Servicing": "New Business",
+        "Policy_status": "Pending",
+        "Product_code": "GHL-01",
+        "Product_type": "Group Health",
+        "Email_ID": "hr@corp.example.com",
+        "DC_Name": "Group Diagnostics Centre",
+        "DC_City": "Bengaluru"
+      },
+      "defaultServiceProvider": "MEDIASSIST"
+    }
+  ]
+}

@@ -17,7 +17,7 @@ vi.mock("react-router-dom", async () => {
 });
 
 const drsTask = vi.hoisted(() => ({
-  setDrsTaskIds: vi.fn(),
+  setDrsOpenContext: vi.fn(),
   clearDrsTaskIds: vi.fn(),
 }));
 
@@ -26,7 +26,7 @@ vi.mock("@insurance-poc/utils", async () => {
   return {
     ...actual,
     getLastLoginAt: () => "2026-10-06T14:10:20",
-    setDrsTaskIds: drsTask.setDrsTaskIds,
+    setDrsOpenContext: drsTask.setDrsOpenContext,
     clearDrsTaskIds: drsTask.clearDrsTaskIds,
   };
 });
@@ -128,8 +128,12 @@ describe("InboxScreen", () => {
     );
 
     await user.click(screen.getByRole("button", { name: "RET-CVT-001" }));
-    expect(drsTask.setDrsTaskIds).toHaveBeenCalledWith("RT-1001", "RI-1001");
-    expect(navigate).toHaveBeenCalledWith("/app/RET-CVT-001/drs?applicationNo=RET-CVT-001&role=CVT+Pool&roleType=CVT_POOL");
+    expect(drsTask.setDrsOpenContext).toHaveBeenCalledWith({
+      taskId: "RT-1001",
+      instanceId: "RI-1001",
+      roleType: "CVT_POOL",
+    });
+    expect(navigate).toHaveBeenCalledWith("/app/RET-CVT-001/drs");
   });
 
   it("claims task and redirects to DRS when errorCode is 200", async () => {

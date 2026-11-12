@@ -26,10 +26,6 @@ export type GrievanceHistoryRow = {
 
 export type GrievanceHistoryProps = {
   rows: GrievanceHistoryRow[];
-  /** Table heading. Defaults to "Grievance History". */
-  title?: string;
-  /** Column set (headers, order, widths). Defaults to `grievanceColumns`. */
-  columns?: Column<GrievanceHistoryRow>[];
   /** Rows per page. Prototype value: 5. */
   pageSize?: number;
   /** Prototype renders the pager disabled. */
@@ -50,8 +46,6 @@ export const grievanceColumns: Column<GrievanceHistoryRow>[] = [
 
 export function GrievanceHistory({
   rows,
-  title = "Grievance History",
-  columns = grievanceColumns,
   pageSize = 5,
   paginationDisabled = true,
 }: Readonly<GrievanceHistoryProps>) {
@@ -60,8 +54,8 @@ export function GrievanceHistory({
   return (
     <CustomBox data-testid="grievance-history">
       <CustomTable<GrievanceHistoryRow>
-        title={title}
-        columns={columns}
+        title="Grievance History"
+        columns={grievanceColumns}
         data={pageItems}
       />
       <CustomBox sx={{ display: "flex", justifyContent: "center", mt: 1 }}>

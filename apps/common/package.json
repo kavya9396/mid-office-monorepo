@@ -99,6 +99,26 @@
       "import": "./src/components/Quick Links/AuditTrail.tsx",
       "default": "./src/components/Quick Links/AuditTrail.tsx"
     },
+    "./grievance-history": {
+      "types": "./src/components/GrievanceHistory.tsx",
+      "import": "./src/components/GrievanceHistory.tsx",
+      "default": "./src/components/GrievanceHistory.tsx"
+    },
+    "./mmt-grievance-decision": {
+      "types": "./src/components/MmtGrievanceDecision.tsx",
+      "import": "./src/components/MmtGrievanceDecision.tsx",
+      "default": "./src/components/MmtGrievanceDecision.tsx"
+    },
+    "./tpa": {
+      "types": "./src/components/TPA/index.ts",
+      "import": "./src/components/TPA/index.ts",
+      "default": "./src/components/TPA/index.ts"
+    },
+    "./use-pagination": {
+      "types": "./src/components/Requirement Mgmt/usePagination.ts",
+      "import": "./src/components/Requirement Mgmt/usePagination.ts",
+      "default": "./src/components/Requirement Mgmt/usePagination.ts"
+    },
     "./financial": {
       "types": "./src/modules/Financial/Financial.tsx",
       "import": "./src/modules/Financial/Financial.tsx",

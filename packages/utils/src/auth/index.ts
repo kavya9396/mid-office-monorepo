@@ -32,9 +32,11 @@ export {
 } from "./session";
 export {
   clearDrsTaskIds,
+  getDrsRoleType,
   getDrsTaskIds,
   hasDrsTaskIds,
   removeDrsTaskContext,
+  setDrsOpenContext,
   setDrsTaskIds,
   type DrsTaskContext,
 } from "./drsTaskContext";
