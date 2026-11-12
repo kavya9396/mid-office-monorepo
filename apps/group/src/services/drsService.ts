@@ -252,14 +252,14 @@ export function mapGroupDrsPayload(value: unknown): GroupDrsData {
   if (applicationNo.length === 0) throw invalidResponse();
 
   const sections = data.sections;
+  const breSection = findSection(sections, "breDecision");
+  const latestBreSection = findSection(sections, "latestBreDecision");
 
   return {
     applicationNo,
     cardDetails: readCards(data.cardDetails),
     // The API now sends the BRE comparison as `latestBreDecision`; `breDecision` is the older name.
     breDecision: readBre(breSection ?? latestBreSection),
-    requirements: mapRequirements(readRequirements(requirementSection)),
-    riskCards: mapRiskCards(summarySection),
     dvtDecision: readDvtDecision(findSection(sections, "dvtDecision")),
     requirements: mapRequirements(readRequirements(findSection(sections, "requirementManagement"))),
     applicants: mapApplicants({

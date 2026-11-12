@@ -12,11 +12,11 @@ const DVT_ROLE_TYPES = new Set(["DVT_POOL", "GOPS_DVT", "DVT_FORMAL"]);
 
 /** Links with a page route navigate (no `onClick`); the others only show a message. */
 export function buildQuickLinkItems(
-  items: ReadonlyArray<{ id: string; label: string }>,
+  items: ReadonlyArray<QuickLinkItem>,
   notify: (message: string) => void,
 ): QuickLinkItem[] {
   return items.map((link) =>
-    PAGE_LINK_IDS.has(link.id)
+    link.id && PAGE_LINK_IDS.has(link.id)
       ? { ...link }
       : { ...link, onClick: () => notify(`Navigating to ${link.label}`) },
   );

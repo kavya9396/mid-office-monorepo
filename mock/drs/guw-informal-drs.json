@@ -236,7 +236,7 @@
           "attributes": [
             {
               "name": "BRE Financial decision",
-              "value": ""
+              "value": "nonstd"
             },
             {
               "name": "Financial Eligibility",
@@ -524,14 +524,14 @@
               {
                 "id": "status",
                 "label": "BRE Status",
-                "initial": "",
-                "final": ""
+                "initial": "RM",
+                "final": "ST"
               },
               {
                 "id": "decision",
                 "label": "BRE Decision",
                 "initial": "STP",
-                "final": ""
+                "final": "RM"
               },
               {
                 "id": "remarks",
@@ -1901,7 +1901,7 @@
           "attributes": [
             {
               "name": "BRE Financial decision",
-              "value": ""
+              "value": "std"
             },
             {
               "name": "Financial Eligibility",

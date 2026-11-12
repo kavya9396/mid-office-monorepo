@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, type ReactElement } from "react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 import {
-  CustomBox,
   CustomButton,
   CustomDialog,
   CustomMultiSelect,
@@ -8,10 +9,10 @@ import {
   CustomSelect,
   CustomTextField,
   CustomTooltip,
-  CustomTypography,
   CustomSnackbar,
   EditIcon,
   DangerIcon,
+  EyeIcon,
   InfoIcon,
   InfomationIcon,
   NoteIcon,
@@ -19,7 +20,6 @@ import {
 } from "@insurance-poc/ui";
 import { groupPaths, replaceUrl } from "@insurance-poc/routes";
 import { getMasterList } from "@insurance-poc/utils";
-import eyeIconSrc from "../../assets/eye.svg";
 import {
   clearGuwSubmittedDecision,
   saveGuwSubmittedDecision,
@@ -319,7 +319,7 @@ function pickReferralRow(targets: string[]): string | null {
 function GuidelineCategoryIcon({ category }: Readonly<{ category: GuwGuidelineCategory }>) {
   const { label, icon } = GUIDELINE_CATEGORY_META[category];
   return (
-    <CustomBox
+    <Box
       component="span"
       sx={{
         display: "inline-flex",
@@ -334,7 +334,7 @@ function GuidelineCategoryIcon({ category }: Readonly<{ category: GuwGuidelineCa
           {icon()}
         </span>
       </CustomTooltip>
-    </CustomBox>
+    </Box>
   );
 }
 
@@ -982,7 +982,7 @@ export function GuwUwPanel({
         ];
 
   return (
-    <CustomBox
+    <Box
       sx={{
         margin: 0,
         padding: "4px 12px",
@@ -991,7 +991,7 @@ export function GuwUwPanel({
         borderRadius: 0,
       }}
     >
-      <CustomBox
+      <Box
         sx={{
           display: "grid",
           gridTemplateColumns: { xs: "1fr", md: "2fr 1fr" },
@@ -999,7 +999,7 @@ export function GuwUwPanel({
         }}
       >
         {/* Read-only Summary (BRE overall or custom summary fields) */}
-        <CustomBox
+        <Box
           sx={{
             display: "grid",
             gridTemplateColumns: summaryFields && summaryFields.length > 0
@@ -1013,7 +1013,7 @@ export function GuwUwPanel({
           }}
         >
           {summaryItems.map((field, idx) => (
-            <CustomBox
+            <Box
               key={field.label}
               sx={{
                 padding: "5px 12px",
@@ -1021,7 +1021,7 @@ export function GuwUwPanel({
                 borderLeft: idx > 0 ? "1px solid #eadfd9" : "none",
               }}
             >
-              <CustomTypography
+              <Typography
                 component="span"
                 sx={{
                   display: "block",
@@ -1034,8 +1034,8 @@ export function GuwUwPanel({
                 }}
               >
                 {field.label}
-              </CustomTypography>
-              <CustomTypography
+              </Typography>
+              <Typography
                 component="span"
                 sx={{
                   color: "#302a27",
@@ -1044,15 +1044,15 @@ export function GuwUwPanel({
                 }}
               >
                 {field.value || "-"}
-              </CustomTypography>
-            </CustomBox>
+              </Typography>
+            </Box>
           ))}
-        </CustomBox>
+        </Box>
 
         {/* Case UW Decision Dropdown (+ read-only Decision Code beside it when the decision is derived) */}
-        <CustomBox sx={{ display: "flex", alignItems: "flex-start", gap: "8px", pr: "70px" }}>
-        <CustomBox component="label" sx={{ display: "block", flex: 1, minWidth: 0 }}>
-          <CustomTypography
+        <Box sx={{ display: "flex", alignItems: "flex-start", gap: "8px", pr: "70px" }}>
+        <Box component="label" sx={{ display: "block", flex: 1, minWidth: 0 }}>
+          <Typography
             component="span"
             sx={{
               display: "block",
@@ -1065,9 +1065,9 @@ export function GuwUwPanel({
             }}
           >
             Case UW Decision
-          </CustomTypography>
-          <CustomBox sx={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <CustomBox
+          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <Box
               sx={{
                 flex: 1,
                 minWidth: 0,
@@ -1092,7 +1092,7 @@ export function GuwUwPanel({
                 fullWidth
                 disabled={decisionReadOnly}
               />
-            </CustomBox>
+            </Box>
             {submittedDecision && (
               <CustomTooltip title="View decision details">
                 <CustomButton
@@ -1104,13 +1104,7 @@ export function GuwUwPanel({
                   }}
                   sx={{ width: 30, minWidth: 30, minHeight: 28, p: 0.5, borderRadius: "6px", flexShrink: 0 }}
                 >
-                  <img
-                    src={eyeIconSrc}
-                    alt=""
-                    width={20}
-                    height={20}
-                    style={{ display: "block" }}
-                  />
+                  <EyeIcon />
                 </CustomButton>
               </CustomTooltip>
             )}
@@ -1129,11 +1123,11 @@ export function GuwUwPanel({
                 </CustomButton>
               </CustomTooltip>
             )}
-          </CustomBox>
-        </CustomBox>
+          </Box>
+        </Box>
         {decisionReadOnly && (
-          <CustomBox component="label" sx={{ display: "block", width: 160, flexShrink: 0 }}>
-            <CustomTypography
+          <Box component="label" sx={{ display: "block", width: 160, flexShrink: 0 }}>
+            <Typography
               component="span"
               sx={{
                 display: "block",
@@ -1146,18 +1140,18 @@ export function GuwUwPanel({
               }}
             >
               Decision Code
-            </CustomTypography>
+            </Typography>
             <CustomTextField
               value={selectedDecision}
               fullWidth
               htmlInputProps={{ readOnly: true, "aria-label": "Decision Code" }}
             />
-          </CustomBox>
+          </Box>
         )}
-        </CustomBox>
+        </Box>
 
         {/* Action buttons + Submit */}
-        <CustomBox sx={{ gridColumn: "1 / -1", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "flex-end", gap: "8px", pr: "70px" }}>
+        <Box sx={{ gridColumn: "1 / -1", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "flex-end", gap: "8px", pr: "70px" }}>
           {actionDecisionOptions.map((opt) => (
             <CustomButton
               key={opt.value}
@@ -1191,8 +1185,8 @@ export function GuwUwPanel({
           >
             Submit
           </CustomButton>
-        </CustomBox>
-      </CustomBox>
+        </Box>
+      </Box>
 
       {/* Decision Remarks/Confirmation Dialog */}
       <CustomDialog
@@ -1212,11 +1206,11 @@ export function GuwUwPanel({
           overflow: "hidden",
         }}
       >
-        <CustomBox sx={{ p: 1 }}>
+        <Box sx={{ p: 1 }}>
           {dialogStep === 2 ? (
             /* STEP 2: UW GUIDELINES VIEW */
-            <CustomBox>
-              <CustomBox
+            <Box>
+              <Box
                 sx={{
                   border: "1px solid #eadfd9",
                   borderRadius: "10px",
@@ -1231,7 +1225,7 @@ export function GuwUwPanel({
                       <th style={{ padding: "8px 10px", borderRight: "1px solid #eadfd9", borderBottom: "1px solid #eadfd9", textAlign: "left" }}>Remark</th>
                       <th style={{ padding: "8px 10px", borderRight: "1px solid #eadfd9", borderBottom: "1px solid #eadfd9", textAlign: "left" }}>System Action</th>
                       <th style={{ padding: "8px 10px", borderRight: "1px solid #eadfd9", borderBottom: "1px solid #eadfd9", textAlign: "left", width: "220px" }}>
-                        <CustomBox component="span" sx={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                        <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
                           Justification/Checklist
                           <CustomTooltip title="Select a reason for each justification and checklist item. A remark is mandatory when the justification reason is Other Reason.">
                             <span
@@ -1239,7 +1233,7 @@ export function GuwUwPanel({
                               aria-label="Justification instructions"
                               style={{ display: "inline-flex", cursor: "help" }}
                             >
-                              <CustomBox
+                              <Box
                                 component="span"
                                 sx={{
                                   display: "inline-flex",
@@ -1248,10 +1242,10 @@ export function GuwUwPanel({
                                 }}
                               >
                                 <InfoIcon />
-                              </CustomBox>
+                              </Box>
                             </span>
                           </CustomTooltip>
-                        </CustomBox>
+                        </Box>
                       </th>
                       <th style={{ padding: "8px 10px", borderBottom: "1px solid #eadfd9", textAlign: "left", width: "240px" }}>Justification Remarks</th>
                     </tr>
@@ -1308,19 +1302,19 @@ export function GuwUwPanel({
                     })}
                   </tbody>
                 </table>
-              </CustomBox>
+              </Box>
 
               {routingMessage && (
-                <CustomTypography
+                <Typography
                   component="p"
                   role="alert"
                   sx={{ color: "#9a2529", fontSize: "12px", fontWeight: 700, lineHeight: 1.5, mb: 1 }}
                 >
                   {routingMessage}
-                </CustomTypography>
+                </Typography>
               )}
 
-              <CustomBox sx={{ display: "flex", justifyContent: "flex-end", gap: 2, mt: 2 }}>
+              <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2, mt: 2 }}>
                 <CustomButton
                   variant="outlined"
                   onClick={() => setDialogStep(1)}
@@ -1348,13 +1342,13 @@ export function GuwUwPanel({
                 >
                   Confirm & Submit
                 </CustomButton>
-              </CustomBox>
-            </CustomBox>
+              </Box>
+            </Box>
           ) : (
             /* STEP 1: CASE UW DECISION FIELDS VIEW */
             <>
               {/* Custom circular Close button matching prototype */}
-              <CustomBox
+              <Box
                 component="button"
                 onClick={handleDialogClose}
                 sx={{
@@ -1379,10 +1373,10 @@ export function GuwUwPanel({
                 }}
               >
                 <span style={{ fontSize: "12px", fontWeight: "bold", lineHeight: 1 }}>✕</span>
-              </CustomBox>
+              </Box>
 
               {/* DECISION + DEPENDENT FIELDS GRID - Case UW Decision leads, UW Remarks is last */}
-          <CustomBox
+          <Box
             sx={{
               display: "grid",
               gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr 1fr" },
@@ -1392,8 +1386,8 @@ export function GuwUwPanel({
           >
             {/* Dialog Decision select - hidden for Reinsurer Referral and for Raise Referral / Hold */}
             {effectiveDecision !== "REF_REINS" && !["REFERRAL", "HOLD"].includes(dialogDecision) && (
-              <CustomBox>
-                <CustomTypography
+              <Box>
+                <Typography
                   component="span"
                   sx={{
                     display: "block",
@@ -1403,9 +1397,9 @@ export function GuwUwPanel({
                   }}
                 >
                   Case UW Decision
-                </CustomTypography>
-                <CustomBox sx={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <CustomBox sx={{ flex: 1, minWidth: 0 }}>
+                </Typography>
+                <Box sx={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
                     <CustomSelect
                       value={
                         dialogDecision === "APPROVER"
@@ -1424,7 +1418,7 @@ export function GuwUwPanel({
                       placeholder="Select"
                       fullWidth
                     />
-                  </CustomBox>
+                  </Box>
                   {dialogDecision === "APPROVER" && submittedDecision && (
                     <CustomButton
                       variant="outlined"
@@ -1436,23 +1430,17 @@ export function GuwUwPanel({
                       }}
                       sx={{ width: 30, minWidth: 30, minHeight: 28, p: 0.5, borderRadius: "6px", flexShrink: 0 }}
                     >
-                      <img
-                        src={eyeIconSrc}
-                        alt=""
-                        width={20}
-                        height={20}
-                        style={{ display: "block" }}
-                      />
+                      <EyeIcon />
                     </CustomButton>
                   )}
-                </CustomBox>
-              </CustomBox>
+                </Box>
+              </Box>
             )}
 
             {/* REFERRAL MULTISELECT TABLE */}
             {dialogDecision === "REFERRAL" && (
-              <CustomBox sx={{ gridColumn: { xs: "auto", sm: "span 3" }, mt: 0.5 }}>
-                <CustomBox sx={{ overflowX: "auto" }}>
+              <Box sx={{ gridColumn: { xs: "auto", sm: "span 3" }, mt: 0.5 }}>
+                <Box sx={{ overflowX: "auto" }}>
                   <table
                     style={{
                       width: "100%",
@@ -1692,11 +1680,11 @@ export function GuwUwPanel({
                       })}
                     </tbody>
                   </table>
-                </CustomBox>
+                </Box>
 
                 {/* REINSURER EDIT SECTION (OPENS AFTER REFERRAL TABLE) */}
                 {reinsurerEditOpen && referralRows.find((r) => r.target === "REF_REINS")?.selected && (
-                  <CustomBox
+                  <Box
                     ref={reinsurerSectionRef}
                     tabIndex={-1}
                     sx={{
@@ -1708,7 +1696,7 @@ export function GuwUwPanel({
                       outline: "none",
                     }}
                   >
-                    <CustomTypography
+                    <Typography
                       component="h3"
                       sx={{
                         fontSize: "15px",
@@ -1718,9 +1706,9 @@ export function GuwUwPanel({
                       }}
                     >
                       Reinsurer Referral Sheet
-                    </CustomTypography>
+                    </Typography>
 
-                    <CustomBox
+                    <Box
                       sx={{
                         display: "grid",
                         gridTemplateColumns: { xs: "1fr", md: "1.1fr 1.9fr" },
@@ -1729,7 +1717,7 @@ export function GuwUwPanel({
                       }}
                     >
                       {/* Reinsurer selects panel */}
-                      <CustomBox
+                      <Box
                         sx={{
                           background: "#fff",
                           p: 2,
@@ -1737,7 +1725,7 @@ export function GuwUwPanel({
                           border: "1px solid #ddd5d0",
                         }}
                       >
-                        <CustomTypography
+                        <Typography
                           component="h4"
                           sx={{
                             fontSize: "14px",
@@ -1747,9 +1735,9 @@ export function GuwUwPanel({
                           }}
                         >
                           Reinsurer Details
-                        </CustomTypography>
+                        </Typography>
 
-                        <CustomBox sx={{ overflowX: "auto" }}>
+                        <Box sx={{ overflowX: "auto" }}>
                           <table
                             style={{
                               width: "100%",
@@ -1794,11 +1782,11 @@ export function GuwUwPanel({
                               })}
                             </tbody>
                           </table>
-                        </CustomBox>
-                      </CustomBox>
+                        </Box>
+                      </Box>
 
                       {/* Document assignment card */}
-                      <CustomBox
+                      <Box
                         sx={{
                           border: "1px solid #ddd5d0",
                           borderRadius: "14px",
@@ -1806,7 +1794,7 @@ export function GuwUwPanel({
                           background: "#fff",
                         }}
                       >
-                        <CustomBox
+                        <Box
                           sx={{
                             padding: "12px 24px",
                             background: "#e95d08",
@@ -1816,9 +1804,9 @@ export function GuwUwPanel({
                           }}
                         >
                           Assign Documents
-                        </CustomBox>
+                        </Box>
 
-                        <CustomBox sx={{ overflowX: "auto" }}>
+                        <Box sx={{ overflowX: "auto" }}>
                           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px" }}>
                             <thead>
                               <tr style={{ background: "#ffead7", color: "#302a27" }}>
@@ -1836,9 +1824,9 @@ export function GuwUwPanel({
                                       width: "35%",
                                     }}
                                   >
-                                    <CustomTypography sx={{ fontSize: "12px", fontWeight: "bold", display: "block" }}>
+                                    <Typography sx={{ fontSize: "12px", fontWeight: "bold", display: "block" }}>
                                       {getEffectiveReinsurerName(index)}
-                                    </CustomTypography>
+                                    </Typography>
                                     <button
                                       type="button"
                                       onClick={() => handleSelectAllDocs(index)}
@@ -1893,12 +1881,12 @@ export function GuwUwPanel({
                               ))}
                             </tbody>
                           </table>
-                        </CustomBox>
-                      </CustomBox>
-                    </CustomBox>
+                        </Box>
+                      </Box>
+                    </Box>
 
                     {/* Generate Referral Sheet action trigger */}
-                    <CustomBox sx={{ display: "flex", gap: "20px", mt: 2.5 }}>
+                    <Box sx={{ display: "flex", gap: "20px", mt: 2.5 }}>
                       <CustomButton
                         variant="outlined"
                         onClick={() => {
@@ -1928,16 +1916,16 @@ export function GuwUwPanel({
                       >
                         Generate Referral Sheet
                       </CustomButton>
-                    </CustomBox>
-                  </CustomBox>
+                    </Box>
+                  </Box>
                 )}
-              </CustomBox>
+              </Box>
             )}
 
             {/* DECISION CODE - terminal decisions */}
             {dialogDecision !== "REFERRAL" && ["STD", "BOR_STD", "REJ", "DC", "POSTP", "CO", "EP"].includes(effectiveDecision) && (
-              <CustomBox>
-                <CustomTypography
+              <Box>
+                <Typography
                   component="span"
                   sx={{
                     display: "block",
@@ -1947,15 +1935,15 @@ export function GuwUwPanel({
                   }}
                 >
                   Decision Code
-                </CustomTypography>
+                </Typography>
                 <CustomTextField value={effectiveDecision} disabled fullWidth />
-              </CustomBox>
+              </Box>
             )}
 
             {/* SMOKER FLAG - Standard decision only */}
             {effectiveDecision === "STD" && (
-              <CustomBox>
-                <CustomTypography
+              <Box>
+                <Typography
                   component="span"
                   sx={{
                     display: "block",
@@ -1965,7 +1953,7 @@ export function GuwUwPanel({
                   }}
                 >
                   Smoker Flag
-                </CustomTypography>
+                </Typography>
                 <CustomSelect
                   value={smokerFlag}
                   onChange={(val) => setSmokerFlag(val)}
@@ -1973,12 +1961,12 @@ export function GuwUwPanel({
                   placeholder="Select"
                   fullWidth
                 />
-              </CustomBox>
+              </Box>
             )}
 
             {/* REASONS - SUBSTANDARD & REJECT */}
             {effectiveDecision && !["STD", "HOLD", "APPROVER", "REFERRAL"].includes(effectiveDecision) && !effectiveDecision.startsWith("REF_") && (
-              <CustomBox sx={{ gridColumn: "span 2" }}>
+              <Box sx={{ gridColumn: "span 2" }}>
                 <CustomMultiSelect
                   label="Reasons"
                   value={subStdReason}
@@ -1987,13 +1975,13 @@ export function GuwUwPanel({
                   placeholder="Select reasons"
                   showSelectAll
                 />
-              </CustomBox>
+              </Box>
             )}
 
             {/* POSTPONEMENT PERIOD */}
             {effectiveDecision === "POSTP" && (
-              <CustomBox>
-                <CustomTypography
+              <Box>
+                <Typography
                   component="span"
                   sx={{
                     display: "block",
@@ -2003,7 +1991,7 @@ export function GuwUwPanel({
                   }}
                 >
                   Postponement Period
-                </CustomTypography>
+                </Typography>
                 <CustomSelect
                   value={postponementPeriod}
                   onChange={(val) => setPostponementPeriod(val)}
@@ -2015,13 +2003,13 @@ export function GuwUwPanel({
                   placeholder="Select"
                   fullWidth
                 />
-              </CustomBox>
+              </Box>
             )}
 
             {/* HOLD REASON */}
             {effectiveDecision === "HOLD" && (
-              <CustomBox>
-                <CustomTypography
+              <Box>
+                <Typography
                   component="span"
                   sx={{
                     display: "block",
@@ -2031,7 +2019,7 @@ export function GuwUwPanel({
                   }}
                 >
                   Hold Reasons
-                </CustomTypography>
+                </Typography>
                 <CustomSelect
                   value={holdReason}
                   onChange={(val) => setHoldReason(val)}
@@ -2043,13 +2031,13 @@ export function GuwUwPanel({
                   placeholder="Select"
                   fullWidth
                 />
-              </CustomBox>
+              </Box>
             )}
 
             {/* REFERRAL REASONS (non-referral modal decisions) */}
             {dialogDecision !== "REFERRAL" && REFERRAL_REASON_OPTIONS[effectiveDecision] && (
-              <CustomBox>
-                <CustomTypography
+              <Box>
+                <Typography
                   component="span"
                   sx={{
                     display: "block",
@@ -2059,7 +2047,7 @@ export function GuwUwPanel({
                   }}
                 >
                   Referral Reason
-                </CustomTypography>
+                </Typography>
                 <CustomSelect
                   value={referralReason}
                   onChange={(val) => setReferralReason(val)}
@@ -2070,15 +2058,15 @@ export function GuwUwPanel({
                   placeholder="Select reason"
                   fullWidth
                 />
-              </CustomBox>
+              </Box>
             )}
 
 
             {/* APPROVER FIELDS (FOR REFER TO APPROVER) */}
             {effectiveDecision === "APPROVER" && (
               <>
-                <CustomBox>
-                  <CustomTypography
+                <Box>
+                  <Typography
                     component="span"
                     sx={{
                       display: "block",
@@ -2088,7 +2076,7 @@ export function GuwUwPanel({
                     }}
                   >
                     Reason
-                  </CustomTypography>
+                  </Typography>
                   <CustomSelect
                     value={approverReason}
                     onChange={(val) => setApproverReason(val)}
@@ -2098,10 +2086,10 @@ export function GuwUwPanel({
                     placeholder="Select Reason"
                     fullWidth
                   />
-                </CustomBox>
+                </Box>
 
-                <CustomBox>
-                  <CustomTypography
+                <Box>
+                  <Typography
                     component="span"
                     sx={{
                       display: "block",
@@ -2111,7 +2099,7 @@ export function GuwUwPanel({
                     }}
                   >
                     Refer To
-                  </CustomTypography>
+                  </Typography>
                   <CustomSelect
                     value={approverTarget}
                     onChange={(val) => setApproverTarget(val)}
@@ -2122,10 +2110,10 @@ export function GuwUwPanel({
                     placeholder="Select HOD or Sr UW"
                     fullWidth
                   />
-                </CustomBox>
+                </Box>
 
-                <CustomBox>
-                  <CustomTypography
+                <Box>
+                  <Typography
                     component="span"
                     sx={{
                       display: "block",
@@ -2135,7 +2123,7 @@ export function GuwUwPanel({
                     }}
                   >
                     Assigned To
-                  </CustomTypography>
+                  </Typography>
                   <CustomSelect
                     value={approverAssignedTo}
                     onChange={(val) => setApproverAssignedTo(val)}
@@ -2143,14 +2131,14 @@ export function GuwUwPanel({
                     placeholder="Select User ID"
                     fullWidth
                   />
-                </CustomBox>
+                </Box>
               </>
             )}
-          </CustomBox>
+          </Box>
 
           {/* RECONSIDERATION CARD FOR DC, POSTP, REJ */}
           {["DC", "POSTP", "REJ"].includes(effectiveDecision) && (
-            <CustomBox
+            <Box
               sx={{
                 p: 2,
                 mt: 3,
@@ -2159,14 +2147,14 @@ export function GuwUwPanel({
                 background: "#fcfaf9",
               }}
             >
-              <CustomBox
+              <Box
                 sx={{
                   display: "grid",
                   gridTemplateColumns: { xs: "1fr", sm: "repeat(4, 1fr)" },
                   gap: "6px 10px",
                 }}
               >
-                <CustomBox
+                <Box
                   sx={{
                     "& .MuiFormLabel-root": { marginBottom: "5px" },
                     "& .MuiFormLabel-root .MuiTypography-root": {
@@ -2193,10 +2181,10 @@ export function GuwUwPanel({
                       { label: "No", value: "No" },
                     ]}
                   />
-                </CustomBox>
+                </Box>
 
-                <CustomBox sx={{ gridColumn: { xs: "auto", sm: "span 3" } }}>
-                  <CustomTypography
+                <Box sx={{ gridColumn: { xs: "auto", sm: "span 3" } }}>
+                  <Typography
                     component="span"
                     sx={{
                       display: "block",
@@ -2206,7 +2194,7 @@ export function GuwUwPanel({
                     }}
                   >
                     Requirement Details
-                  </CustomTypography>
+                  </Typography>
                   <CustomTextField
                     value={reconsiderReqDetails}
                     onChange={(e) => setReconsiderReqDetails(e.target.value.slice(0, 4000))}
@@ -2222,7 +2210,7 @@ export function GuwUwPanel({
                       },
                     }}
                   />
-                  <CustomTypography
+                  <Typography
                     sx={{
                       display: "block",
                       textAlign: "right",
@@ -2232,13 +2220,13 @@ export function GuwUwPanel({
                     }}
                   >
                     {reconsiderReqDetails.length}/4000
-                  </CustomTypography>
-                </CustomBox>
+                  </Typography>
+                </Box>
 
                 {reconsiderPossible === "Yes" && (
                   <>
-                    <CustomBox>
-                      <CustomTypography
+                    <Box>
+                      <Typography
                         component="span"
                         sx={{
                           display: "block",
@@ -2248,7 +2236,7 @@ export function GuwUwPanel({
                         }}
                       >
                         Reconsider After
-                      </CustomTypography>
+                      </Typography>
                       <CustomSelect
                         value={reconsiderAfter}
                         onChange={(val) => setReconsiderAfter(val)}
@@ -2271,10 +2259,10 @@ export function GuwUwPanel({
                         placeholder="Select"
                         fullWidth
                       />
-                    </CustomBox>
+                    </Box>
 
-                    <CustomBox>
-                      <CustomTypography
+                    <Box>
+                      <Typography
                         component="span"
                         sx={{
                           display: "block",
@@ -2284,7 +2272,7 @@ export function GuwUwPanel({
                         }}
                       >
                         Requirement Type
-                      </CustomTypography>
+                      </Typography>
                       <CustomSelect
                         value={reconsiderReqType}
                         onChange={(val) => {
@@ -2303,11 +2291,11 @@ export function GuwUwPanel({
                         placeholder="Select"
                         fullWidth
                       />
-                    </CustomBox>
+                    </Box>
 
                     {reconsiderReqType === "Other" && (
-                      <CustomBox>
-                        <CustomTypography
+                      <Box>
+                        <Typography
                           component="span"
                           sx={{
                             display: "block",
@@ -2317,35 +2305,35 @@ export function GuwUwPanel({
                           }}
                         >
                           Other Requirement Type
-                        </CustomTypography>
+                        </Typography>
                         <CustomTextField
                           value={reconsiderReqTypeOther}
                           onChange={(e) => setReconsiderReqTypeOther(e.target.value)}
                           placeholder="Enter requirement type"
                           fullWidth
                         />
-                      </CustomBox>
+                      </Box>
                     )}
                   </>
                 )}
 
-              </CustomBox>
-            </CustomBox>
+              </Box>
+            </Box>
           )}
 
 
           {/* COUNTER OFFER DETAILS TABLE FOR CO / BOR_STD / EP */}
           {["CO", "BOR_STD", "EP"].includes(effectiveDecision) && (
-            <CustomBox className="counter-offer-layout" sx={{ mt: 3 }}>
-              <CustomTypography
+            <Box className="counter-offer-layout" sx={{ mt: 3 }}>
+              <Typography
                 component="h3"
                 className="counter-offer-title"
                 sx={{ color: "#5b261c", fontSize: "14px", fontWeight: 800, mb: 1.5 }}
               >
                 Decision Details
-              </CustomTypography>
+              </Typography>
 
-              <CustomBox
+              <Box
                 className="counter-offer-wrap"
                 sx={{
                   border: "1px solid #eadfd9",
@@ -2416,9 +2404,9 @@ export function GuwUwPanel({
                                 fullWidth
                               />
                             ) : (
-                              <CustomTypography sx={{ fontSize: "10px", fontWeight: "bold", whiteSpace: "nowrap" }}>
+                              <Typography sx={{ fontSize: "10px", fontWeight: "bold", whiteSpace: "nowrap" }}>
                                 {row.productName}
-                              </CustomTypography>
+                              </Typography>
                             )}
                           </td>
 
@@ -2530,7 +2518,7 @@ export function GuwUwPanel({
                     })}
                   </tbody>
                 </table>
-              </CustomBox>
+              </Box>
 
               {["CO", "EP"].includes(effectiveDecision) && (
                 <CustomButton
@@ -2548,13 +2536,13 @@ export function GuwUwPanel({
                   + Add Row
                 </CustomButton>
               )}
-            </CustomBox>
+            </Box>
           )}
 
           {/* UW REMARKS - last field before Submit (non-referral decisions) */}
           {dialogDecision !== "REFERRAL" && (
-            <CustomBox sx={{ mt: 3 }}>
-              <CustomTypography
+            <Box sx={{ mt: 3 }}>
+              <Typography
                 component="span"
                 sx={{
                   display: "block",
@@ -2564,7 +2552,7 @@ export function GuwUwPanel({
                 }}
               >
                 UW Remarks
-              </CustomTypography>
+              </Typography>
               <CustomTextField
                 value={dialogRemarks}
                 onChange={(e) => setDialogRemarks(e.target.value.slice(0, 10000))}
@@ -2580,7 +2568,7 @@ export function GuwUwPanel({
                   },
                 }}
               />
-              <CustomTypography
+              <Typography
                 sx={{
                   display: "block",
                   textAlign: "right",
@@ -2590,12 +2578,12 @@ export function GuwUwPanel({
                 }}
               >
                 {dialogRemarks.length}/10000
-              </CustomTypography>
-            </CustomBox>
+              </Typography>
+            </Box>
           )}
 
           {/* BACK (only when opened from UW Guidelines) + SUBMIT BUTTONS */}
-          <CustomBox sx={{ display: "flex", justifyContent: "flex-end", gap: 2, mt: 4 }}>
+          <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2, mt: 4 }}>
             {guidelinesConfirmed && ["APPROVER", "REFERRAL"].includes(dialogDecision) && (
               <CustomButton
                 variant="outlined"
@@ -2625,10 +2613,10 @@ export function GuwUwPanel({
             >
               Submit
             </CustomButton>
-          </CustomBox>
+          </Box>
           </>
           )}
-        </CustomBox>
+        </Box>
       </CustomDialog>
 
       {/* Read-only view of the submitted decision */}
@@ -2647,14 +2635,14 @@ export function GuwUwPanel({
         fullWidth
         showCloseIcon={false}
       >
-        <CustomBox sx={{ p: 1 }}>
-          <CustomTypography
+        <Box sx={{ p: 1 }}>
+          <Typography
             component="p"
             sx={{ color: "#302a27", fontSize: "13px", fontWeight: 700, mb: 2 }}
           >
             Selected decision: {decisionLabel(caseDecision)}
-          </CustomTypography>
-          <CustomBox sx={{ display: "flex", justifyContent: "flex-end" }}>
+          </Typography>
+          <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
             <CustomButton
               variant="contained"
               onClick={handleSuccessClose}
@@ -2668,8 +2656,8 @@ export function GuwUwPanel({
             >
               OK
             </CustomButton>
-          </CustomBox>
-        </CustomBox>
+          </Box>
+        </Box>
       </CustomDialog>
 
       {/* Snackbar notification */}
@@ -2679,7 +2667,7 @@ export function GuwUwPanel({
         severity={snackbarSeverity}
         onClose={() => setSnackbarOpen(false)}
       />
-    </CustomBox>
+    </Box>
   );
 }
 
@@ -2698,15 +2686,15 @@ export function GuwDecisionDetailsDialog({
       fullWidth
     >
       {!submittedDecision && (
-        <CustomBox sx={{ p: 1 }}>
-          <CustomTypography component="p" sx={{ color: "#7b716c", fontSize: "12px", fontWeight: 600 }}>
+        <Box sx={{ p: 1 }}>
+          <Typography component="p" sx={{ color: "#7b716c", fontSize: "12px", fontWeight: 600 }}>
             No Case UW Decision has been submitted yet.
-          </CustomTypography>
-        </CustomBox>
+          </Typography>
+        </Box>
       )}
       {submittedDecision && (
-        <CustomBox sx={{ p: 1 }}>
-          <CustomBox
+        <Box sx={{ p: 1 }}>
+          <Box
             sx={{
               display: "grid",
               gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr 1fr" },
@@ -2714,26 +2702,26 @@ export function GuwDecisionDetailsDialog({
             }}
           >
             {submittedDecision.fields.map((field) => (
-              <CustomBox key={field.label} sx={field.wide ? { gridColumn: { xs: "auto", sm: "span 2" } } : undefined}>
-                <CustomTypography
+              <Box key={field.label} sx={field.wide ? { gridColumn: { xs: "auto", sm: "span 2" } } : undefined}>
+                <Typography
                   component="span"
                   sx={{ display: "block", marginBottom: "3px", color: "#7b716c", fontSize: "11px", fontWeight: 600 }}
                 >
                   {field.label}
-                </CustomTypography>
-                <CustomTypography
+                </Typography>
+                <Typography
                   component="span"
                   sx={{ display: "block", color: "#302a27", fontSize: "12px", fontWeight: 700, whiteSpace: "pre-wrap", wordBreak: "break-word" }}
                 >
                   {field.value || "-"}
-                </CustomTypography>
-              </CustomBox>
+                </Typography>
+              </Box>
             ))}
-          </CustomBox>
+          </Box>
 
           {/* Reconsideration Details card (DC / POSTP / REJ) */}
           {submittedDecision.reconsiderationFields.length > 0 && (
-            <CustomBox
+            <Box
               sx={{
                 p: 2,
                 mt: 3,
@@ -2742,7 +2730,7 @@ export function GuwDecisionDetailsDialog({
                 background: "#fcfaf9",
               }}
             >
-              <CustomBox
+              <Box
                 sx={{
                   display: "grid",
                   gridTemplateColumns: { xs: "1fr", sm: "repeat(4, 1fr)" },
@@ -2750,31 +2738,31 @@ export function GuwDecisionDetailsDialog({
                 }}
               >
                 {submittedDecision.reconsiderationFields.map((field) => (
-                  <CustomBox key={field.label} sx={field.wide ? { gridColumn: { xs: "auto", sm: "span 3" } } : undefined}>
-                    <CustomTypography
+                  <Box key={field.label} sx={field.wide ? { gridColumn: { xs: "auto", sm: "span 3" } } : undefined}>
+                    <Typography
                       component="span"
                       sx={{ display: "block", marginBottom: "3px", color: "#444", fontSize: "11px" }}
                     >
                       {field.label}
-                    </CustomTypography>
-                    <CustomTypography
+                    </Typography>
+                    <Typography
                       component="span"
                       sx={{ display: "block", color: "#302a27", fontSize: "12px", fontWeight: 700, whiteSpace: "pre-wrap", wordBreak: "break-word" }}
                     >
                       {field.value || "-"}
-                    </CustomTypography>
-                  </CustomBox>
+                    </Typography>
+                  </Box>
                 ))}
-              </CustomBox>
-            </CustomBox>
+              </Box>
+            </Box>
           )}
 
           {submittedDecision.reinsurerRows.length > 0 && (
-            <CustomBox sx={{ mt: 3 }}>
-              <CustomTypography component="h3" sx={{ color: "#5b261c", fontSize: "14px", fontWeight: 800, mb: 1.5 }}>
+            <Box sx={{ mt: 3 }}>
+              <Typography component="h3" sx={{ color: "#5b261c", fontSize: "14px", fontWeight: 800, mb: 1.5 }}>
                 Reinsurer Details
-              </CustomTypography>
-              <CustomBox sx={{ border: "1px solid #eadfd9", borderRadius: "10px", overflowX: "auto" }}>
+              </Typography>
+              <Box sx={{ border: "1px solid #eadfd9", borderRadius: "10px", overflowX: "auto" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "11px" }}>
                   <thead>
                     <tr style={{ background: "#ffead7", color: "#5b261c", fontWeight: 800 }}>
@@ -2793,12 +2781,12 @@ export function GuwDecisionDetailsDialog({
                     ))}
                   </tbody>
                 </table>
-              </CustomBox>
+              </Box>
 
-              <CustomTypography component="h3" sx={{ color: "#5b261c", fontSize: "14px", fontWeight: 800, mt: 2, mb: 1.5 }}>
+              <Typography component="h3" sx={{ color: "#5b261c", fontSize: "14px", fontWeight: 800, mt: 2, mb: 1.5 }}>
                 Assign Documents
-              </CustomTypography>
-              <CustomBox sx={{ border: "1px solid #eadfd9", borderRadius: "10px", overflowX: "auto" }}>
+              </Typography>
+              <Box sx={{ border: "1px solid #eadfd9", borderRadius: "10px", overflowX: "auto" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "11px" }}>
                   <thead>
                     <tr style={{ background: "#ffead7", color: "#5b261c", fontWeight: 800 }}>
@@ -2823,16 +2811,16 @@ export function GuwDecisionDetailsDialog({
                     ))}
                   </tbody>
                 </table>
-              </CustomBox>
-            </CustomBox>
+              </Box>
+            </Box>
           )}
 
           {submittedDecision.counterOfferRows.length > 0 && (
-            <CustomBox sx={{ mt: 3 }}>
-              <CustomTypography component="h3" sx={{ color: "#5b261c", fontSize: "14px", fontWeight: 800, mb: 1.5 }}>
+            <Box sx={{ mt: 3 }}>
+              <Typography component="h3" sx={{ color: "#5b261c", fontSize: "14px", fontWeight: 800, mb: 1.5 }}>
                 Decision Details
-              </CustomTypography>
-              <CustomBox sx={{ border: "1px solid #eadfd9", borderRadius: "10px", overflowX: "auto" }}>
+              </Typography>
+              <Box sx={{ border: "1px solid #eadfd9", borderRadius: "10px", overflowX: "auto" }}>
                 <table style={{ width: "100%", minWidth: "860px", borderCollapse: "collapse", fontSize: "11px" }}>
                   <thead>
                     <tr style={{ background: "#ffead7", color: "#5b261c", fontWeight: 800 }}>
@@ -2867,33 +2855,33 @@ export function GuwDecisionDetailsDialog({
                     ))}
                   </tbody>
                 </table>
-              </CustomBox>
-            </CustomBox>
+              </Box>
+            </Box>
           )}
 
           {/* UW Remarks - last field, same as the decision dialog */}
-          <CustomBox sx={{ mt: 3 }}>
-            <CustomTypography
+          <Box sx={{ mt: 3 }}>
+            <Typography
               component="span"
               sx={{ display: "block", marginBottom: "3px", color: "#444", fontSize: "11px" }}
             >
               {submittedDecision.reinsurerRows.length > 0 ? "Remarks" : "UW Remarks"}
-            </CustomTypography>
-            <CustomTypography
+            </Typography>
+            <Typography
               component="span"
               sx={{ display: "block", color: "#302a27", fontSize: "12px", fontWeight: 700, whiteSpace: "pre-wrap", wordBreak: "break-word" }}
             >
               {submittedDecision.remarks || "-"}
-            </CustomTypography>
-          </CustomBox>
+            </Typography>
+          </Box>
 
           {/* Snapshots saved before the validation API keep their static guidelines; new ones show the saved rows */}
           {(submittedDecision.validationRows?.length ?? 0) > 0 || submittedDecision.guidelines.length > 0 ? (
-            <CustomBox sx={{ mt: 3 }}>
-              <CustomTypography component="h3" sx={{ color: "#5b261c", fontSize: "14px", fontWeight: 800, mb: 1.5 }}>
+            <Box sx={{ mt: 3 }}>
+              <Typography component="h3" sx={{ color: "#5b261c", fontSize: "14px", fontWeight: 800, mb: 1.5 }}>
                 UW Guidelines
-              </CustomTypography>
-              <CustomBox sx={{ border: "1px solid #eadfd9", borderRadius: "10px", overflowX: "auto" }}>
+              </Typography>
+              <Box sx={{ border: "1px solid #eadfd9", borderRadius: "10px", overflowX: "auto" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "11px" }}>
                   <thead>
                     <tr style={{ background: "#ffead7", color: "#5b261c", fontWeight: 800 }}>
@@ -2934,10 +2922,10 @@ export function GuwDecisionDetailsDialog({
                         ))}
                   </tbody>
                 </table>
-              </CustomBox>
-            </CustomBox>
+              </Box>
+            </Box>
           ) : null}
-        </CustomBox>
+        </Box>
       )}
     </CustomDialog>
   );

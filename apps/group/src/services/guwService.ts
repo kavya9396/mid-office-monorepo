@@ -1,28 +1,65 @@
-import {
-  getSessionUser,
-  getSessionValue,
-  removeSessionValue,
-  setSessionValue,
-} from "@insurance-poc/utils";
+import { getSessionUser } from "@insurance-poc/utils";
 import type { Column } from "@insurance-poc/ui";
+import type { RiskCardData, RiskCardField } from "@insurance-poc/common/risk-cards";
 import type { RequirementItem } from "@insurance-poc/common/requirement-mgmt";
 import type { ComparisonRow } from "@insurance-poc/common/decision-bar";
-import type { RiskCardData, RiskCardField } from "@insurance-poc/common/risk-cards";
-import type { BannerRowDetail } from "@insurance-poc/common/applicant-banner";
-import type { GrievanceHistoryRow } from "@insurance-poc/common/grievance-history";
-import type { ClaimAuditRow } from "@insurance-poc/common/claim-audit";
-import type { SpecialRemarksRow } from "@insurance-poc/common/special-remarks";
-import type { UwGuidelineRow } from "@insurance-poc/common/uw-guidelines";
 import { mapQuickLinksSubSections, type QuickLinksSubSections } from "../modules/drs/quickLinksData";
 import { mapRequirements, type RawRequirement } from "../modules/drs/requirementData";
 import { formatBreTimestamp, splitDiscrepancies } from "../modules/drs/breFormat";
-import { grievanceColumns } from "@insurance-poc/common/grievance-history";
 import guwDrsMock from "../../../../mock/drs/guw-informal-drs.json";
 import guwValidationMock from "../../../../mock/drs/guw-validation.json";
 
 /* ------------------------------------------------------------------ */
 /* Types                                                                */
 /* ------------------------------------------------------------------ */
+
+export interface BannerRowDetail {
+  id: string | number;
+  fields: { name: string; value: string }[];
+}
+
+export interface GrievanceHistoryRow {
+  userName: string;
+  profile: string;
+  fupCode: string;
+  grievanceRemarks: string;
+  tpaRemark: string;
+  raisedDate: string;
+  updatedDate: string;
+  raisedBy: string;
+  updatedBy: string;
+}
+
+export interface ClaimAuditRow {
+  id: string;
+  policyNo: string;
+  productCode: string;
+  claimKey: string;
+  canonicalId: string;
+  patientName: string;
+  ailment: string;
+  claimType: string;
+  subType: string;
+  intimationDate: string;
+  doa: string;
+  dod: string;
+  status: string;
+}
+
+export interface SpecialRemarksRow {
+  id: string;
+  comments: string;
+  updatedDate: string;
+  updatedBy: string;
+}
+
+export interface UwGuidelineRow {
+  reason: string;
+  remark: string;
+  systemAction: string;
+  justificationReason: string;
+  justificationRemark: string;
+}
 
 export interface GuwSdtRow {
   financialDecision: string;
@@ -341,6 +378,8 @@ function mapBreData(latestSection: unknown, requirements: unknown[]): GuwBreData
   const header = (key: string, fallback: string) =>
     str(columns.find((c) => str(c.key) === key)?.header) || fallback;
   const discrepancy = rows.find((r) => str(r.id) === "discrepancy");
+  // Final BRE decision of the latest BRE section; `code` is only a fallback when the row is empty.
+  const finalDecision = textOf(rows.find((r) => str(r.id) === "decision")?.final);
 
   // Status chips from the requirements array
   const statuses = ["Pending", "Received", "Accept", "Cancelled", "Reject", "Waived"];
@@ -354,7 +393,7 @@ function mapBreData(latestSection: unknown, requirements: unknown[]): GuwBreData
   ];
 
   return {
-    breCode: str(latest.code),
+    breCode: finalDecision || str(latest.code),
     initialDiscrepancy: splitDiscrepancies(textOf(discrepancy?.initial)),
     finalDiscrepancy: splitDiscrepancies(textOf(discrepancy?.final)),
     statusChips: chips,
@@ -387,6 +426,16 @@ const GRIEVANCE_COLUMN_KEYS = [
   "raisedDate",
   "tpaRemark",
 ] as const;
+
+const GRIEVANCE_DEFAULT_HEADERS: Record<string, string> = {
+  userName: "User Name",
+  profile: "Profile",
+  fupCode: "FUP Code",
+  grievanceRemarks: "Grievance Raised Remark",
+  raisedDate: "Grievance Raised Date",
+  tpaRemark: "TPA Remarks",
+};
+
 /** Row field -> API row key. */
 const GRIEVANCE_SOURCE_KEYS: Record<keyof GrievanceHistoryRow, string> = {
   userName: "userName",
@@ -409,7 +458,7 @@ function mapGrievanceSection(value: unknown): GuwGrievanceSection {
     title: str(section.title) || "Grievance History",
     columns: GRIEVANCE_COLUMN_KEYS.map((key) => ({
       key,
-      header: headers[key] ?? grievanceColumns.find((c) => c.key === key)?.header,
+      header: headers[key] ?? GRIEVANCE_DEFAULT_HEADERS[key] ?? key,
     })),
     rows: recordList(section.rows).map((r) => ({
       userName: text(r, "userName"),
@@ -593,11 +642,13 @@ export function mapGuwDrsPayload(payload: unknown, memberId?: string): GuwDrsRec
       status: str(r.status),
       ocrStatus: str(r.ocrStatus),
       team: str(r.team),
+      profile: str(r.profile),
       category: str(r.category),
       subCategory: str(r.subCategory),
       document: str(r.document),
       reason: str(r.reason),
       fupCode: str(r.fupCode),
+      extraRemarks: str(r.extraRemarks),
       description: str(r.description),
     } satisfies RawRequirement)),
   );
@@ -647,6 +698,21 @@ function wait(ms: number): Promise<void> {
 /* ------------------------------------------------------------------ */
 /* Submitted decision kept in the browser session (per application)      */
 /* ------------------------------------------------------------------ */
+
+function getSessionValue(key: string): string | null {
+  if (typeof window === "undefined") return null;
+  return window.sessionStorage.getItem(key);
+}
+
+function setSessionValue(key: string, value: string): void {
+  if (typeof window === "undefined") return;
+  window.sessionStorage.setItem(key, value);
+}
+
+function removeSessionValue(key: string): void {
+  if (typeof window === "undefined") return;
+  window.sessionStorage.removeItem(key);
+}
 
 const submittedDecisionKey = (applicationNo: string) => `guwSubmittedDecision:${applicationNo}`;
 

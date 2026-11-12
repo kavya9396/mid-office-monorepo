@@ -10,11 +10,9 @@ import { QuickLinksModule } from "@insurance-poc/common/quick-links";
 import { buildQuickLinkItems } from "../drs/guwQuickLinks";
 import { groupPaths, replaceUrl } from "@insurance-poc/routes";
 import {
-  CustomBox,
   CustomDialog,
   CustomSnackbar,
   CustomTable,
-  CustomTypography,
   type Column,
 } from "@insurance-poc/ui";
 import { GuwSdtRow } from "../guw/GuwSdtRow";
@@ -25,7 +23,7 @@ import {
   type ReferralDecisionHistoryRow,
   type ReferralRoleConfig,
 } from "../../services/referralUwService";
-import { ReferralDecisionSection } from "./ReferralDecisionSection";
+import { DecisionSection } from "@insurance-poc/common/decision-section";
 import { REFERRAL_PROFILE_IMAGE_URL } from "./profileImage";
 
 // Row 1 (Product line) is bold; row 2 is Riders; row 4 is Sum at Risk; row 0 values rendered without repeating Name / App No. in the line.
@@ -197,7 +195,7 @@ export function ReferralDrsPage({ config }: Readonly<ReferralDrsPageProps>) {
 
             <Box sx={{ p: "4px 12px 0" }}>
               {/* BRE Overall Decision / Remarks */}
-              <CustomBox
+              <Box
                 role="group"
                 aria-label="SDT decision details"
                 sx={{
@@ -222,7 +220,7 @@ export function ReferralDrsPage({ config }: Readonly<ReferralDrsPageProps>) {
                   { label: "BRE Overall Decision", value: page.record.uwData?.breOverallDecision },
                   { label: "BRE Overall Remarks", value: page.record.uwData?.breOverallRemarks },
                 ].map(({ label, value }, index) => (
-                  <CustomBox
+                  <Box
                     key={label}
                     sx={{
                       minWidth: 0,
@@ -232,7 +230,7 @@ export function ReferralDrsPage({ config }: Readonly<ReferralDrsPageProps>) {
                       borderTop: { xs: index > 0 ? "1px solid #E8E1DE" : "none", md: "none" },
                     }}
                   >
-                    <CustomTypography
+                    <Typography
                       sx={{
                         color: "#8B807B",
                         fontSize: 9,
@@ -244,8 +242,8 @@ export function ReferralDrsPage({ config }: Readonly<ReferralDrsPageProps>) {
                       }}
                     >
                       {label}
-                    </CustomTypography>
-                    <CustomTypography
+                    </Typography>
+                    <Typography
                       sx={{
                         color: index === 0 ? "#302A27" : "#4B433F",
                         fontSize: 11,
@@ -256,31 +254,33 @@ export function ReferralDrsPage({ config }: Readonly<ReferralDrsPageProps>) {
                       }}
                     >
                       {value || "-"}
-                    </CustomTypography>
-                  </CustomBox>
+                    </Typography>
+                  </Box>
                 ))}
-              </CustomBox>
+              </Box>
 
               {/* Underwriting Decision History */}
-              <CustomBox sx={{ mt: 0.75 }}>
+              <Box sx={{ mt: 0.75 }}>
                 <CustomTable<ReferralDecisionHistoryRow>
                   title="Underwriting Decision History"
                   columns={DECISION_HISTORY_COLUMNS}
                   data={historyRows}
                 />
-              </CustomBox>
+              </Box>
 
               {/* Role decision (HOD / Sr UW) */}
-              <CustomBox sx={{ mt: 0.75 }}>
-                <ReferralDecisionSection
-                  roleLabel={config.label}
+              <Box sx={{ mt: 0.75 }}>
+                <DecisionSection
+                  ariaLabel={`${config.label} Decision`}
+                  remarksLabel={`${config.label} Remarks`}
+                  decisionLabel={`${config.label} Decision`}
                   decisionOptions={config.decisionOptions}
                   onSubmit={() => {
                     // Submit API handler to be wired
                     replaceUrl(postSubmitUrl);
                   }}
                 />
-              </CustomBox>
+              </Box>
             </Box>
 
             <QuickLinksModule

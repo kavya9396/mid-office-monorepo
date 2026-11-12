@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Box, Typography } from "@mui/material";
 import type { SxProps, Theme } from "@mui/material/styles";
-import { Badge } from "@insurance-poc/ui";
+import { Badge, UserProfileIcon } from "@insurance-poc/ui";
 
 /* ------------------------------------------------------------------ */
 /* ApplicantBanner — spec: docs/spec/screens/00-shared-layout.md §4    */
@@ -22,15 +22,111 @@ export interface BannerRow {
   label?: string;
   fields: readonly BannerField[];
   separator?: string;
+  /** Render the row in bold weight (e.g. product / sum-assured line). */
+  emphasis?: boolean;
+}
+
+/** A pre-composed text line (rendered as-is, never split into label/value). */
+export interface BannerLine {
+  text: string;
+  emphasis?: boolean;
+}
+
+/** Converts pre-composed text lines into single-field banner rows. */
+export function toBannerRows(lines: readonly BannerLine[]): BannerRow[] {
+  return lines.map((line, index) => ({
+    id: `line-${index}`,
+    emphasis: line.emphasis,
+    fields: [{ id: "text", value: line.text }],
+  }));
+}
+
+/** A row exactly as returned by the API (`data.rowDetails[]`). */
+export interface BannerRowDetail {
+  id: string | number;
+  label?: string;
+  fields: readonly { name: string; value?: string | number | null }[];
+}
+
+export interface RowDetailsOptions {
+  /** Row ids to leave out (e.g. the name / app-no row already shown elsewhere). */
+  skipRowIds?: readonly (string | number)[];
+  /** Row ids rendered in bold weight. */
+  emphasisRowIds?: readonly (string | number)[];
+  /** Separator between fields of a row. Default " / ". */
+  separator?: string;
+  /** Separator between a field name and its value. Default " - ". */
+  nameValueSeparator?: string;
+  /** Field names to omit within rows (e.g. "Name", "App No.") when already shown in banner header. */
+  skipFieldNames?: readonly string[];
+  /** Optional custom labels to prefix on specific row ids (e.g. { 2: "Riders", 4: "Sum at Risk" }). */
+  rowLabels?: Record<string | number, string>;
+  /** Row ids where only the value should be shown (without name - value prefix). */
+  valueOnlyRowIds?: readonly (string | number)[];
+}
+
+/**
+ * Converts API `rowDetails` into banner rows, rendering each field as
+ * "{name} - {value}" (an empty value renders "{name} -") joined by the row separator.
+ */
+export function rowDetailsToBannerRows(
+  rowDetails: readonly BannerRowDetail[] | null | undefined,
+  options: RowDetailsOptions = {},
+): BannerRow[] {
+  const {
+    skipRowIds = [],
+    emphasisRowIds = [],
+    separator = " / ",
+    nameValueSeparator = " - ",
+    skipFieldNames = [],
+    rowLabels = {},
+    valueOnlyRowIds = [],
+  } = options;
+  return (rowDetails ?? [])
+    .filter((row) => !skipRowIds.includes(row.id))
+    .map((row) => {
+      const isValueOnly = valueOnlyRowIds.includes(row.id);
+      const fields = row.fields
+        .filter((field) => !skipFieldNames.includes(field.name))
+        .map((field, index) => {
+          const value = field.value == null ? "" : String(field.value);
+          if (isValueOnly) {
+            return {
+              id: `${row.id}-${index}`,
+              value: value || "ΓÇö",
+            };
+          }
+          return {
+            id: `${row.id}-${index}`,
+            value: value ? `${field.name}${nameValueSeparator}${value}` : `${field.name} -`,
+          };
+        });
+
+      return {
+        id: String(row.id),
+        label: row.label ?? rowLabels[row.id],
+        separator,
+        emphasis: emphasisRowIds.includes(row.id),
+        fields,
+      };
+    });
 }
 
 export interface ApplicantBannerProps {
-  applicationNo: string;
-  rows: readonly BannerRow[];
+  applicationNo?: string;
+  /** Overrides the default "App No. - {applicationNo}" badge text. */
+  applicationLabel?: string;
+  /** Pre-built rows. Rendered before any `rowDetails` rows. */
+  rows?: readonly BannerRow[];
+  /** API `rowDetails` passed through as-is; mapped with `rowDetailsOptions`. */
+  rowDetails?: readonly BannerRowDetail[] | null;
+  rowDetailsOptions?: RowDetailsOptions;
   name?: string;
   /** When set (non-blank) the photo column is shown; otherwise only data is shown. */
   photoUrl?: string | null;
   photoAlt?: string;
+  /** Show the gradient avatar column with a default user icon when there is no photo. */
+  showAvatar?: boolean;
   children?: ReactNode;
   sticky?: boolean;
   stickyTop?: number;
@@ -54,7 +150,7 @@ function RowContent({ row }: Readonly<{ row: BannerRow }>) {
             ? field.value
               ? "Yes"
               : "No"
-            : (field.value ?? "—")}
+            : (field.value ?? "ΓÇö")}
         </Box>
       ))}
     </>
@@ -63,19 +159,25 @@ function RowContent({ row }: Readonly<{ row: BannerRow }>) {
 
 export function ApplicantBanner({
   applicationNo,
-  rows,
+  applicationLabel,
+  rows = [],
+  rowDetails,
+  rowDetailsOptions,
   name,
   photoUrl,
   photoAlt,
+  showAvatar = false,
   children,
   sticky = true,
   stickyTop = 0,
   sx = [],
 }: Readonly<ApplicantBannerProps>) {
   const normalizedPhotoUrl = photoUrl?.trim();
-  const hasPhoto = Boolean(normalizedPhotoUrl);
+  const hasPhoto = Boolean(normalizedPhotoUrl) || showAvatar;
   const hasName = Boolean(name?.trim());
-  const visibleRows = rows.filter((row) => row.fields.length > 0);
+  const visibleRows = [...rows, ...rowDetailsToBannerRows(rowDetails, rowDetailsOptions)].filter(
+    (row) => row.fields.length > 0,
+  );
   const firstRow = hasName ? undefined : visibleRows[0];
   const remainingRows = hasName ? visibleRows : visibleRows.slice(1);
 
@@ -88,6 +190,7 @@ export function ApplicantBanner({
           top: sticky ? stickyTop : undefined,
           zIndex: 20,
           background: "#fff8f3",
+          pt: 0.5,
         },
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
@@ -116,20 +219,40 @@ export function ApplicantBanner({
               background: "linear-gradient(135deg, #e45f14 0%, #c83c2f 100%)",
             }}
           >
-            <Box
-              component="img"
-              src={normalizedPhotoUrl}
-              alt={photoAlt ?? (hasName ? `${name} photo` : "Applicant photo")}
-              sx={{
-                width: "76px",
-                height: "76px",
-                boxSizing: "border-box",
-                border: "2px solid rgba(255, 255, 255, .55)",
-                borderRadius: "50%",
-                background: "rgba(255, 255, 255, .22)",
-                objectFit: "cover",
-              }}
-            />
+            {normalizedPhotoUrl ? (
+              <Box
+                component="img"
+                src={normalizedPhotoUrl}
+                alt={photoAlt ?? (hasName ? `${name} photo` : "Applicant photo")}
+                sx={{
+                  width: "76px",
+                  height: "76px",
+                  boxSizing: "border-box",
+                  border: "2px solid rgba(255, 255, 255, .55)",
+                  borderRadius: "50%",
+                  background: "rgba(255, 255, 255, .22)",
+                  objectFit: "cover",
+                }}
+              />
+            ) : (
+              <Box
+                sx={{
+                  width: "76px",
+                  height: "76px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxSizing: "border-box",
+                  border: "2px solid rgba(255, 255, 255, .45)",
+                  borderRadius: "50%",
+                  background: "rgba(255, 255, 255, .18)",
+                  color: "#000",
+                  fontSize: "44px",
+                }}
+              >
+                <UserProfileIcon width="1em" height="1em" />
+              </Box>
+            )}
           </Box>
         )}
 
@@ -171,7 +294,7 @@ export function ApplicantBanner({
             }}
           >
             <Badge
-              label={`App No. - ${applicationNo || "-"}`}
+              label={applicationLabel ?? `App No. - ${applicationNo || "-"}`}
               variant="Neutral"
               sx={{
                 color: "#9a2529",
@@ -184,7 +307,11 @@ export function ApplicantBanner({
           {remainingRows.map((row) => (
             <Box
               key={row.id}
-              sx={{ mt: "2px", overflowWrap: "anywhere" }}
+              sx={{
+                mt: "2px",
+                overflowWrap: "anywhere",
+                fontWeight: row.emphasis ? 700 : undefined,
+              }}
             >
               <RowContent row={row} />
             </Box>

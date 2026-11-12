@@ -2,9 +2,12 @@ import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import { CustomButton } from "@insurance-poc/ui";
-import { groupPaths, replaceUrl } from "@insurance-poc/routes";
-import { ApplicantBanner, type RowDetailsOptions } from "@insurance-poc/common/applicant-banner";
+import { CustomButton, EyeIcon } from "@insurance-poc/ui";
+import { drsRoutePath, groupPaths, replaceUrl } from "@insurance-poc/routes";
+import {
+  ApplicantBanner,
+  type BannerRow,
+} from "@insurance-poc/common/applicant-banner";
 import {
   fetchGuwDrs,
   fetchGuwMembers,
@@ -17,9 +20,8 @@ import {
 } from "../../services/guwService";
 import { deriveCaseUwDecision } from "../../services/guwCaseDecisionRules";
 import { referralConfigForRoleType, referralDecisionTone } from "../../services/referralUwService";
-import eyeIconSrc from "../../assets/eye.svg";
+import { DecisionSection } from "@insurance-poc/common/decision-section";
 import { GuwDecisionDetailsDialog, GuwUwPanel } from "../guw/GuwUwPanel";
-import { ReferralDecisionSection } from "../referral-uw/ReferralDecisionSection";
 
 /* ------------------------------------------------------------------ */
 /* Types                                                                */
@@ -64,13 +66,30 @@ const TONE_PILL_STYLE: Record<number, { border: string; bg: string; color: strin
 
 /* ------------------------------------------------------------------ */
 /* Banner rows (application-level strip, no name, no photo)            */
-/* Two rows from the first record's `rowDetails`: Product (id 2) and   */
-/* Riders (id 3). Other rows (name, member, sum at risk) are skipped.  */
 /* ------------------------------------------------------------------ */
-const MEMBER_SELECTION_BANNER_OPTIONS: RowDetailsOptions = {
-  skipRowIds: [0, 1, 4],
-  rowLabels: { 3: "Riders" },
-};
+const textRow = (id: string, text: string, label?: string): BannerRow => ({
+  id,
+  label,
+  fields: [{ id, value: text }],
+});
+
+const MEMBER_SELECTION_BANNER_ROWS: readonly BannerRow[] = [
+  textRow(
+    "product",
+    "Call ID - / Policy no. - / Client name - / Re insurer name - / Cover requested - / Cover provided - / Free cover limit - / Cover above FCL -",
+    "Product",
+  ),
+  textRow(
+    "riders",
+    "WOP - SA ₹15,00,000 / BTBB - SA ₹25,00,000 / TI Rider - SA ₹25,00,000 / ADBR - SA ₹25,00,000 / CI Rider - SA ₹25,00,000",
+    "Riders",
+  ),
+  textRow(
+    "eligibility",
+    "TSA - ₹10,00,000 / TRSA - ₹5,00,000 / TPSA - ₹10,00,000 / TFSA - ₹10,00,000 / TSSA - ₹10,00,000 / ADBR TSA - ₹5,00,000 / ATPD TSA - ₹5,00,000 / CI Rider TSA - ₹3,00,000 / CI Rider TRSA - ₹3,00,000 / BTBB TSA - ₹5,00,000",
+    "Eligibility Parameters",
+  ),
+];
 
 /* ------------------------------------------------------------------ */
 /* MemberSelection — common to GUW, HOD and Sr UW                       */
@@ -88,7 +107,7 @@ export function MemberSelection() {
   const roleType = params.get("roleType")?.trim() ?? "";
   const role = params.get("role")?.trim() ?? "";
   const referralConfig = referralConfigForRoleType(roleType);
-  const drsPath = referralConfig ? "/referral/drs" : "/guw/drs";
+  const drsPath = referralConfig ? "/referral/drs" : drsRoutePath(applicationNo);
 
   // Members come from the `data[]` objects of guw-informal-drs.json (null until loaded)
   const [members, setMembers] = useState<GuwMemberSummary[] | null>(null);
@@ -175,9 +194,8 @@ export function MemberSelection() {
 
       {/* ApplicantBanner — no name, no photo → only the product / riders strip is shown */}
       <ApplicantBanner
-        applicationNo={applicationNo || record?.applicationNo}
-        rowDetails={record?.rowDetails}
-        rowDetailsOptions={MEMBER_SELECTION_BANNER_OPTIONS}
+        applicationNo={applicationNo || record?.applicationNo || ""}
+        rows={MEMBER_SELECTION_BANNER_ROWS}
       />
 
       {/* Member selection card */}
@@ -345,7 +363,7 @@ export function MemberSelection() {
                     onClick={() => setDetailMember(member)}
                     sx={{ width: 30, minWidth: 30, minHeight: 28, p: 0.5, borderRadius: "6px", flexShrink: 0 }}
                   >
-                    <img src={eyeIconSrc} alt="" width={20} height={20} style={{ display: "block" }} />
+                    <EyeIcon />
                   </CustomButton>
                 </Box>
               </Box>
@@ -391,8 +409,10 @@ export function MemberSelection() {
       {/* HOD / Sr UW: role decision card — final submit goes to the inbox */}
       {referralConfig && (
         <Box sx={{ m: "8px 12px 0" }}>
-          <ReferralDecisionSection
-            roleLabel={referralConfig.label}
+          <DecisionSection
+            ariaLabel={`${referralConfig.label} Decision`}
+            remarksLabel={`${referralConfig.label} Remarks`}
+            decisionLabel={`${referralConfig.label} Decision`}
             decisionOptions={referralConfig.decisionOptions}
             onSubmit={() => {
               // Submit API handler to be wired

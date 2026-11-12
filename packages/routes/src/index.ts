@@ -48,6 +48,10 @@ export const groupPaths = {
   root: groupBase,
   inbox: `${groupBase}/inbox`,
   drs: `${groupBase}/drs`,
+  guwMemberSelection: `${groupBase}/guw/member-selection`,
+  guwDrs: `${groupBase}/guw/drs`,
+  referralMemberSelection: `${groupBase}/referral/member-selection`,
+  referralDrs: `${groupBase}/referral/drs`,
   previousPolicy: `${groupBase}/previous-policy`,
 } as const;
 
