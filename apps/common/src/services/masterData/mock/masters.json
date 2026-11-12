@@ -7854,6 +7854,62 @@
         "type": "DVT_TERM_DESC"
       },
       {
+        "code": "MEDIASSIST",
+        "description": "MediAssist",
+        "value": "MediAssist",
+        "isActive": "Y",
+        "miscMastId": "MMT_SP_01",
+        "type": "MMT_SER_PRONM"
+      },
+      {
+        "code": "HEALTHINDIA",
+        "description": "HealthIndia",
+        "value": "HealthIndia",
+        "isActive": "Y",
+        "miscMastId": "MMT_SP_02",
+        "type": "MMT_SER_PRONM"
+      },
+      {
+        "code": "VIDAL",
+        "description": "Vidal Health",
+        "value": "Vidal Health",
+        "isActive": "Y",
+        "miscMastId": "MMT_SP_03",
+        "type": "MMT_SER_PRONM"
+      },
+      {
+        "code": "PARAMOUNT",
+        "description": "Paramount TPA",
+        "value": "Paramount TPA",
+        "isActive": "Y",
+        "miscMastId": "MMT_SP_04",
+        "type": "MMT_SER_PRONM"
+      },
+      {
+        "code": "API_TIMEOUT",
+        "description": "API Timeout",
+        "value": "API Timeout",
+        "isActive": "Y",
+        "miscMastId": "MMT_RSN_01",
+        "type": "MMT_REALIGN_RSN"
+      },
+      {
+        "code": "INVALID_RESPONSE",
+        "description": "Invalid Response",
+        "value": "Invalid Response",
+        "isActive": "Y",
+        "miscMastId": "MMT_RSN_02",
+        "type": "MMT_REALIGN_RSN"
+      },
+      {
+        "code": "SVC_UNAVAILABLE",
+        "description": "Service Unavailable",
+        "value": "Service Unavailable",
+        "isActive": "Y",
+        "miscMastId": "MMT_RSN_03",
+        "type": "MMT_REALIGN_RSN"
+      },
+      {
         "code": "010",
         "description": "MER",
         "value": "mer",

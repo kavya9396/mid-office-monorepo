@@ -1,17 +1,24 @@
-import { useSearchParams } from "react-router-dom";
+import { getDrsRoleType } from "@insurance-poc/utils";
+import { MmtGrievanceDrsPage } from "./MmtGrievanceDrsPage";
+import { TpaDrsPage } from "./TpaDrsPage";
 import DvtUser from "./DvtUser";
 import GuwUser from "./GuwUser";
 
-/** `/app/{applicationNo}/drs` — `role` query param picks the screen (DVT vs GUW). */
+/** `/app/{applicationNo}/drs` — screen from inbox session `roleType` (no query param). */
 const SCREEN_BY_ROLE: Record<string, () => JSX.Element> = {
   "GUW TASK": GuwUser,
+  GUW: GuwUser,
+  GUW_FORMAL: GuwUser,
   "DVT TASK": DvtUser,
+  "MMT TASK": MmtGrievanceDrsPage,
+  MMT_TASK: MmtGrievanceDrsPage,
+  AMR_NON_MEDICAL: TpaDrsPage,
+  MEDICAL_TPA_ERROR: TpaDrsPage,
 };
 
 export function GroupDrsPage() {
-  const [params] = useSearchParams();
-  const role = params.get("role")?.trim().toUpperCase() ?? "";
-  const Screen = SCREEN_BY_ROLE[role] ?? DvtUser;
+  const roleType = getDrsRoleType().trim().toUpperCase();
+  const Screen = SCREEN_BY_ROLE[roleType] ?? DvtUser;
   return <Screen />;
 }
 

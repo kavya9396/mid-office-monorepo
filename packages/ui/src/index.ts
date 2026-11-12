@@ -11,7 +11,10 @@ export {
 export { default as BadgeWithCount } from "./Badge/BadgeWithCount";
 export { default as CustomButton } from "./Button/Button";
 export { default as Calendar, type CalendarProps } from "./Calendar/Calendar";
+export { default as CustomBox } from "./Box/Box";
+export { default as CustomTypography } from "./Typography/Typography";
 export { default as CustomCheckbox } from "./Checkbox/Checkbox";
+export { default as CustomPagination } from "./Pagination/Pagination";
 export {
   default as CustomDialog,
   type CustomDialogSeverity,
