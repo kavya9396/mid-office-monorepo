@@ -3,7 +3,7 @@ import type { Column } from "@insurance-poc/ui";
 import type { RiskCardData, RiskCardField } from "@insurance-poc/common/risk-cards";
 import type { RequirementItem } from "@insurance-poc/common/requirement-mgmt";
 import type { ComparisonRow } from "@insurance-poc/common/decision-bar";
-import { mapQuickLinksSubSections, type QuickLinksSubSections } from "../modules/drs/quickLinksData";
+import { mapMembersQuickLinks, type QuickLinksSubSections } from "../modules/drs/quickLinksData";
 import { mapRequirements, type RawRequirement } from "../modules/drs/requirementData";
 import { formatBreTimestamp, splitDiscrepancies } from "../modules/drs/breFormat";
 import guwDrsMock from "../../../../mock/drs/guw-informal-drs.json";
@@ -242,13 +242,15 @@ function isRecord(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null && !Array.isArray(v);
 }
 
-/** Pick a named section from `data.sections[]`. */
-function findSection(sections: unknown, name: string): unknown {
+/** The named entry of a `sections[]` / `commonSection[]` list. */
+function findSectionEntry(sections: unknown, name: string): Record<string, unknown> | null {
   if (!Array.isArray(sections)) return null;
-  const entry = sections.find((s) => isRecord(s) && s.name === name) as
-    | Record<string, unknown>
-    | undefined;
-  return entry?.value ?? null;
+  return sections.filter(isRecord).find((s) => s.name === name) ?? null;
+}
+
+/** `value` of a named section from `membersDetails[].sections[]`. */
+function findSection(sections: unknown, name: string): unknown {
+  return findSectionEntry(sections, name)?.value ?? null;
 }
 
 /** Pass `data.rowDetails[]` through unchanged (normalising only name/value to strings). */
@@ -490,26 +492,31 @@ const CLAIM_AUDIT_COLUMN_KEYS = [
   "status",
 ] as const;
 
+/** A claim-audit row is empty when the API sends the placeholder row with blank values only. */
+const hasValues = (row: Record<string, unknown>) => Object.values(row).some((v) => str(v) !== "");
+
 function mapClaimAuditSection(value: unknown): GuwClaimAuditSection {
   const section = recordOf(value);
   return {
     title: str(section.title) || "Claim Audit",
     columnHeaders: headersByKey(CLAIM_AUDIT_COLUMN_KEYS, section.columns),
-    rows: recordList(section.rows).map((r, index) => ({
-      id: str(r.id) || String(index + 1),
-      policyNo: str(r.policyNo),
-      productCode: str(r.productCode),
-      claimKey: str(r.claimKey),
-      canonicalId: str(r.canonicalId),
-      patientName: str(r.patientName),
-      ailment: str(r.ailment),
-      claimType: str(r.claimType),
-      subType: str(r.subType),
-      intimationDate: str(r.intimationDate),
-      doa: str(r.doa),
-      dod: str(r.dod),
-      status: str(r.status),
-    })),
+    rows: recordList(section.rows)
+      .filter(hasValues)
+      .map((r, index) => ({
+        id: str(r.id) || String(index + 1),
+        policyNo: str(r.policyNumber),
+        productCode: str(r.productCode),
+        claimKey: str(r.claimKey),
+        canonicalId: str(r.canonicalId),
+        patientName: str(r.patientName),
+        ailment: str(r.ailmentForCommunication),
+        claimType: str(r.claimType),
+        subType: str(r.subtype),
+        intimationDate: str(r.intimationDate),
+        doa: str(r.doa),
+        dod: str(r.dod),
+        status: str(r.decisionStatus),
+      })),
   };
 }
 
@@ -562,7 +569,7 @@ function mapSdtRow(sdtSection: unknown, dialogs: GuwDialogSections): GuwSdtRow {
 }
 
 /* ------------------------------------------------------------------ */
-/* Member list (one entry per object in `data[]`)                        */
+/* Member list (one entry per object in `data.membersDetails[]`)         */
 /* ------------------------------------------------------------------ */
 
 export interface GuwMemberSummary {
@@ -575,30 +582,34 @@ export interface GuwMemberSummary {
   uwDecision: string;
 }
 
-/** The per-member objects of the payload (`data[]`, or the single `data` object / bare payload). */
-function memberRecords(payload: unknown): Record<string, unknown>[] {
+/** `data` of the payload (the response envelope's `data`, or the bare payload). */
+function payloadData(payload: unknown): Record<string, unknown> {
   const root = recordOf(payload);
-  return Array.isArray(root.data) ? root.data.filter(isRecord) : [isRecord(root.data) ? root.data : root];
+  return isRecord(root.data) ? root.data : root;
 }
 
-/** Member id of one `data[]` object: the "Member" field of `rowDetails` id 1 (e.g. "Life Assured 1"). */
-function memberIdOf(data: Record<string, unknown>, index: number): string {
-  const memberFields = mapRowDetails(data.rowDetails).find((r) => r.id === 1)?.fields;
-  return fieldValue(memberFields, "Member") || str(data.memberType) || `Life Assured ${index + 1}`;
+/** The per-member objects of the payload (`data.membersDetails[]`). */
+function memberRecords(payload: unknown): Record<string, unknown>[] {
+  return recordList(payloadData(payload).membersDetails);
 }
 
-/** Member rows for the member selection screen, from `rowDetails` id 0 (name) and id 1 (member / demographics). */
+/** Member id of one `membersDetails[]` object: the "Member" field of `rowDetails` id 0 (e.g. "Life Assured 1"). */
+function memberIdOf(member: Record<string, unknown>, index: number): string {
+  const memberFields = mapRowDetails(member.rowDetails).find((r) => r.id === 0)?.fields;
+  return fieldValue(memberFields, "Member") || `Life Assured ${index + 1}`;
+}
+
+/** Member rows for the member selection screen, from `rowDetails` id 0 (name, member and demographics). */
 export function mapGuwMembers(payload: unknown): GuwMemberSummary[] {
   return memberRecords(payload).map((data, index) => {
     const rows = mapRowDetails(data.rowDetails);
-    const nameFields = rows.find((r) => r.id === 0)?.fields;
-    const memberFields = rows.find((r) => r.id === 1)?.fields;
+    const memberFields = rows.find((r) => r.id === 0)?.fields;
     const detail = (name: string) => fieldValue(memberFields, name) || "-";
     const age = fieldValue(memberFields, "Age");
     const caseDecisionFields = recordOf(findSection(data.sections, "caseUwDecision")).fields;
     return {
       memberId: memberIdOf(data, index),
-      name: fieldValue(nameFields, "Name") || "-",
+      name: fieldValue(memberFields, "Name") || "-",
       demographics: [
         age ? `${age} yrs` : "-",
         detail("Gender"),
@@ -622,23 +633,25 @@ export async function fetchGuwMembers(applicationNo: string): Promise<GuwMemberS
 /* ------------------------------------------------------------------ */
 
 /**
- * Maps one member's `data[]` object. `memberId` (e.g. "Life Assured 2") picks the member; when it is
+ * Maps one member of `data.membersDetails[]` together with the case-level `data.commonSection[]`
+ * (requirements and BRE decision). `memberId` (e.g. "Life Assured 2") picks the member; when it is
  * omitted or matches nothing, the first member is used.
  */
 export function mapGuwDrsPayload(payload: unknown, memberId?: string): GuwDrsRecord {
+  const root = payloadData(payload);
   const records = memberRecords(payload);
   const data =
     (memberId ? records.find((r, i) => memberIdOf(r, i) === memberId) : undefined) ?? records[0] ?? {};
 
-  const applicationNo = str(data.applicationNo);
+  const applicationNo = str(root.applicationNo);
   const sections = Array.isArray(data.sections) ? data.sections : [];
+  const commonSection = root.commonSection;
 
-  // Map raw requirements to RequirementItem[]
-  const requirementSection = findSection(sections, "requirementManagement");
-  const rawReqs = Array.isArray(requirementSection) ? requirementSection : [];
+  // Requirements: `commonSection` rows (shared by all members)
+  const rawReqs = recordList(findSectionEntry(commonSection, "requirementManagement")?.rows);
   const requirements: RequirementItem[] = mapRequirements(
-    rawReqs.filter(isRecord).map((r) => ({
-      requirementId: typeof r.requirementId === "number" ? r.requirementId : 0,
+    rawReqs.map((r, index) => ({
+      requirementId: typeof r.requirementId === "number" ? r.requirementId : index + 1,
       status: str(r.status),
       ocrStatus: str(r.ocrStatus),
       team: str(r.team),
@@ -676,10 +689,10 @@ export function mapGuwDrsPayload(payload: unknown, memberId?: string): GuwDrsRec
     rowDetails,
     riskCards,
     sdtRow: mapSdtRow(findSection(sections, "sdtDecision"), dialogSections),
-    breData: mapBreData(findSection(sections, "latestBreDecision"), rawReqs),
+    breData: mapBreData(findSection(commonSection, "latestBreDecision"), rawReqs),
     sections: dialogSections,
     requirements,
-    quickLinks: mapQuickLinksSubSections(data.subSections),
+    quickLinks: mapMembersQuickLinks(root.membersDetails),
     uwData: {
       breOverallDecision: fieldValue(caseDecisionFields, "BRE Overall Decision"),
       breOverallRemarks: fieldValue(caseDecisionFields, "BRE Overall Remarks"),

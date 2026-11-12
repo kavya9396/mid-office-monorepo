@@ -8,8 +8,8 @@ import GuwUser from "./GuwUser";
 import { fetchGuwMembers } from "../../services/guwService";
 
 /**
- * GUW entry: when `data[]` of guw-informal-drs.json holds more than one member and no member is
- * selected yet, go to the member selection page; otherwise open the GUW DRS directly.
+ * GUW entry: when `data.membersDetails[]` of guw-informal-drs.json holds more than one member and no
+ * member is selected yet, go to the member selection page; otherwise open the GUW DRS directly.
  */
 function GuwEntry() {
   const [params] = useSearchParams();
@@ -39,20 +39,11 @@ function GuwEntry() {
   return checked ? <GuwUser /> : null;
 }
 
-/** `/app/{applicationNo}/drs` — `roleType` query param picks the screen (GUW vs DVT). */
-const SCREEN_BY_ROLE_TYPE: Record<string, () => JSX.Element | null> = {
+/** `/app/{applicationNo}/drs` — screen picked from `roleType` (query param, else inbox session). */
+const SCREEN_BY_ROLE: Record<string, () => JSX.Element | null> = {
+  "GUW TASK": GuwEntry,
   GUW: GuwEntry,
-};
-
-export function GroupDrsPage() {
-  const [params] = useSearchParams();
-  const roleType = params.get("roleType")?.trim().toUpperCase() ?? "";
-  const Screen = SCREEN_BY_ROLE_TYPE[roleType] ?? DvtUser;
-/** `/app/{applicationNo}/drs` — screen from inbox session `roleType` (no query param). */
-const SCREEN_BY_ROLE: Record<string, () => JSX.Element> = {
-  "GUW TASK": GuwUser,
-  GUW: GuwUser,
-  GUW_FORMAL: GuwUser,
+  GUW_FORMAL: GuwEntry,
   "DVT TASK": DvtUser,
   "MMT TASK": MmtGrievanceDrsPage,
   MMT_TASK: MmtGrievanceDrsPage,
@@ -61,7 +52,8 @@ const SCREEN_BY_ROLE: Record<string, () => JSX.Element> = {
 };
 
 export function GroupDrsPage() {
-  const roleType = getDrsRoleType().trim().toUpperCase();
+  const [params] = useSearchParams();
+  const roleType = (params.get("roleType")?.trim() || getDrsRoleType()).trim().toUpperCase();
   const Screen = SCREEN_BY_ROLE[roleType] ?? DvtUser;
   return <Screen />;
 }

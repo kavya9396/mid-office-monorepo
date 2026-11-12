@@ -1,7 +1,6 @@
 import type { DetailAttribute, DetailTable } from "@insurance-poc/common/detail-card";
 import type { LifeAssuredApplicant, RiderEditRow } from "@insurance-poc/common/life-assured";
 import type { RequirementItem } from "@insurance-poc/common/requirement-mgmt";
-import groupDrsMock from "../../../../mock/drs/group-drs.json";
 import { mapApplicants } from "../modules/drs/lifeAssuredData";
 import { mapMembersQuickLinks, type QuickLinksSubSections } from "../modules/drs/quickLinksData";
 import { mapRequirements, type RawRequirement } from "../modules/drs/requirementData";

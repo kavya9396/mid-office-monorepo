@@ -32,12 +32,11 @@ const PROFILE_IMAGE_URL = `data:image/svg+xml;utf8,${encodeURIComponent(
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#302a27"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.2 3.6-7 8-7s8 2.8 8 7z"/></svg>',
 )}`;
 
-// Row 1 (Product line) is bold; row 2 is Riders; row 4 is Sum at Risk; row 0 values rendered without repeating Name / App No. in the line.
+// Row 0 is the member line (Name / App No. are shown in the banner header); row 1 is the product line (bold); row 2 is Riders; row 3 is Sum at Risk.
 const GUW_BANNER_OPTIONS: RowDetailsOptions = {
   emphasisRowIds: [1],
   skipFieldNames: ["Name", "App No.", "App No"],
-  valueOnlyRowIds: [0],
-  rowLabels: { 2: "Riders", 4: "Sum at Risk" },
+  rowLabels: { 2: "Riders", 3: "Sum at Risk" },
 };
 
 type PageState =

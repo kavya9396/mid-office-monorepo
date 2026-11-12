@@ -31,10 +31,11 @@ export const groupDrsApi = createApi({
           return { error: customError("Group DRS data API is not configured.") };
         }
 
-        const result = await baseQuery({
+         const result = await baseQuery({
           url: drsDataUrl,
-          method: "GET",
-          params: { applicationNo },
+          method: "POST",
+          body: { applicationNo },
+          headers: { accept: "*/*", "Content-Type": "application/json" },
         });
         if (result.error) return { error: result.error };
 

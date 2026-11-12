@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import type { QuickLinkItem } from "@insurance-poc/common/quick-links";
 import { fetchGuwDrs } from "../../services/guwService";
-import { fetchGroupDrs } from "../../services/drsService";
+import { useGetGroupDrsQuery } from "../../services/drsApi";
 import type { QuickLinksSubSections } from "./quickLinksData";
 
 // Quick links that have their own page route (opened as a new page; Header back returns to the DRS)
@@ -39,28 +39,29 @@ export function useGuwQuickLinks(): GuwQuickLinksState {
   const memberId = params.get("memberId")?.trim() ?? "";
   const roleType = (params.get("roleType") || params.get("role") || "").trim().toUpperCase();
   const shouldLoad = applicationNo !== "";
+  const isDvt = isDvtRole(roleType);
   const [state, setState] = useState<GuwQuickLinksState>({ loading: shouldLoad });
+  const dvt = useGetGroupDrsQuery(applicationNo, { skip: !shouldLoad || !isDvt });
 
   useEffect(() => {
-    if (!shouldLoad) {
+    if (!shouldLoad || isDvt) {
       setState({ loading: false });
       return;
     }
     let active = true;
     setState({ loading: true });
 
-    const fetcher = isDvtRole(roleType)
-      ? fetchGroupDrs(applicationNo)
-      : fetchGuwDrs(applicationNo, memberId);
-
-    void fetcher.then((record) => {
+    void fetchGuwDrs(applicationNo, memberId).then((record) => {
       if (active) setState({ loading: false, data: record?.quickLinks });
     });
     return () => {
       active = false;
     };
-  }, [applicationNo, memberId, roleType, shouldLoad]);
+  }, [applicationNo, memberId, isDvt, shouldLoad]);
 
+  if (shouldLoad && isDvt) {
+    return { loading: dvt.isLoading || dvt.isFetching, data: dvt.data?.quickLinks };
+  }
   return state;
 }
 

@@ -12,7 +12,6 @@ export { default as BadgeWithCount } from "./Badge/BadgeWithCount";
 export { default as CustomBox } from "./Box/Box";
 export { default as CustomButton } from "./Button/Button";
 export { default as Calendar, type CalendarProps } from "./Calendar/Calendar";
-export { default as CustomBox } from "./Box/Box";
 export { default as CustomTypography } from "./Typography/Typography";
 export { default as CustomCheckbox } from "./Checkbox/Checkbox";
 export { default as CustomPagination } from "./Pagination/Pagination";
@@ -25,7 +24,6 @@ export {
   default as KeyValueTable,
   type KeyValueRow,
 } from "./KeyValueTable/KeyValueTable";
-export { default as CustomPagination } from "./Pagination/Pagination";
 export { default as ScrollToTop, type ScrollToTopProps } from "./layouts/ScrollToTop";
 export { default as CustomRadioGroup } from "./Radio/Radio";
 export { default as SearchBar } from "./SearchBar/SearchBar";
@@ -50,7 +48,6 @@ export {
 } from "./Tabs/Tabs";
 export { default as CustomTextField } from "./TextField/TextField";
 export { default as CustomTooltip } from "./Tooltip/Tooltip";
-export { default as CustomTypography } from "./Typography/Typography";
 export {
   CloseIcon,
   DangerIcon,

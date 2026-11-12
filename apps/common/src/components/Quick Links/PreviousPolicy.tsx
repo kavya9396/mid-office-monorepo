@@ -202,18 +202,6 @@ const DEFAULT_DATA: PreviousPolicyData = {
   familyPolicies: FAMILY_POLICIES,
 };
 
-const DEFAULT_PREVIOUS_POLICY_DATA: PreviousPolicyData = {
-  members: MEMBERS.map((member) => ({
-    key: member.key,
-    label: member.label,
-    dedupe: DEDUPE_POSIDEX,
-    ipru: ipruRows(member.key),
-    riders: POLICIES.map((policy) => policy.riders),
-    iib: IIB_COMBINED,
-    applicationForm: APPLICATION_FORM,
-  })),
-  familyPolicies: FAMILY_POLICIES,
-};
 
 /* -------------------------------------------------------------------------- */
 /* Formatters                                                                 */

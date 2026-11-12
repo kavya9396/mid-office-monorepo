@@ -26,12 +26,11 @@ import {
 import { DecisionSection } from "@insurance-poc/common/decision-section";
 import { REFERRAL_PROFILE_IMAGE_URL } from "./profileImage";
 
-// Row 1 (Product line) is bold; row 2 is Riders; row 4 is Sum at Risk; row 0 values rendered without repeating Name / App No. in the line.
+// Row 0 is the member line (Name / App No. are shown in the banner header); row 1 is the product line (bold); row 2 is Riders; row 3 is Sum at Risk.
 const REFERRAL_BANNER_OPTIONS: RowDetailsOptions = {
   emphasisRowIds: [1],
   skipFieldNames: ["Name", "App No.", "App No"],
-  valueOnlyRowIds: [0],
-  rowLabels: { 2: "Riders", 4: "Sum at Risk" },
+  rowLabels: { 2: "Riders", 3: "Sum at Risk" },
 };
 
 // Underwriting Decision History columns (prototype `Mxe`).
