@@ -1617,6 +1617,7 @@ export function Medical({
 
   const cardRefs = useRef<Record<string, HTMLElement | null>>({});
   const navItemRefs = useRef<Record<string, HTMLElement | null>>({});
+  const navRef = useRef<HTMLElement | null>(null);
   const activeSectionKeyRef = useRef(activeSectionKey);
   activeSectionKeyRef.current = activeSectionKey;
   const originalsRef = useRef<Record<string, Record<string, string>>>({});
@@ -1659,13 +1660,26 @@ export function Medical({
         behavior: "smooth",
         block: "start",
       });
-      navItemRefs.current[sectionKey]?.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-      });
     },
     [groups],
   );
+
+  // Keep the highlighted left-panel item visible: scroll only the panel (never the page) when
+  // the active item is outside its visible area, centring it for context. Scrolling the page
+  // from here would cancel the smooth scroll to the section card.
+  useEffect(() => {
+    const nav = navRef.current;
+    const item = navItemRefs.current[activeSectionKey];
+    if (!nav || !item) return;
+    const navRect = nav.getBoundingClientRect();
+    const itemRect = item.getBoundingClientRect();
+    if (itemRect.top >= navRect.top && itemRect.bottom <= navRect.bottom) return;
+    const top =
+      nav.scrollTop +
+      (itemRect.top - navRect.top) -
+      (nav.clientHeight - item.offsetHeight) / 2;
+    nav.scrollTo({ top, behavior: "smooth" });
+  }, [activeSectionKey]);
 
   useEffect(() => {
     let rafId: number | null = null;
@@ -1702,10 +1716,6 @@ export function Medical({
             prev[targetGroup.key] ? prev : { ...prev, [targetGroup.key]: true },
           );
         }
-        navItemRefs.current[closestKey]?.scrollIntoView({
-          behavior: "smooth",
-          block: "nearest",
-        });
       }
     };
 
@@ -2015,7 +2025,12 @@ export function Medical({
           }}
         >
           {/* Left panel with CustomAccordion per group */}
-          <Box component="nav" aria-label="Medical groups and sections" sx={NAV_SX}>
+          <Box
+            component="nav"
+            ref={navRef}
+            aria-label="Medical groups and sections"
+            sx={NAV_SX}
+          >
             {groups.map((group) => (
               <CustomAccordion
                 key={group.key}
