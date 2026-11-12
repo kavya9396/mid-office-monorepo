@@ -2,6 +2,7 @@ import type { DetailAttribute, DetailTable } from "@insurance-poc/common/detail-
 import type { LifeAssuredApplicant, RiderEditRow } from "@insurance-poc/common/life-assured";
 import type { RequirementItem } from "@insurance-poc/common/requirement-mgmt";
 import { mapApplicants } from "../modules/drs/lifeAssuredData";
+import { mapMembersQuickLinks, type QuickLinksSubSections } from "../modules/drs/quickLinksData";
 import { mapRequirements, type RawRequirement } from "../modules/drs/requirementData";
 
 export type CardType = "APPLICATION" | "SOURCE" | "GROUP" | "RISK";
@@ -43,6 +44,8 @@ export type GroupDrsData = {
   dvtDecision: DvtDecision;
   requirements: RequirementItem[];
   applicants: LifeAssuredApplicant[];
+  /** Quick Link pages (previous policy, open tasks, audit trail, risk details). */
+  quickLinks: QuickLinksSubSections;
 };
 
 // `cardDetails[].type` as sent by the API -> internal card type
@@ -284,5 +287,6 @@ export function mapGroupDrsPayload(value: unknown): GroupDrsData {
       ),
       riders: readRiders(cardDetailsRaw),
     }),
+    quickLinks: mapMembersQuickLinks(data.membersDetails),
   };
 }
