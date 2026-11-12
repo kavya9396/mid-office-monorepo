@@ -12,7 +12,7 @@ export function Lifestyle({ fields }: Readonly<{ fields: FieldData[] }>) {
         gridTemplateColumns: {
           xs: "1fr",
           sm: "repeat(2, minmax(0, 1fr))",
-          md: "repeat(5, minmax(0, 1fr))",
+          md: "repeat(4, minmax(0, 1fr))",
         },
         columnGap: 1.5,
         rowGap: 1.25,

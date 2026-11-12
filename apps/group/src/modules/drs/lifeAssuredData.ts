@@ -82,7 +82,14 @@ const optionalText = (value: unknown) => {
 const readFields = (value: unknown): FieldData[] =>
   asArray(value)
     .filter(isRecord)
-    .map((item) => ({ label: str(item.label), value: text(item.value) }));
+    .map((item) => {
+      const rawVal = text(item.value);
+      const strVal = typeof rawVal === "string" ? rawVal.trim() : typeof rawVal === "number" ? String(rawVal) : "";
+      return {
+        label: str(item.label),
+        value: strVal.length > 0 ? strVal : "-",
+      };
+    });
 
 /** Finds an entry of a [{ label, ... }] list by label (case-insensitive). */
 const findByLabel = (entries: unknown, label: string): JsonRecord | undefined =>
@@ -310,6 +317,14 @@ const toApplicant = (member: JsonRecord, total: number, riders: RiderEditRow[]):
 };
 
 export function mapApplicants(source: LifeAssuredSource): LifeAssuredApplicant[] {
-  const members = source.members.filter(isRecord);
+  const rawMembers = source.members.filter(isRecord);
+  const members = rawMembers.map((rawMember) => {
+    const sections = asArray(rawMember.sections).filter(isRecord);
+    const profileSection = sections.find((s) => str(s.name) === "applicantProfile");
+    if (profileSection && isRecord(profileSection.value)) {
+      return profileSection.value;
+    }
+    return rawMember;
+  });
   return members.map((member) => toApplicant(member, members.length, source.riders));
 }

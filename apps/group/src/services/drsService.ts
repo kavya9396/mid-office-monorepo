@@ -82,27 +82,28 @@ function readCardType(value: string): CardType {
 }
 
 function readAttributes(value: unknown): DetailAttribute[] {
-  if (!Array.isArray(value)) throw invalidResponse();
+  if (!Array.isArray(value)) return [];
   return value.map((item) => {
-    if (!isRecord(item) || typeof item.name !== "string") throw invalidResponse();
-    return { name: item.name, value: readText(item.value) };
+    if (!isRecord(item) || typeof item.name !== "string") return { name: "", value: "-" };
+    const val = readText(item.value).trim();
+    return { name: item.name, value: val.length > 0 ? val : "-" };
   });
 }
 
 function readTables(value: unknown): DetailTable[] {
-  if (!Array.isArray(value)) throw invalidResponse();
+  if (!Array.isArray(value)) return [];
   return value.map((item) => {
     if (!isRecord(item) || typeof item.name !== "string" || !Array.isArray(item.columns)) {
-      throw invalidResponse();
+      return { name: "", columns: [], rows: [] };
     }
-    if (!item.columns.every((column) => typeof column === "string")) throw invalidResponse();
-    if (!Array.isArray(item.rows)) throw invalidResponse();
+    if (!item.columns.every((column) => typeof column === "string")) return { name: "", columns: [], rows: [] };
+    if (!Array.isArray(item.rows)) return { name: item.name, columns: item.columns, rows: [] };
 
     const columns: string[] = item.columns;
     const isRiderTable = item.name === RIDER_TABLE_NAME;
 
     const rows = item.rows.map((row, index) => {
-      if (!isRecord(row)) throw invalidResponse();
+      if (!isRecord(row)) return {};
       const cells: Record<string, string> = {};
       for (const column of columns) {
         if (isRiderTable && column === "Rider") {
@@ -110,7 +111,8 @@ function readTables(value: unknown): DetailTable[] {
           continue;
         }
         const key = isRiderTable ? RIDER_COLUMN_KEYS[column] : column;
-        cells[column] = key ? readText(row[key]) : "";
+        const cellValue = key ? readText(row[key]).trim() : "";
+        cells[column] = cellValue.length > 0 ? cellValue : "-";
       }
       return cells;
     });
@@ -120,16 +122,15 @@ function readTables(value: unknown): DetailTable[] {
 }
 
 function readCards(value: unknown): CardDetail[] {
-  if (!Array.isArray(value)) throw invalidResponse();
-  return value.map((item) => {
-    if (!isRecord(item) || typeof item.type !== "string") throw invalidResponse();
-    return {
-      type: readCardType(item.type),
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((item): item is Record<string, unknown> => isRecord(item) && typeof item.type === "string" && Boolean(CARD_TYPE_BY_NAME[item.type]))
+    .map((item) => ({
+      type: readCardType(item.type as string),
       attributes: readAttributes(item.attributes),
       expandedAttributes: readAttributes(item.expandedAttributes),
       tables: readTables(item.tables),
-    };
-  });
+    }));
 }
 
 /** Finds an entry by name inside the data.sections array. */
@@ -200,11 +201,24 @@ function readDvtDecision(section: Record<string, unknown> | null): DvtDecision {
 /** Requirement rows sit directly on the section and carry no id, so the row index is used. */
 function readRequirements(section: Record<string, unknown> | null): RawRequirement[] {
   const rows = section?.rows;
-  if (!Array.isArray(rows)) throw invalidResponse();
+  if (!Array.isArray(rows)) return [];
   return rows.map((row, index) => {
-    if (!isRecord(row)) throw invalidResponse();
+    if (!isRecord(row)) return {
+      requirementId: index + 1,
+      status: "-",
+      ocrStatus: "-",
+      team: "-",
+      profile: "-",
+      category: "-",
+      subCategory: "-",
+      document: "-",
+      reason: "-",
+      fupCode: "-",
+      extraRemarks: "-",
+      description: "-",
+    };
     return {
-      requirementId: typeof row.requirementId === "number" ? row.requirementId : index,
+      requirementId: typeof row.requirementId === "number" ? row.requirementId : index + 1,
       status: readText(row.status),
       ocrStatus: readText(row.ocrStatus),
       team: readText(row.team),
@@ -251,17 +265,24 @@ export function mapGroupDrsPayload(value: unknown): GroupDrsData {
   const applicationNo = readText(data.applicationNo).trim();
   if (applicationNo.length === 0) throw invalidResponse();
 
-  const sections = data.sections;
+  const sections = Array.isArray(data.commonSection) ? data.commonSection : data.sections;
+  const membersDetails = Array.isArray(data.membersDetails) ? data.membersDetails : [];
+  const primaryMember = membersDetails.find(isRecord) ?? null;
+  const cardDetailsRaw = primaryMember?.cardDetails ?? data.cardDetails;
 
   return {
     applicationNo,
-    cardDetails: readCards(data.cardDetails),
+    cardDetails: readCards(cardDetailsRaw),
     breDecision: readBre(findSection(sections, "latestBreDecision")),
     dvtDecision: readDvtDecision(findSection(sections, "dvtDecision")),
     requirements: mapRequirements(readRequirements(findSection(sections, "requirementManagement"))),
     applicants: mapApplicants({
-      members: readApplicantMembers(findSection(sections, "applicantProfile")),
-      riders: readRiders(data.cardDetails),
+      members: readApplicantMembers(
+        Array.isArray(data.membersDetails)
+          ? { value: data.membersDetails }
+          : findSection(sections, "applicantProfile")
+      ),
+      riders: readRiders(cardDetailsRaw),
     }),
   };
 }

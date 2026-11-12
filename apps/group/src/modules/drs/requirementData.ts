@@ -1,11 +1,14 @@
 import type { RequirementItem } from "@insurance-poc/common/requirement-mgmt";
 
-// Same normalisation as the prototype: anything that is not Pending / Waived is Accept.
 const normaliseStatus = (status: string) => {
   const value = status.trim().toUpperCase();
   if (value === "PENDING") return "Pending";
   if (value === "WAIVE" || value === "WAIVED") return "Waived";
-  return "Accept";
+  if (value === "ACCEPT" || value === "ACCEPTED") return "Accept";
+  if (value === "REJECT" || value === "REJECTED") return "Reject";
+  if (value === "CANCELLED" || value === "CANCEL") return "Cancelled";
+  if (value === "RECEIVED") return "Received";
+  return status.trim().length > 0 ? status.trim().charAt(0).toUpperCase() + status.trim().slice(1) : "-";
 };
 
 export type RawRequirement = Omit<RequirementItem, "id"> & {
