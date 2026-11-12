@@ -23,7 +23,7 @@ describe("RedirectIfSession", () => {
     navigation.replaceUrl.mockReset();
   });
 
-  it("routes first-login users to change-password instead of the inbox when session is saved", async () => {
+  it("clears session and shows login when a first-login user opens /login manually", async () => {
     setFirstLoginChangePending(true);
     setToken("first-login-jwt");
     setSessionUser({ username: "LDAP12345", displayName: "LDAP12345" });
@@ -45,7 +45,9 @@ describe("RedirectIfSession", () => {
       </MemoryRouter>,
     );
 
-    expect(await screen.findByText("Change password form")).toBeInTheDocument();
+    expect(await screen.findByText("Login form")).toBeInTheDocument();
+    expect(sessionStorage.getItem("token")).toBeNull();
+    expect(sessionStorage.getItem("firstLoginChangePending")).toBeNull();
     expect(navigation.replaceUrl).not.toHaveBeenCalled();
   });
 });

@@ -1,15 +1,12 @@
 import type { AuditTrailItem } from "@insurance-poc/common/audit-trail";
 import type { OpenTaskItem } from "@insurance-poc/common/open-tasks";
-import type {
-  PreviousPolicyData,
-  PreviousPolicyMember,
-  PreviousPolicyRow,
-} from "@insurance-poc/common/previous-policy";
+import type { PreviousPolicyData } from "@insurance-poc/common/previous-policy";
 import type { RiskMember } from "@insurance-poc/common/risk-details";
+import { mapMembersPreviousPolicy } from "./previousPolicyData";
 
 type JsonRecord = Record<string, unknown>;
 
-/** Data of the DRS `subSections` that the Quick Link pages (opened as separate pages) show. */
+/** Data of the Quick Link pages, read from `data.membersDetails[].subSections[]` (DVT). */
 export interface QuickLinksSubSections {
   previousPolicy?: PreviousPolicyData;
   openTasks?: OpenTaskItem[];
@@ -20,142 +17,70 @@ export interface QuickLinksSubSections {
 const isRecord = (value: unknown): value is JsonRecord =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
-const asRecord = (value: unknown): JsonRecord => (isRecord(value) ? value : {});
-
 const recordList = (value: unknown): JsonRecord[] =>
   Array.isArray(value) ? value.filter(isRecord) : [];
 
 const str = (value: unknown): string =>
-  typeof value === "string" || typeof value === "number" ? String(value) : "";
+  typeof value === "string" ? value : typeof value === "number" ? String(value) : "";
 
-/** Table rows from the API; rows with every value empty are dropped so the table shows "No data available". */
-const tableRows = (value: unknown): JsonRecord[] =>
-  recordList(value).filter((row) =>
-    Object.values(row).some((cell) => (typeof cell === "string" ? cell.trim() !== "" : cell != null)),
-  );
-
-/** Finds an entry of `data.subSections[]` by name and returns its `value`. */
-const findSubSection = (subSections: unknown, name: string): unknown => {
-  const entry = recordList(subSections).find((item) => item.name === name);
-  return entry?.value;
-};
-
-const toRow = (source: JsonRecord): PreviousPolicyRow => {
-  const row: PreviousPolicyRow = {};
-  for (const [key, value] of Object.entries(source)) {
-    if (typeof value === "string" || typeof value === "number") row[key] = value;
-  }
-  return row;
-};
-
-/* ---- Previous policies ---- */
-
-// API key -> key used by the Previous Policy table columns
-const IPRU_ALIASES: Record<string, string> = { sumAssured: "appliedSumAssured" };
-const IIB_ALIASES: Record<string, string> = { questCompanyName: "questCompanyNumber" };
-
-const toAliasedRow = (source: JsonRecord, aliases: Record<string, string>): PreviousPolicyRow => {
-  const row = toRow(source);
-  for (const [from, to] of Object.entries(aliases)) {
-    if (from in row && !(to in row)) row[to] = row[from] ?? "";
-  }
-  return row;
-};
-
-function mapPreviousPolicyMember(member: JsonRecord, index: number): PreviousPolicyMember {
-  const ipruSource = tableRows(member.ipru);
-  const memberKey = str(member.memberKey) || `member-${index}`;
-  const clientRole = memberKey.toLowerCase().includes("proposer") ? "Proposer" : "Life Assured";
-
-  return {
-    key: memberKey,
-    label: str(member.label) || memberKey,
-    dedupe: tableRows(member.dedupePosidex).map(toRow),
-    ipru: ipruSource.map((policy, policyIndex) => {
-      const { riderDetails: _riderDetails, ...fields } = policy;
-      return { ...toAliasedRow(fields, IPRU_ALIASES), riderIndex: policyIndex };
-    }),
-    riders: ipruSource.map((policy) =>
-      tableRows(policy.riderDetails).map((rider) => ({ clientRole, ...toRow(rider) })),
-    ),
-    iib: tableRows(member.iibNonIpru).map((row) => toAliasedRow(row, IIB_ALIASES)),
-    applicationForm: tableRows(member.applicationFormDetails).map(toRow),
-  };
-}
-
-function mapPreviousPolicies(value: unknown): PreviousPolicyData | undefined {
-  if (!isRecord(value)) return undefined;
-  return {
-    members: recordList(value.members).map(mapPreviousPolicyMember),
-    familyPolicies: tableRows(value.familyPolicies).map(toRow),
-  };
-}
+/** `value` of the `subSections[]` entry with this name, for every member that has it. */
+const subSectionValues = (members: JsonRecord[], name: string): unknown[] =>
+  members
+    .map((member) => recordList(member.subSections).find((item) => item.name === name)?.value)
+    .filter((value) => value !== undefined);
 
 /* ---- Open tasks ---- */
 
-function mapOpenTasks(value: unknown): OpenTaskItem[] | undefined {
-  const section = asRecord(value);
-  const rows = Array.isArray(value)
-    ? value
-    : Array.isArray(section.rows)
-      ? section.rows
-      : Array.isArray(section.value)
-        ? section.value
-        : null;
-  if (!rows) return undefined;
-  return tableRows(rows).map((row, index) => ({
-    id: `open-task-${index}`,
+function mapOpenTasks(values: unknown[]): OpenTaskItem[] | undefined {
+  const first = values.find(isRecord);
+  if (!first) return undefined;
+  return recordList(first.rows).map((row, index) => ({
+    id: `open-task-${index + 1}`,
     callLogDate: str(row.callLogDate),
-    serviceCallId: str(row.callId) || str(row.serviceCallId),
+    serviceCallId: str(row.callId),
     ct: str(row.ct),
     st: str(row.st),
     callDetails: str(row.callDetails),
-    userPool: str(row.userPoll) || str(row.userPool),
+    userPool: str(row.userPoll),
     source: str(row.source),
   }));
 }
 
 /* ---- Audit trail ---- */
 
-function mapAuditTrail(value: unknown): AuditTrailItem[] | undefined {
-  const section = asRecord(value);
-  const rows = Array.isArray(value)
-    ? value
-    : Array.isArray(section.rows)
-      ? section.rows
-      : Array.isArray(section.value)
-        ? section.value
-        : null;
-  if (!rows) return undefined;
-  return tableRows(rows).map((row, index) => ({
-    id: `audit-${index}`,
+function mapAuditTrail(values: unknown[]): AuditTrailItem[] | undefined {
+  const first = values.find(isRecord);
+  if (!first) return undefined;
+  return recordList(first.value).map((row, index) => ({
+    id: `audit-${index + 1}`,
     userId: str(row.userId),
     userName: str(row.userName),
     poolName: str(row.poolName),
     caseStatus: str(row.caseStatus),
     decision: str(row.Decision) || str(row.decision),
     comments: str(row.comments),
-    dateUpdatedOn: str(row.updatedDate) || str(row.dateUpdatedOn) || str(row.updatedOn),
+    dateUpdatedOn: str(row.updatedDate),
   }));
 }
 
-/* ---- Risk details ---- */
+/* ---- Risk details (one entry per member) ---- */
+
+const labelValues = (value: unknown) =>
+  recordList(value).map((item) => ({ label: str(item.label), value: str(item.value) }));
 
 function mapRiskMember(entry: JsonRecord, index: number): RiskMember {
-  const risk = asRecord(entry.risk_details);
-  const fields = (section: unknown) =>
-    recordList(asRecord(section).value).map((field) => ({
-      label: str(field.label),
-      value: str(field.value),
-    }));
-  const decision = asRecord(risk.riskDecision);
-
+  const details = labelValues(
+    isRecord(entry.risk_details) && isRecord(entry.risk_details.memberDetails)
+      ? entry.risk_details.memberDetails.value
+      : undefined,
+  );
+  const assessment = isRecord(entry.riskAssessament) ? entry.riskAssessament : {};
+  const decision = isRecord(entry.riskDecision) ? entry.riskDecision : {};
   return {
-    id: `risk-member-${index}`,
-    name: str(risk.member) || `Member ${index + 1}`,
-    details: fields(risk.memberDetails),
-    // The API spells this key "riskAssessament"
-    assessment: fields(risk.riskAssessament ?? risk.riskAssessment).map((field, fieldIndex) => ({
+    id: `risk-member-${index + 1}`,
+    name: details.find((field) => field.label === "Customer Name")?.value || `Member ${index + 1}`,
+    details,
+    assessment: labelValues(assessment.value).map((field, fieldIndex) => ({
       id: `f${fieldIndex}`,
       ...field,
     })),
@@ -164,17 +89,22 @@ function mapRiskMember(entry: JsonRecord, index: number): RiskMember {
   };
 }
 
-function mapRiskDetails(value: unknown): RiskMember[] | undefined {
-  if (!Array.isArray(value)) return undefined;
-  return recordList(value).map(mapRiskMember);
+function mapRiskDetails(values: unknown[]): RiskMember[] | undefined {
+  const entries = values.filter(Array.isArray).flatMap(recordList);
+  return entries.length > 0 ? entries.map(mapRiskMember) : undefined;
 }
 
-/** Maps `data.subSections[]` of the DRS payload to the data the Quick Link pages show. */
-export function mapQuickLinksSubSections(subSections: unknown): QuickLinksSubSections {
+/**
+ * DVT: maps `data.membersDetails[]` — every member carries its own `subSections[]`.
+ * Previous policies and risk details are collected member-wise; open tasks and audit trail
+ * use the first member that has them.
+ */
+export function mapMembersQuickLinks(membersDetails: unknown): QuickLinksSubSections {
+  const members = recordList(membersDetails);
   return {
-    previousPolicy: mapPreviousPolicies(findSubSection(subSections, "previousPolicies")),
-    openTasks: mapOpenTasks(findSubSection(subSections, "openOtherTasks")),
-    auditTrail: mapAuditTrail(findSubSection(subSections, "auditTrail")),
-    riskDetails: mapRiskDetails(findSubSection(subSections, "riskDetails")),
+    previousPolicy: mapMembersPreviousPolicy(membersDetails),
+    openTasks: mapOpenTasks(subSectionValues(members, "openOtherTasks")),
+    auditTrail: mapAuditTrail(subSectionValues(members, "auditTrail")),
+    riskDetails: mapRiskDetails(subSectionValues(members, "riskDetails")),
   };
 }

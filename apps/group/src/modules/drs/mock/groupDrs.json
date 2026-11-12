@@ -559,9 +559,9 @@
                 "label": "Life Assured 1",
                 "dedupePosidex": [
                   {
-                    "clientId": "",
-                    "firstName": "",
-                    "surname": "",
+                    "clientId": "CL222",
+                    "firstName": "test",
+                    "surname": "user",
                     "state": "",
                     "city": "",
                     "dob": "",
@@ -574,7 +574,7 @@
                 ],
                 "ipru": [
                   {
-                    "policyNumber": "",
+                    "policyNumber": "Pl123",
                     "productName": "",
                     "sumAssured": "",
                     "policyStatus": "",
@@ -588,7 +588,7 @@
                     "yearOfIssueApplication": "",
                     "riderDetails": [
                       {
-                        "riderCode": "",
+                        "riderCode": "1233",
                         "riderName": "",
                         "riderSubType": "",
                         "faceValue": "",
@@ -604,7 +604,7 @@
                 ],
                 "iibNonIpru": [
                   {
-                    "questDbNo": "",
+                    "questDbNo": "11",
                     "questSumAssured": "",
                     "questPolicyStatus": "",
                     "questCompanyName": "",
@@ -624,14 +624,14 @@
                     "linkedNonLinked": "",
                     "productType": "",
                     "remarks": "",
-                    "broadReason": "",
+                    "broadReason": "test",
                     "granularReason1": "",
                     "granularReason2": ""
                   }
                 ],
                 "applicationFormDetails": [
                   {
-                    "companyName": "",
+                    "companyName": "abc",
                     "policyNumber": "",
                     "baseSumAssured": "",
                     "proposalDate": "",
@@ -641,7 +641,7 @@
               },
               "familyPolicies": [
                 {
-                  "type": "",
+                  "type": "non",
                   "relationWithLifeAssured": "",
                   "insuranceCompany": "",
                   "sumAssured": "",
@@ -680,7 +680,7 @@
               ],
               "rows": [
                 {
-                  "callLogDate": "",
+                  "callLogDate": "12-11-2026",
                   "callId": "",
                   "ct": "",
                   "st": "",
@@ -729,7 +729,7 @@
               ],
               "value": [
                 {
-                  "userId": "",
+                  "userId": "UN123",
                   "userName": "",
                   "poolName": "",
                   "caseStatus": "",
@@ -1582,12 +1582,12 @@
             "label": "Previous Policies",
             "value": {
               "members": {
-                "memberKey": "lifeAssured1",
-                "label": "Life Assured 1",
+                "memberKey": "lifeassured2",
+                "label": "Life Assured 2",
                 "dedupePosidex": [
                   {
-                    "clientId": "",
-                    "firstName": "",
+                    "clientId": "LA233",
+                    "firstName": "LA2",
                     "surname": "",
                     "state": "",
                     "city": "",
@@ -1601,7 +1601,7 @@
                 ],
                 "ipru": [
                   {
-                    "policyNumber": "",
+                    "policyNumber": "Pl888",
                     "productName": "",
                     "sumAssured": "",
                     "policyStatus": "",
@@ -1615,7 +1615,7 @@
                     "yearOfIssueApplication": "",
                     "riderDetails": [
                       {
-                        "riderCode": "",
+                        "riderCode": "4343",
                         "riderName": "",
                         "riderSubType": "",
                         "faceValue": "",
@@ -1631,7 +1631,7 @@
                 ],
                 "iibNonIpru": [
                   {
-                    "questDbNo": "",
+                    "questDbNo": "44",
                     "questSumAssured": "",
                     "questPolicyStatus": "",
                     "questCompanyName": "",
@@ -1658,7 +1658,7 @@
                 ],
                 "applicationFormDetails": [
                   {
-                    "companyName": "",
+                    "companyName": "xyz",
                     "policyNumber": "",
                     "baseSumAssured": "",
                     "proposalDate": "",
@@ -1668,7 +1668,7 @@
               },
               "familyPolicies": [
                 {
-                  "type": "",
+                  "type": "yes",
                   "relationWithLifeAssured": "",
                   "insuranceCompany": "",
                   "sumAssured": "",
@@ -1707,7 +1707,7 @@
               ],
               "rows": [
                 {
-                  "callLogDate": "",
+                  "callLogDate": "11-11-2026",
                   "callId": "",
                   "ct": "",
                   "st": "",

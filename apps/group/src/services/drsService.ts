@@ -3,7 +3,7 @@ import type { LifeAssuredApplicant, RiderEditRow } from "@insurance-poc/common/l
 import type { RequirementItem } from "@insurance-poc/common/requirement-mgmt";
 import groupDrsMock from "../../../../mock/drs/group-drs.json";
 import { mapApplicants } from "../modules/drs/lifeAssuredData";
-import { mapQuickLinksSubSections, type QuickLinksSubSections } from "../modules/drs/quickLinksData";
+import { mapMembersQuickLinks, type QuickLinksSubSections } from "../modules/drs/quickLinksData";
 import { mapRequirements, type RawRequirement } from "../modules/drs/requirementData";
 
 export type CardType = "APPLICATION" | "SOURCE" | "GROUP" | "RISK";
@@ -45,6 +45,7 @@ export type GroupDrsData = {
   dvtDecision: DvtDecision;
   requirements: RequirementItem[];
   applicants: LifeAssuredApplicant[];
+  /** Quick Link pages (previous policy, open tasks, audit trail, risk details). */
   quickLinks: QuickLinksSubSections;
 };
 
@@ -287,19 +288,6 @@ export function mapGroupDrsPayload(value: unknown): GroupDrsData {
       ),
       riders: readRiders(cardDetailsRaw),
     }),
-    quickLinks: mapQuickLinksSubSections(data.subSections),
-  };
-}
-
-function wait(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-export async function fetchGroupDrs(applicationNo: string): Promise<GroupDrsData | null> {
-  await wait(250);
-  const record = mapGroupDrsPayload(groupDrsMock);
-  return {
-    ...record,
-    applicationNo: record.applicationNo || applicationNo,
+    quickLinks: mapMembersQuickLinks(data.membersDetails),
   };
 }
