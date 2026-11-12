@@ -145,13 +145,13 @@ const FAMILY_DEFAULT_ROWS: readonly MedicalFamilyRow[] = [
   { relation: "Mother" },
 ];
 
-const FAMILY_FIXED_RELATIONS: readonly string[] = ["Father", "Mother"];
+const FAMILY_FIXED_RELATIONS: ReadonlySet<string> = new Set(["Father", "Mother"]);
 
 /** Ids of the Father / Mother starter rows: their relation is locked and they cannot be removed. */
 const familyFixedRowIds = (section: MedicalSection): ReadonlySet<string> =>
   new Set(
     (section.familyRows ?? FAMILY_DEFAULT_ROWS).flatMap((row, i) =>
-      FAMILY_FIXED_RELATIONS.includes(row.relation) ? [String(i + 1)] : [],
+      FAMILY_FIXED_RELATIONS.has(row.relation) ? [String(i + 1)] : [],
     ),
   );
 
@@ -472,6 +472,23 @@ const RequiredMark = memo(function RequiredMark() {
   );
 });
 
+function RequiredHeader({
+  label,
+  required,
+}: Readonly<{ label: string; required: boolean }>) {
+  return (
+    <Typography sx={{ fontSize: "12px", fontWeight: 600, color: "#000" }}>
+      {label}
+      {required && <RequiredMark />}
+    </Typography>
+  );
+}
+
+/** Builds a table `headerRender` at module level so no component is defined inside a parent. */
+const requiredHeaderRender = (label: string, required: boolean) => () => (
+  <RequiredHeader label={label} required={required} />
+);
+
 interface MedicalControlProps {
   id: string;
   ariaLabel: string;
@@ -712,11 +729,9 @@ const FamilyHistoryBody = memo(function FamilyHistoryBody({
         key: "relation",
         header: "Relation Type",
         width: "24%",
-        headerRender: () => (
-          <Typography sx={{ fontSize: "12px", fontWeight: 600, color: "#000" }}>
-            Relation Type
-            {FAMILY_RELATION_VALIDATOR.isRequired() && <RequiredMark />}
-          </Typography>
+        headerRender: requiredHeaderRender(
+          "Relation Type",
+          FAMILY_RELATION_VALIDATOR.isRequired(),
         ),
         render: (_value, row) => (
           <MedicalControl
@@ -732,12 +747,7 @@ const FamilyHistoryBody = memo(function FamilyHistoryBody({
         key: "age",
         header: "Age",
         width: "12%",
-        headerRender: () => (
-          <Typography sx={{ fontSize: "12px", fontWeight: 600, color: "#000" }}>
-            Age
-            {FAMILY_AGE_VALIDATOR.isRequired() && <RequiredMark />}
-          </Typography>
-        ),
+        headerRender: requiredHeaderRender("Age", FAMILY_AGE_VALIDATOR.isRequired()),
         render: (_value, row) => (
           <MedicalControl
             id={familyRowKey(section.key, row.id, "age")}
@@ -1005,12 +1015,7 @@ const LabResultTable = memo(function LabResultTable({
         return {
           key: label,
           header: label,
-          headerRender: () => (
-            <Typography sx={{ fontSize: "12px", fontWeight: 600, color: "#000" }}>
-              {label}
-              {validator?.isRequired() && <RequiredMark />}
-            </Typography>
-          ),
+          headerRender: requiredHeaderRender(label, !!validator?.isRequired()),
           render: () =>
             section.plainTextTableFieldLabels?.includes(label) ? (
               <PlainTextValue
@@ -1440,7 +1445,7 @@ const MedicalHistoryDialog = memo(function MedicalHistoryDialog({
     () =>
       createMedicalStore({
         ...createInitialValues([section]),
-        ...(entry?.values ?? {}),
+        ...entry?.values,
       }),
     [section, entry],
   );
@@ -1612,6 +1617,7 @@ export function Medical({
 
   const cardRefs = useRef<Record<string, HTMLElement | null>>({});
   const navItemRefs = useRef<Record<string, HTMLElement | null>>({});
+  const navRef = useRef<HTMLElement | null>(null);
   const activeSectionKeyRef = useRef(activeSectionKey);
   activeSectionKeyRef.current = activeSectionKey;
   const originalsRef = useRef<Record<string, Record<string, string>>>({});
@@ -1654,13 +1660,26 @@ export function Medical({
         behavior: "smooth",
         block: "start",
       });
-      navItemRefs.current[sectionKey]?.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-      });
     },
     [groups],
   );
+
+  // Keep the highlighted left-panel item visible: scroll only the panel (never the page) when
+  // the active item is outside its visible area, centring it for context. Scrolling the page
+  // from here would cancel the smooth scroll to the section card.
+  useEffect(() => {
+    const nav = navRef.current;
+    const item = navItemRefs.current[activeSectionKey];
+    if (!nav || !item) return;
+    const navRect = nav.getBoundingClientRect();
+    const itemRect = item.getBoundingClientRect();
+    if (itemRect.top >= navRect.top && itemRect.bottom <= navRect.bottom) return;
+    const top =
+      nav.scrollTop +
+      (itemRect.top - navRect.top) -
+      (nav.clientHeight - item.offsetHeight) / 2;
+    nav.scrollTo({ top, behavior: "smooth" });
+  }, [activeSectionKey]);
 
   useEffect(() => {
     let rafId: number | null = null;
@@ -1697,10 +1716,6 @@ export function Medical({
             prev[targetGroup.key] ? prev : { ...prev, [targetGroup.key]: true },
           );
         }
-        navItemRefs.current[closestKey]?.scrollIntoView({
-          behavior: "smooth",
-          block: "nearest",
-        });
       }
     };
 
@@ -2010,7 +2025,12 @@ export function Medical({
           }}
         >
           {/* Left panel with CustomAccordion per group */}
-          <Box component="nav" aria-label="Medical groups and sections" sx={NAV_SX}>
+          <Box
+            component="nav"
+            ref={navRef}
+            aria-label="Medical groups and sections"
+            sx={NAV_SX}
+          >
             {groups.map((group) => (
               <CustomAccordion
                 key={group.key}

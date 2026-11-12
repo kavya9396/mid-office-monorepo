@@ -1,6 +1,7 @@
 import { useEffect, type ReactNode } from "react";
 import { Navigate } from "react-router-dom";
 import { businessInboxUrl, commonPaths, replaceUrl } from "@insurance-poc/routes";
+import { CustomLoader } from "@insurance-poc/ui";
 import {
   clearSession,
   getSessionBusinessType,
@@ -25,7 +26,9 @@ export function RedirectIfSession({ children }: { children: ReactNode }) {
     return <Navigate to={commonPaths.changePassword} replace />;
   }
 
-  if (destination) return null;
+  if (destination) {
+    return <CustomLoader message="Opening inbox" fullScreen />;
+  }
 
   return children;
 }
@@ -44,7 +47,9 @@ export function RequirePasswordChange({ children }: { children: ReactNode }) {
     replaceUrl(commonPaths.login);
   }, [allowed]);
 
-  if (!allowed) return null;
+  if (!allowed) {
+    return <CustomLoader message="Loading" />;
+  }
 
   return children;
 }

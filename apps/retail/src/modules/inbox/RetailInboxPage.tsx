@@ -1,4 +1,5 @@
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
+import { clearInboxNavigationLoading } from "@insurance-poc/utils";
 import { InboxScreen } from "@insurance-poc/common/inbox-screen";
 import {
   useClaimRetailTaskMutation,
@@ -20,6 +21,10 @@ function readQueryError(error: unknown): string {
 }
 
 export function RetailInboxPage() {
+  useEffect(() => {
+    clearInboxNavigationLoading();
+  }, []);
+
   const inbox = useGetRetailInboxQuery();
   const [loadColumns] = useLazyFetchRetailPoolColumnsQuery();
   const [saveColumns] = useSaveRetailPoolColumnsMutation();
@@ -41,7 +46,7 @@ export function RetailInboxPage() {
     <InboxScreen
       businessType="RETAIL"
       data={inbox.data ?? null}
-      loading={inbox.isLoading || inbox.isFetching}
+      loading={inbox.isLoading}
       error={inbox.isError ? readQueryError(inbox.error) : ""}
       onRetry={() => {
         void inbox.refetch();

@@ -1,10 +1,25 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { drsRoutePath } from "@insurance-poc/routes";
-import { clearDrsTaskIds, formatDateTime, readApiErrorMessage } from "@insurance-poc/utils";
+import {
+  clearBreRetriggerCount,
+  clearDrsTaskIds,
+  formatDateTime,
+  canInvokeBreRetrigger,
+  readApiErrorMessage,
+  setBreRetriggerCount,
+  getMasterList,
+} from "@insurance-poc/utils";
 
 import { Box, Typography } from "@mui/material";
-import { CustomSnackbar, CustomDialog, DeleteIcon, EditIcon } from "@insurance-poc/ui";
+import {
+  CustomButton,
+  CustomDialog,
+  CustomLoader,
+  CustomSnackbar,
+  DeleteIcon,
+  EditIcon,
+} from "@insurance-poc/ui";
 import {
   DecisionBar,
   DecisionComparisonTable,
@@ -27,10 +42,11 @@ import { RequirementMgmt } from "@insurance-poc/common/requirement-mgmt";
 import { QuickLinksModule } from "@insurance-poc/common/quick-links";
 import { ApplicantProfile } from "@insurance-poc/common/applicant-profile";
 import {
-  requirementStatusOptions,
   requirementStatusOrder,
   requirementStatusVariants,
 } from "./requirementData";
+import { readEditOptions } from "./lifeAssuredData";
+import { useRetriggerGroupBreMutation } from "../../services/breRetriggerApi";
 import { useCompleteGroupTaskMutation } from "../../services/completeTaskApi";
 import { useGetGroupDrsQuery } from "../../services/drsApi";
 import {
@@ -40,6 +56,7 @@ import {
 import type { CardType } from "../../services/drsService";
 import { useValidateNsdlPanMutation } from "../../services/nsdlApi";
 import { createNsdlPanValidateRequest, resolveNsdlOutcome } from "../../services/nsdlService";
+import { GROUP_FINANCIAL_ACTIONS_CONFIG } from "../config/financialActions.config";
 import { GROUP_QUICK_LINKS_CONFIG } from "../config/quickLinks.config";
 
 const CARD_TITLES: Record<CardType, string> = {
@@ -52,7 +69,20 @@ const CARD_TITLES: Record<CardType, string> = {
 
 const quickLinksConfig = GROUP_QUICK_LINKS_CONFIG.dvt;
 
-const APPLICANT_ID_PARAM = "applicantId";
+/** The selected applicant travels in the router's navigation state, so the URL stays `/financial` / `/medical`. */
+type ApplicantRouteState = { applicantId?: string };
+
+const readApplicantId = (state: unknown): string | undefined => {
+  if (typeof state !== "object" || state === null || !("applicantId" in state)) return undefined;
+  const { applicantId } = state as ApplicantRouteState;
+  return typeof applicantId === "string" && applicantId.trim().length > 0 ? applicantId.trim() : undefined;
+};
+
+/** DVT decision dropdown options from the post-login master data (`misc` list, type `DVT_TERM_DESC`). */
+const readDvtDecisionOptions = () =>
+  getMasterList("misc", "DVT_TERM_DESC")
+    .filter((entry) => entry.isActive === "Y")
+    .map((entry) => ({ label: entry.description, value: entry.code }));
 
 export interface DvtUserProps {
   previousPolicyMode?: "page" | "modal";
@@ -81,10 +111,13 @@ const readApplicantName = (applicant: LifeAssuredApplicant | undefined): string 
   const value = applicant?.personalFields.find((field) => field.label === "Applicant Name")?.value;
   return value === null || value === undefined ? "" : String(value);
 };
+type BreRetriggerFinalOverrides = Partial<
+  Record<"status" | "decision" | "remarks" | "discrepancy" | "timestamp", string>
+>;
 
 const DvtUser = () => {
   const navigate = useNavigate();
-  const { pathname } = useLocation();
+  const { pathname, search, state: locationState } = useLocation();
   const [params] = useSearchParams();
   const { applicationNo: applicationNoParam } = useParams();
   const lowerPath = pathname.toLowerCase();
@@ -99,9 +132,9 @@ const DvtUser = () => {
   const medicalPath = applicationNo.length > 0 ? drsRoutePath(applicationNo, "medical") : "";
 
   const applicants = drs.data?.applicants ?? [];
-  const currentApplicantParam = params.get(APPLICANT_ID_PARAM)?.trim();
+  const currentApplicantId = readApplicantId(locationState);
   const selectedApplicant =
-    applicants.find((a) => a.id === currentApplicantParam) ?? applicants[0];
+    applicants.find((a) => a.id === currentApplicantId) ?? applicants[0];
   const activePartyId = selectedApplicant?.partyId ?? "";
 
   const financialQuery = useGetGroupFinancialDetailsQuery(
@@ -172,36 +205,61 @@ const DvtUser = () => {
       raisePendcode: outcome === "apiErrorRaisePendcode",
     };
   };
+  const [retriggerGroupBre, retriggerGroupBreState] = useRetriggerGroupBreMutation();
+  const [breRetriggerFinals, setBreRetriggerFinals] = useState<BreRetriggerFinalOverrides>({});
+  const [breRetriggerBarDecision, setBreRetriggerBarDecision] = useState<string | null>(null);
+  const [breRetriggerLimitDialogOpen, setBreRetriggerLimitDialogOpen] = useState(false);
+
+  const goToInbox = () => {
+    clearBreRetriggerCount();
+    navigate("/inbox", { replace: true });
+  };
+
+  useEffect(() => {
+    setBreRetriggerFinals({});
+    setBreRetriggerBarDecision(null);
+  }, [applicationNo]);
+
   const openFinancial = (applicantId: string) => {
-    const next = new URLSearchParams(params);
-    next.set(APPLICANT_ID_PARAM, applicantId);
-    navigate({ pathname: financialPath, search: `?${next.toString()}` });
+    navigate({ pathname: financialPath, search }, { state: { applicantId } satisfies ApplicantRouteState });
   };
-  const closeFinancial = () => {
-    const next = new URLSearchParams(params);
-    next.delete(APPLICANT_ID_PARAM);
-    const query = next.toString();
-    navigate({ pathname: drsBasePath, search: query ? `?${query}` : "" });
-  };
+  const closeFinancial = () => navigate({ pathname: drsBasePath, search });
   const openMedical = (applicantId: string) => {
-    const next = new URLSearchParams(params);
-    next.set(APPLICANT_ID_PARAM, applicantId);
-    navigate({ pathname: medicalPath, search: `?${next.toString()}` });
+    navigate({ pathname: medicalPath, search }, { state: { applicantId } satisfies ApplicantRouteState });
   };
-  const closeMedical = () => {
-    const next = new URLSearchParams(params);
-    next.delete(APPLICANT_ID_PARAM);
-    const query = next.toString();
-    navigate({ pathname: drsBasePath, search: query ? `?${query}` : "" });
-  };
+  const closeMedical = () => navigate({ pathname: drsBasePath, search });
 
   const handleFinancialApplicantChange = (applicantKey: string) => {
-    const next = new URLSearchParams(params);
-    next.set(APPLICANT_ID_PARAM, applicantKey);
-    navigate({ pathname: financialPath, search: `?${next.toString()}` }, { replace: true });
+    navigate(
+      { pathname: financialPath, search },
+      { replace: true, state: { applicantId: applicantKey } satisfies ApplicantRouteState },
+    );
   };
 
-  const handleBreRetrigger = () => console.log("BRE Retrigger clicked");
+  const handleBreRetrigger = async () => {
+    const appNo = applicationNo.trim();
+    if (appNo.length === 0) {
+      setSnackbarMessage("Application number is missing.");
+      return;
+    }
+    if (retriggerGroupBreState.isLoading) return;
+
+    if (!canInvokeBreRetrigger()) {
+      setBreRetriggerLimitDialogOpen(true);
+      return;
+    }
+
+    try {
+      const mapped = await retriggerGroupBre({ applicationNumber: appNo }).unwrap();
+      setBreRetriggerCount(mapped.reTriggerCount);
+      setBreRetriggerBarDecision(mapped.barDecision);
+      setBreRetriggerFinals(mapped.rows);
+    } catch (reason: unknown) {
+      setBreRetriggerFinals((previous) => ({ ...previous, status: "" }));
+      const message = readApiErrorMessage(reason);
+      setSnackbarMessage(message.length > 0 ? message : "Unable to retrigger BRE.");
+    }
+  };
   const handleApplicantAction = (action: string) => (applicantId: string) =>
     console.log(`${action} clicked`, applicantId);
   const handleDecisionSubmit = async (payload: DecisionSubmitPayload) => {
@@ -221,7 +279,7 @@ const DvtUser = () => {
         remarks: payload.remarks,
       }).unwrap();
       clearDrsTaskIds();
-      navigate("/inbox", { replace: true });
+      goToInbox();
     } catch (reason: unknown) {
       const apiMessage = readApiErrorMessage(reason);
       if (apiMessage.length > 0) {
@@ -231,11 +289,7 @@ const DvtUser = () => {
   };
 
   if (drs.isLoading) {
-    return (
-      <Box sx={{ p: 2 }}>
-        <Typography>Loading application...</Typography>
-      </Box>
-    );
+    return <CustomLoader message="Loading application" />;
   }
 
   if (drs.isError || !drs.data) {
@@ -247,6 +301,8 @@ const DvtUser = () => {
   }
 
   const { cardDetails, breDecision, dvtDecision, requirements } = drs.data;
+  // Master data first, then the DRS response; undefined lets DecisionSection use its defaults.
+  const decisionOptions = [readDvtDecisionOptions(), dvtDecision.decisionOptions].find((options) => options.length > 0);
 
   const detailCards = (
     <Box
@@ -282,6 +338,7 @@ const DvtUser = () => {
         applicants={financialApplicants.length > 0 ? financialApplicants : undefined}
         initialApplicantKey={selectedApplicant?.id || undefined}
         sections={financialQuery.data}
+        actions={GROUP_FINANCIAL_ACTIONS_CONFIG.dvt}
         onApplicantChange={handleFinancialApplicantChange}
         onBack={closeFinancial}
         onSaveSection={(saveRequest) => saveFinancial(saveRequest).unwrap()}
@@ -296,22 +353,36 @@ const DvtUser = () => {
       <Medical
         summary={detailCards}
         applicants={medicalApplicants.length > 0 ? medicalApplicants : undefined}
-        initialApplicantKey={params.get(APPLICANT_ID_PARAM)?.trim() || undefined}
+        initialApplicantKey={currentApplicantId}
         onBack={closeMedical}
         onSubmit={(payload) => console.log("Submit medical", payload)}
       />
     );
   }
 
-  const breRows: ComparisonRow[] = breDecision.rows.map((row) => ({
-    label: row.label,
-    initial: row.id === "timestamp" ? formatDateTime(row.initial) : row.initial,
-    final: row.id === "timestamp" ? formatDateTime(row.final) : row.final,
-    diff: BRE_DIFF_BY_ROW_ID[row.id],
-  }));
+  const readBreRowFinal = (rowId: string, defaultFinal: string): string => {
+    if (Object.hasOwn(breRetriggerFinals, rowId)) {
+      return breRetriggerFinals[rowId as keyof BreRetriggerFinalOverrides] ?? "";
+    }
+    return defaultFinal;
+  };
+
+  const breRows: ComparisonRow[] = breDecision.rows.map((row) => {
+    const finalRaw = readBreRowFinal(row.id, row.final);
+    return {
+      label: row.label,
+      initial: row.id === "timestamp" ? formatDateTime(row.initial) : row.initial,
+      final: row.id === "timestamp" ? formatDateTime(finalRaw) : finalRaw,
+      diff: BRE_DIFF_BY_ROW_ID[row.id],
+    };
+  });
 
   return (
     <Box sx={{ position: "relative", minHeight: "100%", p:2, display: "flex", gap:2, flexDirection: "column" }}>
+      {retriggerGroupBreState.isLoading && (
+        <CustomLoader message="Retriggering BRE" fullScreen />
+      )}
+
       {detailCards}
 
       <QuickLinksModule
@@ -348,7 +419,7 @@ const DvtUser = () => {
         title="BRE Decision"
         items={[
           { label: "Initial", value: breDecision.initialDecision },
-          { label: "Final", value: breDecision.decision, tone: "success" },
+          { label: "Final", value: breRetriggerBarDecision ?? breDecision.decision, tone: "success" },
         ]}
         onRefresh={handleBreRetrigger}
         refreshLabel="BRE Retrigger"
@@ -357,7 +428,6 @@ const DvtUser = () => {
 
       <RequirementMgmt
         requirements={requirements}
-        statusOptions={requirementStatusOptions}
         statusOrder={requirementStatusOrder}
         statusVariants={requirementStatusVariants}
         addButton={{
@@ -387,6 +457,7 @@ const DvtUser = () => {
 
       <LifeAssured
         applicants={applicants}
+        editOptions={readEditOptions()}
         onEdit={handleApplicantAction("Edit")}
         onViewMedical={openMedical}
         onViewFinancial={openFinancial}
@@ -396,7 +467,7 @@ const DvtUser = () => {
       />
 
       <DecisionSection
-        decisionOptions={dvtDecision.decisionOptions.length > 0 ? dvtDecision.decisionOptions : undefined}
+        decisionOptions={decisionOptions}
         decision={decision}
         remarks={remarks}
         onDecisionChange={setDecision}
@@ -423,6 +494,21 @@ const DvtUser = () => {
           headers={breDecision.headers}
           rows={breRows}
         />
+      </CustomDialog>
+
+      <CustomDialog
+        open={breRetriggerLimitDialogOpen}
+        onClose={() => setBreRetriggerLimitDialogOpen(false)}
+        showCloseIcon={false}
+        disableEscapeKeyDown
+        title="BRE Retrigger"
+        actions={
+          <CustomButton variant="contained" onClick={goToInbox}>
+            Ok
+          </CustomButton>
+        }
+      >
+        Kindly raise ticket with IT team
       </CustomDialog>
     </Box>
   );

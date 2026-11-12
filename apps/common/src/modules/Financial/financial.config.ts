@@ -1,3 +1,5 @@
+import { getMasterList } from "@insurance-poc/utils";
+
 /**
  * Configuration for the View Financial section (DVT / Group).
  * Section order, field order, layouts and locked fields mirror the
@@ -928,6 +930,31 @@ export const FINANCIAL_LOCKED_FIELDS: ReadonlySet<string> = new Set<string>([
   "epf_advanced:Annual Income",
 ]);
 
+/**
+ * How a section's action buttons behave.
+ * - "edit":          Edit / Reset / Save
+ * - "review":        Agree button only
+ * - "editAndReview": Edit / Reset / Save and the Agree button (the built-in behaviour for reviewable sections)
+ * - "readOnly":      no buttons, the section cannot be edited
+ */
+export type FinancialActionMode = "edit" | "review" | "editAndReview" | "readOnly";
+
+export interface FinancialActionsConfig {
+  /**
+   * Section keys that are not rendered at all (cards, navigation, document dropdown), even when
+   * the API returns them. Omit to show every section the API returns.
+   */
+  hiddenSectionKeys?: readonly string[];
+  /**
+   * Mode for every section without an entry in `sectionModes`. Sections that never have buttons
+   * (see `FINANCIAL_NON_REVIEWABLE_SECTION_KEYS`) stay read-only unless listed in `sectionModes`.
+   * Omit to keep the built-in behaviour.
+   */
+  defaultMode?: FinancialActionMode;
+  /** Per-section override, keyed by section key (e.g. `salary_slips`). */
+  sectionModes?: Readonly<Record<string, FinancialActionMode>>;
+}
+
 /** Sections that have no Agree / Disagree review actions and are never editable as a whole. */
 export const FINANCIAL_NON_REVIEWABLE_SECTION_KEYS: readonly string[] = [
   "financial_profession",
@@ -941,23 +968,32 @@ export const FINANCIAL_EDIT_ONLY_SECTION_KEYS: readonly string[] = [
   "credit_bureau_details",
 ];
 
-export const FINANCIAL_MONTH_OPTIONS: FinancialOption[] = [
-  { label: "Select month", value: "" },
-  ...[
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ].map((month) => ({ label: month, value: month })),
-];
+/** Action mode of a section: the `actions` config first, then the built-in behaviour. */
+export function resolveFinancialActionMode(
+  sectionKey: string,
+  actions?: FinancialActionsConfig,
+): FinancialActionMode {
+  const explicit = actions?.sectionModes?.[sectionKey];
+  if (explicit) return explicit;
+  let builtIn: FinancialActionMode = "editAndReview";
+  if (FINANCIAL_EDIT_ONLY_SECTION_KEYS.includes(sectionKey)) builtIn = "edit";
+  else if (FINANCIAL_NON_REVIEWABLE_SECTION_KEYS.includes(sectionKey)) builtIn = "readOnly";
+  return builtIn === "readOnly" ? builtIn : (actions?.defaultMode ?? builtIn);
+}
+
+/** Active entries of a `misc` master list; the description is the stored value (e.g. "Yes", "April"). */
+const readMiscOptions = (type: string): FinancialOption[] =>
+  getMasterList("misc", type)
+    .filter((entry) => entry.isActive === "Y")
+    .map((entry) => ({ label: entry.description, value: entry.description }));
+
+const monthIndex = (name: string) => new Date(`${name} 1, 2000`).getMonth();
+
+/** Month dropdown options from the `misc` master (type `month`), in calendar order. */
+export function buildFinancialMonthOptions(): FinancialOption[] {
+  const months = readMiscOptions("month").sort((a, b) => monthIndex(a.value) - monthIndex(b.value));
+  return [{ label: "Select month", value: "" }, ...months];
+}
 
 export const FINANCIAL_DECISION_OPTIONS: FinancialOption[] = [
   { label: "Select financial decision", value: "" },
@@ -993,13 +1029,9 @@ export function resolveFinancialControlKind(sectionKey: string, label: string): 
   return "text";
 }
 
-/** Yes / No options; an unexpected existing value is kept as an extra option. */
+/** Yes / No options from the `misc` master (type `YESNO`); an unexpected existing value is kept as an extra option. */
 export function buildFinancialYesNoOptions(value: string): FinancialOption[] {
-  const options: FinancialOption[] = [
-    { label: "Select", value: "" },
-    { label: "Yes", value: "Yes" },
-    { label: "No", value: "No" },
-  ];
+  const options: FinancialOption[] = [{ label: "Select", value: "" }, ...readMiscOptions("YESNO")];
   if (value && !options.some((option) => option.value === value)) {
     options.splice(1, 0, { label: value, value });
   }

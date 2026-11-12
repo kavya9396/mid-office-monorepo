@@ -3,6 +3,7 @@ import { authApi } from "@insurance-poc/common/auth-api";
 import { authReducer, sessionExpired } from "@insurance-poc/utils";
 import { groupDrsApi } from "../services/drsApi";
 import { groupFinancialApi } from "../services/financialApi";
+import { groupBreRetriggerApi } from "../services/breRetriggerApi";
 import { groupCompleteTaskApi } from "../services/completeTaskApi";
 import { groupInboxApi } from "../services/inboxApi";
 import { groupNsdlApi } from "../services/nsdlApi";
@@ -17,6 +18,7 @@ listenerMiddleware.startListening({
     listenerApi.dispatch(groupFinancialApi.util.resetApiState());
     listenerApi.dispatch(groupCompleteTaskApi.util.resetApiState());
     listenerApi.dispatch(groupNsdlApi.util.resetApiState());
+    listenerApi.dispatch(groupBreRetriggerApi.util.resetApiState());
   },
 });
 
@@ -29,6 +31,7 @@ export const store = configureStore({
     [groupFinancialApi.reducerPath]: groupFinancialApi.reducer,
     [groupCompleteTaskApi.reducerPath]: groupCompleteTaskApi.reducer,
     [groupNsdlApi.reducerPath]: groupNsdlApi.reducer,
+    [groupBreRetriggerApi.reducerPath]: groupBreRetriggerApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
@@ -40,6 +43,7 @@ export const store = configureStore({
         groupFinancialApi.middleware,
         groupCompleteTaskApi.middleware,
         groupNsdlApi.middleware,
+        groupBreRetriggerApi.middleware,
       ),
 });
 

@@ -1,4 +1,5 @@
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
+import { clearBreRetriggerCount, clearInboxNavigationLoading } from "@insurance-poc/utils";
 import { InboxScreen } from "@insurance-poc/common/inbox-screen";
 import {
   useClaimGroupTaskMutation,
@@ -20,6 +21,11 @@ function readQueryError(error: unknown): string {
 }
 
 export function GroupInboxPage() {
+  useEffect(() => {
+    clearBreRetriggerCount();
+    clearInboxNavigationLoading();
+  }, []);
+
   const inbox = useGetGroupInboxQuery();
   const [loadColumns] = useLazyFetchGroupPoolColumnsQuery();
   const [saveColumns] = useSaveGroupPoolColumnsMutation();
@@ -41,7 +47,7 @@ export function GroupInboxPage() {
     <InboxScreen
       businessType="GROUP"
       data={inbox.data ?? null}
-      loading={inbox.isLoading || inbox.isFetching}
+      loading={inbox.isLoading}
       error={inbox.isError ? readQueryError(inbox.error) : ""}
       onRetry={() => {
         void inbox.refetch();
