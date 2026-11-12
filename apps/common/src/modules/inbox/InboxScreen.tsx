@@ -2,10 +2,14 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { drsRoutePath } from "@insurance-poc/routes";
 import Box from "@mui/material/Box";
-import CircularProgress from "@mui/material/CircularProgress";
 import Typography from "@mui/material/Typography";
-import { CustomButton, CustomSnackbar } from "@insurance-poc/ui";
-import { clearDrsTaskIds, getLastLoginAt, readApiErrorMessage, setDrsTaskIds } from "@insurance-poc/utils";
+import { CustomButton, CustomLoader, CustomSnackbar } from "@insurance-poc/ui";
+import {
+  clearDrsTaskIds,
+  getLastLoginAt,
+  readApiErrorMessage,
+  setDrsTaskIds,
+} from "@insurance-poc/utils";
 import type { ClaimTaskResponse } from "../../services/landingInboxQueries";
 import {
   casesForTask,
@@ -143,14 +147,7 @@ export function InboxScreen({
   }
 
   if (loading) {
-    return (
-      <Box sx={{ height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 1.5, backgroundColor: "#FFF8F3" }}>
-        <CircularProgress size={42} thickness={4} sx={{ color: "#f58220" }} />
-        <Typography variant="body2" sx={{ color: "text.secondary", fontWeight: 500 }}>
-          Loading inbox...
-        </Typography>
-      </Box>
-    );
+    return <CustomLoader message="Loading inbox" height="100%" />;
   }
 
   return (

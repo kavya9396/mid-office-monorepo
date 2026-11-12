@@ -13,7 +13,11 @@ export { default as CustomBox } from "./Box/Box";
 export { default as CustomButton } from "./Button/Button";
 export { default as Calendar, type CalendarProps } from "./Calendar/Calendar";
 export { default as CustomCheckbox } from "./Checkbox/Checkbox";
-export { default as CustomDialog } from "./Dialog/Dialog";
+export {
+  default as CustomDialog,
+  type CustomDialogSeverity,
+} from "./Dialog/Dialog";
+export { default as CustomLoader } from "./Loader/Loader";
 export {
   default as KeyValueTable,
   type KeyValueRow,

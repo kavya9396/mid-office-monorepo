@@ -34,13 +34,19 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function str(value: unknown): string {
-  if (value == null) return "";
-  return String(value);
+  if (typeof value === "string") return value;
+  if (
+    typeof value === "number" ||
+    typeof value === "boolean" ||
+    typeof value === "bigint"
+  ) {
+    return String(value);
+  }
+  return "";
 }
 
 function formatFinancialDate(value: unknown): string {
-  if (value == null) return "";
-  const text = String(value).trim();
+  const text = str(value).trim();
   if (!text) return "";
   const ddmmyyyy = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(text);
   if (ddmmyyyy) {
@@ -72,71 +78,72 @@ function toReceiptEntry(receipts: unknown, index: number): Record<string, unknow
   return receipts[index] as Record<string, unknown>;
 }
 
-/**
- * Maps raw backend `documents` object to standard `FinancialSection[]` fields.
- */
-export function mapFinancialDocumentsToSections(
-  documentsRaw: unknown,
-  baseSections: readonly FinancialSection[] = FINANCIAL_SECTIONS,
-  tableOfDocs?: TableOfFinanceDocument[] | null,
-): FinancialSection[] {
-  if (!isRecord(documentsRaw) && (!tableOfDocs || tableOfDocs.length === 0)) {
-    return [...baseSections];
-  }
+function docRecord(
+  docs: Record<string, unknown>,
+  key: string,
+): Record<string, unknown> {
+  const value = docs[key];
+  return isRecord(value) ? value : {};
+}
 
-  const docs = documentsRaw as Record<string, Record<string, unknown>>;
+function listOf(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : [];
+}
 
-  const fp = isRecord(docs.financial_profession) ? docs.financial_profession : {};
-  const cb = isRecord(docs.credit_bureau_details) ? docs.credit_bureau_details : {};
-  const al = isRecord(docs.appointment_letter) ? docs.appointment_letter : {};
-  const cs = isRecord(docs.commission_statement) ? docs.commission_statement : {};
-  const coi = isRecord(docs.computation_of_income) ? docs.computation_of_income : {};
-  const cc = isRecord(docs.credit_card) ? docs.credit_card : {};
-  const fd = isRecord(docs.fixed_deposit_receipt) ? docs.fixed_deposit_receipt : {};
-  const f16 = isRecord(docs.form16) ? docs.form16 : {};
-  const f16a = isRecord(docs.form16a) ? docs.form16a : {};
-  const fj = isRecord(docs.form_j) ? docs.form_j : {};
-  const gb = isRecord(docs.govt_bonds) ? docs.govt_bonds : {};
-  const itrNon = isRecord(docs.itr_non_individual) ? docs.itr_non_individual : {};
-  const itrInd = isRecord(docs.itr_individual) ? docs.itr_individual : {};
-  const ls = isRecord(docs.loan_statement) ? docs.loan_statement : {};
-  const mf = isRecord(docs.mutual_fund) ? docs.mutual_fund : {};
-  const ps = isRecord(docs.pension_statement) ? docs.pension_statement : {};
-  const pnl = isRecord(docs.profit_and_loss) ? docs.profit_and_loss : {};
-  const pp = isRecord(docs.property_purchase) ? docs.property_purchase : {};
-  const pv = isRecord(docs.property_valuation) ? docs.property_valuation : {};
-  const sc = isRecord(docs.salary_certificate) ? docs.salary_certificate : {};
-  const srl = isRecord(docs.salary_revision_letter) ? docs.salary_revision_letter : {};
-  const ss = isRecord(docs.salary_slips) ? docs.salary_slips : {};
-  const bs = isRecord(docs.bank_statement) ? docs.bank_statement : {};
-  const sh = isRecord(docs.stock_holding) ? docs.stock_holding : {};
-  const vo = isRecord(docs.vehicle_ownership) ? docs.vehicle_ownership : {};
-  const vahan = isRecord(docs.vahan) ? docs.vahan : {};
-  const sip = isRecord(docs.sip_statement) ? docs.sip_statement : {};
-  const gst = isRecord(docs.gst_income) ? docs.gst_income : {};
-  const bssc = isRecord(docs.bank_statement_salary_credit) ? docs.bank_statement_salary_credit : {};
-  const epfB = isRecord(docs.epf_basic) ? docs.epf_basic : {};
-  const epfA = isRecord(docs.epf_advanced) ? docs.epf_advanced : {};
-  const empId = isRecord(docs.employee_id_card) ? docs.employee_id_card : {};
-  const bre = isRecord(docs.bre_financial_decision) ? docs.bre_financial_decision : {};
+function buildValuesMap(
+  docs: Record<string, unknown>,
+): Record<string, Record<string, string>> {
+  const fp = docRecord(docs, "financial_profession");
+  const cb = docRecord(docs, "credit_bureau_details");
+  const al = docRecord(docs, "appointment_letter");
+  const cs = docRecord(docs, "commission_statement");
+  const coi = docRecord(docs, "computation_of_income");
+  const cc = docRecord(docs, "credit_card");
+  const fd = docRecord(docs, "fixed_deposit_receipt");
+  const f16 = docRecord(docs, "form16");
+  const f16a = docRecord(docs, "form16a");
+  const fj = docRecord(docs, "form_j");
+  const gb = docRecord(docs, "govt_bonds");
+  const itrNon = docRecord(docs, "itr_non_individual");
+  const itrInd = docRecord(docs, "itr_individual");
+  const ls = docRecord(docs, "loan_statement");
+  const mf = docRecord(docs, "mutual_fund");
+  const ps = docRecord(docs, "pension_statement");
+  const pnl = docRecord(docs, "profit_and_loss");
+  const pp = docRecord(docs, "property_purchase");
+  const pv = docRecord(docs, "property_valuation");
+  const sc = docRecord(docs, "salary_certificate");
+  const srl = docRecord(docs, "salary_revision_letter");
+  const ss = docRecord(docs, "salary_slips");
+  const bs = docRecord(docs, "bank_statement");
+  const sh = docRecord(docs, "stock_holding");
+  const vo = docRecord(docs, "vehicle_ownership");
+  const vahan = docRecord(docs, "vahan");
+  const sip = docRecord(docs, "sip_statement");
+  const gst = docRecord(docs, "gst_income");
+  const bssc = docRecord(docs, "bank_statement_salary_credit");
+  const epfB = docRecord(docs, "epf_basic");
+  const epfA = docRecord(docs, "epf_advanced");
+  const empId = docRecord(docs, "employee_id_card");
+  const bre = docRecord(docs, "bre_financial_decision");
 
   // Pre-extract array helpers
-  const csMonths = Array.isArray(cs.months) ? cs.months : [];
-  const coiYears = Array.isArray(coi.years) ? coi.years : [];
-  const f16Years = Array.isArray(f16.years) ? f16.years : [];
-  const f16aYears = Array.isArray(f16a.years) ? f16a.years : [];
-  const fjMonths = Array.isArray(fj.months) ? fj.months : [];
-  const itrNonYears = Array.isArray(itrNon.years) ? itrNon.years : [];
-  const itrIndYears = Array.isArray(itrInd.years) ? itrInd.years : [];
-  const pnlYears = Array.isArray(pnl.years) ? pnl.years : [];
-  const ssMonths = Array.isArray(ss.months) ? ss.months : [];
-  const bsMonths = Array.isArray(bs.months) ? bs.months : [];
-  const sipMonths = Array.isArray(sip.months) ? sip.months : [];
-  const gstYears = Array.isArray(gst.years) ? gst.years : [];
-  const bsscMonths = Array.isArray(bssc.months) ? bssc.months : [];
-  const epfAMonths = Array.isArray(epfA.months) ? epfA.months : [];
+  const csMonths = listOf(cs.months);
+  const coiYears = listOf(coi.years);
+  const f16Years = listOf(f16.years);
+  const f16aYears = listOf(f16a.years);
+  const fjMonths = listOf(fj.months);
+  const itrNonYears = listOf(itrNon.years);
+  const itrIndYears = listOf(itrInd.years);
+  const pnlYears = listOf(pnl.years);
+  const ssMonths = listOf(ss.months);
+  const bsMonths = listOf(bs.months);
+  const sipMonths = listOf(sip.months);
+  const gstYears = listOf(gst.years);
+  const bsscMonths = listOf(bssc.months);
+  const epfAMonths = listOf(epfA.months);
 
-  const valuesMap: Record<string, Record<string, string>> = {
+  return {
     financial_profession: {
       Occupation: str(fp.occupation),
       "Annual Income": str(fp.annualIncome),
@@ -632,8 +639,22 @@ export function mapFinancialDocumentsToSections(
       "Financial Remark": str(bre.financialRemark),
     },
   };
+}
 
-  const extraValuesMap: Record<string, Record<string, string>> = {
+function buildExtraValuesMap(
+  docs: Record<string, unknown>,
+): Record<string, Record<string, string>> {
+  const csMonths = listOf(docRecord(docs, "commission_statement").months);
+  const bsscMonths = listOf(
+    docRecord(docs, "bank_statement_salary_credit").months,
+  );
+  const epfAMonths = listOf(docRecord(docs, "epf_advanced").months);
+  const fjMonths = listOf(docRecord(docs, "form_j").months);
+  const ssMonths = listOf(docRecord(docs, "salary_slips").months);
+  const bsMonths = listOf(docRecord(docs, "bank_statement").months);
+  const sipMonths = listOf(docRecord(docs, "sip_statement").months);
+
+  return {
     commission_statement: {
       "commission_statement-entry-month-1": str(toMonthEntry(csMonths, 0).month),
       "commission_statement-entry-income-1": str(toMonthEntry(csMonths, 0).commissionAmount),
@@ -706,56 +727,79 @@ export function mapFinancialDocumentsToSections(
       "sip_statement-13-month": str(toMonthEntry(sipMonths, 5).month),
     },
   };
+}
+
+function resolveSectionsToMap(
+  baseSections: readonly FinancialSection[],
+  tableOfDocs?: TableOfFinanceDocument[] | null,
+): FinancialSection[] {
+  if (!tableOfDocs || tableOfDocs.length === 0) return [...baseSections];
 
   const templateMap = new Map<string, FinancialSection>();
   for (const s of baseSections) {
     templateMap.set(s.key, s);
   }
 
-  const sectionsToMap: FinancialSection[] =
-    tableOfDocs && tableOfDocs.length > 0
-      ? tableOfDocs.map((docItem) => {
-          const key = docItem.value;
-          const template = templateMap.get(key);
-          const title = docItem.description?.trim() || template?.title || key;
+  return tableOfDocs.map((docItem) => {
+    const key = docItem.value;
+    const template = templateMap.get(key);
+    const title = docItem.description?.trim() || template?.title || key;
 
-          if (template) {
-            return {
-              ...template,
-              title,
-            };
-          }
-
-          return {
-            key,
-            title,
-            cols: 3,
-            fields: [],
-          };
-        })
-      : [...baseSections];
-
-  return sectionsToMap.map((section) => {
-    const sectionValues = valuesMap[section.key];
-    const extraValues = extraValuesMap[section.key];
-    const rawDoc = isRecord(docs[section.key]) ? docs[section.key] : undefined;
-    if (!sectionValues && !extraValues) {
-      return rawDoc ? { ...section, rawDocument: rawDoc } : section;
+    if (template) {
+      return { ...template, title };
     }
 
-    const fields = section.fields.map(([label, defaultValue, required]) => {
-      const mappedValue = sectionValues?.[label];
-      const nextValue = mappedValue !== undefined ? mappedValue : defaultValue;
-      return [label, nextValue, required] as const;
-    });
-
-    return {
-      ...section,
-      fields,
-      ...(extraValues ? { extraValues } : {}),
-      ...(rawDoc ? { rawDocument: rawDoc } : {}),
-    };
+    return { key, title, cols: 3, fields: [] };
   });
+}
+
+function applySectionValues(
+  section: FinancialSection,
+  docs: Record<string, unknown>,
+  valuesMap: Record<string, Record<string, string>>,
+  extraValuesMap: Record<string, Record<string, string>>,
+): FinancialSection {
+  const sectionValues = valuesMap[section.key];
+  const extraValues = extraValuesMap[section.key];
+  const rawDoc = docRecord(docs, section.key);
+  const hasRawDoc = isRecord(docs[section.key]);
+  if (!sectionValues && !extraValues) {
+    return hasRawDoc ? { ...section, rawDocument: rawDoc } : section;
+  }
+
+  const fields = section.fields.map(([label, defaultValue, required]) => {
+    const mappedValue = sectionValues?.[label];
+    const nextValue = mappedValue ?? defaultValue;
+    return [label, nextValue, required] as const;
+  });
+
+  return {
+    ...section,
+    fields,
+    ...(extraValues ? { extraValues } : {}),
+    ...(hasRawDoc ? { rawDocument: rawDoc } : {}),
+  };
+}
+
+/**
+ * Maps raw backend `documents` object to standard `FinancialSection[]` fields.
+ */
+export function mapFinancialDocumentsToSections(
+  documentsRaw: unknown,
+  baseSections: readonly FinancialSection[] = FINANCIAL_SECTIONS,
+  tableOfDocs?: TableOfFinanceDocument[] | null,
+): FinancialSection[] {
+  if (!isRecord(documentsRaw) && (!tableOfDocs || tableOfDocs.length === 0)) {
+    return [...baseSections];
+  }
+
+  const docs = isRecord(documentsRaw) ? documentsRaw : {};
+  const valuesMap = buildValuesMap(docs);
+  const extraValuesMap = buildExtraValuesMap(docs);
+
+  return resolveSectionsToMap(baseSections, tableOfDocs).map((section) =>
+    applySectionValues(section, docs, valuesMap, extraValuesMap),
+  );
 }
 
 /**

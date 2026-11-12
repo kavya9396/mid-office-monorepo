@@ -930,6 +930,31 @@ export const FINANCIAL_LOCKED_FIELDS: ReadonlySet<string> = new Set<string>([
   "epf_advanced:Annual Income",
 ]);
 
+/**
+ * How a section's action buttons behave.
+ * - "edit":          Edit / Reset / Save
+ * - "review":        Agree button only
+ * - "editAndReview": Edit / Reset / Save and the Agree button (the built-in behaviour for reviewable sections)
+ * - "readOnly":      no buttons, the section cannot be edited
+ */
+export type FinancialActionMode = "edit" | "review" | "editAndReview" | "readOnly";
+
+export interface FinancialActionsConfig {
+  /**
+   * Section keys that are not rendered at all (cards, navigation, document dropdown), even when
+   * the API returns them. Omit to show every section the API returns.
+   */
+  hiddenSectionKeys?: readonly string[];
+  /**
+   * Mode for every section without an entry in `sectionModes`. Sections that never have buttons
+   * (see `FINANCIAL_NON_REVIEWABLE_SECTION_KEYS`) stay read-only unless listed in `sectionModes`.
+   * Omit to keep the built-in behaviour.
+   */
+  defaultMode?: FinancialActionMode;
+  /** Per-section override, keyed by section key (e.g. `salary_slips`). */
+  sectionModes?: Readonly<Record<string, FinancialActionMode>>;
+}
+
 /** Sections that have no Agree / Disagree review actions and are never editable as a whole. */
 export const FINANCIAL_NON_REVIEWABLE_SECTION_KEYS: readonly string[] = [
   "financial_profession",
@@ -942,6 +967,19 @@ export const FINANCIAL_NON_REVIEWABLE_SECTION_KEYS: readonly string[] = [
 export const FINANCIAL_EDIT_ONLY_SECTION_KEYS: readonly string[] = [
   "credit_bureau_details",
 ];
+
+/** Action mode of a section: the `actions` config first, then the built-in behaviour. */
+export function resolveFinancialActionMode(
+  sectionKey: string,
+  actions?: FinancialActionsConfig,
+): FinancialActionMode {
+  const explicit = actions?.sectionModes?.[sectionKey];
+  if (explicit) return explicit;
+  let builtIn: FinancialActionMode = "editAndReview";
+  if (FINANCIAL_EDIT_ONLY_SECTION_KEYS.includes(sectionKey)) builtIn = "edit";
+  else if (FINANCIAL_NON_REVIEWABLE_SECTION_KEYS.includes(sectionKey)) builtIn = "readOnly";
+  return builtIn === "readOnly" ? builtIn : (actions?.defaultMode ?? builtIn);
+}
 
 /** Active entries of a `misc` master list; the description is the stored value (e.g. "Yes", "April"). */
 const readMiscOptions = (type: string): FinancialOption[] =>

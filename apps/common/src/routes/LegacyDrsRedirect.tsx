@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { drsRoutePath } from "@insurance-poc/routes";
+import { CustomLoader } from "@insurance-poc/ui";
 
 /** Redirects legacy `/drs?applicationNo=` bookmarks to `/app/{appNo}/drs`. */
 export function LegacyDrsRedirect({ inboxPath = "/inbox" }: Readonly<{ inboxPath?: string }>) {
@@ -17,5 +18,5 @@ export function LegacyDrsRedirect({ inboxPath = "/inbox" }: Readonly<{ inboxPath
     navigate(drsRoutePath(applicationNo), { replace: true });
   }, [inboxPath, navigate, params]);
 
-  return null;
+  return <CustomLoader message="Loading application" />;
 }

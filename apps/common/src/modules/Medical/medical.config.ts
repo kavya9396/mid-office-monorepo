@@ -1480,7 +1480,7 @@ export const MEDICAL_MESSAGES = {
   noHistory: "No history available for this section.",
 } as const;
 
-const MEDICAL_FREE_TEXT_LAB_RANGE_SECTION_KEYS: readonly string[] = [
+const MEDICAL_FREE_TEXT_LAB_RANGE_SECTION_KEYS: ReadonlySet<string> = new Set([
   MEDICAL_BLOOD_SUGAR_SECTION.key,
   MEDICAL_COT_SECTION.key,
   MEDICAL_GHB_SECTION.key,
@@ -1494,7 +1494,91 @@ const MEDICAL_FREE_TEXT_LAB_RANGE_SECTION_KEYS: readonly string[] = [
   MEDICAL_HCV_SECTION.key,
   MEDICAL_MICROALBUMINURIA_SECTION.key,
   MEDICAL_PSA_SECTION.key,
+]);
+
+/** Labels that contain any of these terms hold numeric values (split to keep each regex simple). */
+const MEDICAL_NUMERIC_LABEL_PATTERNS: readonly RegExp[] = [
+  /Income|Pincode|Height\s*\(|Weight\s*\(|Waist|Hips|Systolic|Diastolic|Pulse|Duration|Heart Rate|Age|Quant|Year/i,
+  /METS|FEV1|FVC|Blood Urea|BUN|Value|Count|Cholesterol|Triglycerides|Bilirubin|SGOT|SGPT|Platelet|Hemoglobin|Lab Range/i,
+  /^(Inspiration|Expiration|RV|VC)$/i,
 ];
+
+type MedicalLabelRule = readonly [RegExp, MedicalControlKind];
+
+/** First rule whose pattern matches the label wins. */
+function matchLabelRule(
+  rules: readonly MedicalLabelRule[],
+  label: string,
+): MedicalControlKind | undefined {
+  return rules.find(([pattern]) => pattern.test(label))?.[1];
+}
+
+const MEDICAL_IDENTITY_LABEL_RULES: readonly MedicalLabelRule[] = [
+  [/^(Examinee )?Gender$/i, "gender"],
+  [/^Unit Value$/i, "text"],
+  [/^Place of Examination$/i, "placeOfExamination"],
+  [/Medical Decision|^STP Decision$/i, "decision"],
+];
+
+const MEDICAL_RESULT_LABEL_RULES: readonly MedicalLabelRule[] = [
+  [/Findings|Result|Rejection Abnormality/i, "findings"],
+  [/Medical Type/i, "medicalType"],
+  [/^METS$/i, "mets"],
+];
+
+const MEDICAL_GENERAL_LABEL_RULES: readonly MedicalLabelRule[] = [
+  // Habit & Addictions: "<habit> Quant" / "<habit> Year" are numeric; the habit itself is Yes/No.
+  [/ (Quant|Year)$/i, "number"],
+  [/^Narcotic Consumption$/i, "yesNo"],
+  [/Dead or Alive/i, "deadOrAlive"],
+  [/^Relation Type$/i, "familyRelation"],
+  [/Describe Build/i, "build"],
+  [
+    /^(Is\b|Tele-Video MER Conducted|Verified|Smoking|Diving|Tobacco|Alcohol|Narcotics|Adverse|Hazardous|Illness|Any\b|Cigarettes|Gutka|Beer)/i,
+    "yesNo",
+  ],
+  [/Examinee Education/i, "education"],
+  [/Examinee Occupation/i, "occupation"],
+  [/(DOB|Date of Examination|Date of Tele-Video|\bDate\b|Test Date)/i, "date"],
+  ...MEDICAL_NUMERIC_LABEL_PATTERNS.map(
+    (pattern): MedicalLabelRule => [pattern, "number"],
+  ),
+];
+
+/** Blood Urea, Microalbuminuria, PSA: Findings is a numeric value; Result is auto populated. */
+const MEDICAL_NUMERIC_FINDINGS_SECTION_KEYS: ReadonlySet<string> = new Set([
+  MEDICAL_BLOOD_UREA_SECTION.key,
+  MEDICAL_MICROALBUMINURIA_SECTION.key,
+  MEDICAL_PSA_SECTION.key,
+]);
+
+const MEDICAL_NEGATIVE_POSITIVE_VALUE_SECTION_KEYS: ReadonlySet<string> =
+  new Set([
+    MEDICAL_COT_SECTION.key,
+    MEDICAL_HBSAG_SECTION.key,
+    MEDICAL_HIV_ELISA_SECTION.key,
+    MEDICAL_SERUM_COTININE_SECTION.key,
+    MEDICAL_HIV_WESTERN_BLOT_SECTION.key,
+    MEDICAL_HCV_SECTION.key,
+  ]);
+
+/** Rules that depend on the section as well as the label; undefined when none apply. */
+function resolveSectionLabelKind(
+  sectionKey: string,
+  label: string,
+): MedicalControlKind | undefined {
+  if (MEDICAL_NUMERIC_FINDINGS_SECTION_KEYS.has(sectionKey) && label === "Findings") {
+    return "number";
+  }
+  // Blood Sugar Random, COT, GHB, HBA1C: the lab range is free text.
+  if (
+    MEDICAL_FREE_TEXT_LAB_RANGE_SECTION_KEYS.has(sectionKey) &&
+    /^Lab Range (Start|End)$/i.test(label)
+  ) {
+    return "text";
+  }
+  return undefined;
+}
 
 export function resolveMedicalControlKind(
   sectionKey: string,
@@ -1504,68 +1588,23 @@ export function resolveMedicalControlKind(
     return MEDICAL_TELE_MER_CONTROL_KINDS[label] ?? "text";
   }
   if (sectionKey === MEDICAL_TELE_HABIT_ADDICTION_SECTION.key) {
-    return / - Indicator$/.test(label) ? "yesNo" : "number";
+    return label.endsWith(" - Indicator") ? "yesNo" : "number";
   }
-  if (/^(Examinee )?Gender$/i.test(label)) return "gender";
-  if (/^Unit Value$/i.test(label)) return "text";
-  if (/^Place of Examination$/i.test(label)) return "placeOfExamination";
-  if (/Medical Decision/i.test(label) || /^STP Decision$/i.test(label)) return "decision";
-  // Blood Urea, Microalbuminuria, PSA: Findings is a numeric value; Result is auto populated.
-  if (
-    (sectionKey === MEDICAL_BLOOD_UREA_SECTION.key ||
-      sectionKey === MEDICAL_MICROALBUMINURIA_SECTION.key ||
-      sectionKey === MEDICAL_PSA_SECTION.key) &&
-    label === "Findings"
-  ) {
-    return "number";
-  }
-  // Blood Sugar Random, COT, GHB, HBA1C: the lab range is free text.
-  if (
-    MEDICAL_FREE_TEXT_LAB_RANGE_SECTION_KEYS.includes(sectionKey) &&
-    /^Lab Range (Start|End)$/i.test(label)
-  ) {
-    return "text";
-  }
-  if (/Findings|Result|Rejection Abnormality/i.test(label)) return "findings";
-  if (/Medical Type/i.test(label)) return "medicalType";
-  if (/^METS$/i.test(label)) return "mets";
-  if (
-    (sectionKey === MEDICAL_COT_SECTION.key ||
-      sectionKey === MEDICAL_HBSAG_SECTION.key ||
-      sectionKey === MEDICAL_HIV_ELISA_SECTION.key ||
-      sectionKey === MEDICAL_SERUM_COTININE_SECTION.key ||
-      sectionKey === MEDICAL_HIV_WESTERN_BLOT_SECTION.key ||
-      sectionKey === MEDICAL_HCV_SECTION.key) &&
-    label === "Value"
-  ) {
+
+  const identityKind = matchLabelRule(MEDICAL_IDENTITY_LABEL_RULES, label);
+  if (identityKind) return identityKind;
+
+  const sectionKind = resolveSectionLabelKind(sectionKey, label);
+  if (sectionKind) return sectionKind;
+
+  const resultKind = matchLabelRule(MEDICAL_RESULT_LABEL_RULES, label);
+  if (resultKind) return resultKind;
+
+  if (MEDICAL_NEGATIVE_POSITIVE_VALUE_SECTION_KEYS.has(sectionKey) && label === "Value") {
     return "negativePositive";
   }
-  // Habit & Addictions: "<habit> Quant" / "<habit> Year" are numeric; the habit itself is Yes/No.
-  if (/ (Quant|Year)$/i.test(label)) return "number";
-  if (/^Narcotic Consumption$/i.test(label)) return "yesNo";
-  if (/Dead or Alive/i.test(label)) return "deadOrAlive";
-  if (/^Relation Type$/i.test(label)) return "familyRelation";
-  if (/Describe Build/i.test(label)) return "build";
-  if (
-    /^(Is\b|Tele-Video MER Conducted|Verified|Smoking|Diving|Tobacco|Alcohol|Narcotics|Adverse|Hazardous|Illness|Any\b|Cigarettes|Gutka|Beer)/i.test(
-      label,
-    )
-  ) {
-    return "yesNo";
-  }
-  if (/Examinee Education/i.test(label)) return "education";
-  if (/Examinee Occupation/i.test(label)) return "occupation";
-  if (/(DOB|Date of Examination|Date of Tele-Video|\bDate\b|Test Date)/i.test(label)) {
-    return "date";
-  }
-  if (
-    /(Income|Pincode|Height\s*\(|Weight\s*\(|Waist|Hips|Systolic|Diastolic|Pulse|Duration|Heart Rate|Age|Quant|Year|METS|FEV1|FVC|Blood Urea|BUN|Value|Count|Cholesterol|Triglycerides|Bilirubin|SGOT|SGPT|Platelet|Hemoglobin|Lab Range|^(Inspiration|Expiration|RV|VC)$)/i.test(
-      label,
-    )
-  ) {
-    return "number";
-  }
-  return "text";
+
+  return matchLabelRule(MEDICAL_GENERAL_LABEL_RULES, label) ?? "text";
 }
 
 export function getMedicalOptions(

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { setSessionBusinessType } from "@insurance-poc/utils";
+import { getBreRetriggerCount, setSessionBusinessType } from "@insurance-poc/utils";
 import {
   buildBreRetriggerRequestBody,
   mapBreRetriggerOutput,
@@ -35,6 +35,7 @@ describe("BRE retrigger", () => {
     const output = readBreOutputFromResponse(breRetriggerMock);
     const mapped = mapBreRetriggerOutput(output);
     expect(mapped.barDecision).toBe("Non-STP");
+    expect(mapped.reTriggerCount).toBe(0);
     expect(mapped.rows).toEqual({
       status: "Success",
       decision: "Non-STP",
@@ -87,6 +88,7 @@ describe("BRE retrigger", () => {
   });
 
   it("reads mock payload when VITE_USE_MOCK is enabled", async () => {
+    vi.useFakeTimers();
     vi.stubEnv("VITE_USE_MOCK", "true");
     vi.resetModules();
     const { mutateBreRetrigger: mutate } = await import("./breRetrigger");
@@ -95,12 +97,29 @@ describe("BRE retrigger", () => {
       data: { message: "should not be called" },
     }));
 
-    const result = await mutate(baseQuery, "", "OS40385478", "GROUP");
+    const pending = mutate(baseQuery, "", "OS40385478", "GROUP");
+    await vi.advanceTimersByTimeAsync(100);
+    const result = await pending;
 
     expect("data" in result).toBe(true);
     expect(baseQuery).not.toHaveBeenCalled();
     if ("data" in result) {
       expect(result.data.barDecision).toBe("Non-STP");
+      expect(result.data.reTriggerCount).toBe(0);
     }
+    vi.useRealTimers();
+  });
+
+  it("does not delay in real API mode", async () => {
+    vi.stubEnv("VITE_USE_MOCK", "false");
+    vi.resetModules();
+    const { mutateBreRetrigger: mutate } = await import("./breRetrigger");
+    const started = Date.now();
+
+    const baseQuery: BreRetriggerBaseQuery = vi.fn(async () => ({ data: breRetriggerMock }));
+    await mutate(baseQuery, "https://example.test/bre/v1/events", "OS40385478", "GROUP");
+
+    expect(Date.now() - started).toBeLessThan(50);
+    expect(getBreRetriggerCount()).toBeNull();
   });
 });

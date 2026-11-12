@@ -8,6 +8,14 @@ import {
 } from "@insurance-poc/utils";
 import breRetriggerMock from "./mock/breRetrigger.json";
 
+const MOCK_BRE_RETRIGGER_DELAY_MS = 100;
+
+function waitMs(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
 export type BreRetriggerEventName = "BRE-GROUP" | "BRE-RETAIL";
 
 export type BreRetriggerLob = "G" | "R";
@@ -47,6 +55,7 @@ export type BreOutput = {
 export type BreRetriggerMappedFinal = {
   /** Value for the DecisionBar "Final" chip. */
   barDecision: string;
+  reTriggerCount: number;
   rows: {
     status: string;
     decision: string;
@@ -154,6 +163,7 @@ export function readBreOutputFromResponse(value: unknown): BreOutput {
 export function mapBreRetriggerOutput(output: BreOutput): BreRetriggerMappedFinal {
   return {
     barDecision: output.systemDecision,
+    reTriggerCount: output.reTriggerCount,
     rows: {
       status: "Success",
       decision: output.systemDecision,
@@ -176,6 +186,7 @@ export async function mutateBreRetrigger(
   }
 
   if (useMock) {
+    await waitMs(MOCK_BRE_RETRIGGER_DELAY_MS);
     try {
       const output = readBreOutputFromResponse(breRetriggerMock);
       return { data: mapBreRetriggerOutput(output) };
