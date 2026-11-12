@@ -5,6 +5,7 @@ export {
   groupBusinessUrls,
   landingUrls,
   masterUrls,
+  nsdlUrls,
   useMock,
 } from "./config";
 export {

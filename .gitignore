@@ -7,6 +7,5 @@ dist
 *.tsbuildinfo
 .pnpm-store
 .cursor/
-.bob
-design-reference
+
 

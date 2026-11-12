@@ -1,0 +1,148 @@
+openapi: 3.0.3
+info:
+  title: BRE Wrapper Orchestrator - Events API (BRE Retrigger)
+  version: 1.0.0
+  description: |
+    Retriggers the Business Rule Engine (BRE) for an application.
+    Derived from `design-reference/Integration/bre.txt` (curl + sample request/response).
+    Spec date: 2026-11-09. Spec version: 1.0.0.
+    Only the fields shown in the source sample are described. Anything not in the sample is
+    intentionally left out (see "Open questions" in bre-retrigger.md).
+  x-spec-date: "2026-11-09"
+  x-source: design-reference/Integration/bre.txt
+servers:
+  - url: https://midoffice-uat-api.icicilife.com
+    description: UAT
+paths:
+  /icic-bre-wrapper-orchestrator/v1/events:
+    post:
+      operationId: retriggerBre
+      summary: Retrigger BRE for an application
+      description: |
+        UI rule: businessType is read from session storage (`getSessionBusinessType()`).
+        GROUP -> eventName "BRE-GROUP", lob "G".
+        RETAIL -> eventName "BRE-RETAIL", lob "R".
+      parameters:
+        - name: accept
+          in: header
+          required: false
+          schema:
+            type: string
+            example: application/json
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BreRetriggerRequest"
+            examples:
+              group:
+                value:
+                  eventName: BRE-GROUP
+                  applicationNumber: OS40385478
+                  lob: G
+              retail:
+                summary: Derived from the business-type rule; no sample response was provided
+                value:
+                  eventName: BRE-RETAIL
+                  applicationNumber: OS40385478
+                  lob: R
+      responses:
+        "200":
+          description: BRE output
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BreRetriggerResponse"
+              example:
+                data:
+                  breOutput:
+                    systemDecision: Non-STP
+                    decisionTypes:
+                      breDecision: FR
+                      breAction: Financial Requirement
+                      breRequirement: GCD
+                      stpCaseDecision: Non-STP
+                    requirements:
+                      - requirementType: GCD
+                        requirementValue: GCD
+                        ruleId: ""
+                        ruleName: Credit_Assure_198
+                        isSTP: false
+                        metaphorName: ""
+                    systemDecisionDateTime: "2026-11-07T10:22:45Z"
+                    reTriggerCount: 0
+                    errorResp: ""
+                    breRemarks: "Financially Not Eligible.#TSA gt 20lakhs height weight value blank received#Single Pay Policy"
+components:
+  schemas:
+    BreRetriggerRequest:
+      type: object
+      required: [eventName, applicationNumber, lob]
+      properties:
+        eventName:
+          type: string
+          enum: [BRE-GROUP, BRE-RETAIL]
+        applicationNumber:
+          type: string
+          example: OS40385478
+        lob:
+          type: string
+          enum: [G, R]
+          description: G = Group, R = Retail
+    BreRetriggerResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            breOutput:
+              $ref: "#/components/schemas/BreOutput"
+    BreOutput:
+      type: object
+      properties:
+        systemDecision:
+          type: string
+          example: Non-STP
+        decisionTypes:
+          type: object
+          properties:
+            breDecision:
+              type: string
+              example: FR
+            breAction:
+              type: string
+              example: Financial Requirement
+            breRequirement:
+              type: string
+              example: GCD
+            stpCaseDecision:
+              type: string
+              example: Non-STP
+        requirements:
+          type: array
+          items:
+            type: object
+            properties:
+              requirementType:
+                type: string
+              requirementValue:
+                type: string
+              ruleId:
+                type: string
+              ruleName:
+                type: string
+              isSTP:
+                type: boolean
+              metaphorName:
+                type: string
+        systemDecisionDateTime:
+          type: string
+          description: ISO-8601 UTC timestamp
+          example: "2026-11-07T10:22:45Z"
+        reTriggerCount:
+          type: integer
+        errorResp:
+          type: string
+        breRemarks:
+          type: string

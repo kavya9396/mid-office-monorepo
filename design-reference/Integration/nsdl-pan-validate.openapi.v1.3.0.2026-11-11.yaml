@@ -1,0 +1,160 @@
+openapi: 3.0.3
+info:
+  title: External Event Service - NSDL PAN Validate
+  version: 1.3.0
+  description: |
+    Validates a PAN against NSDL for an application.
+    Derived from the URL and the samples supplied by the user. Version 1.3.0 describes
+    `data.panValidation` (see "Changes from 1.2.0").
+    Spec date: 2026-11-11. Spec version: 1.3.0.
+
+    Changes from 1.2.0:
+    - The user confirmed the location: `panValidation` sits directly under `data`. The `return` level of 1.2.0
+      is gone.
+
+    Changes from 1.1.0 (kept from 1.2.0):
+    - `data.panValidation` is now an object with `aadharSeedingStatus`, `dob`, `fathername`, `name`,
+      `pan`, `responseCode` and `validity`. 1.1.0 showed it as an array holding null.
+    - The top-level `aadharSeedingStatus` of 1.1.0 is no longer read; it is replaced by
+      `data.panValidation.aadharSeedingStatus`.
+
+    Reading rules agreed with the user (see nsdl-pan-validate.md):
+    - `error` decides whether the API call succeeded (false) or failed (true).
+    - `pan_validation` decides the PAN validation status.
+    - `message` is shown to the user for both success and failure.
+    - From `data.panValidation` only `name`, `dob` and `aadharSeedingStatus` are read. "Y" gives YES;
+      a missing structure, a missing value or any other value gives NO.
+    - `fathername`, `pan`, `responseCode` and `validity` are not read (confirmed by the user: only the match
+      and Aadhar seeding data are mapped).
+
+    The HTTP method is POST (confirmed by the user). Request and response are plain JSON, with no payload
+    encryption (confirmed by the user).
+  x-spec-date: "2026-11-11"
+  x-supersedes: nsdl-pan-validate.openapi.v1.2.0.2026-11-11.yaml
+  x-source: user-supplied samples (chat), 2026-11-11
+servers:
+  - url: https://midoffice-uat-api.icicilife.com
+    description: UAT
+paths:
+  /icic-external-event-service/v1/nsdl/pan/validate:
+    post:
+      operationId: validateNsdlPan
+      summary: Validate a PAN with NSDL
+      description: |
+        HTTP method is POST (confirmed by the user). Plain JSON request and response, no payload encryption.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NsdlPanValidateRequest"
+            example:
+              applicationNumber: OS94845380
+              pan: ACBPJ4468N
+              name: SACHIN NARAYAN JOSHI
+              dob: 03/06/1967
+              fatherName: ""
+      responses:
+        "200":
+          description: NSDL validation envelope
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NsdlPanValidateResponse"
+              example:
+                error: false
+                message: Existing and Valid PAN
+                data:
+                  panValidation:
+                    aadharSeedingStatus: "Y"
+                    dob: "Y"
+                    fathername: {}
+                    name: "Y"
+                    pan: ACBPJ4468N
+                    responseCode: "1: Success"
+                    validity: "Existing and Valid PAN "
+                pan_validation: true
+                event_name: NSDL
+                response_code: 200
+components:
+  schemas:
+    NsdlPanValidateRequest:
+      type: object
+      required: [applicationNumber, pan, name, dob, fatherName]
+      properties:
+        applicationNumber:
+          type: string
+          example: OS94845380
+        pan:
+          type: string
+          example: ACBPJ4468N
+        name:
+          type: string
+          example: SACHIN NARAYAN JOSHI
+        dob:
+          type: string
+          description: Date in DD/MM/YYYY format (from the sample)
+          example: 03/06/1967
+        fatherName:
+          type: string
+          description: Empty string in the sample; whether it may be empty is unconfirmed
+          example: ""
+    NsdlPanValidation:
+      type: object
+      description: |
+        Only `name`, `dob` and `aadharSeedingStatus` are read. Each is "Y" for a match; anything else
+        (including a missing value) is treated as not matching.
+      properties:
+        aadharSeedingStatus:
+          type: string
+          description: Maps to "Aadhar Seeding Status?"
+          example: "Y"
+        dob:
+          type: string
+          description: Maps to "Is NSDL DOB Matching?"
+          example: "Y"
+        name:
+          type: string
+          description: Maps to "Is NSDL Name Matching?"
+          example: "Y"
+        fathername:
+          type: object
+          description: Not read. Sample value is an empty object.
+          additionalProperties: true
+        pan:
+          type: string
+          description: Not read.
+          example: ACBPJ4468N
+        responseCode:
+          type: string
+          description: Not read (open question in the plan).
+          example: "1: Success"
+        validity:
+          type: string
+          description: Not read.
+          example: "Existing and Valid PAN "
+    NsdlPanValidateResponse:
+      type: object
+      properties:
+        error:
+          type: boolean
+          description: false = API call succeeded, true = API call failed
+        message:
+          type: string
+          description: Text to show the user for both success and failure
+          example: Existing and Valid PAN
+        data:
+          type: object
+          description: Only `panValidation` is read.
+          properties:
+            panValidation:
+              $ref: "#/components/schemas/NsdlPanValidation"
+        pan_validation:
+          type: boolean
+          description: PAN validation status; true -> flag YES, false -> flag NO
+        event_name:
+          type: string
+          example: NSDL
+        response_code:
+          type: integer
+          example: 200

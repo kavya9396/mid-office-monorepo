@@ -1,0 +1,101 @@
+openapi: 3.0.3
+info:
+  title: External Event Service - NSDL PAN Validate
+  version: 1.0.0
+  description: |
+    Validates a PAN against NSDL for an application.
+    Derived from the URL, sample request and sample response supplied by the user on 2026-11-11.
+    Spec date: 2026-11-11. Spec version: 1.0.0.
+    Only what the sample shows is described. The shape of non-null `panValidation` items is unknown,
+    and the HTTP method (POST) and encryption setting are unconfirmed (see "Open questions" in
+    nsdl-pan-validate.md).
+  x-spec-date: "2026-11-11"
+  x-source: user-supplied sample (chat), 2026-11-11
+servers:
+  - url: https://midoffice-uat-api.icicilife.com
+    description: UAT
+paths:
+  /icic-external-event-service/v1/nsdl/pan/validate:
+    post:
+      operationId: validateNsdlPan
+      summary: Validate a PAN with NSDL
+      description: |
+        HTTP method is assumed to be POST because a request body is sent; confirm with the owner.
+        Where this is called from and how the UI behaves after the response are not defined yet.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NsdlPanValidateRequest"
+            example:
+              applicationNumber: OS94845380
+              pan: ACBPJ4468N
+              name: SACHIN NARAYAN JOSHI
+              dob: 03/06/1967
+              fatherName: ""
+      responses:
+        "200":
+          description: NSDL validation envelope
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NsdlPanValidateResponse"
+              example:
+                error: false
+                message: ""
+                data:
+                  return:
+                    panValidation:
+                      - null
+                event_name: NSDL
+                response_code: 200
+components:
+  schemas:
+    NsdlPanValidateRequest:
+      type: object
+      required: [applicationNumber, pan, name, dob, fatherName]
+      properties:
+        applicationNumber:
+          type: string
+          example: OS94845380
+        pan:
+          type: string
+          example: ACBPJ4468N
+        name:
+          type: string
+          example: SACHIN NARAYAN JOSHI
+        dob:
+          type: string
+          description: Date in DD/MM/YYYY format (from the sample)
+          example: 03/06/1967
+        fatherName:
+          type: string
+          description: Empty string in the sample; whether it may be empty is unconfirmed
+          example: ""
+    NsdlPanValidateResponse:
+      type: object
+      properties:
+        error:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            return:
+              type: object
+              properties:
+                panValidation:
+                  type: array
+                  description: |
+                    Only a single null element is shown in the sample. The shape of non-null items is unknown.
+                  items:
+                    nullable: true
+                    type: object
+        event_name:
+          type: string
+          example: NSDL
+        response_code:
+          type: integer
+          example: 200

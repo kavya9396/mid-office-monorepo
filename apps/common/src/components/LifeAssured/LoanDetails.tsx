@@ -2,8 +2,9 @@ import dayjs from "dayjs";
 import { z } from "zod";
 import { Box, Typography } from "@mui/material";
 import { Calendar, CustomTextField } from "@insurance-poc/ui";
+import { requiredMessage } from "./editApplicant.messages";
 
-const required = (label: string) => z.string().trim().min(1, `${label} is required`);
+const required = (label: string) => z.string().trim().min(1, requiredMessage(label));
 
 // All Base & Loan fields are mandatory
 export const loanSchema = z.object({
