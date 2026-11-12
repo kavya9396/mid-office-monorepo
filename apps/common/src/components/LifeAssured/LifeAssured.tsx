@@ -11,12 +11,16 @@ import {
   type RiderEditRow,
   type LoanEditValues,
 } from "./EditApplicantDialog";
+import type { PanStatus, PanValidationInput, PanValidationResult } from "./editApplicant.validation";
 import { ImageDetails, type ImageDetailRecord } from "./Applicant Profile/Image Details";
 import { PersonalKyc } from "./Applicant Profile/Personal & KYC";
 import { ContactAddress } from "./Applicant Profile/Contact & Address";
 import { ProductDetails } from "./Applicant Profile/Product Details";
 import { Nominee, type AppointeeRow, type NomineeRow } from "./Applicant Profile/Nominee";
 import { Lifestyle } from "./Applicant Profile/Lifestyle";
+
+export { hasPendingPanPendcode } from "./editApplicant.validation";
+export { PAN_INVALID_SUBMIT_BLOCKED_MESSAGE } from "./editApplicant.messages";
 
 export type {
   FieldData,
@@ -28,6 +32,9 @@ export type {
   NomineeEditRow,
   RiderEditRow,
   LoanEditValues,
+  PanStatus,
+  PanValidationInput,
+  PanValidationResult,
 };
 
 export type LifeAssuredApplicant = {
@@ -71,6 +78,11 @@ export type LifeAssuredProps = {
   ) => void;
   /** Dropdown options for the edit dialog (masterData: gender, id_proof_type, resident_status). */
   editOptions?: Partial<EditApplicantOptions>;
+  /** NSDL PAN validation for the applicant being edited. Enables the PAN gate in the edit dialog. */
+  onValidatePan?: (applicantId: string, input: PanValidationInput) => Promise<PanValidationResult>;
+  /** Last NSDL result per applicant id, kept by the app so it survives closing and reopening the dialog. */
+  panStatusByApplicant?: Readonly<Record<string, PanStatus>>;
+  onPanStatusChange?: (applicantId: string, status: PanStatus) => void;
   onViewMedical?: (applicantId: string) => void;
   onViewFinancial?: (applicantId: string) => void;
   /** When true the profile image column is hidden (e.g. inside a dialog). */
@@ -191,6 +203,9 @@ export function LifeAssured({
   onEdit,
   onSaveEdit,
   editOptions,
+  onValidatePan,
+  panStatusByApplicant,
+  onPanStatusChange,
   ...actions
 }: Readonly<LifeAssuredProps>) {
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -223,6 +238,15 @@ export function LifeAssured({
         initialRiders={editingApplicant?.editRiders}
         initialLoan={editingApplicant?.editLoan}
         options={editOptions}
+        onValidatePan={
+          onValidatePan && editingApplicant ? (input) => onValidatePan(editingApplicant.id, input) : undefined
+        }
+        panStatus={editingApplicant ? panStatusByApplicant?.[editingApplicant.id] : undefined}
+        onPanStatusChange={
+          onPanStatusChange && editingApplicant
+            ? (status) => onPanStatusChange(editingApplicant.id, status)
+            : undefined
+        }
         onSave={(values, nominees, riders, loan) => {
           if (editingApplicant) onSaveEdit?.(editingApplicant.id, values, nominees, riders, loan);
           setEditingId(null);
