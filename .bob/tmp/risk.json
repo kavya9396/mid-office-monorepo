@@ -1,0 +1,73 @@
+﻿{
+    "medicalRisk":  {
+                        "isMedical":  true,
+                        "brePhysicalMedicalDecision":  "STP",
+                        "brePhysicalMedicalRemark":  "",
+                        "breTeleVideoMerDecision":  "",
+                        "breTeleVideoMerRemark":  "",
+                        "teleMerPrompting":  false,
+                        "videoMerPrompting":  false,
+                        "tuwStatus":  "",
+                        "tuwReason":  "",
+                        "cotTest":  {
+                                        "received":  false,
+                                        "discrepancyStatus":  "",
+                                        "result":  "",
+                                        "mandatoryFieldsComplete":  false
+                                    },
+                        "merHabits":  {
+                                          "cigarettesOrBeedisOrCigar":  false,
+                                          "gutkaSnuffPaan":  false
+                                      },
+                        "teleMerHabits":  {
+                                              "cigarettesOrBeedisOrCigar":  false,
+                                              "gutkaSnuffPaan":  false
+                                          },
+                        "munichReMedicalDecision":  "",
+                        "munichReRating":  "",
+                        "biuMedicalStatus":  ""
+                    },
+    "financialRisk":  {
+                          "isFinancial":  true,
+                          "breFinancialDecision":  "NON-FSTP",
+                          "breRemark":  "",
+                          "financialEligibility":  "₹4,80,000",
+                          "derivedIncome":  "₹16,00,000",
+                          "counterOfferValue":  "₹50,00,000",
+                          "additionalSA":  "0.0",
+                          "biuFinancialStatus":  ""
+                      },
+    "biuModelResponse":  {
+                             "model":  "",
+                             "predict":  "",
+                             "action":  "",
+                             "modelOutput":  "",
+                             "modelName":  ""
+                         },
+    "otherRisk":  {
+                      "isOthers":  true,
+                      "ptlrResponse":  "",
+                      "drcResponse":  "Y",
+                      "adverseIIB":  "",
+                      "criminalQuestionResponseLA":  "No",
+                      "pepQuestionResponseLA":  "No",
+                      "criminalQuestionResponsePR":  "No",
+                      "pepQuestionResponsePR":  "No",
+                      "previousPolicySubstandard":  "No",
+                      "avocationRelatedDisclosure":  "",
+                      "healthQuestionPositive":  "Yes",
+                      "employmentInRiskyIndustry":  "LowRiskPremium",
+                      "fatfOfacCountryLogin":  "No",
+                      "hazardousOccupation":  "",
+                      "eddFlag":  "Yes",
+                      "claimRiskIndicator":  "",
+                      "faceMatchScore":  "",
+                      "smokerIndicator":  "",
+                      "tobaccoIndicator":  "",
+                      "narcoticIndicator":  "",
+                      "tobacco":  "",
+                      "narcotics":  "",
+                      "covidAdverseReply":  "No",
+                      "accuityTransactionStatus":  ""
+                  }
+}

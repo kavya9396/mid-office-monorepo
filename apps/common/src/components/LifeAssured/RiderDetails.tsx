@@ -11,6 +11,7 @@ import {
   type Column,
 } from "@insurance-poc/ui";
 import { dangerButtonSx, iconButtonSx } from "./NomineeDetails";
+import { FILL_ALL_RIDER_FIELDS_MESSAGE } from "./editApplicant.messages";
 
 export type RiderEditRow = {
   riderName: string;
@@ -54,7 +55,7 @@ export function RiderDetails({ riders, onChange, onNotify }: Readonly<RiderDetai
   const saveEdit = () => {
     if (editingIndex === null) return;
     if (isRiderBlank(draft)) {
-      onNotify("Please fill all rider fields before saving");
+      onNotify(FILL_ALL_RIDER_FIELDS_MESSAGE);
       return;
     }
     onChange(riders.map((rider, index) => (index === editingIndex ? { ...draft } : rider)));
