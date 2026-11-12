@@ -1,5 +1,4 @@
 import { useEffect, type ReactNode } from "react";
-import { Navigate } from "react-router-dom";
 import { businessInboxUrl, commonPaths, replaceUrl } from "@insurance-poc/routes";
 import { CustomLoader } from "@insurance-poc/ui";
 import {
@@ -9,7 +8,9 @@ import {
   isFirstLoginChangePending,
 } from "@insurance-poc/utils";
 
-export function RedirectIfSession({ children }: { children: ReactNode }) {
+type GuardLayoutProps = Readonly<{ children: ReactNode }>;
+
+export function RedirectIfSession({ children }: GuardLayoutProps) {
   const businessType = getSessionBusinessType();
   const destination = businessType ? businessInboxUrl(businessType) : null;
   const firstLoginFlow = isFirstLoginChangePending();
@@ -22,8 +23,10 @@ export function RedirectIfSession({ children }: { children: ReactNode }) {
 
   if (!hasCredentials) return children;
 
+  /** Explicit `/login`: start fresh (e.g. switch user) even during mandatory change-password. */
   if (firstLoginFlow) {
-    return <Navigate to={commonPaths.changePassword} replace />;
+    clearSession();
+    return children;
   }
 
   if (destination) {
@@ -38,7 +41,7 @@ export function RedirectIfSession({ children }: { children: ReactNode }) {
  * - Allowed only when login returned `mustChangePassword: true`.
  * - Refresh, manual URL, or missing gate → clear session and send to login.
  */
-export function RequirePasswordChange({ children }: { children: ReactNode }) {
+export function RequirePasswordChange({ children }: GuardLayoutProps) {
   const allowed = hasSession() && isFirstLoginChangePending();
 
   useEffect(() => {

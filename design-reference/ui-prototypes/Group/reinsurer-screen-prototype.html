@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reinsurer Screen Prototype</title>
+  <link href="https://fonts.googleapis.com/css2?family=Mulish:ital,wght@0,200..1000;1,200..1000&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      font-family: Mulish, Arial, sans-serif;
+      color: #302a27;
+      background: #fff8f3;
+      font-synthesis: none;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-size: 12px;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    button:focus-visible,
+    select:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible {
+      outline: 2px solid #e45f14;
+      outline-offset: 2px;
+    }
+
+    .app-header {
+      height: 57px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: stretch;
+      color: #fff;
+      background: linear-gradient(to bottom, #f58220 0%, #e65318 42%, #c92e27 72%, #98252b 100%);
+      box-shadow: 0 3px 12px rgba(111, 24, 24, .25);
+    }
+
+    .back {
+      width: 44px;
+      border: 0;
+      border-right: 1px solid rgba(255, 255, 255, .25);
+      border-radius: 0;
+      background: rgba(126, 22, 31, .42);
+      color: #fff;
+      display: grid;
+      place-items: center;
+    }
+
+    .back:hover {
+      background: rgba(126, 22, 31, .62);
+    }
+
+    .logo {
+      display: block;
+      width: 150px;
+      height: 57px;
+      object-fit: cover;
+    }
+
+    .header-spacer {
+      flex: 1;
+    }
+
+    .header-date {
+      align-self: center;
+      min-width: 175px;
+      padding-right: 12px;
+      text-align: right;
+      border-right: 1px solid rgba(255, 255, 255, .35);
+      line-height: 1.4;
+    }
+
+    .header-date div:first-child {
+      opacity: .9;
+      font-size: 12px;
+    }
+
+    .header-date div:last-child {
+      margin-top: 2px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .user-menu-wrap {
+      position: relative;
+      align-self: stretch;
+      display: flex;
+      align-items: center;
+      margin: 0 16px 0 12px;
+    }
+
+    .user-button {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      background: transparent;
+      border: 0;
+      color: #fff;
+    }
+
+    .user-avatar {
+      display: grid;
+      place-items: center;
+      width: 35px;
+      height: 35px;
+      border: 1px solid rgba(255, 255, 255, .45);
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .2);
+    }
+
+    .user-name {
+      min-width: 80px;
+      max-width: 150px;
+      text-align: left;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      font-weight: 700;
+    }
+
+    .user-popover {
+      position: absolute;
+      top: 65px;
+      right: 0;
+      width: 240px;
+      z-index: 110;
+      background: #fff;
+      color: #323232;
+      border: 1px solid #f1d7d0;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(70, 20, 20, .18);
+    }
+
+    .user-popover button {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      padding: 12px 16px;
+      background: #fff;
+      border: 0;
+      color: #323232;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    .user-popover button:hover {
+      background: #fff3ee;
+    }
+
+    .user-popover button+button {
+      border-top: 1px solid #eee;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    main {
+      height: calc(100dvh - 57px);
+      overflow: auto;
+      background: #fff8f3;
+    }
+
+    .banner-shell {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      padding: 6px 4px 0;
+      background: #fff;
+    }
+
+    .banner {
+      display: grid;
+      grid-template-columns: 150px minmax(0, 1fr);
+      margin-bottom: 6px;
+      overflow: hidden;
+      background: #ffead7;
+      color: #000;
+      border-radius: 12px;
+      box-shadow: 0 3px 10px rgba(169, 33, 41, .16);
+    }
+
+    .banner-avatar {
+      min-height: 138px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(145deg, #e45f14, #c83c2f);
+    }
+
+    .banner-avatar span {
+      width: 76px;
+      height: 76px;
+      display: grid;
+      place-items: center;
+      border: 2px solid rgba(255, 255, 255, .45);
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .18);
+    }
+
+    .banner-avatar svg {
+      width: 44px;
+      height: 44px;
+    }
+
+    .banner-content {
+      padding: 12px 18px;
+      min-width: 0;
+    }
+
+    .banner-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 4px;
+    }
+
+    .banner-title strong {
+      font-size: 16px;
+      font-weight: 900;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .app-pill {
+      padding: 4px 9px;
+      flex: none;
+      border: 1px solid rgba(169, 33, 41, .18);
+      border-radius: 16px;
+      background: #fff;
+      color: #a92129;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .banner-line {
+      font-size: 11.5px;
+      line-height: 1.6;
+      margin: 4px 0;
+    }
+
+    .banner-line.product {
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    @media (max-width: 599px) {
+      .header-date, .user-name { display: none; }
+      .user-menu-wrap { margin-right: 8px; }
+      .banner { grid-template-columns: 84px minmax(0, 1fr); }
+      .banner-avatar { min-height: 112px; }
+      .banner-avatar span { width: 54px; height: 54px; }
+      .banner-avatar svg { width: 30px; height: 30px; }
+      .banner-content { padding: 8px 10px; }
+      .banner-title strong { font-size: 14px; }
+      .app-pill { font-size: 11px; }
+    }
+    .break-dialog { width: min(400px, calc(100vw - 32px)); border: 1px solid #f1d7d0; border-radius: 12px; padding: 20px; color: #302a27; }
+    .break-dialog::backdrop { background: rgba(40, 25, 20, .45); }
+    .break-dialog h2 { margin: 0 0 16px; font-size: 18px; }
+    .break-dialog label { display: block; margin-bottom: 12px; }
+    .break-dialog select { display: block; width: 100%; margin-top: 6px; padding: 8px; border: 1px solid #d9d1cc; border-radius: 6px; }
+    .break-actions { display: flex; justify-content: flex-end; gap: 8px; }
+    .break-actions button { padding: 8px 14px; border: 1px solid #a92129; border-radius: 6px; background: #fff; color: #a92129; }
+    .break-actions button[value="confirm"] { background: #a92129; color: #fff; }
+    #reinsurer-content { padding: 6px 4px 16px; }
+    .reinsurer-card { overflow: hidden; border: 1px solid #f1d8c8; border-radius: 8px; background: #fff; box-shadow: 0 2px 7px rgba(60, 42, 35, .07); }
+    .reinsurer-card h2 { margin: 0; padding: 9px 12px; background: #e45f14; color: #fff; font-size: 14px; font-weight: 800; }
+    .reinsurer-table-wrap { overflow-x: auto; }
+    .reinsurer-details-table { width: 100%; min-width: 900px; table-layout: fixed; border-collapse: collapse; }
+    .reinsurer-details-table th, .reinsurer-details-table td { padding: 8px; border-right: 1px solid #eadfd9; border-bottom: 1px solid #eadfd9; text-align: left; vertical-align: middle; overflow-wrap: anywhere; }
+    .reinsurer-details-table th { background: #ffead7; color: #5b261c; font-size: 11.5px; font-weight: 800; line-height: 1.45; }
+    .reinsurer-details-table tr:last-child td { border-bottom: 0; }
+    .reinsurer-details-table tr > :last-child { border-right: 0; }
+    .reinsurer-details-table tbody tr:nth-child(even) { background: #fffbf8; }
+    .reinsurer-details-table input, .reinsurer-details-table select { width: 100%; min-width: 0; min-height: 34px; padding: 7px 8px; border: 1px solid #d9d1cc; border-radius: 6px; background: #fff; color: #302a27; font-size: 12px; }
+    .reinsurer-details-table input::placeholder { color: #8a817b; }
+    .reinsurer-actions { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+    .reinsurer-action { min-width: 145px; padding: 9px 18px; border: 1px solid #a92129; border-radius: 22px; background: #fff; color: #a92129; font-weight: 800; }
+    .reinsurer-action:hover { background: #fff0e7; }
+    .reinsurer-action.primary { background: #a92129; color: #fff; }
+    .reinsurer-action.primary:hover { background: #8d232a; }
+    .cuw-dialog { width: min(460px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); padding: 0; overflow: auto; border: 1px solid #f1d8c8; border-radius: 12px; color: #302a27; box-shadow: 0 12px 36px rgba(60, 30, 20, .25); }
+    .cuw-dialog::backdrop { background: rgba(40, 25, 20, .45); }
+    .cuw-dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #e45f14; color: #fff; }
+    .cuw-dialog-header h2 { margin: 0; font-size: 16px; }
+    .cuw-close { display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: #fff; font-size: 24px; }
+    .cuw-close:hover { background: rgba(255,255,255,.2); }
+    .cuw-form { padding: 18px 16px; }
+    .cuw-field { margin-bottom: 14px; }
+    .cuw-field label { display: block; margin-bottom: 6px; font-size: 12px; font-weight: 800; }
+    .required-marker { color: #b3262e; }
+    .cuw-field input, .cuw-field select { width: 100%; min-height: 38px; padding: 8px 10px; border: 1px solid #d9d1cc; border-radius: 6px; background: #fff; color: #302a27; }
+    .cuw-field [aria-invalid="true"] { border-color: #b3262e; }
+    .cuw-error { display: block; margin-top: 5px; color: #b3262e; font-size: 11px; }
+    .cuw-submit-row { display: flex; justify-content: center; margin-top: 18px; }
+    .prototype-toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 150; max-width: calc(100vw - 32px); padding: 12px 18px; border-radius: 8px; background: #28743c; color: #fff; box-shadow: 0 4px 12px rgba(30, 50, 30, .2); font-size: 13px; }
+  </style>
+</head>
+
+<body>
+  <header class="app-header">
+    <button class="back" type="button" aria-label="Back to Inbox" title="Back to Inbox"><svg width="16" height="16"
+        viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path
+          d="M15 20.67C14.81 20.67 14.62 20.6 14.47 20.45L7.95 13.93C6.89 12.87 6.89 11.13 7.95 10.07L14.47 3.55C14.76 3.26 15.24 3.26 15.53 3.55C15.82 3.84 15.82 4.32 15.53 4.61L9.01 11.13C8.53 11.61 8.53 12.39 9.01 12.87L15.53 19.39C15.82 19.68 15.82 20.16 15.53 20.45C15.38 20.59 15.19 20.67 15 20.67Z"
+          fill="currentColor" />
+      </svg></button>
+    <img class="logo" src="ICICI%20Logo.svg" alt="ICICI Life Logo">
+    <div class="header-spacer"></div>
+    <div class="header-date">
+      <div id="current-time"></div>
+      <div>Session: <span id="session-time">15:00</span></div>
+    </div>
+    <div class="user-menu-wrap">
+      <button id="user-button" class="user-button" type="button" aria-label="User menu" aria-expanded="false"><span
+          class="user-avatar"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="M12 12.75C8.83 12.75 6.25 10.17 6.25 7C6.25 3.83 8.83 1.25 12 1.25C15.17 1.25 17.75 3.83 17.75 7C17.75 10.17 15.17 12.75 12 12.75ZM12 2.75C9.66 2.75 7.75 4.66 7.75 7C7.75 9.34 9.66 11.25 12 11.25C14.34 11.25 16.25 9.34 16.25 7C16.25 4.66 14.34 2.75 12 2.75Z"
+              fill="currentColor" />
+            <path
+              d="M20.59 22.75C20.18 22.75 19.84 22.41 19.84 22C19.84 18.55 16.32 15.75 12 15.75C7.68 15.75 4.16 18.55 4.16 22C4.16 22.41 3.82 22.75 3.41 22.75C3 22.75 2.66 22.41 2.66 22C2.66 17.73 6.85 14.25 12 14.25C17.15 14.25 21.34 17.73 21.34 22C21.34 22.41 21 22.75 20.59 22.75Z"
+              fill="currentColor" />
+          </svg></span><span class="user-name" id="header-user-name"></span><span>⌄</span></button>
+      <div id="user-popover" class="user-popover" hidden><button type="button" data-action="break">◷ &nbsp; Breaktime
+          <b>30 mins ›</b></button><button type="button" data-action="logout">⇥ &nbsp; Logout</button></div>
+    </div>
+  </header>
+
+  <main>
+    <div class="banner-shell">
+      <div class="banner">
+        <div class="banner-avatar"><span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none">
+              <path
+                d="M12 12.75C8.83 12.75 6.25 10.17 6.25 7C6.25 3.83 8.83 1.25 12 1.25C15.17 1.25 17.75 3.83 17.75 7C17.75 10.17 15.17 12.75 12 12.75ZM12 2.75C9.66 2.75 7.75 4.66 7.75 7C7.75 9.34 9.66 11.25 12 11.25C14.34 11.25 16.25 9.34 16.25 7C16.25 4.66 14.34 2.75 12 2.75Z"
+                fill="currentColor" />
+              <path
+                d="M20.59 22.75C20.18 22.75 19.84 22.41 19.84 22C19.84 18.55 16.32 15.75 12 15.75C7.68 15.75 4.16 18.55 4.16 22C4.16 22.41 3.82 22.75 3.41 22.75C3 22.75 2.66 22.41 2.66 22C2.66 17.73 6.85 14.25 12 14.25C17.15 14.25 21.34 17.73 21.34 22C21.34 22.41 21 22.75 20.59 22.75Z"
+                fill="currentColor" />
+            </svg></span></div>
+        <div class="banner-content">
+          <div class="banner-title"><strong>Rudra Prakash Sangha</strong><span class="app-pill">App No. -
+              OB90377122</span></div>
+          <p class="banner-line">Life Assured 1 / Married / Male / 40 / Graduate / Salaried / 3I INFOTECH / ₹10,00,000 / Pune,
+            Maharashtra / Indian / India</p>
+          <p class="banner-line product">Product Name &amp; product code -
+            <span id="product-line">ICICI Pru GIFT Pro</span> / Channel - Agency / SA - ₹10,68,000 
+            </p>
+          <p class="banner-line"><strong>Riders:</strong> WOP - SA ₹15,00,000 / BTBB - SA ₹25,00,000 /
+            TI Rider - SA ₹25,00,000 / ADBR - SA ₹25,00,000 / CI Rider - SA ₹25,00,000</p>
+          <p class="banner-line"><strong>Sum at Risk:</strong> TSA - ₹10,00,000 / TRSA - ₹5,00,000 /
+            TPSA - ₹10,00,000 / TFSA - ₹10,00,000 / TFESA - ₹10,00,000 / TSSA - ₹10,00,000 /
+            ADBR TSA - ₹5,00,000 / ATPD TSA - ₹5,00,000 / CI Rider TSA - ₹3,00,000 /
+            CI Rider TRSA - ₹3,00,000 / WOP TSA - ₹10,00,000 / BTBB TSA - ₹5,00,000 /
+            Total Premium - ₹10,000 / Total Premium Paid (AML) - ₹10,000</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="reinsurer-content">
+      <section class="reinsurer-card" aria-labelledby="reinsurer-details-title">
+        <h2 id="reinsurer-details-title">Reinsurer Details</h2>
+        <div class="reinsurer-table-wrap">
+          <table class="reinsurer-details-table" aria-label="Reinsurer Details">
+            <colgroup><col style="width:8%"><col style="width:13%"><col style="width:13%"><col style="width:24%"><col style="width:13%"><col style="width:13%"><col style="width:16%"></colgroup>
+            <thead><tr><th scope="col">Product Code</th><th scope="col">Reinsurer Name - System</th><th scope="col">Reinsurer Name - UW</th><th scope="col">Reinsurer Remarks</th><th scope="col">Reinsurer Decision</th><th scope="col">Reinsurer Decision ID</th><th scope="col">Reinsurer-UW Decision Match</th></tr></thead>
+            <tbody>
+              <tr data-product-code="ABC">
+                <td><strong>ABC</strong></td>
+                <td>Munich Re</td>
+                <td>—</td>
+                <td><input type="text" name="remarks-ABC" aria-label="Reinsurer Remarks for ABC" placeholder="Enter remarks"></td>
+                <td><select name="decision-ABC" aria-label="Reinsurer Decision for ABC"><option value="">Select</option><option value="Standard">Standard</option><option value="Non Standard">Non Standard</option><option value="Decline">Decline</option><option value="Postpone">Postpone</option></select></td>
+                <td><input type="text" name="decision-id-ABC" aria-label="Reinsurer Decision ID for ABC" placeholder="Enter decision ID"></td>
+                <td><select name="decision-match-ABC" aria-label="Reinsurer-UW Decision Match for ABC"><option value="">Select</option><option value="Yes">Yes</option><option value="No">No</option></select></td>
+              </tr>
+              <tr data-product-code="CI">
+                <td><strong>CI</strong></td>
+                <td>Scor RE</td>
+                <td>—</td>
+                <td><input type="text" name="remarks-CI" aria-label="Reinsurer Remarks for CI" placeholder="Enter remarks"></td>
+                <td><select name="decision-CI" aria-label="Reinsurer Decision for CI"><option value="">Select</option><option value="Standard">Standard</option><option value="Non Standard">Non Standard</option><option value="Decline">Decline</option><option value="Postpone">Postpone</option></select></td>
+                <td><input type="text" name="decision-id-CI" aria-label="Reinsurer Decision ID for CI" placeholder="Enter decision ID"></td>
+                <td><select name="decision-match-CI" aria-label="Reinsurer-UW Decision Match for CI"><option value="">Select</option><option value="Yes">Yes</option><option value="No">No</option></select></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <div class="reinsurer-actions" aria-label="Reinsurer actions">
+        <button id="referral-sheet" class="reinsurer-action" type="button">Referral Sheet</button>
+        <button id="back-to-cuw" class="reinsurer-action" type="button">Back TO CUW</button>
+        <button id="save-close" class="reinsurer-action primary" type="button">Save &amp; close</button>
+      </div>
+    </div>
+  </main>
+
+  <dialog id="break-dialog" class="break-dialog" aria-labelledby="break-title">
+    <form method="dialog">
+      <h2 id="break-title">Set Break Time</h2>
+      <label>Break Duration<select id="break-duration"><option value="">Select</option><option value="15">15 minutes</option><option value="30">30 minutes</option><option value="45">45 minutes</option><option value="60">60 minutes</option><option value="90">90 minutes</option><option value="120">120 minutes</option></select></label>
+      <label>Break Reason<select><option value="">Select</option><option>Tea / Coffee Break</option><option>Lunch Break</option><option>Personal Work</option><option>Meeting</option><option>System Issue</option></select></label>
+      <div class="break-actions"><button value="cancel">Cancel</button><button value="confirm">Confirm</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="back-to-cuw-dialog" class="cuw-dialog" aria-labelledby="back-to-cuw-title">
+    <div class="cuw-dialog-header">
+      <h2 id="back-to-cuw-title">Back TO CUW</h2>
+      <button id="close-cuw-dialog" class="cuw-close" type="button" aria-label="Close Back TO CUW popup">×</button>
+    </div>
+    <form id="back-to-cuw-form" class="cuw-form" novalidate>
+      <div class="cuw-field">
+        <label for="cuw-reason">Reason <span class="required-marker" aria-hidden="true">*</span></label>
+        <select id="cuw-reason" name="reason" required autofocus aria-describedby="cuw-reason-error">
+          <option value="">Select reason</option>
+          <option value="Additional review required">Additional review required</option>
+          <option value="Clarification required">Clarification required</option>
+          <option value="Additional documents required">Additional documents required</option>
+          <option value="Other">Other</option>
+        </select>
+        <small id="cuw-reason-error" class="cuw-error" hidden>Please select a reason.</small>
+      </div>
+      <div class="cuw-field">
+        <label for="cuw-remark">Remark <span class="required-marker" aria-hidden="true">*</span></label>
+        <input id="cuw-remark" name="remark" type="text" required placeholder="Enter remark" aria-describedby="cuw-remark-error">
+        <small id="cuw-remark-error" class="cuw-error" hidden>Please enter a remark.</small>
+      </div>
+      <div class="cuw-submit-row"><button class="reinsurer-action primary" type="submit">Submit</button></div>
+    </form>
+  </dialog>
+  <div id="cuw-status" class="prototype-toast" role="status" aria-live="polite" hidden></div>
+
+  <script>
+    const $ = (selector) => document.querySelector(selector);
+    const cuwDialog = $('#back-to-cuw-dialog');
+    const cuwForm = $('#back-to-cuw-form');
+    const cuwReason = $('#cuw-reason');
+    const cuwRemark = $('#cuw-remark');
+    let cuwStatusTimer;
+    let lastCuwSubmission = null;
+    function showCuwFieldError(field, invalid) {
+      field.setAttribute('aria-invalid', String(invalid));
+      $(`#${field.id}-error`).hidden = !invalid;
+    }
+    $('#back-to-cuw').addEventListener('click', () => {
+      cuwForm.reset();
+      showCuwFieldError(cuwReason, false);
+      showCuwFieldError(cuwRemark, false);
+      $('#cuw-status').hidden = true;
+      cuwDialog.showModal();
+    });
+    $('#close-cuw-dialog').addEventListener('click', () => cuwDialog.close());
+    cuwReason.addEventListener('change', () => showCuwFieldError(cuwReason, !cuwReason.value));
+    cuwRemark.addEventListener('input', () => showCuwFieldError(cuwRemark, !cuwRemark.value.trim()));
+    cuwForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const reason = cuwReason.value;
+      const remark = cuwRemark.value.trim();
+      showCuwFieldError(cuwReason, !reason);
+      showCuwFieldError(cuwRemark, !remark);
+      if (!reason || !remark) {
+        (!reason ? cuwReason : cuwRemark).focus();
+        return;
+      }
+      // Prototype submission. Connect the return-to-CUW API here when integrating.
+      lastCuwSubmission = { reason, remark };
+      cuwDialog.close();
+      $('#cuw-status').textContent = 'Back TO CUW details submitted successfully.';
+      $('#cuw-status').hidden = false;
+      clearTimeout(cuwStatusTimer);
+      cuwStatusTimer = setTimeout(() => { $('#cuw-status').hidden = true; }, 4000);
+    });
+    const userButton = $('#user-button');
+    const userMenu = $('#user-popover');
+    function closeUserMenu() {
+      userMenu.hidden = true;
+      userButton.setAttribute('aria-expanded', 'false');
+    }
+    userButton.addEventListener('click', () => {
+      userMenu.hidden = !userMenu.hidden;
+      userButton.setAttribute('aria-expanded', String(!userMenu.hidden));
+    });
+    document.addEventListener('click', (event) => {
+      if (!event.target.closest('.user-menu-wrap')) closeUserMenu();
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') closeUserMenu();
+    });
+    userMenu.addEventListener('click', (event) => {
+      const action = event.target.closest('[data-action]')?.dataset.action;
+      closeUserMenu();
+      if (action === 'logout') window.location.href = './login.html';
+      if (action === 'break') $('#break-dialog').showModal();
+    });
+    $('.back').addEventListener('click', () => { window.location.href = './landing-prototype.html'; });
+    try { $('#header-user-name').textContent = localStorage.getItem('username') || 'ipru75474'; }
+    catch { $('#header-user-name').textContent = 'ipru75474'; }
+    function updateClock() {
+      const parts = Object.fromEntries(new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
+      }).formatToParts(new Date()).map((part) => [part.type, part.value]));
+      $('#current-time').textContent = `${Number(parts.day)} ${parts.month} ${parts.year}, ${parts.hour}:${parts.minute}:${parts.second} ${String(parts.dayPeriod).toLowerCase()}`;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+    let sessionSeconds = 15 * 60;
+    setInterval(() => {
+      sessionSeconds = Math.max(0, sessionSeconds - 1);
+      $('#session-time').textContent = `${String(Math.floor(sessionSeconds / 60)).padStart(2, '0')}:${String(sessionSeconds % 60).padStart(2, '0')}`;
+    }, 1000);
+  </script>
+</body>
+</html>
