@@ -7853,6 +7853,14 @@
         "miscMastId": "85",
         "type": "DVT_TERM_DESC"
       },
+       {
+        "code": "REF_GUW",
+        "description": "Refer to GUW",
+        "value": "Refer to GUW",
+        "isActive": "Y",
+        "miscMastId": "85",
+        "type": "DVT_TERM_DESC"
+      },
       {
         "code": "MEDIASSIST",
         "description": "MediAssist",
