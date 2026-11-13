@@ -6,10 +6,12 @@ import {
   clearDrsTaskIds,
   formatDateTime,
   canInvokeBreRetrigger,
+  getDrsRoleType,
   readApiErrorMessage,
   setBreRetriggerCount,
   getMasterList,
 } from "@insurance-poc/utils";
+import { getGroupDrsTaskConfig } from "../../config/drsTaskConfig";
 
 import { Box, Typography } from "@mui/material";
 import {
@@ -125,7 +127,15 @@ const DvtUser = () => {
   const isFinancialRoute = lowerPath.includes("/drs/financial");
   const isMedicalRoute = lowerPath.includes("/drs/medical");
   const requestedApplicationNo = applicationNoParam?.trim() ?? "";
-  const drs = useGetGroupDrsQuery(requestedApplicationNo, { skip: requestedApplicationNo.length === 0 });
+  const roleType = params.get("role")?.trim() || getDrsRoleType();
+  const drsTaskConfig = getGroupDrsTaskConfig(roleType);
+  const drs = useGetGroupDrsQuery(
+    {
+      applicationNo: requestedApplicationNo,
+      ...drsTaskConfig,
+    },
+    { skip: requestedApplicationNo.length === 0 },
+  );
   const applicationNo = requestedApplicationNo || drs.data?.applicationNo || "";
   const drsBasePath = applicationNo.length > 0 ? drsRoutePath(applicationNo) : "";
   const financialPath =
