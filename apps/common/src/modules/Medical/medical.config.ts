@@ -214,9 +214,9 @@ export const MEDICAL_APPLICATION_FORM_LIFESTYLE_FIELDS: readonly MedicalFieldDef
   ["Tobacco", "", false],
   ["Alcohol", "", false],
   ["Narcotics", "", false],
-  // ["Adverse", "", false],
-  // ["Hazardous Occupation", "", false],
-  // ["Illness Impairment", "", false],
+  ["Adverse", "", false],
+  ["Hazardous Occupation", "", false],
+  ["Illness Impairment", "", false],
 ];
 
 export const MEDICAL_APPLICATION_FORM_LIFESTYLE_SECTION: MedicalSection = {

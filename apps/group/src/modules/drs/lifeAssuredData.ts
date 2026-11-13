@@ -83,13 +83,83 @@ const readFields = (value: unknown): FieldData[] =>
   asArray(value)
     .filter(isRecord)
     .map((item) => {
-      const rawVal = text(item.value);
-      const strVal = typeof rawVal === "string" ? rawVal.trim() : typeof rawVal === "number" ? String(rawVal) : "";
+      const strVal = str(item.value).trim();
       return {
         label: str(item.label),
         value: strVal.length > 0 ? strVal : "-",
       };
     });
+
+// Fixed field lists for the Personal & KYC tab. The UI always shows these fields in this order;
+// a field missing from the API response renders as "-" instead of disappearing.
+const PERSONAL_LABELS = [
+  "Applicant Name",
+  "Date of Birth",
+  "Age",
+  "Gender",
+  "Marital Status",
+  "Nationality",
+  "Country of Residence",
+  "Education",
+  "Resident Status",
+  "Designation",
+  "Disabled",
+  "Percentage Of Impairment",
+  "Type Of Impairment",
+  "UDID Number",
+  "UDS Link",
+  "City of Resident",
+  "State of Resident",
+] as const;
+
+const KYC_LABELS = [
+  "PRAN Number",
+  "PRAN Number Verification",
+  "PAN Number",
+  "PAN Flag",
+  "PAN Aadhar Seeding Status",
+  "Identity Proof Type",
+  "Identity Proof Expiry Date",
+  "Identity Proof Number",
+  "Address Proof",
+  "Income Proof",
+  "CKYC Number",
+  "PEP",
+  "Criminal Proceedings",
+] as const;
+
+const ADDRESS_LABELS = [
+  "Address Line 1",
+  "Address Line 2",
+  "Address Line 3",
+  "Landmark",
+  "City",
+  "State",
+  "Country",
+  "Pin Code",
+] as const;
+
+const CONTACT_LABELS = [
+  "Mobile Number",
+  "Email Id",
+  "Alternate Mobile",
+  "STD/ISD Code",
+  "Land Line Number",
+  "Email Pref",
+  "SMS Pref",
+  "Negative Pincode",
+] as const;
+
+const LIFESTYLE_LABELS = ["Height", "Weight", "Other Medical History"] as const;
+
+/** Builds one field per expected label (case-insensitive match); missing labels get "-". */
+const readFixedFields = (value: unknown, labels: readonly string[]): FieldData[] => {
+  const received = readFields(value);
+  return labels.map((label) => ({
+    label,
+    value: received.find((field) => field.label.trim().toLowerCase() === label.toLowerCase())?.value ?? "-",
+  }));
+};
 
 /** Finds an entry of a [{ label, ... }] list by label (case-insensitive). */
 const findByLabel = (entries: unknown, label: string): JsonRecord | undefined =>
@@ -220,8 +290,7 @@ const PRODUCT_COLUMNS = [
 const readProductFields = (productDetails: unknown): FieldData[] => {
   const value = asRecord(asRecord(productDetails).value);
   const columns = asArray(value.columns);
-  const row = asArray(value.rows).find(isRecord);
-  if (!row) return [];
+  const row = asArray(value.rows).find(isRecord) ?? {};
   return PRODUCT_COLUMNS.map(({ key, label }, index) => ({
     label: optionalText(asRecord(columns[index]).label) ?? label,
     value: text(row[key]),
@@ -277,10 +346,16 @@ const toApplicant = (member: JsonRecord, total: number, riders: RiderEditRow[]):
     ifsc: "",
   }));
 
-  const personalFields = readFields(groups[0]);
-  const rawKycFields = readFields(groups[1]);
-  const communicationAddress = readFields(findByLabel(contactAndAddress, "Communication Address")?.value);
-  const contactDetails = readFields(findByLabel(contactAndAddress, "Contact Details")?.value);
+  const personalFields = readFixedFields(groups[0], PERSONAL_LABELS);
+  const rawKycFields = readFixedFields(groups[1], KYC_LABELS);
+  const communicationEntries = findByLabel(contactAndAddress, "Communication Address")?.value;
+  const communicationAddress = readFixedFields(communicationEntries, ADDRESS_LABELS);
+  // "Negative Pincode" is sent with the communication address; it is shown under Contact Details.
+  // Communication entries come first, so they win over a same-named Contact Details entry.
+  const contactDetails = readFixedFields(
+    [...asArray(communicationEntries), ...asArray(findByLabel(contactAndAddress, "Contact Details")?.value)],
+    CONTACT_LABELS,
+  );
 
   return {
     id: memberType,
@@ -292,7 +367,7 @@ const toApplicant = (member: JsonRecord, total: number, riders: RiderEditRow[]):
     personalFields,
     kycFields: rawKycFields.map(maskKycField),
     communicationAddress,
-    permanentAddress: readFields(findByLabel(contactAndAddress, "Permanent Address")?.value),
+    permanentAddress: readFixedFields(findByLabel(contactAndAddress, "Permanent Address")?.value, ADDRESS_LABELS),
     contactDetails,
     productFields: readProductFields(member.product_details),
     nominees,
@@ -310,7 +385,7 @@ const toApplicant = (member: JsonRecord, total: number, riders: RiderEditRow[]):
     editRiders: riders,
     editLoan: readLoan(member.base_and_loan_details),
     lifestyleFields: [
-      ...readFields(healthInformation?.value),
+      ...readFixedFields(healthInformation?.value, LIFESTYLE_LABELS),
       { label: "Lifestyle Habits", value: text(lifestyleHabits?.value) },
     ],
   };
