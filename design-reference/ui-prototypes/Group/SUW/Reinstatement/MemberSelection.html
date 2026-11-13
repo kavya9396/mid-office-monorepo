@@ -1,0 +1,559 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Member Selection</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mulish:ital,wght@0,200..1000;1,200..1000&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 100%; height: 100%; }
+    body { font-family: Mulish, Arial, sans-serif; color: #292421; background: #fff8f3; }
+    button, select { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, select:focus-visible, [role="button"]:focus-visible { outline: 2px solid #e45f14; outline-offset: 2px; }
+    .hidden { display: none !important; }
+
+    /* Header.tsx on the DRS route */
+    .app-header { height: 57px; display: flex; align-items: stretch; position: sticky; top: 0; z-index: 1200; overflow: hidden; flex-shrink: 0; background: linear-gradient(to bottom, #f58220 0%, #e65318 42%, #c92e27 72%, #98252b 100%); box-shadow: 0 3px 12px rgba(111,24,24,.25); }
+    .back-button { min-width: 34px; height: 57px; padding: 0 9px; flex: none; display: grid; place-items: center; border: 0; border-right: 1px solid rgba(255,255,255,.25); border-radius: 0; background: rgba(126,22,31,.42); color: #fff; }
+    .back-button:hover { background: rgba(126,22,31,.62); }
+    .back-button svg { width: 16px; height: 16px; }
+    .header-logo { width: 150px; height: 57px; flex: none; display: block; object-fit: cover; }
+    .header-user-section { min-width: 0; flex: 1; display: flex; justify-content: flex-end; align-items: center; padding: 0 16px; color: #fff; }
+    .header-user-group { display: flex; align-items: center; gap: 12px; }
+    .header-clock { min-width: 175px; padding-right: 12px; border-right: 1px solid rgba(255,255,255,.35); text-align: right; }
+    .header-date { color: rgba(255,255,255,.9); font-size: 12px; line-height: 1.4; white-space: nowrap; }
+    .header-session { margin-top: 2px; font-size: 11px; font-weight: 700; letter-spacing: .2px; }
+    .profile-button { min-width: 0; display: flex; align-items: center; padding: 4px 8px; border: 0; border-radius: 8px; background: transparent; color: #fff; text-transform: none; }
+    .profile-button:hover { background: rgba(255,255,255,.14); }
+    .avatar { width: 35px; height: 35px; margin-right: 8px; flex: none; display: grid; place-items: center; border: 1px solid rgba(255,255,255,.45); border-radius: 50%; background: rgba(255,255,255,.2); }
+    .avatar svg { width: 24px; height: 24px; }
+    .username { min-width: 80px; max-width: 150px; margin-right: 8px; overflow: hidden; text-overflow: ellipsis; text-align: left; white-space: nowrap; font-size: 12px; font-weight: 700; }
+    .profile-chevron { width: 16px; height: 16px; }
+    .profile-menu { position: fixed; top: 65px; right: 16px; z-index: 1300; width: 240px; overflow: hidden; border: 1px solid #f1d7d0; border-radius: 8px; background: #fff; box-shadow: 0 8px 24px rgba(70,20,20,.18); }
+    .profile-menu button { width: 100%; min-height: 48px; display: flex; align-items: center; gap: 12px; padding: 10px 16px; border: 0; background: #fff; color: #323232; text-align: left; font-size: 14px; }
+    .profile-menu button:hover { background: #fff3ee; }
+    .profile-menu button + button { border-top: 1px solid #e0e0e0; }
+    .profile-menu svg { width: 24px; height: 24px; flex: none; color: #9a2529; }
+    .menu-spacer { flex: 1; }
+    .break-minutes { color: #9a2529; font-size: 12px; font-weight: 700; white-space: nowrap; }
+
+    /* DRS.tsx supplies the independently scrolling page area. */
+    .screen-scroll { width: 100%; height: calc(100dvh - 57px); min-height: 0; overflow-y: auto; overflow-x: hidden; background: #f8f6f5; }
+    .member-screen { width: 100%; min-width: 0; position: relative; isolation: isolate; }
+    .summary-sticky { width: 100%; min-width: 0; padding: 6px 4px; background: #fff; align-self: flex-start; }
+    .summary-strip { width: 100%; padding: 4px 17.6px 4px 77.6px; border-left: 1px solid #e45f14; border-radius: 0 0 12px 0; background: #ffead7; color: #000; }
+    .summary-top { display: flex; flex-wrap: nowrap; align-items: center; justify-content: space-between; gap: 12px; min-width: 0; padding-top: 4px; }
+    .product-line { flex: 1 1 0; min-width: 0; overflow-wrap: anywhere; font-size: 11.5px; line-height: 1.65; font-weight: 700; }
+    .summary-strip strong { font-weight: 800; }
+    .app-number { flex-shrink: 0; padding: 4px 12px; border: 1px solid #ead8d1; border-radius: 999px; background: #fff; color: #b71c2c; font-size: 14px; font-weight: 800; line-height: 1.4; white-space: nowrap; }
+    .rider-line, .parameters-line { margin-top: 3.6px; overflow-wrap: anywhere; font-size: 11.5px; line-height: 1.65; font-weight: 500; }
+    .loan-line { margin-top: 3.6px; display: flex; flex-wrap: wrap; align-items: center; column-gap: 6px; row-gap: 2px; color: #000; font-size: 11px; line-height: 1.65; }
+    .loan-item { display: inline-flex; gap: 3px; }
+    .loan-item .loan-value { font-weight: 600; }
+    .parameters-line strong { margin-right: 8px; }
+
+    /* MemberSeclection.tsx member grid */
+    .member-grid { display: grid; grid-template-columns: 1fr; align-items: start; gap: 8px; margin: 0 4px; }
+    .member-card { overflow: hidden; border: 1px solid #e4deda; border-radius: 12px; background: #fff; box-shadow: 0 4px 16px rgba(54,45,40,.06); }
+    .card-title-area { padding: 8.8px 14px; border-bottom: 1px solid #eae4e1; }
+    .card-title { color: #292421; font-size: 13px; font-weight: 900; }
+    .card-subtitle { margin-top: 1.5px; color: #817773; font-size: 9.5px; }
+    .member-head { display: grid; grid-template-columns: 150px 220px minmax(0,1fr) 150px 34px; gap: 8px; padding: 6px 14px; background: #f7f5f4; color: #8a817c; }
+    .member-head span { font-size: 8px; font-weight: 900; letter-spacing: .4px; }
+    .member-row { display: grid; grid-template-columns: minmax(0,1fr) 150px 34px; gap: 8px; align-items: center; padding: 8px 14px; cursor: default; outline: none; transition: background-color .15s ease, transform .15s ease; }
+    .member-row + .member-row { border-top: 1px solid #eee9e6; }
+    .member-row:hover { background: #fff9f5; }
+    .member-row:focus-visible { background: #fff4ec; box-shadow: inset 3px 0 0 #e45f14; }
+    .member-open { min-width: 0; align-self: stretch; display: grid; grid-template-columns: 150px 220px minmax(0,1fr); gap: 8px; align-items: center; border-radius: 4px; cursor: pointer; }
+    .member-open:focus-visible { outline: 2px solid #e45f14; outline-offset: 2px; }
+    .member-type, .decision-pill { width: fit-content; max-width: 100%; padding: 3.6px 8px; border: 1px solid; border-radius: 16px; font-size: 9px; font-weight: 900; white-space: nowrap; }
+    .member-type { min-width: 120px; text-align: center; }
+    .member-type.tone-1 { border-color: #f2c9b5; background: #fff0e8; color: #b54a00; }
+    .member-type.tone-2 { border-color: #d9ccf2; background: #f4f0ff; color: #6c4aa0; }
+    .member-name { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #292421; font-size: 11px; font-weight: 900; }
+    .demographics { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #5c514c; font-size: 9.5px; }
+    .mobile-demographics { display: none; margin-top: 2px; color: #756d69; font-size: 9px; }
+    .decision-pill { overflow: hidden; text-overflow: ellipsis; }
+    .decision-pill.refer { border-color: #f1c97c; background: #fff3e0; color: #9a6200; }
+    .decision-pill.decline { border-color: #f2c4c7; background: #fdebec; color: #b3262e; }
+    .eye-button { width: 34px; height: 34px; padding: 5px; display: grid; place-items: center; border: 0; border-radius: 50%; background: transparent; color: #a92129; }
+    .eye-button:hover { background: #ffead7; }
+    .eye-button svg { width: 20px; height: 20px; }
+
+    /* UWDecision.tsx is rendered immediately after MemberSeclection in DRS.tsx. */
+    .uw-decision-area { margin: 8px 4px 0; padding: 0 8px 8px; }
+    .uw-decision-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; padding: 8px; }
+    .assessment-pair { grid-column: span 2; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); margin: 0; border-bottom: 1px solid #e5e0dd; background: #fcfaf9; }
+    .assessment-field { min-width: 0; padding: 10px 16px; }
+    .assessment-field + .assessment-field { border-left: 1px solid #e5e0dd; }
+    .assessment-field dt { margin-bottom: 6px; color: #938883; font-size: 12px; line-height: 1.4; font-weight: 700; letter-spacing: .3px; }
+    .assessment-field dd { margin: 0; color: #37312e; font-size: 12px; line-height: 1.4; font-weight: 600; overflow-wrap: anywhere; }
+    .uw-select-wrap { min-width: 0; }
+    .uw-select-label { display: block; margin-bottom: 8px; color: #444; font-size: 11px; line-height: 1.2; font-weight: 400; }
+    .uw-select { width: 100%; height: 34px; min-height: 34px; padding: 0 10px; border: 1px solid rgba(0,0,0,.23); border-radius: 6px; background: #fff; color: #292421; font-size: 11px; }
+    .uw-select:invalid { color: #9ca3af; }
+    .uw-select:hover { border-color: #9a2529; }
+    .uw-select:focus { outline: 2px solid #9a2529; outline-offset: 0; }
+    select.mui-enhanced { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; opacity: 0; pointer-events: none; }
+    .mui-select-button { width: 100%; height: 40px; min-height: 40px; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 16px; border: 1px solid rgba(0,0,0,.23); border-radius: 8px; background: #fff; color: #292421; text-align: left; font-size: 16px; font-weight: 400; line-height: 1.2; }
+    .mui-select-button:hover { border-color: #9a2529; }
+    .mui-select-button[aria-expanded="true"], .mui-select-button:focus-visible { outline: none; border: 2px solid #9a2529; padding-left: 15px; padding-right: 15px; }
+    .mui-select-button .mui-placeholder { color: #9ca3af; }
+    .mui-select-button svg { width: 24px; height: 24px; flex: none; color: rgba(0,0,0,.54); }
+    .uw-select-wrap .mui-select-button, .uw-dialog-field .mui-select-button { height: 34px; min-height: 34px; border-radius: 6px; font-size: 11px; }
+    .uw-dialog-field .mui-select-button { font-size: 12px; }
+    .mui-select-menu { position: fixed; z-index: 1700; max-height: min(300px, calc(100dvh - 32px)); overflow-y: auto; padding: 8px 0; border-radius: 4px; background: #fff; box-shadow: 0 5px 5px -3px rgba(0,0,0,.2), 0 8px 10px 1px rgba(0,0,0,.14), 0 3px 14px 2px rgba(0,0,0,.12); }
+    .mui-select-menu button { width: 100%; min-height: 36px; display: flex; align-items: center; padding: 6px 16px; border: 0; background: transparent; color: rgba(0,0,0,.87); text-align: left; font-size: 16px; font-weight: 400; line-height: 1.5; white-space: nowrap; }
+    .mui-select-menu button:hover, .mui-select-menu button:focus-visible { outline: none; background: rgba(0,0,0,.04); }
+    .mui-select-menu button[aria-selected="true"] { background: #f8e9ea; color: #7b1d21; }
+    .mui-select-menu button[aria-selected="true"]:hover, .mui-select-menu button[aria-selected="true"]:focus-visible { background: #f3d6d8; }
+    .mui-select-menu button:disabled { opacity: .38; cursor: default; }
+    .uw-form-dialog { max-width: min(1200px,96vw); max-height: 92dvh; border-radius: 10px; }
+    .uw-form-content { padding: 12px; }
+    .uw-dialog-top { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; padding: 8px; }
+    .uw-dialog-field { min-width: 0; }
+    .uw-dialog-field label { display: block; margin-bottom: 4px; color: #444; font-size: 11px; }
+    .uw-dialog-field textarea, .uw-dialog-field input, .uw-dialog-field select { width: 100%; min-height: 34px; padding: 7px 10px; border: 1px solid rgba(0,0,0,.23); border-radius: 6px; background: #fff; font-size: 12px; }
+    .uw-dialog-field textarea { min-height: 48px; resize: vertical; }
+    .uw-dialog-field input[type="radio"] { width: auto; min-height: 0; height: auto; padding: 0; margin: 0 4px 0 0; accent-color: #e45f14; }
+    .remarks-count { text-align: right; color: #888; font-size: 10px; }
+    .uw-dialog-details { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; padding: 8px; }
+    .uw-save-row { display: flex; justify-content: center; gap: 8px; margin-top: 16px; }
+    .uw-save-row button { min-width: 120px; height: 32px; padding: 0 16px; border: 0; border-radius: 50px; background: #9a2529; color: #fff; font-size: 12px; font-weight: 600; }
+    .uw-save-row button:hover { background: #8f2026; }
+    .uw-review-title { margin-bottom: 12px; color: #2b2b2b; font-size: 12px; font-weight: 700; }
+    .uw-review-values { display: grid; gap: 8px; padding: 12px; border: 1px solid #e5e0dd; border-radius: 8px; background: #fbf8f6; }
+    .uw-review-row { display: grid; grid-template-columns: minmax(140px,.8fr) 1.2fr; gap: 8px; align-items: center; font-size: 12px; }
+    .uw-review-row span:first-child { color: #756d69; }.uw-review-row span:last-child { font-size: 11px; font-weight: 600; }
+
+    /* CustomDialog.tsx, including its title and content spacing. */
+    .dialog-backdrop { position: fixed; inset: 0; z-index: 1400; display: flex; align-items: center; justify-content: center; padding: 32px; background: rgba(0,0,0,.5); }
+    .dialog { position: relative; width: 100%; max-width: 600px; max-height: calc(100dvh - 64px); overflow-y: auto; border-radius: 16px; background: #fff; box-shadow: 0 11px 15px -7px rgba(0,0,0,.2), 0 24px 38px 3px rgba(0,0,0,.14), 0 9px 46px 8px rgba(0,0,0,.12); }
+    .dialog.large { max-width: 1200px; }
+    .dialog-close { position: absolute; top: 6px; right: 6px; z-index: 2; width: 40px; height: 40px; padding: 8px; display: grid; place-items: center; border: 0; border-radius: 50%; background: transparent; color: #9a2529; }
+    .dialog-close:hover { background: rgba(0,0,0,.04); }
+    .dialog-close svg { width: 24px; height: 24px; }
+    .dialog-title { min-height: 56px; padding: 16px 56px 8px 24px; font-size: 20px; font-weight: 700; }
+    .dialog-content { padding: 8px 48px 24px 24px; }
+    .decision-content { display: grid; gap: 8px; }
+    .decision-heading { padding: 8px; border-radius: 4px; background: #e45f14; color: #fff; font-size: 13px; font-weight: 800; }
+    .decision-name { color: #5c514c; font-size: 12px; }
+    .decision-fields { display: grid; gap: 12px; padding: 12px; border: 1px solid #e5e0dd; border-radius: 8px; background: #fbf8f6; }
+    .decision-field { display: grid; grid-template-columns: minmax(160px,.8fr) minmax(0,1.2fr); gap: 12px; align-items: center; }
+    .decision-label { color: #827671; font-size: 12px; }
+    .decision-value { color: #292421; font-size: 13px; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .rider-cards { display: grid; grid-template-columns: repeat(2,1fr); gap: 6.4px; min-width: 720px; }
+    .rider-card { padding: 7.2px; border: 1px solid #e4dedb; border-left: 4px solid #a92129; border-radius: 8.8px; background: #faf8f7; }
+    .rider-card-title { color: #332d2a; font-size: 12px; font-weight: 900; }
+    .rider-card-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 5.6px; margin-top: 6px; }
+    .compact-field { min-width: 0; padding: 5.6px; border: 1px solid #e4dedb; border-radius: 4px; background: #fff; }
+    .compact-label { color: #827671; font-size: 9px; }
+    .compact-value { margin-top: 2px; color: #332d2a; font-size: 11px; font-weight: 800; overflow-wrap: anywhere; }
+    .break-form { display: grid; gap: 8px; }
+    .break-form label { display: block; color: #444; font-size: 14px; font-weight: 400; }
+    .break-form label .mui-select-button { margin-top: 8px; }
+    #breakBackdrop .dialog-title { color: #9a2529; font-size: 16px; font-weight: 800; text-transform: uppercase; }
+    .dialog-actions { display: flex; justify-content: center; padding: 8px 16px 16px; }
+    .dialog-actions button { min-width: 110px; padding: 8px 40px; border: 0; border-radius: 50px; background: #9a2529; color: #fff; font-size: 12px; font-weight: 700; }
+
+    @media (min-width: 900px) { .summary-sticky { position: sticky; top: 0; z-index: 10; } }
+    @media (max-width: 899px) {
+      .member-head { display: none; }
+      .member-row { grid-template-columns: minmax(0,1fr) 34px; gap: 6px; padding: 8px 10px; }
+      .member-open { grid-column: 1 / -1; grid-template-columns: 1fr; }
+      .member-type { min-width: 112px; }
+      .demographics { display: none; }
+      .mobile-demographics { display: block; }
+      .rider-cards { min-width: 0; grid-template-columns: 1fr; }
+      .uw-decision-grid { grid-template-columns: 1fr; }.assessment-pair { grid-column: 1; }
+      .uw-dialog-top { grid-template-columns: 1fr; }.uw-dialog-details { grid-template-columns: repeat(2,minmax(0,1fr)); }
+    }
+    @media (max-width: 599px) {
+      .header-user-section { padding: 0 8px; }.header-user-group { gap: 4px; }.header-clock, .username { display: none; }.profile-button { padding: 4px; }
+      .summary-strip { padding: 4px 12px 4px 72px; }.product-line, .rider-line, .parameters-line { font-size: 10px; }.loan-line { font-size: 10px; }.app-number { font-size: 12px; }
+      .card-title-area { padding-left: 10px; padding-right: 10px; }
+      .decision-field { grid-template-columns: minmax(110px,.8fr) minmax(0,1.2fr); }
+      .uw-dialog-details { grid-template-columns: 1fr; }
+      .dialog-backdrop { padding: 16px; }.dialog { max-height: calc(100dvh - 32px); }
+      .mui-select-menu button { min-height: 48px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <button class="back-button" aria-label="Back to Inbox" title="Back to Inbox"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 20.67c-.19 0-.38-.07-.53-.22l-6.52-6.52a2.73 2.73 0 0 1 0-3.86l6.52-6.52a.75.75 0 1 1 1.06 1.06L9.01 11.13a1.23 1.23 0 0 0 0 1.74l6.52 6.52a.75.75 0 0 1-.53 1.28Z"/></svg></button>
+    <img class="header-logo" src="ICICI%20Logo.svg" alt="ICICI Life Logo">
+    <div class="header-user-section"><div class="header-user-group">
+      <div class="header-clock"><div class="header-date" id="headerDate"></div><div class="header-session">Session: <span id="sessionTime">15:00</span></div></div>
+      <button class="profile-button" id="profileButton" aria-label="User menu" aria-haspopup="true" aria-expanded="false">
+        <span class="avatar"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12.75A5.75 5.75 0 1 1 12 1.25a5.75 5.75 0 0 1 0 11.5Zm0-10a4.25 4.25 0 1 0 0 8.5 4.25 4.25 0 0 0 0-8.5ZM20.59 22.75a.75.75 0 0 1-.75-.75c0-3.45-3.52-6.25-7.84-6.25S4.16 18.55 4.16 22a.75.75 0 0 1-1.5 0c0-4.27 4.19-7.75 9.34-7.75s9.34 3.48 9.34 7.75a.75.75 0 0 1-.75.75Z"/></svg></span>
+        <span class="username" id="memberUserName">ipru74574</span><svg class="profile-chevron" id="profileChevron" viewBox="0 0 24 24" fill="currentColor"><path d="M12 16.8c-.7 0-1.4-.27-1.93-.8L3.55 9.48a.75.75 0 0 1 1.06-1.06l6.52 6.52c.48.48 1.26.48 1.74 0l6.52-6.52a.75.75 0 0 1 1.06 1.06L13.93 16c-.53.53-1.23.8-1.93.8Z"/></svg>
+      </button>
+    </div></div>
+  </header>
+  <div class="profile-menu hidden" id="profileMenu">
+    <button id="breakTimeButton">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 22.75C6.76 22.75 2.5 18.49 2.5 13.25S6.76 3.75 12 3.75s9.5 4.26 9.5 9.5a.75.75 0 0 1-1.5 0c0-4.41-3.59-8-8-8s-8 3.59-8 8 3.59 8 8 8a.75.75 0 0 1 0 1.5Z" fill="#292D32"/><path d="M12 13.75a.75.75 0 0 1-.75-.75V8a.75.75 0 0 1 1.5 0v5a.75.75 0 0 1-.75.75ZM15 2.75H9a.75.75 0 0 1 0-1.5h6a.75.75 0 0 1 0 1.5ZM19 21.75a.75.75 0 0 1-.75-.75v-4a.75.75 0 0 1 1.5 0v4a.75.75 0 0 1-.75.75ZM16 21.75a.75.75 0 0 1-.75-.75v-4a.75.75 0 0 1 1.5 0v4a.75.75 0 0 1-.75.75Z" fill="#292D32"/></svg>
+      <span>Breaktime</span><span class="menu-spacer"></span><span class="break-minutes">30 mins</span>
+      <svg viewBox="0 0 24 24" fill="currentColor" style="width:16px;height:16px;color:#9a2529" aria-hidden="true"><path d="M8.91 20.67a.75.75 0 0 1-.53-1.28l6.52-6.52a1.23 1.23 0 0 0 0-1.74L8.38 4.61a.75.75 0 0 1 1.06-1.06l6.52 6.52a2.73 2.73 0 0 1 0 3.86l-6.52 6.52a.75.75 0 0 1-.53.22Z"/></svg>
+    </button>
+    <button id="logoutButton"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15.24 22.27h-.13c-4.44 0-6.58-1.75-6.95-5.67a.75.75 0 0 1 1.5-.14c.29 3.14 1.77 4.31 5.46 4.31h.13c4.07 0 5.51-1.44 5.51-5.51V8.74c0-4.07-1.44-5.51-5.51-5.51h-.13c-3.71 0-5.19 1.19-5.46 4.39a.75.75 0 0 1-1.51-.13c.34-3.98 2.49-5.76 6.96-5.76h.13c4.91 0 7.01 2.1 7.01 7.01v6.52c0 4.91-2.1 7.01-7.01 7.01Z" fill="#292D32"/><path d="M15 12.75H3.62a.75.75 0 0 1 0-1.5H15a.75.75 0 0 1 0 1.5Z" fill="#292D32"/><path d="M5.85 16.1a.75.75 0 0 1-.53-.22l-3.35-3.35a.75.75 0 0 1 0-1.06l3.35-3.35a.75.75 0 0 1 1.06 1.06L3.56 12l2.82 2.82a.75.75 0 0 1-.53 1.28Z" fill="#292D32"/></svg><span>Logout</span></button>
+  </div>
+
+  <main class="screen-scroll">
+    <div class="member-screen">
+      <div class="summary-sticky"><div class="summary-strip">
+        <div class="summary-top"><div class="product-line"><strong>Product:</strong> ICICI Pru GIFT Pro / <strong>Channel:</strong> Agency / SA - ₹10,68,000 / <strong>Call Type: Policy Level Change / Sub Type: Reinstatement / PTD: - / RCD: - </strong></div><div class="app-number">App No. - OB90222471</div></div>
+        <div class="rider-line"><strong>Riders:</strong> WOP - SA ₹15,00,000 / BTBB - SA ₹25,00,000 / TI Rider - SA ₹25,00,000 / ADBR - SA ₹25,00,000 / CI Rider - SA ₹25,00,000</div>
+        <div class="loan-line" id="loanSummary"></div>
+        <div class="parameters-line"><strong>Eligibility Parameters:</strong> TSA - ₹10,00,000 / TRSA - ₹5,00,000 / TPSA - ₹10,00,000 / TFSA - ₹10,00,000 / TSSA - ₹10,00,000 / ADBR TSA - ₹5,00,000 / ATPD TSA - ₹5,00,000 / CI Rider TSA - ₹3,00,000 / CI Rider TRSA - ₹3,00,000 / WOP TSA - ₹10,00,000 / BTBB TSA - ₹5,00,000 / Total Premium - ₹10,000</div>
+      </div></div>
+      <div class="member-grid"><div class="member-card">
+        <div class="card-title-area"><div class="card-title">Select Member</div><div class="card-subtitle">2 members are available in this application</div></div>
+        <div class="member-head"><span>Life</span><span>Name</span><span>Details</span><span>UW Decision</span><span></span></div>
+        <div id="memberRows"></div>
+      </div></div>
+    </div>
+    <div class="uw-decision-area">
+      <div class="uw-decision-grid">
+        <dl class="assessment-pair">
+          <div class="assessment-field"><dt>Financial Decision</dt><dd>Standard</dd></div>
+          <div class="assessment-field"><dt>Medical Decision</dt><dd>Standard</dd></div>
+        </dl>
+        <div class="uw-select-wrap"><label class="uw-select-label" for="caseUWDecision">Case UW Decision</label>
+          <select class="uw-select" id="caseUWDecision" required>
+            <option value="" disabled selected>Select</option>
+            <option value="STD">Standard</option>
+            <option value="BOR_STD">Borderline Standard</option>
+            <option value="REJ">Reject</option>
+            <option value="DC">Decline</option>
+            <option value="POSTP">Postpone</option>
+            <option value="CO">Counter Offer</option>
+            <option value="HOLD">Hold</option>
+            <option value="REF_IT">Refer to IT</option>
+            <option value="REF_REINS">Refer to Reinsurer</option>
+            <option value="REF_CMO">Refer to HO CMO</option>
+            <option value="REF_RISK">Refer to Risk</option>
+            <option value="REF_ACU">Refer to Accuity</option>
+            <option value="AMR">Raise Requirement</option>
+            <option value="REF_CUW_CLM">Refer to CUW claim</option>
+            <option value="APPROVER">Refer to Approver</option>
+          </select>
+        </div>
+      </div>
+      <div class="uw-save-row hidden" id="uwSubmitRow"><button id="uwSubmit">Submit</button></div>
+    </div>
+  </main>
+
+  <div class="dialog-backdrop hidden" id="decisionBackdrop"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="decisionHeading"><button class="dialog-close" id="decisionClose" aria-label="Close dialog"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 22.75a10.75 10.75 0 1 1 0-21.5 10.75 10.75 0 0 1 0 21.5Zm0-20a9.25 9.25 0 1 0 0 18.5 9.25 9.25 0 0 0 0-18.5Zm-2.83 12.83a.75.75 0 0 1-.53-1.28l5.66-5.66a.75.75 0 0 1 1.06 1.06L9.7 15.36a.75.75 0 0 1-.53.22Zm5.66 0a.75.75 0 0 1-.53-.22L8.64 9.7A.75.75 0 0 1 9.7 8.64l5.66 5.66a.75.75 0 0 1-.53 1.28Z"/></svg></button><div class="dialog-title">&nbsp;</div><div class="dialog-content"><div class="decision-content"><div class="decision-heading" id="decisionHeading"></div><div class="decision-name" id="decisionName"></div><div class="decision-fields" id="decisionFields"></div></div></div></div></div>
+  <div class="dialog-backdrop hidden" id="riderBackdrop"><div class="dialog large" role="dialog" aria-modal="true" aria-label="Rider Details"><button class="dialog-close" id="riderClose" aria-label="Close dialog">×</button><div class="dialog-title">Rider Details</div><div class="dialog-content"><div class="rider-cards" id="riderCards"></div></div></div></div>
+  <div class="dialog-backdrop hidden" id="breakBackdrop"><div class="dialog" role="dialog" aria-modal="true" aria-label="Set Break Time"><button class="dialog-close" id="breakClose" aria-label="Close dialog">×</button><div class="dialog-title">Set Break Time</div><div class="dialog-content"><div class="break-form"><label>Break Duration<select id="breakDuration"><option value="">Select</option><option value="15">15 minutes</option><option value="30">30 minutes</option><option value="45">45 minutes</option><option value="60">60 minutes</option><option value="90">90 minutes</option><option value="120">120 minutes</option></select></label><label>Break Reason<select id="breakReason"><option value="">Select</option><option value="tea">Tea / Coffee Break</option><option value="lunch">Lunch Break</option><option value="personal">Personal Work</option><option value="meeting">Internal Meeting</option><option value="system">System Issue</option></select></label></div></div><div class="dialog-actions"><button id="breakConfirm">Confirm</button></div></div></div>
+  <div class="dialog-backdrop hidden" id="uwFormBackdrop"><div class="dialog uw-form-dialog" role="dialog" aria-modal="true" aria-label="UW Decision"><button class="dialog-close" id="uwFormClose" aria-label="Close dialog">×</button><div class="uw-form-content"><div class="uw-dialog-top"><div class="uw-dialog-field"><label for="uwRemarks">UW Remarks</label><textarea id="uwRemarks" maxlength="10000" placeholder="Enter remarks..."></textarea><div class="remarks-count" id="remarksCount">0/10000</div></div><div class="uw-dialog-field"><label for="uwDialogDecision">Case UW Decision</label><select id="uwDialogDecision"></select></div></div><div class="uw-dialog-details" id="uwDialogDetails"></div><div class="uw-save-row"><button id="uwSave">Save</button></div></div></div></div>
+  <div class="dialog-backdrop hidden" id="uwReviewBackdrop"><div class="dialog" role="dialog" aria-modal="true" aria-label="Review UW Decision"><button class="dialog-close" id="uwReviewClose" aria-label="Close dialog">×</button><div class="dialog-content" style="padding-top:20px"><div class="uw-review-title">Review UW Decision</div><div class="uw-review-values" id="uwReviewValues"></div><div class="uw-save-row"><button id="uwReviewCancel" style="border:1px solid #9a2529;background:#fff;color:#9a2529">Cancel</button><button id="uwReviewConfirm">Submit</button></div></div></div></div>
+
+  <script>
+    // Derived from mock/drs/drs.mock.json and MemberSeclection.tsx's enabled demo UW decisions.
+    const members = [
+      {
+        type: "Life Assured 1",
+        name: "Rudra Prakash Sangha",
+        demographics: "38 yrs / Male / Graduate / SPVT / ₹50,00,000 p.a. / mumbai",
+        decision: "Refer to HOD",
+        tone: "refer",
+        details: [
+          ["Case UW Decision", "Refer to HOD"],
+          ["Outlier", "Medical history requires senior underwriting review"],
+          ["Name of HoD", "Amit Shah (Demo HOD)"],
+          ["Decision Type", "Counter Sign"],
+          ["HOD Reasons", "Approval required beyond the underwriter's authority limit"],
+          ["1st UW Decision", "Standard"],
+          ["1st UW Decision Code", "STD"],
+          ["1st UW Smoker Status", "Non Smoker"]
+        ]
+      },
+      {
+        type: "Life Assured 2",
+        name: "Alisha Rudra Sangha",
+        demographics: "35 yrs / Female / Graduate / SPVT / ₹50,00,000 p.a. / mumbai",
+        decision: "Decline",
+        tone: "decline",
+        details: [
+          ["Case UW Decision", "Decline"],
+          ["Outlier", "Elevated HbA1c"],
+          ["Decision Code", "XXR"],
+          ["Decline Reason", "High than normal level of sugar as per Hemoglobin A1c test"]
+        ]
+      }
+    ];
+    const loanSummaryItems = [
+      ["Top Advisor flag", ""], ["Partner Type", ""], ["Benefit Option", ""],
+      ["Policy Term", ""], ["Premium Paying Term", ""], ["Proposer Type", ""],
+      ["Annual Premium", ""], ["Sum Assured to Premium ratio", ""]
+    ];
+    const riders = [
+      ["WOP", "₹15,00,000", "45", "32", "₹12,000"],
+      ["BTBB", "₹25,00,000", "45", "32", "₹12,000"],
+      ["TI Rider", "₹25,00,000", "45", "32", "₹12,000"],
+      ["ADBR", "₹25,00,000", "45", "32", "₹12,000"],
+      ["CI Rider", "₹25,00,000", "45", "32", "₹12,000"]
+    ];
+    const $ = id => document.getElementById(id);
+    const escapeHtml = value => String(value).replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
+    const eyeIcon = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12.5a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>';
+    let openSelectMenu = null;
+    function closeSelectMenu() {
+      if (!openSelectMenu) return;
+      openSelectMenu.menu.remove();
+      openSelectMenu.button.setAttribute("aria-expanded", "false");
+      openSelectMenu = null;
+    }
+    function refreshMuiSelect(select) {
+      const button = select._muiButton;
+      if (!button) return;
+      const selected = [...select.options].find(option => option.value === select.value);
+      const value = button.querySelector(".mui-select-value");
+      value.textContent = selected?.textContent || "Select";
+      value.classList.toggle("mui-placeholder", !select.value);
+    }
+    function enhanceMuiSelects(scope = document) {
+      scope.querySelectorAll("select:not(.mui-enhanced)").forEach(select => {
+        select.classList.add("mui-enhanced");
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "mui-select-button";
+        button.setAttribute("aria-haspopup", "listbox");
+        button.setAttribute("aria-expanded", "false");
+        button.setAttribute("aria-label", select.getAttribute("aria-label") || select.closest("label")?.textContent.trim() || select.id.replace(/([A-Z])/g, " $1").trim());
+        button.innerHTML = '<span class="mui-select-value"></span><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m7 10 5 5 5-5H7Z"/></svg>';
+        select.insertAdjacentElement("afterend", button);
+        select._muiButton = button;
+        select.addEventListener("change", () => refreshMuiSelect(select));
+        refreshMuiSelect(select);
+        button.addEventListener("click", () => {
+          if (openSelectMenu?.button === button) { closeSelectMenu(); return; }
+          closeSelectMenu();
+          const menu = document.createElement("div");
+          menu.className = "mui-select-menu";
+          menu.setAttribute("role", "listbox");
+          [...select.options].forEach(option => {
+            if (!option.value && option.disabled) return;
+            const item = document.createElement("button");
+            item.type = "button";
+            item.textContent = option.textContent;
+            item.disabled = option.disabled;
+            item.setAttribute("role", "option");
+            item.setAttribute("aria-selected", String(option.value === select.value));
+            item.addEventListener("click", () => {
+              select.value = option.value;
+              closeSelectMenu();
+              select.dispatchEvent(new Event("change", { bubbles: true }));
+              button.focus();
+            });
+            menu.appendChild(item);
+          });
+          menu.addEventListener("keydown", event => {
+            const items = [...menu.querySelectorAll('button:not(:disabled)')];
+            const activeIndex = items.indexOf(document.activeElement);
+            if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+              event.preventDefault();
+              const step = event.key === "ArrowDown" ? 1 : -1;
+              items[(activeIndex + step + items.length) % items.length]?.focus();
+            }
+            if (event.key === "Escape") { event.preventDefault(); closeSelectMenu(); button.focus(); }
+          });
+          document.body.appendChild(menu);
+          const rect = button.getBoundingClientRect();
+          menu.style.width = `${Math.max(rect.width, 180)}px`;
+          menu.style.left = `${Math.max(8, Math.min(rect.left, innerWidth - menu.offsetWidth - 8))}px`;
+          menu.style.top = `${rect.bottom + menu.offsetHeight > innerHeight - 8 ? Math.max(8, rect.top - menu.offsetHeight) : rect.bottom}px`;
+          button.setAttribute("aria-expanded", "true");
+          openSelectMenu = { button, menu };
+        });
+        button.addEventListener("keydown", event => {
+          if (!["ArrowDown", "ArrowUp", "Enter", " "].includes(event.key)) return;
+          event.preventDefault();
+          if (!openSelectMenu || openSelectMenu.button !== button) button.click();
+          const items = [...(openSelectMenu?.menu.querySelectorAll('button:not(:disabled)') || [])];
+          const selected = items.find(item => item.getAttribute("aria-selected") === "true");
+          (selected || items[0])?.focus();
+        });
+      });
+    }
+    document.addEventListener("mousedown", event => {
+      if (openSelectMenu && !openSelectMenu.menu.contains(event.target) && !openSelectMenu.button.contains(event.target)) closeSelectMenu();
+    });
+    document.addEventListener("keydown", event => { if (event.key === "Escape") closeSelectMenu(); });
+    window.addEventListener("resize", closeSelectMenu);
+
+    //$("loanSummary").innerHTML = loanSummaryItems.map(([label, value], index) => `<span class="loan-item">${index ? "<span>/</span>" : ""}<strong>${escapeHtml(label)}:</strong><span class="loan-value">${escapeHtml(value)}</span></span>`).join("");
+    $("memberRows").innerHTML = members.map((member, index) => `
+      <div class="member-row" tabindex="-1">
+        <div class="member-open" role="button" tabindex="0" aria-label="Open ${escapeHtml(member.type)} ${escapeHtml(member.name)}" data-member="${index}">
+          <span class="member-type tone-${index + 1}">${escapeHtml(member.type)}</span>
+          <span><span class="member-name" title="${escapeHtml(member.name)}">${escapeHtml(member.name)}</span><span class="mobile-demographics">${escapeHtml(member.demographics)}</span></span>
+          <span class="demographics">${escapeHtml(member.demographics)}</span>
+        </div>
+        <span class="decision-pill ${member.tone}" title="${escapeHtml(member.decision)}">${escapeHtml(member.decision)}</span>
+        <button class="eye-button" data-decision="${index}" title="View UW decision details" aria-label="View UW decision details for ${escapeHtml(member.type)} ${escapeHtml(member.name)}" aria-haspopup="dialog">${eyeIcon}</button>
+      </div>`).join("");
+    // Connected prototype: selecting a member opens the DRS screen.
+    $("memberRows").addEventListener("keydown", event => {
+      if (event.target.matches(".member-open") && (event.key === "Enter" || event.key === " ")) {
+        event.preventDefault();
+        const index = event.target.dataset.member || "0";
+        window.location.href = `./drs-screen-prototype.html?member=${encodeURIComponent(index)}`;
+      }
+    });
+    $("memberRows").addEventListener("click", event => {
+      const eye = event.target.closest("[data-decision]");
+      if (eye) { openDecision(Number(eye.dataset.decision)); return; }
+      const memberLink = event.target.closest("[data-member]");
+      if (memberLink) {
+        window.location.href = `./drs-screen-prototype.html?member=${encodeURIComponent(memberLink.dataset.member || "0")}`;
+      }
+    });
+    function openDecision(index) {
+      const member = members[index];
+      if (!member) return;
+      $("decisionHeading").textContent = `UW Decision — ${member.type}`;
+      $("decisionName").textContent = member.name;
+      $("decisionFields").innerHTML = member.details.map(([label, value]) => `<div class="decision-field"><span class="decision-label">${escapeHtml(label)}</span><span class="decision-value">${escapeHtml(value)}</span></div>`).join("");
+      $("decisionBackdrop").classList.remove("hidden");
+      $("decisionClose").focus();
+    }
+    function closeDialog(id) { $(id).classList.add("hidden"); }
+    $("decisionClose").addEventListener("click", () => closeDialog("decisionBackdrop"));
+    $("riderClose").addEventListener("click", () => closeDialog("riderBackdrop"));
+    $("breakClose").addEventListener("click", () => closeDialog("breakBackdrop"));
+    ["decisionBackdrop", "riderBackdrop", "breakBackdrop"].forEach(id => $(id).addEventListener("click", event => { if (event.target === $(id)) closeDialog(id); }));
+    document.addEventListener("keydown", event => {
+      if (event.key !== "Escape") return;
+      ["decisionBackdrop", "riderBackdrop", "breakBackdrop"].forEach(closeDialog);
+      $("profileMenu").classList.add("hidden");
+      if (!$("uwFormBackdrop").classList.contains("hidden")) closeUwForm();
+      if (!$("uwReviewBackdrop").classList.contains("hidden")) cancelUwReview();
+    });
+
+    // MemberSeclection.tsx defines the Rider Details dialog but has no trigger for it.
+    $("riderCards").innerHTML = riders.map(([name, sa, policy, premiumTerm, premium]) => `<div class="rider-card"><div class="rider-card-title">${escapeHtml(name)}</div><div class="rider-card-fields">${[["Sum assured", sa], ["Premium", premium], ["Policy term", policy], ["Premium term", premiumTerm]].map(([label, value]) => `<div class="compact-field"><div class="compact-label">${label}</div><div class="compact-value">${escapeHtml(value)}</div></div>`).join("")}</div></div>`).join("");
+
+    // UWDecision.tsx uses these two fixed read-only assessments. The options
+    // below follow the current TERM_DEC/CUW order in masters.mock.json.
+    const caseSelect = $("caseUWDecision");
+    const dialogSelect = $("uwDialogDecision");
+    const decisionLabels = Object.fromEntries([...caseSelect.options].map(option => [option.value, option.textContent]));
+    function updateClearCaseOption() {
+      const existing = caseSelect.querySelector('option[value="CLEAR"]');
+      if (caseSelect.value && caseSelect.value !== "CLEAR" && !existing) {
+        const clearOption = new Option("Clear Case UW Decision", "CLEAR");
+        caseSelect.add(clearOption, 1);
+      } else if (!caseSelect.value && existing) {
+        existing.remove();
+      }
+    }
+
+    function renderUwDialogFields() {
+      const decision = dialogSelect.value;
+      const terminal = new Set(["STD", "BOR_STD", "REJ", "DC", "POSTP", "CO"]);
+      const field = (label, input) => `<div class="uw-dialog-field"><label>${label}</label>${input}</div>`;
+      const textInput = (id, placeholder, disabled = false) => `<input id="${id}" placeholder="${placeholder}" ${disabled ? "disabled" : ""}>`;
+      const selectInput = (id, options) => `<select id="${id}"><option value="">Select</option>${options.map(value => `<option>${value}</option>`).join("")}</select>`;
+      let fields = "";
+      if (decision && decision !== "AMR" && decision !== "APPROVER") fields += field("Outlier", textInput("uwOutlier", "Enter outlier"));
+      if (terminal.has(decision)) fields += field("Decision Code", `<input value="${decision}" disabled>`);
+      if (decision === "STD") fields += field("Smoker Status", `<input value="Non Smoker" disabled>`);
+      if (decision === "REJ") fields += field("Reject Reason", selectInput("uwReason", ["Other", "Financial", "Medical"]));
+      if (decision === "BOR_STD") fields += field("Borderline Standard Reason", selectInput("uwReason", ["Other", "Medical", "Financial"]));
+      if (decision === "DC") fields += field("Decline Reason", selectInput("uwReason", ["Medical", "Financial", "Other"]));
+      if (decision === "POSTP") fields += field("Postpone Reason", selectInput("uwReason", ["Medical", "Financial", "Other"])) + field("Postponement Period", selectInput("uwPostponementPeriod", ["3 months", "6 months", "12 months"]));
+      if (decision === "CO") fields += field("Counter Offer Reason", selectInput("uwReason", ["Medical", "Financial", "Other"]));
+      if (decision === "HOLD") fields += field("Hold Reasons", selectInput("uwReason", ["Medical", "Financial", "Other"]));
+      if (decision.startsWith("REF_") || decision === "APPROVER") fields += field("Referral purpose", `<label style="font-size:11px"><input type="radio" name="referralPurpose" value="counterSign" checked> Counter Sign</label> <label style="font-size:11px"><input type="radio" name="referralPurpose" value="opinion"> Opinion</label>`);
+      if (decision === "APPROVER") fields += field("Refer To", selectInput("uwApprover", ["HOD", "Sr UW"]));
+      $("uwDialogDetails").innerHTML = fields;
+      enhanceMuiSelects($("uwDialogDetails"));
+    }
+
+    function syncUwSelectOptions() {
+      dialogSelect.innerHTML = caseSelect.innerHTML;
+      dialogSelect.querySelector('option[value=""]').disabled = true;
+      dialogSelect.value = caseSelect.value;
+      refreshMuiSelect(dialogSelect);
+    }
+
+    caseSelect.addEventListener("change", () => {
+      if (caseSelect.value === "CLEAR") {
+        caseSelect.value = "";
+        updateClearCaseOption();
+        $("uwRemarks").value = "";
+        $("remarksCount").textContent = "0/10000";
+        $("uwSubmitRow").classList.add("hidden");
+        return;
+      }
+      updateClearCaseOption();
+      syncUwSelectOptions();
+      renderUwDialogFields();
+      $("uwFormBackdrop").classList.remove("hidden");
+      $("uwSubmitRow").classList.add("hidden");
+    });
+    dialogSelect.addEventListener("change", () => {
+      if (dialogSelect.value === "CLEAR") {
+        caseSelect.value = "";
+        updateClearCaseOption();
+        closeUwForm();
+        return;
+      }
+      caseSelect.value = dialogSelect.value;
+      refreshMuiSelect(caseSelect);
+      renderUwDialogFields();
+    });
+    $("uwRemarks").addEventListener("input", () => { $("remarksCount").textContent = `${$("uwRemarks").value.length}/10000`; });
+    function closeUwForm() {
+      $("uwFormBackdrop").classList.add("hidden");
+      if (!$("uwRemarks").value.trim()) caseSelect.value = "";
+      updateClearCaseOption();
+      $("uwSubmitRow").classList.toggle("hidden", !caseSelect.value || !$("uwRemarks").value.trim());
+    }
+    $("uwFormClose").addEventListener("click", closeUwForm);
+    $("uwFormBackdrop").addEventListener("click", event => { if (event.target === $("uwFormBackdrop")) closeUwForm(); });
+    $("uwSave").addEventListener("click", () => {
+      if (caseSelect.value === "APPROVER" && !$("uwApprover")?.value) { $("uwApprover")?.focus(); return; }
+      $("uwFormBackdrop").classList.add("hidden");
+      const rows = [
+        ["Financial Decision", "Standard"],
+        ["Medical Decision", "Standard"],
+        ["Case UW Decision", decisionLabels[caseSelect.value] || "-"],
+        ["Outlier", $("uwOutlier")?.value || "-"]
+      ];
+      $("uwReviewValues").innerHTML = rows.map(([label, value]) => `<div class="uw-review-row"><span>${escapeHtml(label)}</span><span>${escapeHtml(value)}</span></div>`).join("");
+      $("uwReviewBackdrop").classList.remove("hidden");
+    });
+    function cancelUwReview() { $("uwReviewBackdrop").classList.add("hidden"); caseSelect.value = ""; updateClearCaseOption(); $("uwRemarks").value = ""; $("remarksCount").textContent = "0/10000"; $("uwSubmitRow").classList.add("hidden"); }
+    $("uwReviewClose").addEventListener("click", cancelUwReview);
+    $("uwReviewCancel").addEventListener("click", cancelUwReview);
+    $("uwReviewConfirm").addEventListener("click", () => { $("uwReviewBackdrop").classList.add("hidden"); $("uwSubmitRow").classList.remove("hidden"); });
+    $("uwSubmit").addEventListener("click", () => $("uwReviewBackdrop").classList.remove("hidden"));
+
+    function formatNow() {
+      const parts = Object.fromEntries(new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kolkata", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true }).formatToParts(new Date()).map(part => [part.type, part.value]));
+      $("headerDate").textContent = `${Number(parts.day)} ${parts.month} ${parts.year}, ${parts.hour}:${parts.minute}:${parts.second} ${parts.dayPeriod.toLowerCase()}`;
+    }
+    let sessionDeadline = Date.now() + 15 * 60 * 1000;
+    ["mousedown", "keydown", "scroll", "touchstart"].forEach(name => window.addEventListener(name, () => { sessionDeadline = Date.now() + 15 * 60 * 1000; }, { passive: true }));
+    function tick() { formatNow(); const seconds = Math.max(0, Math.ceil((sessionDeadline - Date.now()) / 1000)); $("sessionTime").textContent = `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`; }
+    tick(); window.setInterval(tick, 1000);
+    $("profileButton").addEventListener("click", () => { const nowHidden = $("profileMenu").classList.toggle("hidden"); $("profileButton").setAttribute("aria-expanded", String(!nowHidden)); $("profileChevron").style.transform = nowHidden ? "none" : "rotate(180deg)"; });
+    document.addEventListener("click", event => { if (!event.target.closest("#profileButton, #profileMenu")) { $("profileMenu").classList.add("hidden"); $("profileButton").setAttribute("aria-expanded", "false"); $("profileChevron").style.transform = "none"; } });
+    $("breakTimeButton").addEventListener("click", () => { $("profileMenu").classList.add("hidden"); $("breakBackdrop").classList.remove("hidden"); });
+    $("breakConfirm").addEventListener("click", () => closeDialog("breakBackdrop"));
+    $("logoutButton").addEventListener("click", () => { $("profileMenu").classList.add("hidden"); window.location.href = "./login.html"; });
+    document.querySelector(".back-button").addEventListener("click", () => { window.location.href = "./landing-prototype.html"; });
+    try { $("memberUserName").textContent = localStorage.getItem("username") || "ipru74574"; } catch {}
+    enhanceMuiSelects();
+  </script>
+</body>
+</html>

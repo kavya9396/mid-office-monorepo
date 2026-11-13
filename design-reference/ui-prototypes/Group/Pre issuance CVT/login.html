@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Axiom | Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mulish:ital,wght@0,200..1000;1,200..1000&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-width: 0;
+      height: 100%;
+    }
+
+    body {
+      color: rgba(0, 0, 0, 0.87);
+      background: #fff;
+      font-family: "Mulish", sans-serif;
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 1.5;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .login-page {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .login-art,
+    .login-panel {
+      width: 50%;
+      position: relative;
+    }
+
+    .login-art img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .login-panel {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .login-content {
+      width: 100%;
+      max-width: 400px;
+      padding: 16px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .brand-logo {
+      display: block;
+      height: 60px;
+      width: auto;
+    }
+
+    .intro {
+      margin: 0;
+      color: rgba(0, 0, 0, 0.6);
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-group {
+      min-width: 0;
+    }
+
+    .field-label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      line-height: 1.43;
+    }
+
+    .text-input {
+      display: block;
+      width: 100%;
+      height: 40px;
+      padding: 8.5px 14px;
+      border: 1px solid rgba(0, 0, 0, 0.23);
+      border-radius: 10px;
+      outline: none;
+      color: rgba(0, 0, 0, 0.87);
+      background: #fff;
+      font-size: 14px;
+      line-height: 1.4375em;
+      transition: border-color 150ms ease, border-width 150ms ease;
+    }
+
+    .text-input::placeholder {
+      color: rgba(0, 0, 0, 0.6);
+      opacity: 1;
+    }
+
+    .text-input:hover {
+      border-color: #9A2529;
+    }
+
+    .text-input:focus {
+      border: 2px solid #9A2529;
+      padding-left: 13px;
+      padding-right: 13px;
+    }
+
+    .text-input.error,
+    .text-input.error:hover {
+      border-color: #d32f2f;
+    }
+
+    .text-input.error:focus {
+      border: 2px solid #d32f2f;
+    }
+
+    .field-error {
+      display: none;
+      margin: 3px 14px 0;
+      color: #d32f2f;
+      font-size: 12px;
+      line-height: 1.66;
+    }
+
+    .field-error.visible {
+      display: block;
+    }
+
+    .login-button {
+      width: 100%;
+      min-width: auto;
+      min-height: auto;
+      padding: 4px 10px;
+      border: 0;
+      border-radius: 50px;
+      color: #fff;
+      background: #9A2529;
+      box-shadow: none;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1.2;
+      text-transform: none;
+      cursor: pointer;
+      transition: background-color 150ms ease, box-shadow 150ms ease;
+    }
+
+    .login-button:hover {
+      background: #8f2026;
+    }
+
+    .login-button:focus-visible,
+    .footer a:focus-visible {
+      outline: 2px solid #9A2529;
+      outline-offset: 2px;
+    }
+
+    .login-button:disabled {
+      color: rgba(0, 0, 0, 0.26);
+      background: rgba(0, 0, 0, 0.12);
+      cursor: default;
+    }
+
+    .footer {
+      text-align: center;
+    }
+
+    .footer-rule {
+      margin: 0 0 8px;
+      border: 0;
+      border-top: 1px solid rgba(0, 0, 0, 0.12);
+    }
+
+    .footer-copy {
+      margin: 0;
+      color: rgba(0, 0, 0, 0.6);
+      font-size: 11px;
+      line-height: 1.66;
+    }
+
+    .footer a {
+      color: #1976d2;
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    .powered-by {
+      position: absolute;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .powered-by span {
+      font-size: 14px;
+      line-height: 1.43;
+    }
+
+    .powered-by img {
+      display: block;
+      width: 60px;
+      height: 38px;
+    }
+
+    .snackbar {
+      position: fixed;
+      top: 8px;
+      left: 50%;
+      z-index: 50;
+      display: none;
+      transform: translateX(-50%);
+      min-width: 288px;
+      max-width: calc(100vw - 32px);
+      padding: 6px 16px;
+      align-items: center;
+      gap: 12px;
+      border-radius: 4px;
+      color: #fff;
+      background: #2e7d32;
+      box-shadow: 0 3px 5px -1px rgba(0,0,0,.2), 0 6px 10px 0 rgba(0,0,0,.14), 0 1px 18px 0 rgba(0,0,0,.12);
+      font-size: 14px;
+      line-height: 1.43;
+    }
+
+    .snackbar.visible {
+      display: flex;
+    }
+
+    .snackbar-icon {
+      flex: none;
+      width: 20px;
+      height: 20px;
+      border: 2px solid currentColor;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .snackbar-message {
+      flex: 1;
+    }
+
+    .snackbar-close {
+      padding: 3px;
+      border: 0;
+      color: inherit;
+      background: transparent;
+      font-size: 22px;
+      line-height: 1;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <main class="login-page">
+    <div class="login-art">
+      <img src="Login-Image.svg" alt="Underwriter reviewing an insurance form">
+    </div>
+
+    <section class="login-panel" aria-label="Login">
+      <div class="login-content">
+        <div class="brand">
+          <img class="brand-logo" src="ICICI%20Logo_.svg" alt="ICICI Life Logo">
+          <p class="intro">Log in to access your account</p>
+        </div>
+
+        <form class="login-form" id="login-form" novalidate>
+          <div class="form-group">
+            <label class="field-label" for="username">User ID*</label>
+            <input class="text-input" id="username" name="username" type="text" placeholder="Enter your User ID" autocomplete="username" aria-describedby="username-error">
+            <span class="field-error" id="username-error" role="alert"></span>
+          </div>
+
+          <div class="form-group">
+            <label class="field-label" for="password">Password*</label>
+            <input class="text-input" id="password" name="password" type="password" placeholder="Enter your Password" autocomplete="current-password" aria-describedby="password-error">
+            <span class="field-error" id="password-error" role="alert"></span>
+          </div>
+
+          <button class="login-button" id="login-button" type="submit">Log In</button>
+        </form>
+
+        <div class="footer">
+          <hr class="footer-rule">
+          <p class="footer-copy">© 2026 ICICI Prudential Insurance,&nbsp;<a href="#" data-prototype-link>Privacy Policy</a>&nbsp; | &nbsp;<a href="#" data-prototype-link>Terms and Conditions</a></p>
+        </div>
+      </div>
+
+      <div class="powered-by">
+        <span>Powered by</span>
+        <img src="IBM%20Logo.svg" alt="IBM Logo">
+      </div>
+    </section>
+  </main>
+
+  <div class="snackbar" id="snackbar" role="alert" aria-live="assertive">
+    <span class="snackbar-icon" aria-hidden="true">✓</span>
+    <span class="snackbar-message" id="snackbar-message"></span>
+    <button class="snackbar-close" id="snackbar-close" type="button" aria-label="Close message">×</button>
+  </div>
+
+  <script>
+    const form = document.getElementById("login-form");
+    const usernameInput = document.getElementById("username");
+    const passwordInput = document.getElementById("password");
+    const loginButton = document.getElementById("login-button");
+    const snackbar = document.getElementById("snackbar");
+    const snackbarMessage = document.getElementById("snackbar-message");
+    let snackbarTimer;
+
+    function setFieldError(input, message) {
+      const error = document.getElementById(`${input.id}-error`);
+      error.textContent = message;
+      error.classList.toggle("visible", Boolean(message));
+      input.classList.toggle("error", Boolean(message));
+      input.setAttribute("aria-invalid", String(Boolean(message)));
+    }
+
+    function validateUsername() {
+      const message = usernameInput.value.trim() ? "" : "Username is required";
+      setFieldError(usernameInput, message);
+      return !message;
+    }
+
+    function validatePassword() {
+      const message = passwordInput.value.trim() ? "" : "Password is required";
+      setFieldError(passwordInput, message);
+      return !message;
+    }
+
+    function closeSnackbar() {
+      snackbar.classList.remove("visible");
+      window.clearTimeout(snackbarTimer);
+    }
+
+    function showSnackbar(message) {
+      snackbarMessage.textContent = message;
+      snackbar.classList.add("visible");
+      window.clearTimeout(snackbarTimer);
+      snackbarTimer = window.setTimeout(closeSnackbar, 3000);
+    }
+
+    usernameInput.addEventListener("input", () => {
+      if (usernameInput.classList.contains("error")) validateUsername();
+    });
+    passwordInput.addEventListener("input", () => {
+      if (passwordInput.classList.contains("error")) validatePassword();
+    });
+    document.getElementById("snackbar-close").addEventListener("click", closeSnackbar);
+
+    document.querySelectorAll("[data-prototype-link]").forEach((link) => {
+      link.addEventListener("click", (event) => event.preventDefault());
+    });
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const usernameValid = validateUsername();
+      const passwordValid = validatePassword();
+      if (!usernameValid || !passwordValid) return;
+
+      loginButton.disabled = true;
+      loginButton.textContent = "Signing in...";
+
+      await new Promise((resolve) => window.setTimeout(resolve, 600));
+      showSnackbar("Login successful");
+      try { localStorage.setItem("username", usernameInput.value.trim()); } catch {}
+      form.reset();
+      setFieldError(usernameInput, "");
+      setFieldError(passwordInput, "");
+      loginButton.disabled = false;
+      loginButton.textContent = "Log In";
+      // Keep the success message visible briefly before continuing the demo.
+      window.setTimeout(() => {
+        window.location.href = "./landing-prototype.html";
+      }, 1000);
+    });
+  </script>
+</body>
+</html>
