@@ -604,19 +604,21 @@ export function mapGuwMembers(payload: unknown): GuwMemberSummary[] {
   return memberRecords(payload).map((data, index) => {
     const rows = mapRowDetails(data.rowDetails);
     const memberFields = rows.find((r) => r.id === 0)?.fields;
-    const detail = (name: string) => fieldValue(memberFields, name) || "-";
+    const detail = (name: string) => fieldValue(memberFields, name);
     const age = fieldValue(memberFields, "Age");
     const caseDecisionFields = recordOf(findSection(data.sections, "caseUwDecision")).fields;
     return {
       memberId: memberIdOf(data, index),
-      name: fieldValue(memberFields, "Name") || "-",
+      name: fieldValue(memberFields, "Name"),
       demographics: [
-        age ? `${age} yrs` : "-",
+        age ? `${age} yrs` : "",
         detail("Gender"),
         detail("Education"),
         detail("Occupation"),
         detail("City, State"),
-      ].join(" / "),
+      ]
+        .filter(Boolean)
+        .join(" / "),
       uwDecision: fieldValue(caseDecisionFields, "Case UW Decision"),
     };
   });
@@ -626,6 +628,17 @@ export async function fetchGuwMembers(applicationNo: string): Promise<GuwMemberS
   await wait(250);
   // The mock is served for any applicationNo to allow local dev with any inbox task.
   return applicationNo ? mapGuwMembers(guwDrsMock as unknown) : [];
+}
+
+/** Product (id 1) and rider (id 2) rows of the first `membersDetails[]` object, for the member selection banner. */
+export function mapGuwProductRowDetails(payload: unknown): BannerRowDetail[] {
+  const firstMember = memberRecords(payload)[0];
+  return mapRowDetails(firstMember?.rowDetails).filter((row) => row.id === 1 || row.id === 2);
+}
+
+export async function fetchGuwProductRowDetails(applicationNo: string): Promise<BannerRowDetail[]> {
+  await wait(250);
+  return applicationNo ? mapGuwProductRowDetails(guwDrsMock as unknown) : [];
 }
 
 /* ------------------------------------------------------------------ */
@@ -648,7 +661,13 @@ export function mapGuwDrsPayload(payload: unknown, memberId?: string): GuwDrsRec
   const commonSection = root.commonSection;
 
   // Requirements: `commonSection` rows (shared by all members)
-  const rawReqs = recordList(findSectionEntry(commonSection, "requirementManagement")?.rows);
+  const requirementSection = findSectionEntry(commonSection, "requirementManagement");
+  const requirementValue = requirementSection?.value;
+  // Rows may sit on the section, on `value.rows` (as in the DVT payload) or be `value` itself.
+  const rawReqs = recordList(
+    requirementSection?.rows ??
+      (isRecord(requirementValue) ? requirementValue.rows : requirementValue),
+  );
   const requirements: RequirementItem[] = mapRequirements(
     rawReqs.map((r, index) => ({
       requirementId: typeof r.requirementId === "number" ? r.requirementId : index + 1,

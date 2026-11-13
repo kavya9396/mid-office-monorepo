@@ -51,7 +51,7 @@ function DecisionCell({
         component="strong"
         sx={{ color: "#302a27", fontSize: "11px", fontWeight: 800 }}
       >
-        {value || "-"}
+        {value}
       </CustomTypography>
     </CustomBox>
   );

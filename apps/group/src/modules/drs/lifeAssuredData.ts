@@ -51,7 +51,7 @@ const EMPTY_LOAN: LoanEditValues = {
 // Prototype masks everything except the last 4 characters
 const maskValue = (value?: string) => {
   const text = value?.trim();
-  if (!text) return "-";
+  if (!text) return "";
   return text.length <= 4 ? "X".repeat(text.length) : `${"X".repeat(text.length - 4)}${text.slice(-4)}`;
 };
 
@@ -87,7 +87,7 @@ const readFields = (value: unknown): FieldData[] =>
       const strVal = typeof rawVal === "string" ? rawVal.trim() : typeof rawVal === "number" ? String(rawVal) : "";
       return {
         label: str(item.label),
-        value: strVal.length > 0 ? strVal : "-",
+        value: strVal,
       };
     });
 
@@ -250,21 +250,21 @@ const toApplicant = (member: JsonRecord, total: number, riders: RiderEditRow[]):
   const appointeeRows = readNomineeRows(member.nominee, "Appointee Details");
 
   const nominees: NomineeRow[] = nomineeRows.map((row) => ({
-    nomineeName: str(row.name) || "-",
-    nomineeDOB: str(row.dob) || "-",
-    gender: str(row.gender) || "-",
-    relationship: str(row.relationship) || "-",
+    nomineeName: str(row.name),
+    nomineeDOB: str(row.dob),
+    gender: str(row.gender),
+    relationship: str(row.relationship),
     sharePercentage: toShare(row.share),
-    isLASame: "-",
-    relationShipWithJL: "-",
-    laFlag: "-",
+    isLASame: "",
+    relationShipWithJL: "",
+    laFlag: "",
   }));
 
   const appointees: AppointeeRow[] = appointeeRows.map((row) => ({
-    appointeeName: str(row.name) || "-",
-    appointeeGender: str(row.gender) || "-",
-    appointeeDOB: str(row.dob) || "-",
-    appointeeRelationship: str(row.relationship) || "-",
+    appointeeName: str(row.name),
+    appointeeGender: str(row.gender),
+    appointeeDOB: str(row.dob),
+    appointeeRelationship: str(row.relationship),
   }));
 
   const editNominees: NomineeEditRow[] = nomineeRows.map((row) => ({

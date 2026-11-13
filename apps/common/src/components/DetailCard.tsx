@@ -124,7 +124,7 @@ export function DetailCard({
                 <Typography component="div" noWrap sx={{ fontSize: 10, fontWeight: 500 }}>
                   {attr.name}:{" "}
                   <Box component="span" sx={{ fontWeight: 700, fontSize: 10, color: valueColor }}>
-                    {attr.value || "-"}
+                    {attr.value}
                   </Box>
                 </Typography>
               ) : (

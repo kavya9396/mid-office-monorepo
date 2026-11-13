@@ -30,8 +30,8 @@ export interface BreRowSource {
 export const buildBreRows = (initial: BreRowSource, final: BreRowSource): ComparisonRow[] => [
   {
     label: "BRE Status",
-    initial: initial.decision ? "Success" : "-",
-    final: final.decision ? "Success" : "-",
+    initial: initial.decision ? "Success" : "",
+    final: final.decision ? "Success" : "",
   },
   { label: "BRE Decision", initial: initial.decision, final: final.decision, diff: "value" },
   { label: "BRE Remarks", initial: initial.remarks, final: final.remarks },

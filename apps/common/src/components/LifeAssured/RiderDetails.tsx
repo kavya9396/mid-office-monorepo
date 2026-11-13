@@ -84,7 +84,7 @@ export function RiderDetails({ riders, onChange, onNotify }: Readonly<RiderDetai
           fullWidth
         />
       ) : (
-        <Typography sx={{ fontSize: "11px" }}>{String(value) || "-"}</Typography>
+        <Typography sx={{ fontSize: "11px" }}>{String(value)}</Typography>
       ),
   });
 

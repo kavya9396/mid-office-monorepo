@@ -4,16 +4,15 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { CustomButton, EyeIcon } from "@insurance-poc/ui";
 import { drsRoutePath, groupPaths, replaceUrl } from "@insurance-poc/routes";
-import {
-  ApplicantBanner,
-  type BannerRow,
-} from "@insurance-poc/common/applicant-banner";
+import { ApplicantBanner } from "@insurance-poc/common/applicant-banner";
 import {
   fetchGuwDrs,
   fetchGuwMembers,
+  fetchGuwProductRowDetails,
   GUW_DECISION_CHANGED_EVENT,
   guwMemberDecisionKey,
   loadGuwSubmittedDecision,
+  type BannerRowDetail,
   type GuwDrsRecord,
   type GuwMemberSummary,
   type GuwSubmittedDecision,
@@ -43,9 +42,9 @@ function memberDecisionPill(
   if (!saved) {
     return dataDecision
       ? { label: dataDecision, tone: referralDecisionTone(dataDecision) }
-      : { label: "-", tone: "default" };
+      : { label: "", tone: "default" };
   }
-  const label = saved.fields.find((f) => f.label === "Case UW Decision")?.value || "-";
+  const label = saved.fields.find((f) => f.label === "Case UW Decision")?.value ?? "";
   if (["STD", "BOR_STD"].includes(saved.decisionCode)) return { label, tone: "standard" };
   if (["REJ", "DC"].includes(saved.decisionCode)) return { label, tone: "decline" };
   if (["REFERRAL", "APPROVER"].includes(saved.decisionCode)) return { label, tone: "refer" };
@@ -65,31 +64,9 @@ const TONE_PILL_STYLE: Record<number, { border: string; bg: string; color: strin
 };
 
 /* ------------------------------------------------------------------ */
-/* Banner rows (application-level strip, no name, no photo)            */
+/* Banner labels for the product (id 1) and rider (id 2) rows           */
 /* ------------------------------------------------------------------ */
-const textRow = (id: string, text: string, label?: string): BannerRow => ({
-  id,
-  label,
-  fields: [{ id, value: text }],
-});
-
-const MEMBER_SELECTION_BANNER_ROWS: readonly BannerRow[] = [
-  textRow(
-    "product",
-    "Call ID - / Policy no. - / Client name - / Re insurer name - / Cover requested - / Cover provided - / Free cover limit - / Cover above FCL -",
-    "Product",
-  ),
-  textRow(
-    "riders",
-    "WOP - SA ₹15,00,000 / BTBB - SA ₹25,00,000 / TI Rider - SA ₹25,00,000 / ADBR - SA ₹25,00,000 / CI Rider - SA ₹25,00,000",
-    "Riders",
-  ),
-  textRow(
-    "eligibility",
-    "TSA - ₹10,00,000 / TRSA - ₹5,00,000 / TPSA - ₹10,00,000 / TFSA - ₹10,00,000 / TSSA - ₹10,00,000 / ADBR TSA - ₹5,00,000 / ATPD TSA - ₹5,00,000 / CI Rider TSA - ₹3,00,000 / CI Rider TRSA - ₹3,00,000 / BTBB TSA - ₹5,00,000",
-    "Eligibility Parameters",
-  ),
-];
+const MEMBER_SELECTION_ROW_LABELS: Record<number, string> = { 1: "Product", 2: "Riders" };
 
 /* ------------------------------------------------------------------ */
 /* MemberSelection — common to GUW, HOD and Sr UW                       */
@@ -125,6 +102,8 @@ export function MemberSelection() {
   // Case UW Decision code derived from the member decisions (undefined until first derived)
   const [derivedDecision, setDerivedDecision] = useState<string | undefined>(undefined);
   const [record, setRecord] = useState<GuwDrsRecord | null>(null);
+  // Product and rider rows (rowDetails id 1 and 2) shown in the banner
+  const [productRows, setProductRows] = useState<BannerRowDetail[]>([]);
   // Case-level decision is held under its own key so it never overwrites a member's own decision
   const summaryStorageKey = `${applicationNo}:summary`;
 
@@ -136,6 +115,9 @@ export function MemberSelection() {
     });
     void fetchGuwDrs(applicationNo).then((r) => {
       if (active) setRecord(r);
+    });
+    void fetchGuwProductRowDetails(applicationNo).then((rows) => {
+      if (active) setProductRows(rows);
     });
     return () => { active = false; };
   }, [applicationNo]);
@@ -194,8 +176,9 @@ export function MemberSelection() {
 
       {/* ApplicantBanner — no name, no photo → only the product / riders strip is shown */}
       <ApplicantBanner
-        applicationNo={applicationNo || record?.applicationNo || ""}
-        rows={MEMBER_SELECTION_BANNER_ROWS}
+        applicationNo={record?.applicationNo ?? ""}
+        rowDetails={productRows}
+        rowDetailsOptions={{ rowLabels: MEMBER_SELECTION_ROW_LABELS }}
       />
 
       {/* Member selection card */}
@@ -212,11 +195,11 @@ export function MemberSelection() {
           {/* Card title area */}
           <Box sx={{ px: "14px", py: "8.8px", borderBottom: "1px solid #eae4e1" }}>
             <Typography sx={{ fontSize: 13, fontWeight: 900, color: "#292421" }}>
-              Select Member
+              Member Details
             </Typography>
-            <Typography sx={{ mt: "1.5px", fontSize: 9.5, color: "#817773" }}>
+            {/* <Typography sx={{ mt: "1.5px", fontSize: 9.5, color: "#817773" }}>
               {members.length} members are available in this application
-            </Typography>
+            </Typography> */}
           </Box>
 
           {/* Column header */}
@@ -399,7 +382,7 @@ export function MemberSelection() {
                 {label}
               </Typography>
               <Typography component="dd" sx={{ m: 0, color: "#37312e", fontSize: 12, fontWeight: 600 }}>
-                {value || "-"}
+                {value}
               </Typography>
             </Box>
           ))}

@@ -252,7 +252,7 @@ export function ReferralDrsPage({ config }: Readonly<ReferralDrsPageProps>) {
                         overflowWrap: "anywhere",
                       }}
                     >
-                      {value || "-"}
+                      {value}
                     </Typography>
                   </Box>
                 ))}

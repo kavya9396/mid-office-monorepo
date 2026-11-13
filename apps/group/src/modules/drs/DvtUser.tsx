@@ -387,7 +387,7 @@ const DvtUser = () => {
       {detailCards}
 
       <QuickLinksModule
-        items={buildQuickLinkItems(quickLinksConfig.items, (message) => setSnackbarMessage(message))}
+        items={buildQuickLinkItems(quickLinksConfig.items, (message) => setSnackbarMessage(message), ["applicant-profile"])}
         applicationNo={applicationNo}
         roleType={params.get("role")?.trim() || quickLinksConfig.defaultRoleType}
         onNavigate={(path) => navigate(path)}

@@ -1043,7 +1043,7 @@ export function GuwUwPanel({
                   fontWeight: 800,
                 }}
               >
-                {field.value || "-"}
+                {field.value}
               </Typography>
             </Box>
           ))}
@@ -2713,7 +2713,7 @@ export function GuwDecisionDetailsDialog({
                   component="span"
                   sx={{ display: "block", color: "#302a27", fontSize: "12px", fontWeight: 700, whiteSpace: "pre-wrap", wordBreak: "break-word" }}
                 >
-                  {field.value || "-"}
+                  {field.value}
                 </Typography>
               </Box>
             ))}
@@ -2749,7 +2749,7 @@ export function GuwDecisionDetailsDialog({
                       component="span"
                       sx={{ display: "block", color: "#302a27", fontSize: "12px", fontWeight: 700, whiteSpace: "pre-wrap", wordBreak: "break-word" }}
                     >
-                      {field.value || "-"}
+                      {field.value}
                     </Typography>
                   </Box>
                 ))}
@@ -2776,7 +2776,7 @@ export function GuwDecisionDetailsDialog({
                       <tr key={row.code}>
                         <td style={{ padding: "8px 10px", borderRight: "1px solid #eadfd9", borderBottom: "1px solid #eadfd9" }}>{row.code}</td>
                         <td style={{ padding: "8px 10px", borderRight: "1px solid #eadfd9", borderBottom: "1px solid #eadfd9" }}>{row.systemName}</td>
-                        <td style={{ padding: "8px 10px", borderBottom: "1px solid #eadfd9" }}>{row.uwName || "-"}</td>
+                        <td style={{ padding: "8px 10px", borderBottom: "1px solid #eadfd9" }}>{row.uwName}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -2840,17 +2840,17 @@ export function GuwDecisionDetailsDialog({
                   <tbody>
                     {submittedDecision.counterOfferRows.map((row) => (
                       <tr key={row.id}>
-                        <td style={{ padding: "8px 10px", borderRight: "1px solid #eadfd9", borderBottom: "1px solid #eadfd9", fontWeight: 700 }}>{row.productName || "-"}</td>
-                        <td style={{ padding: "8px 10px", borderRight: "1px solid #eadfd9", borderBottom: "1px solid #eadfd9" }}>{row.type || "-"}</td>
+                        <td style={{ padding: "8px 10px", borderRight: "1px solid #eadfd9", borderBottom: "1px solid #eadfd9", fontWeight: 700 }}>{row.productName}</td>
+                        <td style={{ padding: "8px 10px", borderRight: "1px solid #eadfd9", borderBottom: "1px solid #eadfd9" }}>{row.type}</td>
                         {submittedDecision.showBstdColumn && (
-                          <td style={{ padding: "8px 10px", borderRight: "1px solid #eadfd9", borderBottom: "1px solid #eadfd9" }}>{row.bstdCode || "-"}</td>
+                          <td style={{ padding: "8px 10px", borderRight: "1px solid #eadfd9", borderBottom: "1px solid #eadfd9" }}>{row.bstdCode}</td>
                         )}
-                        <td style={{ padding: "8px 10px", borderRight: "1px solid #eadfd9", borderBottom: "1px solid #eadfd9" }}>{row.sa || "-"}</td>
-                        <td style={{ padding: "8px 10px", borderRight: "1px solid #eadfd9", borderBottom: "1px solid #eadfd9" }}>{row.changedSa || "-"}</td>
-                        <td style={{ padding: "8px 10px", borderRight: "1px solid #eadfd9", borderBottom: "1px solid #eadfd9" }}>{row.pt || "-"}</td>
-                        <td style={{ padding: "8px 10px", borderRight: "1px solid #eadfd9", borderBottom: "1px solid #eadfd9" }}>{row.changedPt || "-"}</td>
-                        <td style={{ padding: "8px 10px", borderRight: "1px solid #eadfd9", borderBottom: "1px solid #eadfd9" }}>{row.loadingClass || "-"}</td>
-                        <td style={{ padding: "8px 10px", borderBottom: "1px solid #eadfd9" }}>{row.loadingReason || "-"}</td>
+                        <td style={{ padding: "8px 10px", borderRight: "1px solid #eadfd9", borderBottom: "1px solid #eadfd9" }}>{row.sa}</td>
+                        <td style={{ padding: "8px 10px", borderRight: "1px solid #eadfd9", borderBottom: "1px solid #eadfd9" }}>{row.changedSa}</td>
+                        <td style={{ padding: "8px 10px", borderRight: "1px solid #eadfd9", borderBottom: "1px solid #eadfd9" }}>{row.pt}</td>
+                        <td style={{ padding: "8px 10px", borderRight: "1px solid #eadfd9", borderBottom: "1px solid #eadfd9" }}>{row.changedPt}</td>
+                        <td style={{ padding: "8px 10px", borderRight: "1px solid #eadfd9", borderBottom: "1px solid #eadfd9" }}>{row.loadingClass}</td>
+                        <td style={{ padding: "8px 10px", borderBottom: "1px solid #eadfd9" }}>{row.loadingReason}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -2871,7 +2871,7 @@ export function GuwDecisionDetailsDialog({
               component="span"
               sx={{ display: "block", color: "#302a27", fontSize: "12px", fontWeight: 700, whiteSpace: "pre-wrap", wordBreak: "break-word" }}
             >
-              {submittedDecision.remarks || "-"}
+              {submittedDecision.remarks}
             </Typography>
           </Box>
 

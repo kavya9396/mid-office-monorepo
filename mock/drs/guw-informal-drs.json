@@ -48,16 +48,16 @@
         ],
         "rows": [
           {
-            "status": "",
-            "ocrStatus": "",
-            "team": "",
+            "status": "Pending",
+            "ocrStatus": "Pass",
+            "team": "GUW",
             "requirementPoolType": "",
             "profile": "",
             "category": "",
             "subCategory": "",
             "document": "",
             "reason": "",
-            "fupCode": "",
+            "fupCode": "PAN",
             "description": "",
             "extraRemarks": ""
           }
@@ -149,7 +149,7 @@
               },
               {
                 "name": "Age",
-                "value": "40"
+                "value": "47"
               },
               {
                 "name": "Education",
@@ -186,15 +186,15 @@
             "fields": [
               {
                 "name": "Product Name",
-                "value": ""
+                "value": "ICICI Super"
               },
               {
                 "name": "Channel",
-                "value": ""
+                "value": "AG"
               },
               {
                 "name": "Policy no.",
-                "value": ""
+                "value": "PL1"
               },
               {
                 "name": "Call Id-",
@@ -763,6 +763,14 @@
           }
         ],
         "subSections": [
+            {
+                        "name": "proposalFormAndDocuments",
+                        "label": "Proposal Form and Document",
+                        "value": {
+                            "link": "https://udsviewer-uat.icicilife.com/App/UdsViewer/document-listing/split?roleid=bk8vQVBlanM1WVhjekE4a0d6emJnZz09&_uidtype=M1ZLSVhSY09scmVPQ1R2Nk9lSFM5UT09&_uidvalue=b2xBK1dwazJpaG5aVUh5TktWVFBGUT09&ntid=UDSMIDOFFICE&token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJVMDRMRHBkTlk3QVpMR2FRTlNvQW4zTTN0bFpOcUlaZXp5TUdvYkJxVzVLbkVOSHQiLCJhdWQiOiJ1cm46Ly9jNjA1MTFjMC0xMmEyLTQ3M2MtODBmZC00MjUyOGViNjVhNmEiLCJudElkIjoiVURTTUlET0ZGSUNFIiwiYXV0aCI6IlVBU0g4R0FiQUVBZjJCQ2ZXVzJGaHlBcUFES1ciLCJpc3MiOiJ1cm46Ly9hcGlnZWUtZWRnZS1KV1QtcG9saWN5LXRlc3QiLCJleHAiOjE3OTQ1NDg0NTAsImlhdCI6MTc5NDU0NjY1MCwianRpIjoiNjY5NzY5ODEtYmU3Mi00YjlhLWI1N2YtNmU4YmNjM2RjMWI4In0.sI2YK9ww-wLLggr7KkxC-TbFALf11lLTJeDp12jfbbgbeVlpirJyS3Mo1NxfyQa8an279e_jh3h-_romIotPgU1tfIjNu9DMs2Y3vW-Izkp3K4f6prc8k_HhnQgkV0661GDUGCqyk2zxuy_wYn6dMMrZZl8XRf1lRaXG3ehOUvmSGA5lC_fig9VmtW7mdpBhxXkY6KmHfeLVujaDDt7CeTPKlDE-3KONuJCWdlLRFDG17ue96QqB1Sz7QaDOt0nrlaNHYawLK46so6N84qIpv2Mcc8SLJnnILjrVUlgPX6G4baHKfO0JBAVABam7iAtEcrVkUomFxUSjbG__NQhRInsAAk32kxvB6BjvI_0-OxW3ZlEUcMDd4R31D6gXMoKXpP9KIrZWDh6Gk1yfs4ZC1wCP8nBh_k7i1Ou4hFKluufl9HVKitNvoh1lIZzrieeJOAJtFMVUp_HOd7EpLcpClodV6faiuV0i6_L7MrtFrul3FRDOsYIkRITR7P4H8H5mP-C0L9hm9bz1czauQ0ciNcDw45tEPiKpWrmSl7vOn3P4LEV0L-4sfrHMn1Mw2G1ZSj8TSV8bImmkhUsZq24h6-GjUkEkJ2g2VZUCTqw4RJyhiRa6g5JWxvjryKscNzj80KynORZ6BTT2fb0cibma4GARDPC_SyEtzGuAyNzhkEY",
+                            "errorMessage": "successful"
+                        }
+                    },
           {
             "name": "applicantProfile",
             "value": {
@@ -1594,7 +1602,8 @@
           "Section",
           "quickLinks"
         ]
-        }, {
+        }, 
+        {
         "rowDetails": [
           {
             "id": 0,
@@ -1617,15 +1626,15 @@
               },
               {
                 "name": "Gender",
-                "value": "Male"
+                "value": "Female"
               },
               {
                 "name": "Age",
-                "value": "40"
+                "value": "38"
               },
               {
                 "name": "Education",
-                "value": "Graduate"
+                "value": "PostGraduate"
               },
               {
                 "name": "Occupation",
@@ -1658,11 +1667,11 @@
             "fields": [
               {
                 "name": "Product Name",
-                "value": ""
+                "value": "PL1"
               },
               {
                 "name": "Channel",
-                "value": ""
+                "value": "AG1"
               },
               {
                 "name": "Policy no.",
@@ -1784,19 +1793,19 @@
               },
               {
                 "name": "Financial Eligibility",
-                "value": "₹4,80,000"
+                "value": "₹3,80,000"
               },
               {
                 "name": "Derived Income",
-                "value": "₹16,00,000"
+                "value": "₹15,00,000"
               },
               {
                 "name": "Counter Offer Value",
-                "value": "₹50,00,000"
+                "value": "₹47,00,000"
               },
               {
                 "name": "Additional SA",
-                "value": "0.0"
+                "value": "100.0"
               },
               {
                 "name": "BIU Financial status (Match/Mismatch)",
@@ -1804,7 +1813,7 @@
               },
               {
                 "name": "Final Bureau Income",
-                "value": "₹16,00,000"
+                "value": "₹15,00,000"
               },
               {
                 "name": "Reinsurer Case",
@@ -1951,7 +1960,7 @@
               ],
               "rows": [
                 {
-                  "userName": "Premanand Sawant",
+                  "userName": "Neha Sawant",
                   "userRole": "UW",
                   "fupCode": "ECG",
                   "grievanceRaisedRemark": "ECG graph is blurry",
@@ -1966,14 +1975,14 @@
             "label": "Requirement Management",
             "value": [
               {
-                "status": "",
+                "status": "Pending",
                 "requirementPoolType": "",
-                "profile": "",
+                "profile": "LA",
                 "category": "",
                 "subCategory": "",
                 "document": "",
                 "reason": "",
-                "fupCode": "",
+                "fupCode": "PAN",
                 "description": "",
                 "extraRemark": ""
               }
@@ -2093,7 +2102,7 @@
                   "label": "Decision Status"
                 }
               ],
-              "rows": []
+              "rows": [{"policyNumber":"PL1"}]
             }
           },
           {
@@ -2179,7 +2188,7 @@
                 {
                   "comments": "Medical documents require verification before the final decision.",
                   "updatedDate": "07/09/2026 11:36:09",
-                  "updatedBy": "ipru75474"
+                  "updatedBy": "ipru74685"
                 },
                 {
                   "comments": "Customer was contacted for additional financial information.",
@@ -2235,11 +2244,19 @@
           }
         ],
         "subSections": [
+            {
+                        "name": "proposalFormAndDocuments",
+                        "label": "Proposal Form and Document",
+                        "value": {
+                            "link": "https://udsviewer-uat.icicilife.com/App/UdsViewer/document-listing/split?roleid=bk8vQVBlanM1WVhjekE4a0d6emJnZz09&_uidtype=M1ZLSVhSY09scmVPQ1R2Nk9lSFM5UT09&_uidvalue=b2xBK1dwazJpaG5aVUh5TktWVFBGUT09&ntid=UDSMIDOFFICE&token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJVMDRMRHBkTlk3QVpMR2FRTlNvQW4zTTN0bFpOcUlaZXp5TUdvYkJxVzVLbkVOSHQiLCJhdWQiOiJ1cm46Ly9jNjA1MTFjMC0xMmEyLTQ3M2MtODBmZC00MjUyOGViNjVhNmEiLCJudElkIjoiVURTTUlET0ZGSUNFIiwiYXV0aCI6IlVBU0g4R0FiQUVBZjJCQ2ZXVzJGaHlBcUFES1ciLCJpc3MiOiJ1cm46Ly9hcGlnZWUtZWRnZS1KV1QtcG9saWN5LXRlc3QiLCJleHAiOjE3OTQ1NDg0NTAsImlhdCI6MTc5NDU0NjY1MCwianRpIjoiNjY5NzY5ODEtYmU3Mi00YjlhLWI1N2YtNmU4YmNjM2RjMWI4In0.sI2YK9ww-wLLggr7KkxC-TbFALf11lLTJeDp12jfbbgbeVlpirJyS3Mo1NxfyQa8an279e_jh3h-_romIotPgU1tfIjNu9DMs2Y3vW-Izkp3K4f6prc8k_HhnQgkV0661GDUGCqyk2zxuy_wYn6dMMrZZl8XRf1lRaXG3ehOUvmSGA5lC_fig9VmtW7mdpBhxXkY6KmHfeLVujaDDt7CeTPKlDE-3KONuJCWdlLRFDG17ue96QqB1Sz7QaDOt0nrlaNHYawLK46so6N84qIpv2Mcc8SLJnnILjrVUlgPX6G4baHKfO0JBAVABam7iAtEcrVkUomFxUSjbG__NQhRInsAAk32kxvB6BjvI_0-OxW3ZlEUcMDd4R31D6gXMoKXpP9KIrZWDh6Gk1yfs4ZC1wCP8nBh_k7i1Ou4hFKluufl9HVKitNvoh1lIZzrieeJOAJtFMVUp_HOd7EpLcpClodV6faiuV0i6_L7MrtFrul3FRDOsYIkRITR7P4H8H5mP-C0L9hm9bz1czauQ0ciNcDw45tEPiKpWrmSl7vOn3P4LEV0L-4sfrHMn1Mw2G1ZSj8TSV8bImmkhUsZq24h6-GjUkEkJ2g2VZUCTqw4RJyhiRa6g5JWxvjryKscNzj80KynORZ6BTT2fb0cibma4GARDPC_SyEtzGuAyNzhkEY",
+                            "errorMessage": "successful"
+                        }
+                    },
           {
             "name": "applicantProfile",
             "value": {
-              "memberType": "lifeassured1",
-              "lifeType": "LA",
+              "memberType": "lifeassured2",
+              "lifeType": "LA2",
               "customerType": "HNI",
               "partyId": "3202e174-2338-4970-a7e8-253831e31274",
               "jontFlag": false,
@@ -2287,7 +2304,7 @@
                   [
                     {
                       "label": "Applicant Name",
-                      "value": "Rudra Prakash Sangha"
+                      "value": "Neha Prakash Sangha"
                     },
                     {
                       "label": "Date of Birth",
@@ -2299,11 +2316,11 @@
                     },
                     {
                       "label": "Gender",
-                      "value": "Male"
+                      "value": "Female"
                     },
                     {
                       "label": "Marital Status",
-                      "value": ""
+                      "value": "Married"
                     },
                     {
                       "label": "Nationality",
@@ -2741,8 +2758,8 @@
               ],
               "rows": [
                 {
-                  "userId": "",
-                  "userName": "",
+                  "userId": "ipru74685",
+                  "userName": "Neha",
                   "poolName": "",
                   "caseStatus": "",
                   "Decision": "",
@@ -2770,7 +2787,7 @@
               ],
               "rows": [
                 {
-                  "fupCode": "",
+                  "fupCode": "PAN",
                   "profile": "",
                   "Remarks": ""
                 }
@@ -2787,8 +2804,8 @@
                   "label": "Life Assured 2",
                   "dedupePosidex": [
                     {
-                      "clientId": "",
-                      "firstName": "",
+                      "clientId": "CL2",
+                      "firstName": "Neha",
                       "surname": "",
                       "state": "",
                       "city": "",

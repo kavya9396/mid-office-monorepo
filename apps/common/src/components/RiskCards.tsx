@@ -127,7 +127,7 @@ export function RiskCard({
           <Box key={field.name} sx={{ mt: "3px", fontSize: "inherit", color: "#302a27" }}>
             {field.name}:{" "}
             <Box component="b" sx={{ color: accent }}>
-              {field.value || "-"}
+              {field.value}
             </Box>
           </Box>
         ))}
@@ -208,7 +208,7 @@ function RiskDetailsDialog({
                 overflowWrap: "anywhere",
               }}
             >
-              {field.value || "-"}
+              {field.value}
             </Typography>
           </Box>
         ))}
@@ -234,7 +234,7 @@ function RiskDetailsDialog({
               <Box component="span" sx={{ fontWeight: 600, color: "#827671" }}>
                 {remark.name}:
               </Box>{" "}
-              {remark.value || "-"}
+              {remark.value}
             </Typography>
           ))}
         </Box>

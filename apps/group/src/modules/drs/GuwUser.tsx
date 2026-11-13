@@ -10,7 +10,7 @@ import { groupPaths } from "@insurance-poc/routes";
 import { QuickLinksModule } from "@insurance-poc/common/quick-links";
 import { ApplicantProfile } from "@insurance-poc/common/applicant-profile";
 import { GROUP_QUICK_LINKS_CONFIG } from "../config/quickLinks.config";
-import { buildQuickLinkItems } from "./guwQuickLinks";
+import { buildQuickLinkItems, withProposalFormLink } from "./guwQuickLinks";
 import { RequirementMgmt } from "@insurance-poc/common/requirement-mgmt";
 import { RiskCards } from "@insurance-poc/common/risk-cards";
 import { GuwSdtRow } from "../guw/GuwSdtRow";
@@ -187,7 +187,11 @@ const GuwUser = () => {
 
             {/* Quick Links */}
             <QuickLinksModule
-              items={buildQuickLinkItems(quickLinksConfig.items, notify)}
+              items={buildQuickLinkItems(
+                withProposalFormLink(quickLinksConfig.items, page.record.quickLinks.proposalFormLink),
+                notify,
+                ["applicant-profile"],
+              )}
               title="Quick Links"
               applicationNo={applicationNo}
               roleType={params.get("role")?.trim() || quickLinksConfig.defaultRoleType}
@@ -198,6 +202,7 @@ const GuwUser = () => {
             />
 
             <ApplicantProfile
+              applicants={page.record.quickLinks.applicantProfile ?? []}
               open={applicantProfileOpen}
               onClose={() => setApplicantProfileOpen(false)}
             />

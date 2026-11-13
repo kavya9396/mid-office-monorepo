@@ -111,7 +111,7 @@ export function BreCard({
     >
       <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1 }}>
         <Typography component="strong" sx={{ fontSize: 18, fontWeight: 900, color: "#237a3b" }}>
-          {decision || "-"}
+          {decision}
         </Typography>
         <Box sx={{ display: "flex", alignItems: "center", gap: "4px" }}>
           {onViewDetail && (

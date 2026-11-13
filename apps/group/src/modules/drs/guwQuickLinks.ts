@@ -14,15 +14,29 @@ const DVT_ROLE_TYPES = new Set(["DVT_POOL", "GOPS_DVT", "DVT_FORMAL", "DVT_TASK"
 const isDvtRole = (roleType: string) =>
   DVT_ROLE_TYPES.has(roleType.toUpperCase()) || roleType.toUpperCase().includes("DVT");
 
-/** Links with a page route navigate (no `onClick`); the others only show a message. */
+/**
+ * Links with a page route navigate (no `onClick`); the others only show a message.
+ * `dialogLinkIds` are handled by QuickLinksModule `dialogItemIds`, so they also get no `onClick`.
+ */
 export function buildQuickLinkItems(
   items: ReadonlyArray<QuickLinkItem>,
   notify: (message: string) => void,
+  dialogLinkIds: ReadonlyArray<string> = [],
 ): QuickLinkItem[] {
   return items.map((link) =>
-    link.id && PAGE_LINK_IDS.has(link.id)
+    link.href || (link.id && (PAGE_LINK_IDS.has(link.id) || dialogLinkIds.includes(link.id)))
       ? { ...link }
       : { ...link, onClick: () => notify(`Navigating to ${link.label}`) },
+  );
+}
+
+/** Makes "Proposal Form & Documents" open `link` in a new tab; without a link it keeps the notify message. */
+export function withProposalFormLink(
+  items: ReadonlyArray<QuickLinkItem>,
+  link: string | undefined,
+): QuickLinkItem[] {
+  return items.map((item) =>
+    item.id === "proposal-documents" && link ? { ...item, href: link, target: "_blank" } : item,
   );
 }
 

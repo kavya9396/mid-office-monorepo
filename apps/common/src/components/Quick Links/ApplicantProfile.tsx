@@ -16,7 +16,7 @@ const formatDate = (value: string) => {
 };
 
 const mask = (value: string) => {
-  if (!value) return "-";
+  if (!value) return "";
   return value.length <= 4 ? "X".repeat(value.length) : `${"X".repeat(value.length - 4)}${value.slice(-4)}`;
 };
 
