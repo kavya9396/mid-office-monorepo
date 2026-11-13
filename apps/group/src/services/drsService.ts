@@ -116,7 +116,7 @@ function readTables(value: unknown): DetailTable[] {
         }
         const key = isRiderTable ? RIDER_COLUMN_KEYS[column] : column;
         const cellValue = key ? readText(row[key]).trim() : "";
-        cells[column] = cellValue.length > 0 ? cellValue : "-";
+        cells[column] = cellValue;
       }
       return cells;
     });
@@ -219,17 +219,17 @@ export function mapRawRequirementRows(rowsOrSection: unknown): RequirementItem[]
     if (!isRecord(row)) {
       return {
         requirementId: index + 1,
-        status: "-",
-        ocrStatus: "-",
-        team: "-",
-        profile: "-",
-        category: "-",
-        subCategory: "-",
-        document: "-",
-        reason: "-",
-        fupCode: "-",
-        extraRemarks: "-",
-        description: "-",
+        status: "",
+        ocrStatus: "",
+        team: "",
+        profile: "",
+        category: "",
+        subCategory: "",
+        document: "",
+        reason: "",
+        fupCode: "",
+        extraRemarks: "",
+        description: "",
       };
     }
     return {

@@ -8,7 +8,11 @@ type CustomPaginationProps = Omit<PaginationProps, "onChange"> & {
  * Rounded, small pager. Styles copied from the MMT Grievance prototype
  * (item colour #555555, selected page white on #E45F14).
  */
-const CustomPagination = ({ onChange, sx, ...rest }: CustomPaginationProps) => (
+const CustomPagination = ({
+  onChange,
+  sx,
+  ...rest
+}: CustomPaginationProps) => (
   <Pagination
     shape="rounded"
     size="small"

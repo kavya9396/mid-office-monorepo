@@ -511,7 +511,7 @@ const MedicalControl = memo(function MedicalControl({
   kind,
   readOnly,
   type = "text",
-  placeholder = "-",
+  placeholder = "",
   selectPlaceholder = "Select",
   options: optionsOverride,
   validator,
@@ -548,7 +548,7 @@ const MedicalControl = memo(function MedicalControl({
         data-field={id}
         sx={READ_ONLY_DISPLAY_SX}
       >
-        {value || "-"}
+        {value}
       </Box>
     );
   }
@@ -995,7 +995,7 @@ const PlainTextValue = memo(function PlainTextValue({
   const value = useFieldValue(id);
   return (
     <Box component="span" aria-label={ariaLabel} data-field={id} sx={LAB_PLAIN_TEXT_SX}>
-      {value || "-"}
+      {value}
     </Box>
   );
 });
