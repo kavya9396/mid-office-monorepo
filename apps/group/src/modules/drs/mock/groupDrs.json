@@ -60,7 +60,7 @@
             "reason": "Document not uplaoded",
             "fupCode": "OTP",
             "description": "OTP-Policy confirmation/ consent code required",
-            "extraRemarks": "Follow up with customer"
+            "extraRemarks": ""
           },
           {
             "status": "Accept",
@@ -74,7 +74,7 @@
             "reason": "Documents not submitted",
             "fupCode": "AGE",
             "description": "AGE-Age proof of life assured (Passport - front & back or Driving License or Pan Card or Aadhaar - front & back)",
-            "extraRemarks": "Follow up with customer"
+            "extraRemarks": ""
           },
           {
             "status": "pending",
@@ -88,7 +88,7 @@
             "reason": "Documents not submitted",
             "fupCode": "PAL",
             "description": "PAL- Please submit PAN Card copy linked with your Aadhaar",
-            "extraRemarks": "Follow up with customer"
+            "extraRemarks": ""
           },
           {
             "status": "pending",
@@ -102,7 +102,7 @@
             "reason": "Documents not submitted",
             "fupCode": "KYP",
             "description": "KYP- Upload recent photograph of proposer",
-            "extraRemarks": "Follow up with customer"
+            "extraRemarks": ""
           }
         ]
       },

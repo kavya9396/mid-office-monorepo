@@ -44,6 +44,7 @@ export type GroupDrsData = {
   dvtDecision: DvtDecision;
   requirements: RequirementItem[];
   applicants: LifeAssuredApplicant[];
+  memberTypes: string[];
   /** Quick Link pages (previous policy, open tasks, audit trail, risk details). */
   quickLinks: QuickLinksSubSections;
 };
@@ -201,25 +202,36 @@ function readDvtDecision(section: Record<string, unknown> | null): DvtDecision {
   };
 }
 
-/** Requirement rows sit directly on the section and carry no id, so the row index is used. */
-function readRequirements(section: Record<string, unknown> | null): RawRequirement[] {
-  const rows = section?.rows;
-  if (!Array.isArray(rows)) return [];
-  return rows.map((row, index) => {
-    if (!isRecord(row)) return {
-      requirementId: index + 1,
-      status: "-",
-      ocrStatus: "-",
-      team: "-",
-      profile: "-",
-      category: "-",
-      subCategory: "-",
-      document: "-",
-      reason: "-",
-      fupCode: "-",
-      extraRemarks: "-",
-      description: "-",
-    };
+function extractRequirementRows(rowsOrSection: unknown): unknown[] {
+  if (Array.isArray(rowsOrSection)) return rowsOrSection;
+  if (isRecord(rowsOrSection)) {
+    if (Array.isArray(rowsOrSection.rows)) return rowsOrSection.rows;
+    if (Array.isArray(rowsOrSection.requirementManagement)) return rowsOrSection.requirementManagement;
+  }
+  return [];
+}
+
+/** Requirement rows parser handling either an array or an object with `.rows`. */
+export function mapRawRequirementRows(rowsOrSection: unknown): RequirementItem[] {
+  const rows = extractRequirementRows(rowsOrSection);
+
+  const rawList: RawRequirement[] = rows.map((row, index) => {
+    if (!isRecord(row)) {
+      return {
+        requirementId: index + 1,
+        status: "-",
+        ocrStatus: "-",
+        team: "-",
+        profile: "-",
+        category: "-",
+        subCategory: "-",
+        document: "-",
+        reason: "-",
+        fupCode: "-",
+        extraRemarks: "-",
+        description: "-",
+      };
+    }
     return {
       requirementId: typeof row.requirementId === "number" ? row.requirementId : index + 1,
       status: readText(row.status),
@@ -235,6 +247,8 @@ function readRequirements(section: Record<string, unknown> | null): RawRequireme
       description: readText(row.description),
     };
   });
+
+  return mapRequirements(rawList);
 }
 
 /** Rider rows of the Application Detail card's "Rider Details" table (name + sum assured only). */
@@ -261,6 +275,17 @@ function readApplicantMembers(section: Record<string, unknown> | null): unknown[
   return members;
 }
 
+function readMemberTypes(membersDetails: unknown): string[] {
+  if (!Array.isArray(membersDetails)) return [];
+  return Array.from(
+    new Set(
+      membersDetails
+        .map((m) => (isRecord(m) && typeof m.memberType === "string" ? m.memberType.trim() : ""))
+        .filter((val): val is string => val.length > 0),
+    ),
+  );
+}
+
 export function mapGroupDrsPayload(value: unknown): GroupDrsData {
   if (!isRecord(value)) throw invalidResponse();
   const data = isRecord(value.data) ? value.data : value;
@@ -278,7 +303,7 @@ export function mapGroupDrsPayload(value: unknown): GroupDrsData {
     cardDetails: readCards(cardDetailsRaw),
     breDecision: readBre(findSection(sections, "latestBreDecision")),
     dvtDecision: readDvtDecision(findSection(sections, "dvtDecision")),
-    requirements: mapRequirements(readRequirements(findSection(sections, "requirementManagement"))),
+    requirements: mapRawRequirementRows(findSection(sections, "requirementManagement")),
     applicants: mapApplicants({
       members: readApplicantMembers(
         Array.isArray(data.membersDetails)
@@ -287,6 +312,7 @@ export function mapGroupDrsPayload(value: unknown): GroupDrsData {
       ),
       riders: readRiders(cardDetailsRaw),
     }),
+    memberTypes: readMemberTypes(data.membersDetails),
     quickLinks: mapMembersQuickLinks(data.membersDetails),
   };
 }

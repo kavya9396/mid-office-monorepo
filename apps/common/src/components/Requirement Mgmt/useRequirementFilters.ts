@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { usePagination } from "./usePagination";
+import { isNewRequirement } from "./useRequirementRows";
 import type {
   Filters,
   RequirementColumnKey,
@@ -15,6 +16,7 @@ type Options = {
 };
 
 const statusRank = (order: string[], status: string) => {
+  if (!status) return -1;
   const index = order.indexOf(status);
   return index === -1 ? order.length : index;
 };
@@ -63,11 +65,15 @@ export function useRequirementFilters({ rows, filterFields, statusOrder, pageSiz
       rows
         .map((row, index) => ({ row, index }))
         .filter(({ row }) => matchesFilters(row, filters))
-        .sort(
-          (a, b) =>
+        .sort((a, b) => {
+          const aNew = isNewRequirement(a.row) ? 0 : 1;
+          const bNew = isNewRequirement(b.row) ? 0 : 1;
+          if (aNew !== bNew) return aNew - bNew;
+          return (
             statusRank(statusOrder, a.row.status) - statusRank(statusOrder, b.row.status) ||
-            a.index - b.index,
-        )
+            a.index - b.index
+          );
+        })
         .map(({ row }) => row),
     [rows, filters, statusOrder],
   );

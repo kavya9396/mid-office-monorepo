@@ -14,9 +14,10 @@ export type RequirementItem = {
   fupCode: string;
   extraRemarks: string;
   description: string;
+  isNew?: boolean;
 };
 
-export type RequirementColumnKey = Exclude<keyof RequirementItem, "id">;
+export type RequirementColumnKey = Exclude<keyof RequirementItem, "id" | "isNew">;
 
 export type RequirementStatusOption = { label: string; value: string };
 
@@ -77,7 +78,7 @@ export type RequirementActionsColumnConfig = {
 export type RequirementAddButtonConfig = {
   label?: string;
   icon?: ReactNode;
-  onClick: () => void;
+  onClick?: () => void;
   disabled?: boolean;
   /** Keep the button when the table is `readOnly`. */
   allowReadOnly?: boolean;
@@ -139,6 +140,8 @@ export type RequirementMgmtProps = {
   /* Status handling */
   /** Options of the status select. Defaults to the statuses found in `requirements`. */
   statusOptions?: RequirementStatusOption[];
+  /** Custom options per field for new requirement dropdowns (team, profile, category, subCategory, document, reason, fupCode). */
+  fieldOptions?: Partial<Record<RequirementColumnKey, RequirementStatusOption[]>>;
   /** Status order used for sorting rows and the filter pills (first = top). */
   statusOrder?: string[];
   /** Badge variant used for the filter pill of each status. */

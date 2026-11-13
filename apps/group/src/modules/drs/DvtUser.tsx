@@ -20,7 +20,6 @@ import {
   CustomLoader,
   CustomSnackbar,
   DeleteIcon,
-  EditIcon,
 } from "@insurance-poc/ui";
 import {
   DecisionBar,
@@ -40,7 +39,11 @@ import {
 } from "@insurance-poc/common/life-assured";
 import { Financial } from "@insurance-poc/common/financial";
 import { Medical } from "@insurance-poc/common/medical";
-import { RequirementMgmt } from "@insurance-poc/common/requirement-mgmt";
+import {
+  RequirementMgmt,
+  isNewRequirement,
+  type RequirementItem,
+} from "@insurance-poc/common/requirement-mgmt";
 import { QuickLinksModule } from "@insurance-poc/common/quick-links";
 import { ApplicantProfile } from "@insurance-poc/common/applicant-profile";
 import {
@@ -50,7 +53,10 @@ import {
 import { readEditOptions } from "./lifeAssuredData";
 import { useRetriggerGroupBreMutation } from "../../services/breRetriggerApi";
 import { useCompleteGroupTaskMutation } from "../../services/completeTaskApi";
-import { useGetGroupDrsQuery } from "../../services/drsApi";
+import {
+  useGetGroupDrsQuery,
+  useSaveGroupDrsRequirementsMutation,
+} from "../../services/drsApi";
 import {
   useGetGroupFinancialDetailsQuery,
   useSaveGroupFinancialMutation,
@@ -142,6 +148,8 @@ const DvtUser = () => {
   const medicalPath = applicationNo.length > 0 ? drsRoutePath(applicationNo, "medical") : "";
 
   const applicants = drs.data?.applicants ?? [];
+  const memberTypes = drs.data?.memberTypes ?? [];
+  const profileOptions = memberTypes.map((type) => ({ label: type, value: type }));
   const currentApplicantId = readApplicantId(locationState);
   const selectedApplicant =
     applicants.find((a) => a.id === currentApplicantId) ?? applicants[0];
@@ -152,6 +160,7 @@ const DvtUser = () => {
     { skip: !isFinancialRoute || !applicationNo || !activePartyId },
   );
   const [saveFinancial] = useSaveGroupFinancialMutation();
+  const [saveGroupDrsRequirements] = useSaveGroupDrsRequirementsMutation();
 
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
   const [applicantProfileOpen, setApplicantProfileOpen] = useState(false);
@@ -298,6 +307,25 @@ const DvtUser = () => {
     }
   };
 
+  const handleSaveRequirements = async (updatedRequirements: RequirementItem[]) => {
+    console.log("[handleSaveRequirements] On click Save - Requirements list:", updatedRequirements);
+    try {
+      await saveGroupDrsRequirements({
+        applicationNo,
+        roleType: drsTaskConfig.roleType,
+        lob: "G",
+        requirements: updatedRequirements,
+        queryArg: {
+          applicationNo: requestedApplicationNo,
+          ...drsTaskConfig,
+        },
+      }).unwrap();
+      setSnackbarMessage("Requirements saved successfully.");
+    } catch (err: unknown) {
+      setSnackbarMessage(readApiErrorMessage(err) || "Failed to save requirements.");
+    }
+  };
+
   if (drs.isLoading) {
     return <CustomLoader message="Loading application" />;
   }
@@ -440,29 +468,27 @@ const DvtUser = () => {
         requirements={requirements}
         statusOrder={requirementStatusOrder}
         statusVariants={requirementStatusVariants}
+        fieldOptions={{
+          profile: profileOptions.length > 0 ? profileOptions : undefined,
+        }}
         addButton={{
           label: "+ Add Requirement",
           onClick: () => console.log("Add Requirement clicked"),
         }}
         rowActions={[
           {
-            key: "edit",
-            label: "Edit requirement",
-            icon: <EditIcon width={16} height={16} />,
-            onClick: (row) => console.log("Edit requirement", row.id),
-          },
-          {
             key: "delete",
             label: "Remove requirement",
             icon: <DeleteIcon width={16} height={16} />,
             tone: "danger",
+            hidden: (row) => !isNewRequirement(row),
             onClick: (row, { removeRow }) => {
               console.log("Delete requirement", row.id);
               removeRow();
             },
           },
         ]}
-        onSave={(requirements) => console.log("Save requirements", requirements)}
+        onSave={handleSaveRequirements}
       />
 
       <LifeAssured

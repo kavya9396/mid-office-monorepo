@@ -53,6 +53,16 @@ export function parseMasterDataResponse(value: unknown): MasterDataPayload {
   const data: Record<string, MasterListEntry[]> = {};
   for (const [typeKey, list] of Object.entries(dataRoot)) {
     if (!Array.isArray(list)) {
+      if (isRecord(list) && Array.isArray(list.teams)) {
+        data[typeKey] = list.teams.map((team) => ({
+          code: String(team),
+          description: String(team),
+          value: String(team),
+          isActive: "Y",
+          type: typeof list.level === "string" ? list.level : "team",
+        }));
+        continue;
+      }
       data[typeKey] = [];
       continue;
     }
