@@ -8,7 +8,7 @@ const normaliseStatus = (status: string) => {
   if (value === "REJECT" || value === "REJECTED") return "Reject";
   if (value === "CANCELLED" || value === "CANCEL") return "Cancelled";
   if (value === "RECEIVED") return "Received";
-  return status.trim().length > 0 ? status.trim().charAt(0).toUpperCase() + status.trim().slice(1) : "-";
+  return status.trim().length > 0 ? status.trim().charAt(0).toUpperCase() + status.trim().slice(1) : "";
 };
 
 export type RawRequirement = Omit<RequirementItem, "id"> & {

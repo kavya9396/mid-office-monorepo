@@ -140,7 +140,7 @@ export function NomineeDetails({ nominees, onChange, onNotify }: Readonly<Nomine
   };
 
   const displayText = (field: NomineeField, value: string) => {
-    if (!value) return "-";
+    if (!value) return "";
     return field === "dob" ? dayjs(value).format("DD/MM/YYYY") : value;
   };
 

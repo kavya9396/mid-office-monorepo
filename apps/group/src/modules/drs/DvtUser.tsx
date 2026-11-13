@@ -60,6 +60,7 @@ import { useValidateNsdlPanMutation } from "../../services/nsdlApi";
 import { createNsdlPanValidateRequest, resolveNsdlOutcome } from "../../services/nsdlService";
 import { GROUP_FINANCIAL_ACTIONS_CONFIG } from "../config/financialActions.config";
 import { GROUP_QUICK_LINKS_CONFIG } from "../config/quickLinks.config";
+import { buildQuickLinkItems } from "./guwQuickLinks";
 
 const CARD_TITLES: Record<CardType, string> = {
   APPLICATION: "Application Detail",
@@ -396,7 +397,7 @@ const DvtUser = () => {
       {detailCards}
 
       <QuickLinksModule
-        items={quickLinksConfig.items}
+        items={buildQuickLinkItems(quickLinksConfig.items, (message) => setSnackbarMessage(message), ["applicant-profile"])}
         applicationNo={applicationNo}
         roleType={params.get("role")?.trim() || quickLinksConfig.defaultRoleType}
         onNavigate={(path) => navigate(path)}
@@ -407,6 +408,7 @@ const DvtUser = () => {
       />
 
       <ApplicantProfile
+        applicants={drs.data.quickLinks.applicantProfile ?? []}
         open={applicantProfileOpen}
         onClose={() => setApplicantProfileOpen(false)}
       />

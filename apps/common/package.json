@@ -39,6 +39,36 @@
       "import": "./src/components/DetailCard.tsx",
       "default": "./src/components/DetailCard.tsx"
     },
+    "./bre-card": {
+      "types": "./src/components/BreCard.tsx",
+      "import": "./src/components/BreCard.tsx",
+      "default": "./src/components/BreCard.tsx"
+    },
+    "./risk-cards": {
+      "types": "./src/components/RiskCards.tsx",
+      "import": "./src/components/RiskCards.tsx",
+      "default": "./src/components/RiskCards.tsx"
+    },
+    "./claim-audit": {
+      "types": "./src/components/ClaimAudit.tsx",
+      "import": "./src/components/ClaimAudit.tsx",
+      "default": "./src/components/ClaimAudit.tsx"
+    },
+    "./grievance-history": {
+      "types": "./src/components/GrievanceHistory.tsx",
+      "import": "./src/components/GrievanceHistory.tsx",
+      "default": "./src/components/GrievanceHistory.tsx"
+    },
+    "./special-remarks": {
+      "types": "./src/components/SpecialRemarks.tsx",
+      "import": "./src/components/SpecialRemarks.tsx",
+      "default": "./src/components/SpecialRemarks.tsx"
+    },
+    "./uw-guidelines": {
+      "types": "./src/components/UwGuidelines.tsx",
+      "import": "./src/components/UwGuidelines.tsx",
+      "default": "./src/components/UwGuidelines.tsx"
+    },
     "./requirement-mgmt": {
       "types": "./src/components/Requirement Mgmt/RequirementMgmt.tsx",
       "import": "./src/components/Requirement Mgmt/RequirementMgmt.tsx",

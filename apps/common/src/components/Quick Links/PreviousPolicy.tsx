@@ -202,6 +202,7 @@ const DEFAULT_DATA: PreviousPolicyData = {
   familyPolicies: FAMILY_POLICIES,
 };
 
+
 /* -------------------------------------------------------------------------- */
 /* Formatters                                                                 */
 /* -------------------------------------------------------------------------- */
@@ -209,14 +210,14 @@ const DEFAULT_DATA: PreviousPolicyData = {
 const displayValue = (raw: unknown): string => String(raw ?? "").trim() || "-";
 
 function formatCurrency(raw: unknown): string {
-  if (raw === null || raw === undefined || raw === "" || raw === "-") return "-";
+  if (raw === null || raw === undefined || raw === "" || raw === "-") return "";
   return Number.isNaN(Number(raw))
     ? String(raw)
     : `₹ ${Number(raw).toLocaleString("en-IN")}`;
 }
 
 function formatDateOnly(raw: unknown): string {
-  if (raw === null || raw === undefined || raw === "" || raw === "-") return "-";
+  if (raw === null || raw === undefined || raw === "" || raw === "-") return "";
   const value = String(raw);
   const iso = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
   const local = /^(\d{2})\/(\d{2})\/(\d{4})/.exec(value);
@@ -225,10 +226,10 @@ function formatDateOnly(raw: unknown): string {
     : local
       ? [local[3], local[2], local[1]]
       : null;
-  if (!parts) return "-";
+  if (!parts) return "";
   const date = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
   return Number.isNaN(date.getTime())
-    ? "-"
+    ? ""
     : date.toLocaleDateString("en-GB", {
         day: "numeric",
         month: "short",

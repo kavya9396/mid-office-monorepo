@@ -105,7 +105,7 @@ function TextCell({ value }: Readonly<{ value: string }>) {
           textOverflow: "ellipsis",
         }}
       >
-        {value || "-"}
+        {value}
       </Box>
     </CustomTooltip>,
   );
