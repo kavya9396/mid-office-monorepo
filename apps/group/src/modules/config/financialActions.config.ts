@@ -17,7 +17,6 @@ export const GROUP_FINANCIAL_ACTIONS_CONFIG: Record<
 > = {
   dvt: {
     hiddenSectionKeys: [
-      "financial_profession", // Application Form Financial & Professional Details
       "bre_financial_decision", // BRE Financial Decision
       "decision", // Decision
     ],
