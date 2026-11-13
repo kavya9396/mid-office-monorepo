@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { getDrsRoleType } from "@insurance-poc/utils";
 import { MmtGrievanceDrsPage } from "./MmtGrievanceDrsPage";
 import { TpaDrsPage } from "./TpaDrsPage";
@@ -12,9 +12,10 @@ import { fetchGuwMembers } from "../../services/guwService";
  * member is selected yet, go to the member selection page; otherwise open the GUW DRS directly.
  */
 function GuwEntry() {
+  const { applicationNo: applicationNoParam } = useParams();
   const [params] = useSearchParams();
   const navigate = useNavigate();
-  const applicationNo = params.get("applicationNo")?.trim() ?? "";
+  const applicationNo = applicationNoParam?.trim() ?? "";
   const memberId = params.get("memberId")?.trim() ?? "";
   const needsCheck = memberId === "" && applicationNo !== "";
   const [checked, setChecked] = useState(!needsCheck);
@@ -25,7 +26,9 @@ function GuwEntry() {
     void fetchGuwMembers(applicationNo).then((members) => {
       if (!active) return;
       if (members.length > 1) {
-        navigate(`/guw/member-selection?${params.toString()}`, { replace: true });
+        const next = new URLSearchParams(params);
+        next.set("applicationNo", applicationNo);
+        navigate(`/guw/member-selection?${next.toString()}`, { replace: true });
       } else {
         setChecked(true);
       }
@@ -39,12 +42,13 @@ function GuwEntry() {
   return checked ? <GuwUser /> : null;
 }
 
-/** `/app/{applicationNo}/drs` — screen picked from `roleType` (query param, else inbox session). */
+/** `/app/{applicationNo}/drs` — screen picked from inbox session `roleType`. */
 const SCREEN_BY_ROLE: Record<string, () => JSX.Element | null> = {
   "GUW TASK": GuwEntry,
   GUW: GuwEntry,
   GUW_FORMAL: GuwEntry,
   "DVT TASK": DvtUser,
+  DVT_POOL: DvtUser,
   "MMT TASK": MmtGrievanceDrsPage,
   MMT_TASK: MmtGrievanceDrsPage,
   AMR_NON_MEDICAL: TpaDrsPage,
@@ -52,8 +56,7 @@ const SCREEN_BY_ROLE: Record<string, () => JSX.Element | null> = {
 };
 
 export function GroupDrsPage() {
-  const [params] = useSearchParams();
-  const roleType = (params.get("roleType")?.trim() || getDrsRoleType()).trim().toUpperCase();
+  const roleType = getDrsRoleType().trim().toUpperCase();
   const Screen = SCREEN_BY_ROLE[roleType] ?? DvtUser;
   return <Screen />;
 }

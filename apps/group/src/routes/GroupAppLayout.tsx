@@ -5,6 +5,7 @@ import { drsRoutePath, parseDrsApplicationNo } from "@insurance-poc/routes";
 import { referralConfigForRoleType } from "../services/referralUwService";
 
 const INBOX_PATH = "/inbox";
+const REFERRAL_DRS_PATH = "/referral/drs";
 
 function readQueryValue(value: string | null): string | undefined {
   const trimmed = value?.trim() ?? "";
@@ -20,6 +21,63 @@ function stripTrailingSlashes(pathname: string): string {
   return stripped.length > 0 ? stripped : "/";
 }
 
+function parseMemberCount(raw: string | null): number {
+  const parsed = Number.parseInt(raw ?? "0", 10);
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+function isDrsSectionPath(pathname: string): boolean {
+  return /\/drs\/(financial|medical)$/i.test(pathname);
+}
+
+function isGuwOrReferralRole(roleType: string): boolean {
+  return roleType === "GUW" || referralConfigForRoleType(roleType) !== null;
+}
+
+function isMemberDrsRoute(
+  isInbox: boolean,
+  memberCount: number,
+  roleType: string,
+  normalizedPath: string,
+): boolean {
+  if (isInbox || memberCount <= 1) return false;
+  if (!isGuwOrReferralRole(roleType)) return false;
+  const lowerPath = normalizedPath.toLowerCase();
+  return parseDrsApplicationNo(normalizedPath) !== null || lowerPath === REFERRAL_DRS_PATH;
+}
+
+function buildMemberSelectionBackPath(input: {
+  isDrsSection: boolean;
+  drsPath: string | undefined;
+  locationSearch: string;
+  isMemberDrs: boolean;
+  roleType: string;
+  applicationNo: string | null;
+  role: string | null;
+  inboxRoleType: string | null;
+}): string | undefined {
+  const { isDrsSection, drsPath, locationSearch, isMemberDrs, roleType } = input;
+  if (isDrsSection && drsPath) {
+    return `${drsPath}${locationSearch}`;
+  }
+  if (!isMemberDrs) {
+    return undefined;
+  }
+
+  const backParams = new URLSearchParams({
+    applicationNo: input.applicationNo ?? "",
+    roleType: input.inboxRoleType ?? "",
+  });
+  const roleVal = input.role ?? "";
+  if (roleVal.length > 0) {
+    backParams.set("role", roleVal);
+  }
+
+  const memberSelectionPath =
+    roleType === "GUW" ? "/guw/member-selection" : "/referral/member-selection";
+  return `${memberSelectionPath}?${backParams.toString()}`;
+}
+
 export function GroupAppLayout() {
   const location = useLocation();
   const [params] = useSearchParams();
@@ -31,32 +89,21 @@ export function GroupAppLayout() {
     : parseDrsApplicationNo(normalizedPath) ?? readQueryValue(params.get("applicationNo"));
   const drsPath = applicationNo ? drsRoutePath(applicationNo) : undefined;
 
-  /**
-   * On a GUW / referral member DRS page opened from member selection (memberCount > 1), the back
-   * button returns to the member selection page; otherwise it goes back to the inbox (default).
-   */
   const roleType = readQueryValue(params.get("roleType"))?.toUpperCase() ?? "";
-  const memberCount = parseInt(params.get("memberCount") ?? "0", 10);
-  const isMemberDrs =
-    !isInbox &&
-    memberCount > 1 &&
-    (roleType === "GUW" || referralConfigForRoleType(roleType) !== null) &&
-    (parseDrsApplicationNo(normalizedPath) !== null || normalizedPath.toLowerCase() === "/referral/drs");
-  /** On the DRS financial / medical sub-pages, back returns to that application's DRS page. */
-  const isDrsSection = /\/drs\/(financial|medical)$/i.test(normalizedPath);
-  const memberSelectionBackPath: string | undefined = (() => {
-    if (isDrsSection && drsPath) return `${drsPath}${location.search}`;
-    if (!isMemberDrs) return undefined;
-    const backParams = new URLSearchParams({
-      applicationNo: params.get("applicationNo") ?? "",
-      roleType: params.get("roleType") ?? "",
-    });
-    const roleVal = params.get("role") ?? "";
-    if (roleVal) backParams.set("role", roleVal);
-    const memberSelectionPath =
-      roleType === "GUW" ? "/guw/member-selection" : "/referral/member-selection";
-    return `${memberSelectionPath}?${backParams.toString()}`;
-  })();
+  const memberCount = parseMemberCount(params.get("memberCount"));
+  const isMemberDrs = isMemberDrsRoute(isInbox, memberCount, roleType, normalizedPath);
+  const isDrsSection = isDrsSectionPath(normalizedPath);
+
+  const memberSelectionBackPath = buildMemberSelectionBackPath({
+    isDrsSection,
+    drsPath,
+    locationSearch: location.search,
+    isMemberDrs,
+    roleType,
+    applicationNo: params.get("applicationNo"),
+    role: params.get("role"),
+    inboxRoleType: params.get("roleType"),
+  });
 
   return (
     <Box

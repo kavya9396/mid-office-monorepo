@@ -18,7 +18,7 @@ import {
   type InboxCase,
   type InboxData,
 } from "./inboxApi";
-import { taskDetailsTitle, toDisplayLabel } from "./inboxFormat";
+import { taskDetailsTitle } from "./inboxFormat";
 import { InboxSidebar } from "./InboxSidebar";
 import { InboxTable } from "./InboxTable";
 
@@ -111,13 +111,7 @@ export function InboxScreen({
       setNotice("This task is missing an application number.");
       return;
     }
-    // The DRS screen is picked from `roleType` (e.g. GUW vs DVT), so it must travel with the route.
-    const drsQuery = new URLSearchParams({
-      applicationNo: item.applicationNo,
-      role: toDisplayLabel(item.poolName),
-      roleType: readFieldText(item.fields.roleType) || item.poolName,
-    });
-    const drsTarget = `${drsRoutePath(item.applicationNo)}?${drsQuery.toString()}`;
+    const drsTarget = drsRoutePath(item.applicationNo);
     const taskId = readFieldText(item.fields.taskId);
     const instanceId = readFieldText(item.fields.instanceId);
 

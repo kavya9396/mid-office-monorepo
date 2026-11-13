@@ -1,0 +1,41 @@
+{
+  "status": "SUCCESS",
+  "message": "Grievances fetched successfully",
+  "data": {
+    "applicationNo": "OB90377122",
+    "openGrievances": [
+      {
+        "id": 44,
+        "partyId": "3202e174-2338-4970-a7e8-253831e31274",
+        "lifeNumber": "01",
+        "fupCode": "ECG",
+        "profile": "UW",
+        "userRemarks": "ECG graph is blurry",
+        "tpaRemark": null,
+        "raisedDate": "2026-09-07T10:00:00",
+        "updatedDate": null,
+        "raisedBy": "Premanand Sawant",
+        "raisedRole": "CUW",
+        "updatedBy": null,
+        "updatedRole": null
+      }
+    ],
+    "grievanceHistory": [
+      {
+        "id": 41,
+        "partyId": "3202e174-2338-4970-a7e8-253831e31274",
+        "lifeNumber": "01",
+        "fupCode": "ADP",
+        "profile": "UW",
+        "userRemarks": "KYC documents pending",
+        "tpaRemark": "Documents checked and found in order",
+        "raisedDate": "2026-09-06T11:30:20",
+        "updatedDate": "2026-09-07T12:23:19",
+        "raisedBy": "ipru74574",
+        "raisedRole": "CUW",
+        "updatedBy": "ipru74574",
+        "updatedRole": "CUW"
+      }
+    ]
+  }
+}

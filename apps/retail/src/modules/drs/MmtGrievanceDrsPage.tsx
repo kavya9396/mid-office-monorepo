@@ -74,7 +74,10 @@ export function MmtGrievanceDrsPage() {
           />
           <CustomBox sx={{ px: 0.5, pb: 1.5, display: "grid", gap: 1.25 }}>
             <GrievanceHistory rows={state.data.record.grievanceHistory} />
-            <MmtGrievanceDecision rows={state.data.record.grievanceDecision} />
+            <MmtGrievanceDecision
+              rows={state.data.record.grievanceDecision}
+              onSubmit={() => {}}
+            />
           </CustomBox>
         </>
       ) : null}

@@ -15,6 +15,11 @@ export const GROUP_DRS_TASK_CONFIG: Record<string, GroupDrsTaskConfig> = {
     screenType: "DVT_INFORMAL",
     businessType: "Group",
   },
+  DVT_POOL: {
+    roleType: "DVT",
+    screenType: "DVT_INFORMAL",
+    businessType: "Group",
+  },
   DVT_INFORMAL: {
     roleType: "DVT",
     screenType: "DVT_INFORMAL",
