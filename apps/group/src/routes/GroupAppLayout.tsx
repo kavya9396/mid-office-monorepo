@@ -42,7 +42,10 @@ export function GroupAppLayout() {
     memberCount > 1 &&
     (roleType === "GUW" || referralConfigForRoleType(roleType) !== null) &&
     (parseDrsApplicationNo(normalizedPath) !== null || normalizedPath.toLowerCase() === "/referral/drs");
+  /** On the DRS financial / medical sub-pages, back returns to that application's DRS page. */
+  const isDrsSection = /\/drs\/(financial|medical)$/i.test(normalizedPath);
   const memberSelectionBackPath: string | undefined = (() => {
+    if (isDrsSection && drsPath) return `${drsPath}${location.search}`;
     if (!isMemberDrs) return undefined;
     const backParams = new URLSearchParams({
       applicationNo: params.get("applicationNo") ?? "",

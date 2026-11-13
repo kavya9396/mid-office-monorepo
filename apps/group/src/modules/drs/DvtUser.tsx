@@ -408,6 +408,7 @@ const DvtUser = () => {
       />
 
       <ApplicantProfile
+        applicants={drs.data.quickLinks.applicantProfile ?? []}
         open={applicantProfileOpen}
         onClose={() => setApplicantProfileOpen(false)}
       />
