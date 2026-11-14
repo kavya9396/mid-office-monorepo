@@ -32,10 +32,16 @@ export function MmtGrievanceDrsPage() {
   const navigate = useNavigate();
   const { applicationNo: applicationNoParam } = useParams();
   const applicationNo = applicationNoParam?.trim() ?? "";
-  const drsTaskConfig = getGroupDrsTaskConfig(getDrsRoleType());
+  const roleType = getDrsRoleType().trim();
+  const drsTaskConfig = getGroupDrsTaskConfig(roleType);
 
   const drs = useGetMmtDrsQuery(
-    { applicationNo, ...drsTaskConfig },
+    {
+      applicationNo,
+      roleType,
+      screenType: "MMT",
+      businessType: drsTaskConfig.businessType,
+    },
     { skip: applicationNo.length === 0 },
   );
 

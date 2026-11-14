@@ -66,10 +66,14 @@ export const mmtGrievanceApi = createApi({
           return { error: customError("Group DRS data API is not configured.") };
         }
 
+        const sessionRoleType = getDrsRoleType().trim();
         const body = {
           applicationNo,
-          roleType: (typeof arg !== "string" && arg.roleType) || taskConfig.roleType,
-          screenType: (typeof arg !== "string" && arg.screenType) || taskConfig.screenType,
+          roleType:
+            sessionRoleType ||
+            (typeof arg !== "string" && arg.roleType) ||
+            taskConfig.roleType,
+          screenType: "MMT",
           businessType: (typeof arg !== "string" && arg.businessType) || taskConfig.businessType,
         };
 

@@ -42,12 +42,12 @@ export const GROUP_DRS_TASK_CONFIG: Record<string, GroupDrsTaskConfig> = {
   },
   "MMT TASK": {
     roleType: "MMT",
-    screenType: "MMT_TASK",
+    screenType: "MMT",
     businessType: "Group",
   },
   MMT_TASK: {
     roleType: "MMT",
-    screenType: "MMT_TASK",
+    screenType: "MMT",
     businessType: "Group",
   },
   AMR_NON_MEDICAL: {
