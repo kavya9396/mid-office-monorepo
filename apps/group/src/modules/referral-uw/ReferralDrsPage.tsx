@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  getDrsApplicationNo,
+  getDrsMemberCount,
+  getDrsMemberId,
+} from "@insurance-poc/utils";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { DecisionComparisonTable } from "@insurance-poc/common/decision-bar";
@@ -77,21 +82,12 @@ export interface ReferralDrsPageProps {
  *  - decision card (ReferralDecisionSection)
  */
 export function ReferralDrsPage({ config }: Readonly<ReferralDrsPageProps>) {
-  const [params] = useSearchParams();
   const navigate = useNavigate();
-  const applicationNo = params.get("applicationNo")?.trim() ?? "";
-  const memberId = params.get("memberId")?.trim() ?? "";
-  // Multi-life case (more than one member): after submit go back to the member screen, else the inbox
-  const isMultiLife = parseInt(params.get("memberCount") ?? "0", 10) > 1;
-  const memberSummaryQuery = new URLSearchParams({
-    applicationNo,
-    roleType: params.get("roleType") ?? "",
-  });
-  const roleParam = params.get("role") ?? "";
-  if (roleParam) memberSummaryQuery.set("role", roleParam);
-  const postSubmitUrl = isMultiLife
-    ? `${groupPaths.referralMemberSelection}?${memberSummaryQuery.toString()}`
-    : groupPaths.inbox;
+  const { applicationNo: applicationNoParam } = useParams();
+  const applicationNo = applicationNoParam?.trim() || getDrsApplicationNo();
+  const memberId = getDrsMemberId();
+  const isMultiLife = getDrsMemberCount() > 1;
+  const postSubmitUrl = isMultiLife ? groupPaths.referralMemberSelection : groupPaths.inbox;
 
   const [page, setPage] = useState<PageState>(
     applicationNo ? { kind: "loading" } : { kind: "missing-id" },
