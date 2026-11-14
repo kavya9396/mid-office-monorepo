@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  getDrsApplicationNo,
+  getDrsMemberCount,
+  getDrsMemberId,
+  getDrsRoleLabel,
+} from "@insurance-poc/utils";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { DecisionComparisonTable } from "@insurance-poc/common/decision-bar";
@@ -48,23 +54,15 @@ type PageState =
 const quickLinksConfig = GROUP_QUICK_LINKS_CONFIG.guw;
 
 const GuwUser = () => {
-  const [params] = useSearchParams();
   const navigate = useNavigate();
   const { applicationNo: applicationNoParam } = useParams();
-  const applicationNo = params.get("applicationNo")?.trim() || applicationNoParam?.trim() || "";
-  // Multi-life case (more than one member): after submit go to the member summary page, else the inbox
-  const isMultiLife = parseInt(params.get("memberCount") ?? "0", 10) > 1;
-  const memberSummaryQuery = new URLSearchParams({
-    applicationNo,
-    roleType: params.get("roleType") ?? "",
-  });
-  const roleParam = params.get("role") ?? "";
-  if (roleParam) memberSummaryQuery.set("role", roleParam);
-  const postSubmitUrl = isMultiLife
-    ? `${groupPaths.guwMemberSelection}?${memberSummaryQuery.toString()}`
-    : groupPaths.inbox;
-  // Multi-life: each member's decision is held under its own key so the summary page can show it per member
-  const memberId = params.get("memberId")?.trim() ?? "";
+  const applicationNo =
+    applicationNoParam?.trim() || getDrsApplicationNo() || "";
+  const memberCount = getDrsMemberCount();
+  const isMultiLife = memberCount > 1;
+  const postSubmitUrl = isMultiLife ? groupPaths.guwMemberSelection : groupPaths.inbox;
+  const memberId = getDrsMemberId();
+  const roleLabel = getDrsRoleLabel();
   const memberStorageKey = isMultiLife ? guwMemberDecisionKey(applicationNo, memberId) : undefined;
 
   const [page, setPage] = useState<PageState>(
@@ -194,7 +192,7 @@ const GuwUser = () => {
               )}
               title="Quick Links"
               applicationNo={applicationNo}
-              roleType={params.get("role")?.trim() || quickLinksConfig.defaultRoleType}
+              roleType={roleLabel || quickLinksConfig.defaultRoleType}
               onNavigate={(path) => navigate(path)}
               onNotify={notify}
               dialogItemIds={["applicant-profile"]}

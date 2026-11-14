@@ -1,0 +1,51 @@
+{
+  "byTeam": {
+    "UW": {
+      "categories": [
+        "Application",
+        "Business Insurance",
+        "Consent",
+        "Covid"
+       
+      ]
+    },
+    "COPS": {
+      "categories": ["Application", "Internal"]
+    }
+  },
+  "byCategory": {
+    "UW|Covid": {
+      "subCategories": ["Certificate", "Declaration"]
+    },
+    "UW|Application": {
+      "subCategories": ["Form", "KYC"]
+    }
+  },
+  "bySubCategory": {
+    "UW|Covid|Certificate": {
+      "documents": ["Clear copy", "Declaration"]
+    }
+  },
+  "byDocument": {
+    "UW|Covid|Certificate|Declaration": {
+      "reasons": ["Document not uplaoded"]
+    }
+  },
+  "byReason": {
+    "UW|Covid|Certificate|Declaration|Document not uplaoded": {
+      "fupCodes": ["CVD"]
+    }
+  },
+  "byFupCode": {
+    "UW|Covid|Certificate|Declaration|Document not uplaoded|CVD": {
+      "requirements": [
+        {
+          "code": "CVD",
+          "description": "CVD-Upload Covid 19 Declaration",
+          "isActive": "Y",
+          "ocrReq": "N"
+        }
+      ]
+    }
+  }
+}

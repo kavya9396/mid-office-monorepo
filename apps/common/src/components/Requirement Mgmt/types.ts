@@ -153,6 +153,8 @@ export type RequirementMgmtProps = {
 
   /** Shows the Save button in the footer when provided. */
   onSave?: (requirements: RequirementItem[]) => void | Promise<void>;
+  /** When this changes (e.g. DRS application no.), requirement master cascade session is reset. */
+  applicationKey?: string;
 };
 
 /** Selected values per column. */

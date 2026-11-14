@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Box } from "@mui/material";
 import { colors, CustomTable } from "@insurance-poc/ui";
 import { getMasterList } from "@insurance-poc/utils";
@@ -20,6 +20,19 @@ import {
 } from "./RequirementParts";
 import { useRequirementFilters } from "./useRequirementFilters";
 import { createEmptyRequirement, isNewRequirement, useRequirementRows } from "./useRequirementRows";
+import { ensureRequirementMstApplicationKey, removeRequirementMstRowSession } from "./requirementMstSession";
+import { useRequirementMstCascade } from "./useRequirementMstCascade";
+
+export { clearRequirementMstContext } from "./requirementMstSession";
+
+const CASCADE_FIELD_KEYS = new Set([
+  "team",
+  "category",
+  "subCategory",
+  "document",
+  "reason",
+  "fupCode",
+]);
 import type {
   RequirementColumnKey,
   RequirementItem,
@@ -77,14 +90,25 @@ export function RequirementMgmt({
   filter,
   labels: labelOverrides,
   onSave,
+  applicationKey,
 }: Readonly<RequirementMgmtProps>) {
   const labels: RequirementLabels = { ...DEFAULT_LABELS, ...labelOverrides };
   const masterStatusOptions = readMasterStatusOptions();
   const masterTeamOptions = readMasterTeamOptions();
   const filterConfig = resolveFilterConfig(filter, readOnly);
 
-  const { rows, saving, addRow, updateRow, removeRow, save } = useRequirementRows(requirements, onSave);
+  const { rows, saving, addRow, updateRow, patchRow, removeRow, save } = useRequirementRows(
+    requirements,
+    onSave,
+  );
+  const cascade = useRequirementMstCascade(patchRow);
   const [dialogValue, setDialogValue] = useState<{ title: string; value: string } | null>(null);
+
+  useEffect(() => {
+    if (applicationKey && applicationKey.trim().length > 0) {
+      ensureRequirementMstApplicationKey(applicationKey);
+    }
+  }, [applicationKey]);
 
   const filtering = useRequirementFilters({
     rows,
@@ -109,8 +133,17 @@ export function RequirementMgmt({
     addButton?.onClick?.();
   };
 
+  const handleRemoveRow = (id: RequirementItem["id"]) => {
+    removeRequirementMstRowSession(String(id));
+    removeRow(id);
+  };
+
   const handleValueChange = (row: RequirementItem, key: RequirementColumnKey, value: string) => {
-    updateRow(row, key, value);
+    if (isNewRequirement(row) && CASCADE_FIELD_KEYS.has(key)) {
+      void cascade.onCascadeFieldChange(row, key, value);
+    } else {
+      updateRow(row, key, value);
+    }
     if (key === "status") pagination.resetPage();
   };
 
@@ -119,7 +152,7 @@ export function RequirementMgmt({
     visibleActions: visibility.rowActions,
     actionsColumnConfig,
     readOnly,
-    onRemoveRow: removeRow,
+    onRemoveRow: handleRemoveRow,
     cellContext: {
       statusOptions:
         statusOptions ?? (masterStatusOptions.length > 0 ? masterStatusOptions : uniqueStatusOptions(rows)),
@@ -127,6 +160,8 @@ export function RequirementMgmt({
         team: fieldOptions?.team ?? (masterTeamOptions.length > 0 ? masterTeamOptions : undefined),
         ...fieldOptions,
       },
+      resolveRowFieldOptions: cascade.resolveRowFieldOptions,
+      isRowFieldDisabled: cascade.isRowFieldDisabled,
       rows,
       labels,
       onValueChange: handleValueChange,

@@ -241,14 +241,25 @@ export default function CustomSelect(props: CustomSelectProps) {
               borderColor: "rgba(0, 0, 0, 0.23)",
             },
 
-            "&:hover .MuiOutlinedInput-notchedOutline": {
+            "&:hover:not(.Mui-disabled) .MuiOutlinedInput-notchedOutline": {
               borderColor: "#EA7617",
             },
 
-            "&.Mui-focused .MuiOutlinedInput-notchedOutline":
-            {
+            "&.Mui-focused:not(.Mui-disabled) .MuiOutlinedInput-notchedOutline": {
               borderColor: "#EA7617",
               borderWidth: "2px",
+            },
+
+            "&.Mui-disabled": {
+              cursor: "default",
+            },
+
+            "&.Mui-disabled .MuiOutlinedInput-notchedOutline": {
+              borderColor: "rgba(0, 0, 0, 0.23)",
+            },
+
+            "&.Mui-disabled:hover .MuiOutlinedInput-notchedOutline": {
+              borderColor: "rgba(0, 0, 0, 0.23)",
             },
             "& .MuiSelect-select": {
               fontSize: "12px",
