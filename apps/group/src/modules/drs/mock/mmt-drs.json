@@ -1,0 +1,95 @@
+{
+  "success": true,
+  "data": {
+    "applicationNo": "OB90377122",
+    "screenType": "MMT",
+    "businessType": "GROUP",
+    "commonSection": [
+      {
+        "name": "grievanceHistory",
+        "label": "Grievance History",
+        "value": {
+          "columns": [
+            { "label": "User Name" },
+            { "label": "FUP Code" },
+            { "label": "Profile" },
+            { "label": "Grievance Raised Remark" },
+            { "label": "TPA Remarks" },
+            { "label": "Grievance Raised Date" },
+            { "label": "Updated Date" },
+            { "label": "Raised by" },
+            { "label": "Updated by" }
+          ],
+          "rows": []
+        }
+      },
+      {
+        "name": "tpaGrievanceDetails",
+        "label": "TPA Grievance Details",
+        "value": {
+          "columns": [
+            { "label": "User Name" },
+            { "label": "FUP Code" },
+            { "label": "Profile" },
+            { "label": "Grievance Raised Remark" },
+            { "label": "TPA Remarks" },
+            { "label": "Grievance Raised Date" },
+            { "label": "Updated Date" },
+            { "label": "Raised by" },
+            { "label": "Updated by" }
+          ],
+          "rows": []
+        }
+      }
+    ],
+    "membersDetails": [
+      {
+        "rowDetails": [
+          {
+            "id": 0,
+            "fields": [
+              { "name": "Name", "value": "Rudra Prakash Sangha" },
+              { "name": "App No.", "value": "OB90377122" },
+              { "name": "Member", "value": "Life Assured 1" },
+              { "name": "Marital status", "value": "Married" },
+              { "name": "Gender", "value": "Male" },
+              { "name": "Age", "value": "40" },
+              { "name": "Education", "value": "Graduate" },
+              { "name": "Occupation", "value": "Salaried" },
+              { "name": "Organisation", "value": "3I INFOTECH" },
+              { "name": "Declared income", "value": "1000000" },
+              { "name": "City, State", "value": "Pune, Maharashtra" },
+              { "name": "Residence Status", "value": "Indian" },
+              { "name": "Residing Country", "value": "India" }
+            ]
+          },
+          {
+            "id": 1,
+            "fields": [
+              { "name": "Product Name - Product Code", "value": "ICICI Pru GIFT Pro" },
+              { "name": "Channel", "value": "Agency" },
+              { "name": "Sum Assured", "value": "₹10,68,000" }
+            ]
+          },
+          {
+            "id": 2,
+            "fields": [
+              { "name": "WOP - SA", "value": "₹15,00,000" },
+              { "name": "BTBB - SA", "value": "₹25,00,000" },
+              { "name": "TI Rider - SA", "value": "₹25,00,000" }
+            ]
+          }
+        ],
+        "subSections": [
+          {
+            "name": "applicantProfile",
+            "value": {
+              "partyId": "3202e174-2338-4970-a7e8-253831e31274",
+              "lifeNumber": "01"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

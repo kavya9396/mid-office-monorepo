@@ -7,6 +7,7 @@ import { groupBreRetriggerApi } from "../services/breRetriggerApi";
 import { groupCompleteTaskApi } from "../services/completeTaskApi";
 import { groupInboxApi } from "../services/inboxApi";
 import { groupNsdlApi } from "../services/nsdlApi";
+import { mmtGrievanceApi } from "../services/mmtGrievanceApi";
 
 const listenerMiddleware = createListenerMiddleware();
 
@@ -19,6 +20,7 @@ listenerMiddleware.startListening({
     listenerApi.dispatch(groupCompleteTaskApi.util.resetApiState());
     listenerApi.dispatch(groupNsdlApi.util.resetApiState());
     listenerApi.dispatch(groupBreRetriggerApi.util.resetApiState());
+    listenerApi.dispatch(mmtGrievanceApi.util.resetApiState());
   },
 });
 
@@ -32,6 +34,7 @@ export const store = configureStore({
     [groupCompleteTaskApi.reducerPath]: groupCompleteTaskApi.reducer,
     [groupNsdlApi.reducerPath]: groupNsdlApi.reducer,
     [groupBreRetriggerApi.reducerPath]: groupBreRetriggerApi.reducer,
+    [mmtGrievanceApi.reducerPath]: mmtGrievanceApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
@@ -44,6 +47,7 @@ export const store = configureStore({
         groupCompleteTaskApi.middleware,
         groupNsdlApi.middleware,
         groupBreRetriggerApi.middleware,
+        mmtGrievanceApi.middleware,
       ),
 });
 
