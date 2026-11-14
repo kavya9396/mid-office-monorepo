@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { getDrsRoleType } from "@insurance-poc/utils";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  getDrsMemberId,
+  getDrsRoleType,
+  setDrsOpenContext,
+} from "@insurance-poc/utils";
 import { MmtGrievanceDrsPage } from "./MmtGrievanceDrsPage";
-import { TpaDrsPage } from "./TpaDrsPage";
 import DvtUser from "./DvtUser";
 import GuwUser from "./GuwUser";
 import { fetchGuwMembers } from "../../services/guwService";
@@ -13,10 +16,9 @@ import { fetchGuwMembers } from "../../services/guwService";
  */
 function GuwEntry() {
   const { applicationNo: applicationNoParam } = useParams();
-  const [params] = useSearchParams();
   const navigate = useNavigate();
   const applicationNo = applicationNoParam?.trim() ?? "";
-  const memberId = params.get("memberId")?.trim() ?? "";
+  const memberId = getDrsMemberId();
   const needsCheck = memberId === "" && applicationNo !== "";
   const [checked, setChecked] = useState(!needsCheck);
 
@@ -26,33 +28,36 @@ function GuwEntry() {
     void fetchGuwMembers(applicationNo).then((members) => {
       if (!active) return;
       if (members.length > 1) {
-        const next = new URLSearchParams(params);
-        next.set("applicationNo", applicationNo);
-        navigate(`/guw/member-selection?${next.toString()}`, { replace: true });
+        setDrsOpenContext({
+          applicationNo,
+          memberCount: members.length,
+          memberId: "",
+        });
+        navigate("/guw/member-selection", { replace: true });
       } else {
+        setDrsOpenContext({ applicationNo, memberCount: 1, memberId: "" });
         setChecked(true);
       }
     });
     return () => {
       active = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- params is only read to forward the query
   }, [needsCheck, applicationNo, navigate]);
 
   return checked ? <GuwUser /> : null;
 }
 
 /** `/app/{applicationNo}/drs` — screen picked from inbox session `roleType`. */
+/** Keys match `roleType` on inbox cases (see `groupInbox.json` poolData). */
 const SCREEN_BY_ROLE: Record<string, () => JSX.Element | null> = {
-  "GUW TASK": GuwEntry,
-  GUW: GuwEntry,
-  GUW_FORMAL: GuwEntry,
-  "DVT TASK": DvtUser,
-  DVT_POOL: DvtUser,
-  "MMT TASK": MmtGrievanceDrsPage,
+  GUW_TASK: GuwEntry,
+  DVT_TASK: DvtUser,
   MMT_TASK: MmtGrievanceDrsPage,
-  AMR_NON_MEDICAL: TpaDrsPage,
-  MEDICAL_TPA_ERROR: TpaDrsPage,
+  RECONSIDERATION_TASK: DvtUser,
+  CPT_DATA_ENTRY_NMR_TASK: DvtUser,
+  IT_EXCEPTIONAL_TASK: DvtUser,
+  EXCEPTIONAL_TASK: DvtUser,
+  CVT_TASK: DvtUser,
 };
 
 export function GroupDrsPage() {

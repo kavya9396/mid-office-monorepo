@@ -132,6 +132,7 @@ describe("InboxScreen", () => {
       taskId: "RT-1001",
       instanceId: "RI-1001",
       roleType: "CVT_POOL",
+      applicationNo: "RET-CVT-001",
     });
     expect(navigate).toHaveBeenCalledWith("/app/RET-CVT-001/drs");
   });
@@ -177,7 +178,7 @@ describe("InboxScreen", () => {
 
     await user.click(screen.getByRole("button", { name: "RET-CVT-001" }));
     expect(onClaimTask).toHaveBeenCalledWith("510");
-    expect(navigate).toHaveBeenCalledWith("/app/RET-CVT-001/drs?applicationNo=RET-CVT-001&role=CVT+Pool&roleType=CVT_POOL");
+    expect(navigate).toHaveBeenCalledWith("/app/RET-CVT-001/drs");
   });
 
   it("shows error snackbar and stays on inbox page when errorCode is 400", async () => {

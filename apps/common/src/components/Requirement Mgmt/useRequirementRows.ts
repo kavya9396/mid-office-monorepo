@@ -7,7 +7,7 @@ export const isNewRequirement = (row: RequirementItem): boolean =>
 export const createEmptyRequirement = (template?: Partial<RequirementItem>): RequirementItem => ({
   id: `req-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
   status: "Pending",
-  ocrStatus: "",
+  ocrStatus: "-",
   team: "",
   profile: "",
   category: "",
@@ -42,6 +42,11 @@ export function useRequirementRows(
   const updateRow = (row: RequirementItem, key: RequirementColumnKey, value: string) =>
     setRows((current) => current.map((item) => (item.id === row.id ? { ...item, [key]: value } : item)));
 
+  const patchRow = (id: RequirementItem["id"], patch: Partial<RequirementItem>) =>
+    setRows((current) =>
+      current.map((item) => (item.id === id ? { ...item, ...patch } : item)),
+    );
+
   const removeRow = (id: RequirementItem["id"]) =>
     setRows((current) => current.filter((item) => item.id !== id));
 
@@ -55,5 +60,5 @@ export function useRequirementRows(
     }
   };
 
-  return { rows, saving, addRow, updateRow, removeRow, save };
+  return { rows, saving, addRow, updateRow, patchRow, removeRow, save };
 }

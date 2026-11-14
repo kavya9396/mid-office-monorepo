@@ -4,6 +4,7 @@ import { drsRoutePath } from "@insurance-poc/routes";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { CustomButton, CustomLoader, CustomSnackbar } from "@insurance-poc/ui";
+import { clearRequirementMstContext } from "../../components/Requirement Mgmt/requirementMstSession";
 import {
   clearDrsTaskIds,
   getLastLoginAt,
@@ -68,6 +69,7 @@ export function InboxScreen({
 
   useEffect(() => {
     clearDrsTaskIds();
+    clearRequirementMstContext();
   }, []);
 
   const pools = useMemo(() => {
@@ -118,7 +120,7 @@ export function InboxScreen({
     const persistTaskContext = () => {
       const roleType = drsRoleFromInboxCase(item);
       if (taskId.length > 0 || instanceId.length > 0 || roleType.length > 0) {
-        setDrsOpenContext({ taskId, instanceId, roleType });
+        setDrsOpenContext({ taskId, instanceId, roleType, applicationNo: item.applicationNo });
       } else {
         clearDrsTaskIds();
       }

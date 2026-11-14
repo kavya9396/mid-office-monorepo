@@ -1,16 +1,19 @@
-import { Outlet, useLocation, useSearchParams } from "react-router-dom";
+import { useEffect } from "react";
+import { Outlet, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import Box from "@mui/material/Box";
 import { Header } from "@insurance-poc/common/header";
 import { drsRoutePath, parseDrsApplicationNo } from "@insurance-poc/routes";
+import {
+  absorbDrsQueryFromSearch,
+  getDrsApplicationNo,
+  getDrsMemberCount,
+  getDrsRoleLabel,
+  getDrsRoleType,
+} from "@insurance-poc/utils";
 import { referralConfigForRoleType } from "../services/referralUwService";
 
 const INBOX_PATH = "/inbox";
 const REFERRAL_DRS_PATH = "/referral/drs";
-
-function readQueryValue(value: string | null): string | undefined {
-  const trimmed = value?.trim() ?? "";
-  return trimmed.length > 0 ? trimmed : undefined;
-}
 
 function stripTrailingSlashes(pathname: string): string {
   let end = pathname.length;
@@ -80,30 +83,46 @@ function buildMemberSelectionBackPath(input: {
 
 export function GroupAppLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [params] = useSearchParams();
   const normalizedPath = stripTrailingSlashes(location.pathname);
   const isInbox = normalizedPath.toLowerCase() === INBOX_PATH;
-  const role = isInbox ? undefined : readQueryValue(params.get("role"));
+  const pathApplicationNo = parseDrsApplicationNo(normalizedPath);
+  const sessionApplicationNo = getDrsApplicationNo();
   const applicationNo = isInbox
     ? undefined
-    : parseDrsApplicationNo(normalizedPath) ?? readQueryValue(params.get("applicationNo"));
+    : pathApplicationNo ?? (sessionApplicationNo.length > 0 ? sessionApplicationNo : undefined);
   const drsPath = applicationNo ? drsRoutePath(applicationNo) : undefined;
+  const role = isInbox ? undefined : getDrsRoleLabel() || undefined;
 
-  const roleType = readQueryValue(params.get("roleType"))?.toUpperCase() ?? "";
-  const memberCount = parseMemberCount(params.get("memberCount"));
-  const isMemberDrs = isMemberDrsRoute(isInbox, memberCount, roleType, normalizedPath);
-  const isDrsSection = isDrsSectionPath(normalizedPath);
+  useEffect(() => {
+    if (params.toString().length === 0) return;
+    const onDrs = pathApplicationNo !== null || /\/drs(?:\/|$)/i.test(normalizedPath);
+    const onMemberSelection = normalizedPath.toLowerCase().endsWith("/member-selection");
+    if (!onDrs && !onMemberSelection) return;
+    if (absorbDrsQueryFromSearch(params)) {
+      navigate({ pathname: location.pathname, search: "" }, { replace: true });
+    }
+  }, [location.pathname, location.search, navigate, normalizedPath, params, pathApplicationNo]);
 
-  const memberSelectionBackPath = buildMemberSelectionBackPath({
-    isDrsSection,
-    drsPath,
-    locationSearch: location.search,
-    isMemberDrs,
-    roleType,
-    applicationNo: params.get("applicationNo"),
-    role: params.get("role"),
-    inboxRoleType: params.get("roleType"),
-  });
+  /**
+   * On a GUW / referral member DRS page opened from member selection (memberCount > 1), the back
+   * button returns to the member selection page; otherwise it goes back to the inbox (default).
+   */
+  const roleType = getDrsRoleType().toUpperCase();
+  const memberCount = getDrsMemberCount();
+  const isMemberDrs =
+    !isInbox &&
+    memberCount > 1 &&
+    (roleType.includes("GUW") || referralConfigForRoleType(roleType) !== null) &&
+    (pathApplicationNo !== null || normalizedPath.toLowerCase() === "/referral/drs");
+  /** On the DRS financial / medical sub-pages, back returns to that application's DRS page. */
+  const isDrsSection = /\/drs\/(financial|medical)$/i.test(normalizedPath);
+  const memberSelectionBackPath: string | undefined = (() => {
+    if (isDrsSection && drsPath) return drsPath;
+    if (!isMemberDrs) return undefined;
+    return roleType.includes("GUW") ? "/guw/member-selection" : "/referral/member-selection";
+  })();
 
   return (
     <Box

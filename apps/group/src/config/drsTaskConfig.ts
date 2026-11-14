@@ -30,9 +30,19 @@ export const GROUP_DRS_TASK_CONFIG: Record<string, GroupDrsTaskConfig> = {
     screenType: "GUW_INFORMAL",
     businessType: "Group",
   },
+  GUW_TASK: {
+    roleType: "GUW",
+    screenType: "GUW_INFORMAL",
+    businessType: "Group",
+  },
   "GUW TASK": {
     roleType: "GUW",
     screenType: "GUW_INFORMAL",
+    businessType: "Group",
+  },
+  DVT_TASK: {
+    roleType: "DVT",
+    screenType: "DVT_INFORMAL",
     businessType: "Group",
   },
   GUW_FORMAL: {
