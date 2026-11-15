@@ -53,11 +53,6 @@ const SCREEN_BY_ROLE: Record<string, () => JSX.Element | null> = {
   GUW_TASK: GuwEntry,
   DVT_TASK: DvtUser,
   MMT_TASK: MmtGrievanceDrsPage,
-  RECONSIDERATION_TASK: DvtUser,
-  CPT_DATA_ENTRY_NMR_TASK: DvtUser,
-  IT_EXCEPTIONAL_TASK: DvtUser,
-  EXCEPTIONAL_TASK: DvtUser,
-  CVT_TASK: DvtUser,
 };
 
 export function GroupDrsPage() {

@@ -90,6 +90,16 @@ export const breUrls = {
   },
 };
 
+/** MMT grievance fetch / save. Empty when unset — mock mode skips them. */
+export const mmtGrievanceUrls = {
+  get fetch(): string {
+    return configuredUrl(import.meta.env.VITE_MMT_GRIEVANCE_FETCH_API);
+  },
+  get save(): string {
+    return configuredUrl(import.meta.env.VITE_MMT_GRIEVANCE_SAVE_API);
+  },
+};
+
 /** Full Group DRS / Financial service URLs from .env. Empty when unset — mock mode skips them. */
 export const groupBusinessUrls = {
   get drsData(): string {
