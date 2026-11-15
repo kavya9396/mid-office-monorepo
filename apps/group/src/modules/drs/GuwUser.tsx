@@ -5,6 +5,7 @@ import {
   getDrsMemberCount,
   getDrsMemberId,
   getDrsRoleLabel,
+  getDrsRoleType,
 } from "@insurance-poc/utils";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -63,6 +64,7 @@ const GuwUser = () => {
   const postSubmitUrl = isMultiLife ? groupPaths.guwMemberSelection : groupPaths.inbox;
   const memberId = getDrsMemberId();
   const roleLabel = getDrsRoleLabel();
+  const roleType = getDrsRoleType();
   const memberStorageKey = isMultiLife ? guwMemberDecisionKey(applicationNo, memberId) : undefined;
 
   const [page, setPage] = useState<PageState>(
@@ -88,12 +90,12 @@ const GuwUser = () => {
     }
     let active = true;
     setPage({ kind: "loading" });
-    void fetchGuwDrs(applicationNo, memberId).then((record) => {
+    void fetchGuwDrs(applicationNo, memberId, roleType).then((record) => {
       if (!active) return;
       setPage(record ? { kind: "ready", record } : { kind: "not-found" });
     });
     return () => { active = false; };
-  }, [applicationNo, memberId]);
+  }, [applicationNo, memberId, roleType]);
 
   return (
     <Box
@@ -169,6 +171,8 @@ const GuwUser = () => {
             {/* UW panel: BRE overall decision + case UW decision */}
             <GuwUwPanel
               applicationNo={applicationNo}
+              drsApplicationNo={page.record.applicationNo}
+              partyId={page.record.partyId}
               storageKey={memberStorageKey}
               redirectUrl={postSubmitUrl}
               breOverallDecision={page.record.uwData?.breOverallDecision}

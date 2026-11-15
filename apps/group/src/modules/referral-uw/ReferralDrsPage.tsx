@@ -4,6 +4,7 @@ import {
   getDrsApplicationNo,
   getDrsMemberCount,
   getDrsMemberId,
+  getDrsRoleType,
 } from "@insurance-poc/utils";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -86,6 +87,7 @@ export function ReferralDrsPage({ config }: Readonly<ReferralDrsPageProps>) {
   const { applicationNo: applicationNoParam } = useParams();
   const applicationNo = applicationNoParam?.trim() || getDrsApplicationNo();
   const memberId = getDrsMemberId();
+  const roleType = getDrsRoleType();
   const isMultiLife = getDrsMemberCount() > 1;
   const postSubmitUrl = isMultiLife ? groupPaths.referralMemberSelection : groupPaths.inbox;
 
@@ -111,7 +113,7 @@ export function ReferralDrsPage({ config }: Readonly<ReferralDrsPageProps>) {
     }
     let active = true;
     setPage({ kind: "loading" });
-    void fetchGuwDrs(applicationNo, memberId).then((record) => {
+    void fetchGuwDrs(applicationNo, memberId, roleType).then((record) => {
       if (!active) return;
       setPage(record ? { kind: "ready", record } : { kind: "not-found" });
     });
@@ -121,7 +123,7 @@ export function ReferralDrsPage({ config }: Readonly<ReferralDrsPageProps>) {
     return () => {
       active = false;
     };
-  }, [applicationNo, memberId]);
+  }, [applicationNo, memberId, roleType]);
 
   return (
     <Box

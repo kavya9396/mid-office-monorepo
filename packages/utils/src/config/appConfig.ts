@@ -105,6 +105,9 @@ export const groupBusinessUrls = {
   get drsData(): string {
     return configuredUrl(import.meta.env.VITE_GROUP_DRS_DATA_API);
   },
+  get uwDecision(): string {
+    return configuredUrl(import.meta.env.VITE_GROUP_UW_DECISION_API);
+  },
   get financialFetch(): string {
     return configuredUrl(import.meta.env.VITE_GROUP_FINANCIAL_FETCH_API);
   },

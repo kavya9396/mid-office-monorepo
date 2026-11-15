@@ -1,12 +1,13 @@
-import { getSessionUser } from "@insurance-poc/utils";
+import { getDrsRoleType, getSessionUser } from "@insurance-poc/utils";
 import type { Column } from "@insurance-poc/ui";
 import type { RiskCardData, RiskCardField } from "@insurance-poc/common/risk-cards";
 import type { RequirementItem } from "@insurance-poc/common/requirement-mgmt";
 import type { ComparisonRow } from "@insurance-poc/common/decision-bar";
+import { store } from "../app/store";
+import { groupDrsApi } from "./drsApi";
 import { mapMembersQuickLinks, type QuickLinksSubSections } from "../modules/drs/quickLinksData";
 import { mapRequirements, type RawRequirement } from "../modules/drs/requirementData";
 import { formatBreTimestamp, splitDiscrepancies } from "../modules/drs/breFormat";
-import guwDrsMock from "../../../../mock/drs/guw-informal-drs.json";
 import guwValidationMock from "../../../../mock/drs/guw-validation.json";
 
 /* ------------------------------------------------------------------ */
@@ -212,6 +213,9 @@ export interface GuwUwData {
 
 export interface GuwDrsRecord {
   applicationNo: string;
+  /** `partyId` of the member (`subSections[applicantProfile]`); "" when the payload has none. */
+  partyId: string;
+
   applicantName: string;
   applicationLabel: string;
   /** `data.rowDetails[]` exactly as returned by the API; rendered by ApplicantBanner. */
@@ -624,10 +628,28 @@ export function mapGuwMembers(payload: unknown): GuwMemberSummary[] {
   });
 }
 
-export async function fetchGuwMembers(applicationNo: string): Promise<GuwMemberSummary[]> {
-  await wait(250);
-  // The mock is served for any applicationNo to allow local dev with any inbox task.
-  return applicationNo ? mapGuwMembers(guwDrsMock as unknown) : [];
+/**
+ * Loads the GUW DRS payload through `groupDrsApi` (same POST body as DVT: `applicationNo`, `roleType`,
+ * `screenType`, `businessType`; the last three come from `drsTaskConfig` for the task's `roleType`,
+ * e.g. GUW_TASK -> GUW_INFORMAL). Returns `null` on error. In mock mode the API serves the mock file.
+ */
+async function loadGuwPayload(applicationNo: string, roleType?: string): Promise<unknown> {
+  const taskType = roleType?.trim() || getDrsRoleType() || "GUW";
+  const request = store.dispatch(
+    groupDrsApi.endpoints.getGuwDrsPayload.initiate({ applicationNo, taskType }),
+  );
+  try {
+    const result = await request;
+    return result.error ? null : (result.data ?? null);
+  } finally {
+    request.unsubscribe();
+  }
+}
+
+export async function fetchGuwMembers(applicationNo: string, roleType?: string): Promise<GuwMemberSummary[]> {
+  if (!applicationNo) return [];
+  const payload = await loadGuwPayload(applicationNo, roleType);
+  return payload ? mapGuwMembers(payload) : [];
 }
 
 /** Product (id 1) and rider (id 2) rows of the first `membersDetails[]` object, for the member selection banner. */
@@ -636,9 +658,10 @@ export function mapGuwProductRowDetails(payload: unknown): BannerRowDetail[] {
   return mapRowDetails(firstMember?.rowDetails).filter((row) => row.id === 1 || row.id === 2);
 }
 
-export async function fetchGuwProductRowDetails(applicationNo: string): Promise<BannerRowDetail[]> {
-  await wait(250);
-  return applicationNo ? mapGuwProductRowDetails(guwDrsMock as unknown) : [];
+export async function fetchGuwProductRowDetails(applicationNo: string, roleType?: string): Promise<BannerRowDetail[]> {
+  if (!applicationNo) return [];
+  const payload = await loadGuwPayload(applicationNo, roleType);
+  return payload ? mapGuwProductRowDetails(payload) : [];
 }
 
 /* ------------------------------------------------------------------ */
@@ -701,8 +724,13 @@ export function mapGuwDrsPayload(payload: unknown, memberId?: string): GuwDrsRec
 
   const caseDecisionFields = recordOf(findSection(sections, "caseUwDecision")).fields;
 
+  const applicantProfile = recordOf(
+    recordList(data.subSections).find((s) => s.name === "applicantProfile")?.value,
+  );
+
   return {
     applicationNo,
+    partyId: str(applicantProfile.partyId),
     applicantName,
     applicationLabel: `App No. - ${applicationNo}`,
     rowDetails,
@@ -798,11 +826,13 @@ export function clearGuwSubmittedDecision(applicationNo: string): void {
 }
 
 /** DRS record of one member (`memberId`, e.g. "Life Assured 2"); the first member when omitted. */
-export async function fetchGuwDrs(applicationNo: string, memberId?: string): Promise<GuwDrsRecord | null> {
-  await wait(250);
-  // The mock file holds one `data[]` object per member.
-  // We serve it for any applicationNo to allow local dev with any inbox task.
-  const payload = guwDrsMock as unknown;
+export async function fetchGuwDrs(
+  applicationNo: string,
+  memberId?: string,
+  roleType?: string,
+): Promise<GuwDrsRecord | null> {
+  const payload = await loadGuwPayload(applicationNo, roleType);
+  if (!payload) return null;
   const record = mapGuwDrsPayload(payload, memberId);
   const submittedDecision = loadGuwSubmittedDecision(applicationNo) ?? undefined;
   const resolvedAppNo = record.applicationNo || applicationNo;

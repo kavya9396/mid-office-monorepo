@@ -66,13 +66,13 @@ export function useGuwQuickLinks(): GuwQuickLinksState {
     let active = true;
     setState({ loading: true });
 
-    void fetchGuwDrs(applicationNo, memberId).then((record) => {
+    void fetchGuwDrs(applicationNo, memberId, roleType).then((record) => {
       if (active) setState({ loading: false, data: record?.quickLinks });
     });
     return () => {
       active = false;
     };
-  }, [applicationNo, memberId, isDvt, shouldLoad]);
+  }, [applicationNo, memberId, roleType, isDvt, shouldLoad]);
 
   if (shouldLoad && isDvt) {
     return { loading: dvt.isLoading || dvt.isFetching, data: dvt.data?.quickLinks };

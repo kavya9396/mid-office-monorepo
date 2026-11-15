@@ -25,7 +25,7 @@ function GuwEntry() {
   useEffect(() => {
     if (!needsCheck) return;
     let active = true;
-    void fetchGuwMembers(applicationNo).then((members) => {
+    void fetchGuwMembers(applicationNo, getDrsRoleType()).then((members) => {
       if (!active) return;
       if (members.length > 1) {
         setDrsOpenContext({

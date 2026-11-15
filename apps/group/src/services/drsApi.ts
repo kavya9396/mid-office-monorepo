@@ -11,6 +11,13 @@ import {
 } from "@insurance-poc/utils";
 import { getGroupDrsTaskConfig } from "../config/drsTaskConfig";
 import groupDrsMock from "../modules/drs/mock/groupDrs.json";
+import guwDrsMock from "../../../../mock/drs/guw-informal-drs.json";
+import guwUwDecisionMock from "../../../../mock/drs/guw-uw-decision.json";
+import {
+  mapGuwUwDecision,
+  type GuwUwDecisionRequest,
+  type GuwUwDecisionResult,
+} from "./guwDecisionService";
 import groupDrsSaveMock from "../modules/drs/mock/groupDrsSave.json";
 import { mapGroupDrsPayload, mapRawRequirementRows, type GroupDrsData } from "./drsService";
 
@@ -43,6 +50,23 @@ function readError(reason: unknown): string {
 
 function customError(error: string): FetchBaseQueryError {
   return { status: "CUSTOM_ERROR", error };
+}
+
+/**
+ * DRS fetch request body. `roleType` / `screenType` / `businessType` come from `drsTaskConfig`
+ * (keyed by the task type), unless the caller passes them explicitly. Shared by DVT and GUW (GUW / HOD / Sr UW).
+ */
+function buildDrsRequestBody(arg: GroupDrsQueryArg) {
+  const applicationNo = typeof arg === "string" ? arg : arg.applicationNo;
+  const taskType = typeof arg === "string" ? getDrsRoleType() : (arg.taskType ?? arg.roleType ?? getDrsRoleType());
+  const taskConfig = getGroupDrsTaskConfig(taskType);
+
+  return {
+    applicationNo,
+    roleType: (typeof arg !== "string" && arg.roleType) || taskConfig.roleType,
+    screenType: (typeof arg !== "string" && arg.screenType) || taskConfig.screenType,
+    businessType: (typeof arg !== "string" && arg.businessType) || taskConfig.businessType,
+  };
 }
 
 export const toRequirementRequestItem = (item: RequirementItem) => {
@@ -85,27 +109,69 @@ export const groupDrsApi = createApi({
           return { error: customError("Group DRS data API is not configured.") };
         }
 
-        const applicationNo = typeof arg === "string" ? arg : arg.applicationNo;
-        const taskType = typeof arg === "string" ? getDrsRoleType() : (arg.taskType ?? arg.roleType ?? getDrsRoleType());
-        const taskConfig = getGroupDrsTaskConfig(taskType);
-
-        const body = {
-          applicationNo,
-          roleType: (typeof arg !== "string" && arg.roleType) || taskConfig.roleType,
-          screenType: (typeof arg !== "string" && arg.screenType) || taskConfig.screenType,
-          businessType: (typeof arg !== "string" && arg.businessType) || taskConfig.businessType,
-        };
-
         const result = await baseQuery({
           url: drsDataUrl,
           method: "POST",
-          body,
+          body: buildDrsRequestBody(arg),
           headers: { accept: "*/*", "Content-Type": "application/json" },
         });
         if (result.error) return { error: result.error };
 
         try {
           return { data: mapGroupDrsPayload(result.data) };
+        } catch (reason: unknown) {
+          return { error: customError(readError(reason)) };
+        }
+      },
+    }),
+    /** Raw DRS payload for GUW / HOD / Sr UW; mapped by `guwService` (same request body as DVT). */
+    getGuwDrsPayload: build.query<unknown, GroupDrsQueryArg>({
+      async queryFn(arg, _api, _extra, baseQuery) {
+        if (useMock) {
+          return { data: guwDrsMock as unknown };
+        }
+        const drsDataUrl = groupBusinessUrls.drsData;
+        if (drsDataUrl.length === 0) {
+          return { error: customError("Group DRS data API is not configured.") };
+        }
+
+        const result = await baseQuery({
+          url: drsDataUrl,
+          method: "POST",
+          body: buildDrsRequestBody(arg),
+          headers: { accept: "*/*", "Content-Type": "application/json" },
+        });
+        if (result.error) return { error: result.error };
+        return { data: result.data };
+      },
+    }),
+    /** Member-level UW decision (decision code + remarks) for the GUW screen. */
+    getGuwUwDecision: build.mutation<GuwUwDecisionResult, GuwUwDecisionRequest>({
+      async queryFn(arg, _api, _extra, baseQuery) {
+        console.log("[getGuwUwDecision] request payload:", arg);
+        if (useMock) {
+          console.log("[getGuwUwDecision] response (mock):", guwUwDecisionMock);
+          return { data: mapGuwUwDecision(guwUwDecisionMock) };
+        }
+        const uwDecisionUrl = groupBusinessUrls.uwDecision;
+        if (uwDecisionUrl.length === 0) {
+          return { error: customError("Group UW decision API is not configured.") };
+        }
+
+        const result = await baseQuery({
+          url: uwDecisionUrl,
+          method: "POST",
+          body: arg,
+          headers: { accept: "*/*", "Content-Type": "application/json" },
+        });
+        if (result.error) {
+          console.log("[getGuwUwDecision] response error:", result.error);
+          return { error: result.error };
+        }
+        console.log("[getGuwUwDecision] response:", result.data);
+
+        try {
+          return { data: mapGuwUwDecision(result.data) };
         } catch (reason: unknown) {
           return { error: customError(readError(reason)) };
         }
@@ -201,4 +267,9 @@ export const groupDrsApi = createApi({
   }),
 });
 
-export const { useGetGroupDrsQuery, useSaveGroupDrsRequirementsMutation } = groupDrsApi;
+export const {
+  useGetGroupDrsQuery,
+  useGetGuwDrsPayloadQuery,
+  useGetGuwUwDecisionMutation,
+  useSaveGroupDrsRequirementsMutation,
+} = groupDrsApi;
