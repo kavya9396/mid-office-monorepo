@@ -81,6 +81,7 @@ export function ReferralDrsPage({ config }: Readonly<ReferralDrsPageProps>) {
   const navigate = useNavigate();
   const applicationNo = params.get("applicationNo")?.trim() ?? "";
   const memberId = params.get("memberId")?.trim() ?? "";
+  const roleType = params.get("roleType")?.trim() ?? "";
   // Multi-life case (more than one member): after submit go back to the member screen, else the inbox
   const isMultiLife = parseInt(params.get("memberCount") ?? "0", 10) > 1;
   const memberSummaryQuery = new URLSearchParams({
@@ -115,7 +116,7 @@ export function ReferralDrsPage({ config }: Readonly<ReferralDrsPageProps>) {
     }
     let active = true;
     setPage({ kind: "loading" });
-    void fetchGuwDrs(applicationNo, memberId).then((record) => {
+    void fetchGuwDrs(applicationNo, memberId, roleType).then((record) => {
       if (!active) return;
       setPage(record ? { kind: "ready", record } : { kind: "not-found" });
     });
@@ -125,7 +126,7 @@ export function ReferralDrsPage({ config }: Readonly<ReferralDrsPageProps>) {
     return () => {
       active = false;
     };
-  }, [applicationNo, memberId]);
+  }, [applicationNo, memberId, roleType]);
 
   return (
     <Box

@@ -22,7 +22,7 @@ function GuwEntry() {
   useEffect(() => {
     if (!needsCheck) return;
     let active = true;
-    void fetchGuwMembers(applicationNo).then((members) => {
+    void fetchGuwMembers(applicationNo, params.get("roleType")?.trim() ?? "").then((members) => {
       if (!active) return;
       if (members.length > 1) {
         navigate(`/guw/member-selection?${params.toString()}`, { replace: true });
@@ -41,7 +41,7 @@ function GuwEntry() {
 
 /** `/app/{applicationNo}/drs` — screen picked from `roleType` (query param, else inbox session). */
 const SCREEN_BY_ROLE: Record<string, () => JSX.Element | null> = {
-  "GUW TASK": GuwEntry,
+  "GUW_TASK": GuwEntry,
   GUW: GuwEntry,
   GUW_FORMAL: GuwEntry,
   "DVT TASK": DvtUser,

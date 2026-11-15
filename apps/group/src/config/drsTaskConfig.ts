@@ -30,9 +30,35 @@ export const GROUP_DRS_TASK_CONFIG: Record<string, GroupDrsTaskConfig> = {
     screenType: "GUW_INFORMAL",
     businessType: "Group",
   },
+  GUW_TASK: {
+    roleType: "GUW",
+    screenType: "GUW_INFORMAL",
+    businessType: "Group",
+  },
   GUW_FORMAL: {
     roleType: "GUW",
     screenType: "GUW_FORMAL",
+    businessType: "Group",
+  },
+  // HOD / Sr UW read the same GUW DRS payload, so they share the GUW screenType.
+  HOD: {
+    roleType: "HOD",
+    screenType: "GUW_INFORMAL",
+    businessType: "Group",
+  },
+  HOD_TASK: {
+    roleType: "HOD",
+    screenType: "GUW_INFORMAL",
+    businessType: "Group",
+  },
+  SR_UW: {
+    roleType: "SR_UW",
+    screenType: "GUW_INFORMAL",
+    businessType: "Group",
+  },
+  SR_UW_TASK: {
+    roleType: "SR_UW",
+    screenType: "GUW_INFORMAL",
     businessType: "Group",
   },
   "MMT TASK": {

@@ -110,17 +110,17 @@ export function MemberSelection() {
   useEffect(() => {
     if (!applicationNo) return;
     let active = true;
-    void fetchGuwMembers(applicationNo).then((list) => {
+    void fetchGuwMembers(applicationNo, roleType).then((list) => {
       if (active) setMembers(list);
     });
-    void fetchGuwDrs(applicationNo).then((r) => {
+    void fetchGuwDrs(applicationNo, undefined, roleType).then((r) => {
       if (active) setRecord(r);
     });
-    void fetchGuwProductRowDetails(applicationNo).then((rows) => {
+    void fetchGuwProductRowDetails(applicationNo, roleType).then((rows) => {
       if (active) setProductRows(rows);
     });
     return () => { active = false; };
-  }, [applicationNo]);
+  }, [applicationNo, roleType]);
 
   // Refresh member decisions whenever any decision is saved / cleared, or the page is shown again
   useEffect(() => {

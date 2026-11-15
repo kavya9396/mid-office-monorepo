@@ -65,6 +65,7 @@ const GuwUser = () => {
     : groupPaths.inbox;
   // Multi-life: each member's decision is held under its own key so the summary page can show it per member
   const memberId = params.get("memberId")?.trim() ?? "";
+  const roleType = params.get("roleType")?.trim() ?? "";
   const memberStorageKey = isMultiLife ? guwMemberDecisionKey(applicationNo, memberId) : undefined;
 
   const [page, setPage] = useState<PageState>(
@@ -90,12 +91,12 @@ const GuwUser = () => {
     }
     let active = true;
     setPage({ kind: "loading" });
-    void fetchGuwDrs(applicationNo, memberId).then((record) => {
+    void fetchGuwDrs(applicationNo, memberId, roleType).then((record) => {
       if (!active) return;
       setPage(record ? { kind: "ready", record } : { kind: "not-found" });
     });
     return () => { active = false; };
-  }, [applicationNo, memberId]);
+  }, [applicationNo, memberId, roleType]);
 
   return (
     <Box
