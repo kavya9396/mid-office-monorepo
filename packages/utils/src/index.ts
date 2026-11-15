@@ -3,6 +3,7 @@ export {
   authUrls,
   breUrls,
   groupBusinessUrls,
+  mmtGrievanceUrls,
   landingUrls,
   masterUrls,
   nsdlUrls,
