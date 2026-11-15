@@ -6,6 +6,7 @@ import {
   clearDrsTaskIds,
   formatDateTime,
   canInvokeBreRetrigger,
+  getDrsRoleLabel,
   getDrsRoleType,
   readApiErrorMessage,
   setBreRetriggerCount,
@@ -133,7 +134,7 @@ const DvtUser = () => {
   const isFinancialRoute = lowerPath.includes("/drs/financial");
   const isMedicalRoute = lowerPath.includes("/drs/medical");
   const requestedApplicationNo = applicationNoParam?.trim() ?? "";
-  const roleType = params.get("role")?.trim() || getDrsRoleType();
+  const roleType = getDrsRoleType();
   const drsTaskConfig = getGroupDrsTaskConfig(roleType);
   const drs = useGetGroupDrsQuery(
     {
@@ -427,7 +428,7 @@ const DvtUser = () => {
       <QuickLinksModule
         items={buildQuickLinkItems(quickLinksConfig.items, (message) => setSnackbarMessage(message), ["applicant-profile"])}
         applicationNo={applicationNo}
-        roleType={params.get("role")?.trim() || quickLinksConfig.defaultRoleType}
+        roleType={getDrsRoleLabel() || params.get("role")?.trim() || quickLinksConfig.defaultRoleType}
         onNavigate={(path) => navigate(path)}
         onNotify={(message) => setSnackbarMessage(message)}
         dialogItemIds={["applicant-profile"]}
@@ -467,6 +468,7 @@ const DvtUser = () => {
       />
 
       <RequirementMgmt
+        applicationKey={applicationNo}
         requirements={requirements}
         statusOrder={requirementStatusOrder}
         statusVariants={requirementStatusVariants}

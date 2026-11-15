@@ -4,6 +4,12 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { CustomButton, EyeIcon } from "@insurance-poc/ui";
 import { drsRoutePath, groupPaths, replaceUrl } from "@insurance-poc/routes";
+import {
+  getDrsApplicationNo,
+  getDrsRoleLabel,
+  getDrsRoleType,
+  setDrsOpenContext,
+} from "@insurance-poc/utils";
 import { ApplicantBanner } from "@insurance-poc/common/applicant-banner";
 import {
   fetchGuwDrs,
@@ -80,9 +86,10 @@ const MEMBER_SELECTION_ROW_LABELS: Record<number, string> = { 1: "Product", 2: "
 export function MemberSelection() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
-  const applicationNo = params.get("applicationNo")?.trim() ?? "";
-  const roleType = params.get("roleType")?.trim() ?? "";
-  const role = params.get("role")?.trim() ?? "";
+  const applicationNo =
+    getDrsApplicationNo() || params.get("applicationNo")?.trim() || "";
+  const roleType = getDrsRoleType() || params.get("roleType")?.trim() || "";
+  const role = getDrsRoleLabel() || params.get("role")?.trim() || "";
   const referralConfig = referralConfigForRoleType(roleType);
   const drsPath = referralConfig ? "/referral/drs" : drsRoutePath(applicationNo);
 
@@ -149,26 +156,36 @@ export function MemberSelection() {
     return () => { active = false; };
   }, [members, memberDecisions]);
 
-  /** Build DRS query params, preserving the role display label for the header. */
-  const makeDrsQuery = (memberId: string, memberCount: number): string => {
-    const q = new URLSearchParams({ applicationNo, roleType, memberId, memberCount: String(memberCount) });
-    if (role) q.set("role", role);
-    return q.toString();
+  const persistMemberAndOpenDrs = (memberId: string, memberCount: number) => {
+    setDrsOpenContext({
+      applicationNo,
+      roleType,
+      memberId,
+      memberCount,
+      ...(role.length > 0 ? { roleLabel: role } : {}),
+    });
+    navigate(drsPath);
   };
 
   /** If only one member, skip selection and go straight to DRS. */
   useEffect(() => {
-    if (members?.length === 1) {
-      navigate(`${drsPath}?${makeDrsQuery(members[0].memberId, 1)}`, { replace: true });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- makeDrsQuery only depends on the listed values
+    if (members?.length !== 1) return;
+    setDrsOpenContext({
+      applicationNo,
+      roleType,
+      memberId: members[0].memberId,
+      memberCount: 1,
+      ...(role.length > 0 ? { roleLabel: role } : {}),
+    });
+    navigate(drsPath, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- open DRS when member list resolves
   }, [members, applicationNo, roleType, role, drsPath, navigate]);
 
   if (!members || members.length <= 1) return null;
 
   /** Navigate to the DRS for the selected member. */
   const openMember = (member: GuwMemberSummary) => {
-    navigate(`${drsPath}?${makeDrsQuery(member.memberId, members.length)}`);
+    persistMemberAndOpenDrs(member.memberId, members.length);
   };
 
   return (

@@ -31,7 +31,12 @@ export {
   type SessionUser,
 } from "./session";
 export {
+  absorbDrsQueryFromSearch,
   clearDrsTaskIds,
+  getDrsApplicationNo,
+  getDrsMemberCount,
+  getDrsMemberId,
+  getDrsRoleLabel,
   getDrsRoleType,
   getDrsTaskIds,
   hasDrsTaskIds,

@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { Button, type ButtonProps } from "@mui/material";
 
 type Variant = ButtonProps["variant"];
@@ -38,9 +39,13 @@ const getButtonStyles = (variant: Variant) => {
 
 type CustomButtonProps = ButtonProps;
 
-const CustomButton = ({ variant = "contained", sx, ...props }: CustomButtonProps) => {
+const CustomButton = forwardRef<HTMLButtonElement, CustomButtonProps>(function CustomButton(
+  { variant = "contained", sx, ...props },
+  ref,
+) {
   return (
     <Button
+      ref={ref}
       variant={variant}
       disableElevation
       sx={{
@@ -57,6 +62,6 @@ const CustomButton = ({ variant = "contained", sx, ...props }: CustomButtonProps
       {...props}
     />
   );
-};
+});
 
 export default CustomButton;

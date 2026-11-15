@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import type { QuickLinkItem } from "@insurance-poc/common/quick-links";
+import { getDrsApplicationNo, getDrsMemberId, getDrsRoleType } from "@insurance-poc/utils";
 import { fetchGuwDrs } from "../../services/guwService";
 import { useGetGroupDrsQuery } from "../../services/drsApi";
 import type { QuickLinksSubSections } from "./quickLinksData";
@@ -46,13 +47,13 @@ export interface GuwQuickLinksState {
   data?: QuickLinksSubSections;
 }
 
-/** Loads the DRS `subSections` for the Quick Link pages (`applicationNo` comes from the URL). */
+/** Loads the DRS `subSections` for the Quick Link pages (`applicationNo` from route or session). */
 export function useGuwQuickLinks(): GuwQuickLinksState {
-  const [params] = useSearchParams();
-  const applicationNo = params.get("applicationNo")?.trim() ?? "";
-  const memberId = params.get("memberId")?.trim() ?? "";
-  const roleType = (params.get("roleType") || params.get("role") || "").trim().toUpperCase();
-  const shouldLoad = applicationNo !== "";
+  const { applicationNo: applicationNoParam } = useParams();
+  const applicationNo = applicationNoParam?.trim() || getDrsApplicationNo();
+  const memberId = getDrsMemberId();
+  const roleType = getDrsRoleType().trim().toUpperCase();
+  const shouldLoad = applicationNo.length > 0;
   const isDvt = isDvtRole(roleType);
   const [state, setState] = useState<GuwQuickLinksState>({ loading: shouldLoad });
   const dvt = useGetGroupDrsQuery(applicationNo, { skip: !shouldLoad || !isDvt });
