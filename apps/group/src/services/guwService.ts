@@ -213,6 +213,9 @@ export interface GuwUwData {
 
 export interface GuwDrsRecord {
   applicationNo: string;
+  /** `partyId` of the member (`subSections[applicantProfile]`); "" when the payload has none. */
+  partyId: string;
+
   applicantName: string;
   applicationLabel: string;
   /** `data.rowDetails[]` exactly as returned by the API; rendered by ApplicantBanner. */
@@ -721,8 +724,13 @@ export function mapGuwDrsPayload(payload: unknown, memberId?: string): GuwDrsRec
 
   const caseDecisionFields = recordOf(findSection(sections, "caseUwDecision")).fields;
 
+  const applicantProfile = recordOf(
+    recordList(data.subSections).find((s) => s.name === "applicantProfile")?.value,
+  );
+
   return {
     applicationNo,
+    partyId: str(applicantProfile.partyId),
     applicantName,
     applicationLabel: `App No. - ${applicationNo}`,
     rowDetails,

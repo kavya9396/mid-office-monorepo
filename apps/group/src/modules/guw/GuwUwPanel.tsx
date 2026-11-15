@@ -19,7 +19,9 @@ import {
   TaskIcon,
 } from "@insurance-poc/ui";
 import { groupPaths, replaceUrl } from "@insurance-poc/routes";
-import { getMasterList } from "@insurance-poc/utils";
+import { getDrsRoleType, getMasterList, getSessionUser } from "@insurance-poc/utils";
+import { useGetGuwUwDecisionMutation } from "../../services/drsApi";
+import { buildGuwUwDecisionRequest, GUW_UW_DECISION_SCREEN_TYPE } from "../../services/guwDecisionService";
 import {
   clearGuwSubmittedDecision,
   saveGuwSubmittedDecision,
@@ -40,6 +42,13 @@ export interface GuwUwSummaryField {
 export interface GuwUwPanelProps {
   /** Used to hold the submitted decision (and UW guidelines) in the browser session. */
   applicationNo?: string;
+  /** Application number of the DRS API response; sent to the `uw-decision` API (falls back to `applicationNo`). */
+  drsApplicationNo?: string;
+  /**
+   * Member's `partyId`. When set (member-level DRS), submitting a decision saves it through the
+   * `uw-decision` API. Omit on the case-level summary.
+   */
+  partyId?: string;
   /** Session key for the held decision; defaults to applicationNo (the summary page uses its own). */
   storageKey?: string;
   /**
@@ -105,34 +114,131 @@ interface SubmittedDecision {
 }
 
 // Case UW Decision options come from master data (misc / GUW_TERM_DESC). Three master codes differ from the
-// codes used by the decision rules, validation and saved decisions, so they are translated to those codes here.
+// codes used by the decision rules, validation, saved decisions and the `uw-decision` API (BOR_STD, DC, POSTP),
+// so they are translated to those codes here.
 const DECISION_CODE_BY_MASTER_CODE: Record<string, string | undefined> = {
   BSD_STD: "BOR_STD",
   DEC: "DC",
   POS_PON: "POSTP",
 };
 
-const DECISION_OPTIONS = getMasterList("misc", "GUW_TERM_DESC").map((entry) => ({
-  value: DECISION_CODE_BY_MASTER_CODE[entry.code] ?? entry.code,
-  label: entry.value ?? entry.description,
-}));
+/**
+ * Case UW Decision options from the post-login master data. Read at render time (like the DVT decision
+ * options), not at module load, because the master data is only in session after login.
+ */
+const readDecisionOptions = () =>
+  getMasterList("misc", "GUW_TERM_DESC")
+    .filter((entry) => entry.isActive === "Y")
+    .map((entry) => ({
+      value: DECISION_CODE_BY_MASTER_CODE[entry.code] ?? entry.code,
+      label: entry.value ?? entry.description,
+    }));
 
-const SMOKER_FLAG_OPTIONS = getMasterList("misc", "GUW_STD_SMOK").map((entry) => ({
-  value: entry.value ?? entry.description,
-  label: entry.value ?? entry.description,
-}));
+/** Reason options of the given master `misc` types, in that order, from the post-login master data. */
+const readReasonOptions = (types: string[]) =>
+  types.flatMap((type) =>
+    getMasterList("misc", type)
+      .filter((entry) => entry.isActive === "Y")
+      .map((entry) => {
+        const text = entry.value ?? entry.description;
+        return { value: text, label: text };
+      }),
+  );
+
+/** BSTD Code options: master `misc` BSTD types combined, value is the master code. */
+const readBstdCodeOptions = () =>
+  ["GUW_BSD_CODE_MED", "GUW_BSD_CODE_NON_MED", "GUW_BSD_CODE_TELE", "GUW_BSD_CODE_VID"].flatMap((type) =>
+    getMasterList("misc", type)
+      .filter((entry) => entry.isActive === "Y")
+      .map((entry) => ({ value: entry.code, label: entry.value ?? entry.description })),
+  );
+
+/**
+ * Options of the first master `misc` type that has active entries (the master mock still carries the
+ * older GUW_RECONS_* names, so they are the fallback for GUW_REJ_RECONS_*).
+ */
+const readFirstAvailableMiscOptions = (types: string[]) => {
+  for (const type of types) {
+    const options = getMasterList("misc", type)
+      .filter((entry) => entry.isActive === "Y")
+      .map((entry) => {
+        const text = entry.value ?? entry.description;
+        return { value: text, label: text };
+      });
+    if (options.length > 0) return options;
+  }
+  console.warn(`[GuwUwPanel] No active master "misc" entries for type(s): ${types.join(", ")}`);
+  return [];
+};
+
+const readPostponementPeriodOptions = () => readFirstAvailableMiscOptions(["GUW_POST_PERIOD"]);
+
+// Counter Offer table "Type" values the rules know by name; the master supplies the option list.
+const BOR_STD_TYPES = ["Standard", "Borderline Standard"];
+const CO_TYPES = ["Standard", "Borderline Standard", "Reduce Cover", "Reduce PT"];
+const DENY_RIDER_TYPE = "Deny Rider";
+
+/**
+ * Counter Offer table "Type" options. Same rules as before, but the values come from master data:
+ * Borderline Standard -> Standard + Borderline Standard; Counter Offer -> GUW_CO_TYPE;
+ * Extra Premium -> GUW_CO_TYPE + GUW_EP_TYPE. "Deny Rider" is offered for rider rows only.
+ */
+const readCounterOfferTypeOptions = (decision: string, isRider: boolean) => {
+  const coTypes = readFirstAvailableMiscOptions(["GUW_CO_TYPE"]);
+  const epTypes = decision === "EP" ? readFirstAvailableMiscOptions(["GUW_EP_TYPE"]) : [];
+  const merged = [...coTypes, ...epTypes].filter(
+    (option, index, all) => all.findIndex((other) => other.value === option.value) === index,
+  );
+  return merged.filter((option) => {
+    if (option.value === DENY_RIDER_TYPE) return isRider && decision !== "BOR_STD";
+    if (decision === "BOR_STD") return BOR_STD_TYPES.includes(option.value);
+    if (decision === "CO") return CO_TYPES.includes(option.value);
+    return true;
+  });
+};
+
+// Loading Class / Loading Reason Code values are the master text (the `uw-decision` request carries the text).
+const readLoadingClassOptions = () => readFirstAvailableMiscOptions(["GUW_EP_LOAD_CLS"]);
+
+const readLoadingReasonOptions = () => readFirstAvailableMiscOptions(["GUW_EP_LOAD_RSN_CODE"]);
+
+const readHoldReasonOptions = () => readFirstAvailableMiscOptions(["GUW_HOLD_RSN"]);
+
+const readReferToOptions = () => readFirstAvailableMiscOptions(["GUW_REF_TO"]);
+
+// Counter Sign reasons depend on the selected Refer To (HOD / Sr UW)
+const APPROVER_REASON_TYPE_BY_TARGET: Record<string, string | undefined> = {
+  HOD: "GUW_REF_HOD_CS",
+  "Sr UW": "GUW_REF_SRUW_CS",
+};
+
+const readApproverReasonOptions = (target: string) => {
+  const type = APPROVER_REASON_TYPE_BY_TARGET[target];
+  return type ? readFirstAvailableMiscOptions([type]) : [];
+};
+
+const readReconsiderAfterOptions = () =>
+  readFirstAvailableMiscOptions(["GUW_REJ_RECONS_AFTER", "GUW_RECONS_AFTER"]);
+
+const readReconsiderReqTypeOptions = () =>
+  readFirstAvailableMiscOptions(["GUW_REJ_RECONS_TYPE", "GUW_RECONS_TYPE"]);
+
+// The master requirement type for "other" is "Others"; the free-text field opens for either spelling.
+const isOtherRequirementType = (value: string) => /^others?$/i.test(value);
+
+const readSmokerFlagOptions = () =>
+  getMasterList("misc", "GUW_STD_SMOK")
+    .filter((entry) => entry.isActive === "Y")
+    .map((entry) => ({
+      value: entry.value ?? entry.description,
+      label: entry.value ?? entry.description,
+    }));
 
 // Decisions raised from the action buttons below the Case UW Decision dropdown
 const ACTION_DECISION_OPTIONS = [
   { value: "REFERRAL", label: "Raise Referral" },
   { value: "HOLD", label: "Hold" },
   { value: "APPROVER", label: "Counter Sign" },
-];
-
-const ALL_DECISION_OPTIONS = [
-  ...DECISION_OPTIONS,
-  ...ACTION_DECISION_OPTIONS,
-  { value: "AMR", label: "Raise Requirement" },
 ];
 
 // Placeholder assignee list (mock login user ids) until a user-lookup API is specified
@@ -158,39 +264,41 @@ const REFERRAL_TYPE_OPTIONS = [
 // Assigned To is enabled only for these referral rows
 const ASSIGNABLE_REFERRALS = ["REF_SR_UW", "REF_HOD"];
 
-const REFERRAL_REASON_OPTIONS: Record<string, string[]> = {
-  REF_IT: ["System issue", "Data correction", "Other"],
-  REF_REINS: ["High sum assured", "Medical risk", "Other"],
-  REF_SR_UW: ["Medical opinion", "Financial opinion", "High SA", "Policy exception", "Other"],
-  REF_HOD: ["Medical opinion", "Financial opinion", "High SA", "Policy exception", "Counter signing", "Other"],
-  REF_CMO: ["Medical review", "Specialist opinion", "Other"],
-  REF_CMO_LOCAL: ["Medical review", "Specialist opinion", "Other"],
-  REF_RISK: ["Risk assessment", "Policy exception", "Other"],
-  REF_ACU: ["Screening review", "Match review", "Other"],
-  REF_CUW_CLM: ["Claim history", "Investigation", "Other"],
-  REF_TELE_MER: ["Medical review", "Other"],
+// Referral reason options per referral row come from these master `misc` types.
+// REF_VIDEO_MER has no master type yet, so it keeps its static list.
+const REFERRAL_REASON_MASTER_TYPES: Record<string, string | undefined> = {
+  REF_IT: "GUW_REF_IT_RSN",
+  REF_REINS: "GUW_REF_REINS",
+  REF_SR_UW: "GUW_REF_SRUW_OP",
+  REF_HOD: "GUW_REF_HOD_OP",
+  REF_CMO: "GUW_HO_CMO_RSN",
+  REF_CMO_LOCAL: "GUW_CMO_RSN",
+  REF_RISK: "GUW_REF_RSK",
+  REF_ACU: "GUW_REF_ACC",
+  REF_CUW_CLM: "GUW_REF_CUW_CLAIM",
+  REF_TELE_MER: "GUW_TELE_MER_RSN",
+};
+
+const REFERRAL_STATIC_REASON_OPTIONS: Record<string, string[] | undefined> = {
   REF_VIDEO_MER: ["Medical review", "Other"],
 };
 
-const LOADING_CLASS_OPTIONS: Record<string, string[]> = {
-  "Medical Loading": ["ML001 - Substandard", "ML002 - Rated Up", "ML003 - Extra Mortality", "ML004 - Occupational Hazard"],
-  "FE Loading": ["FE001 - Financial Extra", "FE002 - Income Mismatch", "FE003 - High SA"],
-  "Smoker Loading": ["SL001 - Smoker", "SL002 - Tobacco User", "SL003 - Ex-Smoker"],
-};
+const hasReferralReasonOptions = (target: string) =>
+  REFERRAL_REASON_MASTER_TYPES[target] !== undefined || REFERRAL_STATIC_REASON_OPTIONS[target] !== undefined;
 
-const LOADING_REASON_OPTIONS: Record<string, string[]> = {
-  "Medical Loading": ["Medical history", "BMI deviation", "Pre-existing condition", "Hazardous occupation"],
-  "FE Loading": ["Income proof inadequate", "SA exceeds eligibility", "Financial inconsistency"],
-  "Smoker Loading": ["Active smoker", "Tobacco chewer", "Recent cessation"],
+const readReferralReasonOptions = (target: string) => {
+  const type = REFERRAL_REASON_MASTER_TYPES[target];
+  if (type) return readFirstAvailableMiscOptions([type]);
+  return (REFERRAL_STATIC_REASON_OPTIONS[target] ?? []).map((text) => ({ value: text, label: text }));
 };
 
 const REINSURER_UW_OPTIONS = ["Swiss Re", "Munich Re", "Scor Re", "Gen Re", "RGA Re", "Hannover Re"];
 const REFERRAL_DOCUMENTS = ["Application Form", "PhotoId Proof", "Address Proof"];
 
 const DEFAULT_PRODUCTS = [
-  { name: "iProtect Smart", sa: "₹50,00,000", pt: "20", isRider: false },
-  { name: "Accidental Death Rider", sa: "₹10,00,000", pt: "20", isRider: true },
-  { name: "WOP Rider", sa: "₹15,00,000", pt: "20", isRider: true },
+  { name: "iProtect Smart", code: "IPROTECT_SMART", sa: "₹50,00,000", pt: "20", isRider: false },
+  { name: "Accidental Death Rider", code: "ADB", sa: "₹10,00,000", pt: "20", isRider: true },
+  { name: "WOP Rider", code: "WOP", sa: "₹15,00,000", pt: "20", isRider: true },
 ];
 
 export interface GuidelineRow {
@@ -340,6 +448,8 @@ function GuidelineCategoryIcon({ category }: Readonly<{ category: GuwGuidelineCa
 
 export function GuwUwPanel({
   applicationNo = "",
+  drsApplicationNo = "",
+  partyId = "",
   storageKey,
   derivedDecision,
   decisionReadOnly = false,
@@ -352,6 +462,13 @@ export function GuwUwPanel({
   initialSubmittedDecision,
   onDecisionSubmit,
 }: Readonly<GuwUwPanelProps>) {
+  const DECISION_OPTIONS = readDecisionOptions();
+  const SMOKER_FLAG_OPTIONS = readSmokerFlagOptions();
+  const ALL_DECISION_OPTIONS = [
+    ...DECISION_OPTIONS,
+    ...ACTION_DECISION_OPTIONS,
+    { value: "AMR", label: "Raise Requirement" },
+  ];
   const [selectedDecision, setSelectedDecision] = useState<string>(
     initialSubmittedDecision?.decisionCode ?? "",
   );
@@ -388,6 +505,7 @@ export function GuwUwPanel({
   const [validationRows, setValidationRows] = useState<GuwSavedValidationRow[]>([]);
   const [validating, setValidating] = useState<boolean>(false);
   const [successOpen, setSuccessOpen] = useState<boolean>(false);
+  const [getUwDecision] = useGetGuwUwDecisionMutation();
 
   // Snackbar states
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -607,7 +725,7 @@ export function GuwUwPanel({
     }
     if (effectiveDecision === "POSTP") add("Postponement Period", postponementPeriod);
     if (effectiveDecision === "HOLD") add("Hold Reasons", holdReason);
-    if (dialogDecision !== "REFERRAL" && REFERRAL_REASON_OPTIONS[effectiveDecision]) {
+    if (dialogDecision !== "REFERRAL" && hasReferralReasonOptions(effectiveDecision)) {
       add("Referral Reason", referralReason);
     }
 
@@ -624,7 +742,7 @@ export function GuwUwPanel({
       if (reconsiderPossible === "Yes") {
         reconsiderationFields.push({ label: "Reconsider After", value: reconsiderAfter });
         reconsiderationFields.push({ label: "Requirement Type", value: reconsiderReqType });
-        if (reconsiderReqType === "Other") {
+        if (isOtherRequirementType(reconsiderReqType)) {
           reconsiderationFields.push({ label: "Other Requirement Type", value: reconsiderReqTypeOther });
         }
       }
@@ -838,7 +956,54 @@ export function GuwUwPanel({
     finalizeSubmit();
   };
 
-  const finalizeSubmit = () => {
+  const finalizeSubmit = async () => {
+    // Member level: save the decision (by code) through the `uw-decision` API before the final commit
+    if (partyId) {
+      const response = await getUwDecision(
+        buildGuwUwDecisionRequest({
+          applicationNo: drsApplicationNo || applicationNo,
+          partyId,
+          roleType: getDrsRoleType(),
+          screenType: GUW_UW_DECISION_SCREEN_TYPE,
+          createdBy: getSessionUser()?.username ?? "",
+          // Counter Sign is saved as APPROVER (with reason / referTo / assignedTo), not as the base decision
+          decision: effectiveDecision === "APPROVER" ? "APPROVER" : caseDecision,
+          uwRemarks: dialogRemarks,
+          reasons: subStdReason,
+          holdReason,
+          postponePeriod: postponementPeriod,
+          reconsiderPossible,
+          reconsiderAfter,
+          reconsiderReqType:
+            isOtherRequirementType(reconsiderReqType) && reconsiderReqTypeOther.trim()
+              ? reconsiderReqTypeOther.trim()
+              : reconsiderReqType,
+          reconsiderReqDetails,
+          approver:
+            effectiveDecision === "APPROVER"
+              ? { reason: approverReason, referTo: approverTarget, assignedTo: approverAssignedTo }
+              : undefined,
+          rows: counterOfferRows.map((row) => ({
+            productName: row.productName,
+            productCode: DEFAULT_PRODUCTS.find((p) => p.name === row.productName)?.code ?? "",
+            isRider: row.isRider,
+            type: row.type,
+            bstdCode: row.bstdCode,
+            sa: row.sa,
+            changedSa: row.changedSa,
+            pt: row.pt,
+            changedPt: row.changedPt,
+            loadingClass: row.loadingClass,
+            loadingReason: row.loadingReason,
+          })),
+        }),
+      );
+      if ("error" in response) {
+        notify("Unable to submit the decision. Please try again.", "error");
+        return;
+      }
+    }
+
     // Success - Final commit
     const submitted = buildSubmittedDecision();
     setSubmittedDecision(submitted);
@@ -957,19 +1122,10 @@ export function GuwUwPanel({
     return reinsurerUwNames[idx] || reinsurerRows[idx].systemName;
   };
 
-  // Reasons options for MultiSelect
-  const rejectReasonOptions = [
-    { label: "Previous policy found as repudiated / Death claim", value: "Previous policy found as repudiated / Death claim" },
-    { label: "Financially Not Eligible", value: "Financially Not Eligible" },
-  ];
-
-  const allReasonOptions = [
-    { label: "Medical conditions that affect mood", value: "Medical conditions that affect mood" },
-    { label: "Financially Not Eligible", value: "Financially Not Eligible" },
-    { label: "Defects in body posture", value: "Defects in body posture" },
-    { label: "Previous policy found as repudiated / Death claim", value: "Previous policy found as repudiated / Death claim" },
-    { label: "Asthma", value: "Asthma" },
-  ];
+  // Reasons options for MultiSelect, from master data: Reject = GUW_NON_MED_RSN, every other decision =
+  // GUW_MED_RSN + GUW_NON_MED_RSN. The value is the reason text (master codes repeat across the two types).
+  const rejectReasonOptions = readReasonOptions(["GUW_NON_MED_RSN"]);
+  const allReasonOptions = readReasonOptions(["GUW_MED_RSN", "GUW_NON_MED_RSN"]);
 
   const isBstdColumnVisible = counterOfferRows.some((r) => r.type === "Borderline Standard");
 
@@ -1519,10 +1675,7 @@ export function GuwUwPanel({
                           (row.target === "REF_VIDEO_MER" && isTeleMerSelected) ||
                           (row.target === "REF_TELE_MER" && isVideoMerSelected);
                         const canAssign = ASSIGNABLE_REFERRALS.includes(row.target);
-                        const reasonOptions = (REFERRAL_REASON_OPTIONS[row.target] ?? []).map((opt) => ({
-                          value: opt,
-                          label: opt,
-                        }));
+                        const reasonOptions = readReferralReasonOptions(row.target);
 
                         return (
                           <tr
@@ -1995,11 +2148,7 @@ export function GuwUwPanel({
                 <CustomSelect
                   value={postponementPeriod}
                   onChange={(val) => setPostponementPeriod(val)}
-                  options={[
-                    { value: "3 months", label: "3 months" },
-                    { value: "6 months", label: "6 months" },
-                    { value: "12 months", label: "12 months" },
-                  ]}
+                  options={readPostponementPeriodOptions()}
                   placeholder="Select"
                   fullWidth
                 />
@@ -2023,11 +2172,7 @@ export function GuwUwPanel({
                 <CustomSelect
                   value={holdReason}
                   onChange={(val) => setHoldReason(val)}
-                  options={[
-                    { value: "Medical", label: "Medical" },
-                    { value: "Financial", label: "Financial" },
-                    { value: "Other", label: "Other" },
-                  ]}
+                  options={readHoldReasonOptions()}
                   placeholder="Select"
                   fullWidth
                 />
@@ -2035,7 +2180,7 @@ export function GuwUwPanel({
             )}
 
             {/* REFERRAL REASONS (non-referral modal decisions) */}
-            {dialogDecision !== "REFERRAL" && REFERRAL_REASON_OPTIONS[effectiveDecision] && (
+            {dialogDecision !== "REFERRAL" && hasReferralReasonOptions(effectiveDecision) && (
               <Box>
                 <Typography
                   component="span"
@@ -2051,10 +2196,7 @@ export function GuwUwPanel({
                 <CustomSelect
                   value={referralReason}
                   onChange={(val) => setReferralReason(val)}
-                  options={REFERRAL_REASON_OPTIONS[effectiveDecision].map((opt) => ({
-                    value: opt,
-                    label: opt,
-                  }))}
+                  options={readReferralReasonOptions(effectiveDecision)}
                   placeholder="Select reason"
                   fullWidth
                 />
@@ -2080,10 +2222,9 @@ export function GuwUwPanel({
                   <CustomSelect
                     value={approverReason}
                     onChange={(val) => setApproverReason(val)}
-                    options={["Counter signing", "Medical assessment", "Financial assessment", "Other"].map(
-                      (v) => ({ value: v, label: v })
-                    )}
-                    placeholder="Select Reason"
+                    options={readApproverReasonOptions(approverTarget)}
+                    placeholder={approverTarget ? "Select Reason" : "Select Refer To first"}
+                    disabled={!approverTarget}
                     fullWidth
                   />
                 </Box>
@@ -2102,11 +2243,12 @@ export function GuwUwPanel({
                   </Typography>
                   <CustomSelect
                     value={approverTarget}
-                    onChange={(val) => setApproverTarget(val)}
-                    options={[
-                      { value: "HOD", label: "HOD" },
-                      { value: "Sr UW", label: "Sr UW" },
-                    ]}
+                    onChange={(val) => {
+                      setApproverTarget(val);
+                      // Counter Sign reasons depend on HOD / Sr UW
+                      setApproverReason("");
+                    }}
+                    options={readReferToOptions()}
                     placeholder="Select HOD or Sr UW"
                     fullWidth
                   />
@@ -2240,22 +2382,7 @@ export function GuwUwPanel({
                       <CustomSelect
                         value={reconsiderAfter}
                         onChange={(val) => setReconsiderAfter(val)}
-                        options={[
-                          "Immediately",
-                          "15 days",
-                          "1 Month",
-                          "2 Months",
-                          "3 Months",
-                          "4 Months",
-                          "5 Months",
-                          "6 Months",
-                          "7 Months",
-                          "8 Months",
-                          "9 Months",
-                          "10 Months",
-                          "11 Months",
-                          "1 Year",
-                        ].map((v) => ({ value: v, label: v }))}
+                        options={readReconsiderAfterOptions()}
                         placeholder="Select"
                         fullWidth
                       />
@@ -2277,23 +2404,15 @@ export function GuwUwPanel({
                         value={reconsiderReqType}
                         onChange={(val) => {
                           setReconsiderReqType(val);
-                          if (val !== "Other") setReconsiderReqTypeOther("");
+                          if (!isOtherRequirementType(val)) setReconsiderReqTypeOther("");
                         }}
-                        options={[
-                          "Repeat Medical",
-                          "Specific Test",
-                          "Doctor Report",
-                          "Documents",
-                          "Investigation Reports",
-                          "Additional Surrogate Income",
-                          "Other",
-                        ].map((v) => ({ value: v, label: v }))}
+                        options={readReconsiderReqTypeOptions()}
                         placeholder="Select"
                         fullWidth
                       />
                     </Box>
 
-                    {reconsiderReqType === "Other" && (
+                    {isOtherRequirementType(reconsiderReqType) && (
                       <Box>
                         <Typography
                           component="span"
@@ -2368,26 +2487,8 @@ export function GuwUwPanel({
                   </thead>
                   <tbody>
                     {counterOfferRows.map((row) => {
-                      // Determine type dropdown options based on effective decision
-                      let typeOpts: string[] = [];
-                      if (effectiveDecision === "BOR_STD") {
-                        typeOpts = ["Standard", "Borderline Standard"];
-                      } else if (effectiveDecision === "CO") {
-                        typeOpts = ["Standard", "Borderline Standard", "Reduce Cover", "Reduce PT"];
-                        if (row.isRider) typeOpts.push("Deny Rider");
-                      } else {
-                        // EP
-                        typeOpts = [
-                          "Standard",
-                          "Borderline Standard",
-                          "Reduce Cover",
-                          "Reduce PT",
-                          "Medical Loading",
-                          "FE Loading",
-                          "Smoker Loading",
-                        ];
-                        if (row.isRider) typeOpts.push("Deny Rider");
-                      }
+                      // Type dropdown options come from master data based on the effective decision
+                      const typeOpts = readCounterOfferTypeOptions(effectiveDecision, row.isRider);
 
                       const isLoadingType = ["Medical Loading", "FE Loading", "Smoker Loading"].includes(row.type);
 
@@ -2415,7 +2516,7 @@ export function GuwUwPanel({
                             <CustomSelect
                               value={row.type}
                               onChange={(val) => handleRowFieldChange(row.id, "type", val)}
-                              options={typeOpts.map((v) => ({ value: v, label: v }))}
+                              options={typeOpts}
                               placeholder="Select"
                               fullWidth
                               disabled={row.isUserAdded && !row.productName}
@@ -2428,10 +2529,7 @@ export function GuwUwPanel({
                               <CustomSelect
                                 value={row.bstdCode}
                                 onChange={(val) => handleRowFieldChange(row.id, "bstdCode", val)}
-                                options={["BS", "BS1", "BS2", "BS3", "BS4", "SS", "PMS"].map((v) => ({
-                                  value: v,
-                                  label: v,
-                                }))}
+                                options={readBstdCodeOptions()}
                                 placeholder="Select"
                                 fullWidth
                                 disabled={row.type !== "Borderline Standard"}
@@ -2478,9 +2576,7 @@ export function GuwUwPanel({
                             <CustomSelect
                               value={row.loadingClass}
                               onChange={(val) => handleRowFieldChange(row.id, "loadingClass", val)}
-                              options={(isLoadingType ? LOADING_CLASS_OPTIONS[row.type] || [] : []).map(
-                                (v) => ({ value: v, label: v })
-                              )}
+                              options={isLoadingType ? readLoadingClassOptions() : []}
                               placeholder="Select"
                               disabled={!isLoadingType}
                               fullWidth
@@ -2492,9 +2588,7 @@ export function GuwUwPanel({
                             <CustomSelect
                               value={row.loadingReason}
                               onChange={(val) => handleRowFieldChange(row.id, "loadingReason", val)}
-                              options={(isLoadingType ? LOADING_REASON_OPTIONS[row.type] || [] : []).map(
-                                (v) => ({ value: v, label: v })
-                              )}
+                              options={isLoadingType ? readLoadingReasonOptions() : []}
                               placeholder="Select"
                               disabled={!isLoadingType}
                               fullWidth

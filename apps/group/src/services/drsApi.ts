@@ -12,6 +12,12 @@ import {
 import { getGroupDrsTaskConfig } from "../config/drsTaskConfig";
 import groupDrsMock from "../modules/drs/mock/groupDrs.json";
 import guwDrsMock from "../../../../mock/drs/guw-informal-drs.json";
+import guwUwDecisionMock from "../../../../mock/drs/guw-uw-decision.json";
+import {
+  mapGuwUwDecision,
+  type GuwUwDecisionRequest,
+  type GuwUwDecisionResult,
+} from "./guwDecisionService";
 import groupDrsSaveMock from "../modules/drs/mock/groupDrsSave.json";
 import { mapGroupDrsPayload, mapRawRequirementRows, type GroupDrsData } from "./drsService";
 
@@ -139,6 +145,38 @@ export const groupDrsApi = createApi({
         return { data: result.data };
       },
     }),
+    /** Member-level UW decision (decision code + remarks) for the GUW screen. */
+    getGuwUwDecision: build.mutation<GuwUwDecisionResult, GuwUwDecisionRequest>({
+      async queryFn(arg, _api, _extra, baseQuery) {
+        console.log("[getGuwUwDecision] request payload:", arg);
+        if (useMock) {
+          console.log("[getGuwUwDecision] response (mock):", guwUwDecisionMock);
+          return { data: mapGuwUwDecision(guwUwDecisionMock) };
+        }
+        const uwDecisionUrl = groupBusinessUrls.uwDecision;
+        if (uwDecisionUrl.length === 0) {
+          return { error: customError("Group UW decision API is not configured.") };
+        }
+
+        const result = await baseQuery({
+          url: uwDecisionUrl,
+          method: "POST",
+          body: arg,
+          headers: { accept: "*/*", "Content-Type": "application/json" },
+        });
+        if (result.error) {
+          console.log("[getGuwUwDecision] response error:", result.error);
+          return { error: result.error };
+        }
+        console.log("[getGuwUwDecision] response:", result.data);
+
+        try {
+          return { data: mapGuwUwDecision(result.data) };
+        } catch (reason: unknown) {
+          return { error: customError(readError(reason)) };
+        }
+      },
+    }),
     saveGroupDrsRequirements: build.mutation<RequirementItem[], SaveGroupDrsRequirementsArg>({
       async queryFn(arg, api, _extra, baseQuery) {
         const sessionUser = getSessionUser();
@@ -229,4 +267,9 @@ export const groupDrsApi = createApi({
   }),
 });
 
-export const { useGetGroupDrsQuery, useGetGuwDrsPayloadQuery, useSaveGroupDrsRequirementsMutation } = groupDrsApi;
+export const {
+  useGetGroupDrsQuery,
+  useGetGuwDrsPayloadQuery,
+  useGetGuwUwDecisionMutation,
+  useSaveGroupDrsRequirementsMutation,
+} = groupDrsApi;

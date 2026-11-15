@@ -1,0 +1,19 @@
+{
+  "uwDecisionId": 201,
+  "level": "member",
+  "screenType": "GUW",
+  "applicationNumber": "OS90387913",
+  "partyId": "PTYOS90314328LA",
+  "roleType": "CPT_TASK",
+  "caseUwDecision": "STD",
+  "decision": "Standard",
+  "decisionCode": "STD",
+  "uwRemarks": "Standard acceptance",
+  "reasons": "",
+  "outlier": "",
+  "smokerStatus": "",
+  "createdAt": "2026-11-13T20:59:00",
+  "createdBy": "UW001",
+  "updatedAt": "2026-11-13T20:59:00",
+  "updatedBy": "UW001"
+}

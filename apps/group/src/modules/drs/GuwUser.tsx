@@ -171,6 +171,8 @@ const GuwUser = () => {
             {/* UW panel: BRE overall decision + case UW decision */}
             <GuwUwPanel
               applicationNo={applicationNo}
+              drsApplicationNo={page.record.applicationNo}
+              partyId={page.record.partyId}
               storageKey={memberStorageKey}
               redirectUrl={postSubmitUrl}
               breOverallDecision={page.record.uwData?.breOverallDecision}
