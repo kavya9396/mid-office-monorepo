@@ -80,8 +80,8 @@ const MEMBER_SELECTION_ROW_LABELS: Record<number, string> = { 1: "Product", 2: "
 /**
  * Members come from the `data[]` objects of guw-informal-drs.json. The screen is shown only when
  * there is more than one object; with one object the user goes straight to that member's DRS.
- * HOD / Sr UW (`referralConfigForRoleType`) open `/referral/drs` and show the referral decision
- * card below the list; GUW opens `/guw/drs` and shows the Case UW Decision panel.
+ * HOD / Sr UW (`referralConfigForRoleType`) show the referral decision card below the list; GUW shows the
+ * Case UW Decision panel. All open the DRS route, where `GroupDrsPage` picks the screen from the session roleType.
  */
 export function MemberSelection() {
   const [params] = useSearchParams();
@@ -91,7 +91,8 @@ export function MemberSelection() {
   const roleType = getDrsRoleType() || params.get("roleType")?.trim() || "";
   const role = getDrsRoleLabel() || params.get("role")?.trim() || "";
   const referralConfig = referralConfigForRoleType(roleType);
-  const drsPath = referralConfig ? "/referral/drs" : drsRoutePath(applicationNo);
+  // HOD / Sr UW also open the DRS route; GroupDrsPage picks the referral screen from the session roleType
+  const drsPath = drsRoutePath(applicationNo);
 
   // Members come from the `data[]` objects of guw-informal-drs.json (null until loaded)
   const [members, setMembers] = useState<GuwMemberSummary[] | null>(null);

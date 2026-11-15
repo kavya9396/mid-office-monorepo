@@ -8,13 +8,22 @@ import {
 import { MmtGrievanceDrsPage } from "./MmtGrievanceDrsPage";
 import DvtUser from "./DvtUser";
 import GuwUser from "./GuwUser";
+import { ReferralDrsPage } from "../referral-uw/ReferralDrsPage";
 import { fetchGuwMembers } from "../../services/guwService";
+import { HOD_CONFIG, SR_UW_CONFIG } from "../../services/referralUwService";
+
+interface MemberEntryProps {
+  /** Member selection page opened when the DRS payload holds more than one member. */
+  memberSelectionPath: string;
+  children: JSX.Element;
+}
 
 /**
- * GUW entry: when `data.membersDetails[]` of guw-informal-drs.json holds more than one member and no
- * member is selected yet, go to the member selection page; otherwise open the GUW DRS directly.
+ * GUW / HOD / Sr UW entry: the DRS API (same request body as DVT, `roleType` from the task config) returns
+ * the members. When it holds more than one member and no member is selected yet, go to the member selection
+ * page; otherwise open the DRS directly.
  */
-function GuwEntry() {
+function MemberEntry({ memberSelectionPath, children }: Readonly<MemberEntryProps>) {
   const { applicationNo: applicationNoParam } = useParams();
   const navigate = useNavigate();
   const applicationNo = applicationNoParam?.trim() ?? "";
@@ -33,7 +42,7 @@ function GuwEntry() {
           memberCount: members.length,
           memberId: "",
         });
-        navigate("/guw/member-selection", { replace: true });
+        navigate(memberSelectionPath, { replace: true });
       } else {
         setDrsOpenContext({ applicationNo, memberCount: 1, memberId: "" });
         setChecked(true);
@@ -42,15 +51,43 @@ function GuwEntry() {
     return () => {
       active = false;
     };
-  }, [needsCheck, applicationNo, navigate]);
+  }, [needsCheck, applicationNo, memberSelectionPath, navigate]);
 
-  return checked ? <GuwUser /> : null;
+  return checked ? children : null;
+}
+
+function GuwEntry() {
+  return (
+    <MemberEntry memberSelectionPath="/guw/member-selection">
+      <GuwUser />
+    </MemberEntry>
+  );
+}
+
+function HodEntry() {
+  return (
+    <MemberEntry memberSelectionPath="/referral/member-selection">
+      <ReferralDrsPage config={HOD_CONFIG} />
+    </MemberEntry>
+  );
+}
+
+function SrUwEntry() {
+  return (
+    <MemberEntry memberSelectionPath="/referral/member-selection">
+      <ReferralDrsPage config={SR_UW_CONFIG} />
+    </MemberEntry>
+  );
 }
 
 /** `/app/{applicationNo}/drs` — screen picked from inbox session `roleType`. */
 /** Keys match `roleType` on inbox cases (see `groupInbox.json` poolData). */
 const SCREEN_BY_ROLE: Record<string, () => JSX.Element | null> = {
   GUW_TASK: GuwEntry,
+  HOD_TASK: HodEntry,
+  HOD: HodEntry,
+  SR_UW_TASK: SrUwEntry,
+  SR_UW: SrUwEntry,
   DVT_TASK: DvtUser,
   MMT_TASK: MmtGrievanceDrsPage,
   RECONSIDERATION_TASK: DvtUser,
