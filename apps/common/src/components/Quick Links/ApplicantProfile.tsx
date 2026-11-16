@@ -24,6 +24,7 @@ export function ApplicantProfile({
   onViewMedical,
   onViewFinancial,
   memberTabs = false,
+  variant,
 }: Readonly<ApplicantProfileDialogProps>) {
   const [selectedId, setSelectedId] = useState("");
   const showMemberTabs = memberTabs && applicants.length > 0;
@@ -54,6 +55,7 @@ export function ApplicantProfile({
       <LifeAssured
         applicants={showMemberTabs && selected ? [selected] : applicants}
         hideProfileImage
+        variant={variant}
         onEdit={onEdit}
         onViewMedical={onViewMedical}
         onViewFinancial={onViewFinancial}

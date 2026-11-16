@@ -206,7 +206,12 @@ const toShare = (value: unknown) => {
 };
 
 const readNomineeRows = (nominee: unknown, label: string): JsonRecord[] =>
-  asArray(findByLabel(asRecord(nominee).value, label)?.rows).filter(isRecord);
+  asArray(findByLabel(asRecord(nominee).value, label)?.rows)
+    .filter(isRecord)
+    .filter((row) => Object.values(row).some((cell) => str(cell).trim() !== ""));
+
+/** `{ label, value: { label, value: [{ label, value }] } }` tab (generic, eIA) -> FieldData[]. */
+const readNestedFields = (section: unknown): FieldData[] => readFields(asRecord(asRecord(section).value).value);
 
 const readLoan = (baseAndLoan: unknown): LoanEditValues => {
   const loan: LoanEditValues = { ...EMPTY_LOAN };
@@ -325,6 +330,7 @@ const readImageRecords = (imageDetails: unknown): ImageDetailRecord[] =>
   asArray(asRecord(asRecord(imageDetails).value).rows)
     .filter(isRecord)
     .map((row) => ({
+      imageType: optionalText(row.imageType),
       document: optionalText(row.document),
       faceMatchScore: optionalText(row.faceMatchScore),
       imageQuality: optionalText(row.imageQuality),
@@ -412,8 +418,20 @@ const toApplicant = (member: JsonRecord, total: number, riders: RiderEditRow[]):
       ...readFixedFields(healthInformation?.value, LIFESTYLE_LABELS),
       { label: "Lifestyle Habits", value: text(lifestyleHabits?.value) },
     ],
+    genericFields: readNestedFields(member.generic),
+    eiaFields: readNestedFields(member.eia),
+    paymentDetails: readFields(findByLabel(asRecord(member.payment_and_payout).value, "Payment Details")?.value),
+    payoutDetails: readFields(findByLabel(asRecord(member.payment_and_payout).value, "Payout Details")?.value),
   };
 };
+
+/**
+ * Maps ONE `applicantProfile` value (the Quick Links payload) with the same field lists, masking and
+ * defaults as the DVT Applicant Profile tab.
+ */
+export function mapApplicantProfileValue(profile: unknown): LifeAssuredApplicant {
+  return toApplicant(asRecord(profile), 1, []);
+}
 
 export function mapApplicants(source: LifeAssuredSource): LifeAssuredApplicant[] {
   const rawMembers = source.members.filter(isRecord);

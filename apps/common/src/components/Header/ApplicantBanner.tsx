@@ -93,7 +93,7 @@ export function rowDetailsToBannerRows(
           if (isValueOnly) {
             return {
               id: `${row.id}-${index}`,
-              value: value || "ΓÇö",
+              value: value || "—",
             };
           }
           return {
@@ -150,7 +150,7 @@ function RowContent({ row }: Readonly<{ row: BannerRow }>) {
             ? field.value
               ? "Yes"
               : "No"
-            : (field.value ?? "ΓÇö")}
+            : (field.value ?? "—")}
         </Box>
       ))}
     </>

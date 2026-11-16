@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Box } from "@mui/material";
 import {
   appTheme,
   CustomAccordion,
@@ -261,11 +262,12 @@ const DEDUPE_COLUMNS: Column<Row>[] = [
   col("riskIndicator", "Risk Indicator"),
 ];
 
+/** Column widths add up to 100% so the 16 IPRU columns fit the container without horizontal scroll. */
 const IPRU_COLUMNS = (onShowRiders: (ipruIndex: number) => void): Column<Row>[] => [
   {
     key: "riders",
     header: "Riders",
-    width: "60px",
+    width: "4%",
     render: (_value, row) => (
       <CustomButton
         variant="outlined"
@@ -278,21 +280,21 @@ const IPRU_COLUMNS = (onShowRiders: (ipruIndex: number) => void): Column<Row>[] 
       </CustomButton>
     ),
   },
-  col("clientId", "Client Id"),
-  col("applicationNo", "Application No"),
-  col("policyNumber", "Policy No"),
-  col("productName", "Product"),
-  col("appliedSumAssured", "Sum Assured", formatCurrency),
-  col("policyStatus", "Policy Status"),
-  col("uwDecision", "Decision"),
-  col("applicationDate", "Application Date", formatDateOnly),
-  col("claimsFlag", "Claims Flag"),
-  col("mortalityClass", "Mortality Class"),
-  col("installmentPremium", "Installment Premium", formatCurrency),
-  col("clientRole", "Client Role"),
-  col("companyName", "Company Name"),
-  col("yearOfIssueApplication", "Year of Issue/Application"),
-  col("fundValue", "Fund Value", formatCurrency),
+  { ...col("clientId", "Client Id"), width: "6%" },
+  { ...col("applicationNo", "Application No"), width: "7%" },
+  { ...col("policyNumber", "Policy No"), width: "7%" },
+  { ...col("productName", "Product"), width: "8.5%" },
+  { ...col("appliedSumAssured", "Sum Assured", formatCurrency), width: "6.5%" },
+  { ...col("policyStatus", "Policy Status"), width: "6%" },
+  { ...col("uwDecision", "Decision"), width: "6%" },
+  { ...col("applicationDate", "Application Date", formatDateOnly), width: "6.5%" },
+  { ...col("claimsFlag", "Claims Flag"), width: "5%" },
+  { ...col("mortalityClass", "Mortality Class"), width: "6%" },
+  { ...col("installmentPremium", "Installment Premium", formatCurrency), width: "7%" },
+  { ...col("clientRole", "Client Role"), width: "5.5%" },
+  { ...col("companyName", "Company Name"), width: "7%" },
+  { ...col("yearOfIssueApplication", "Year of Issue/Application"), width: "6%" },
+  { ...col("fundValue", "Fund Value", formatCurrency), width: "6%" },
 ];
 
 const IPRU_DETAIL_COLUMNS: Column<Row>[] = [
@@ -453,25 +455,35 @@ export function PreviousPolicy({
   };
 
   return (
-    <div style={{ width: "100%", padding: "8px 0 32px", backgroundColor: background.default }}>
+    <div style={{ width: "100%", padding: "4px 0 16px", backgroundColor: background.default }}>
       {data.members.map((member, memberIndex) => (
-        <div key={`${member.key}-${memberIndex}`} style={{ marginBottom: 16 }}>
+        <div key={`${member.key}-${memberIndex}`} style={{ marginBottom: 8 }}>
           <CustomAccordion
             title={`Previous Policies - ${member.label}`}
             titleFontSize={12}
             defaultExpanded={memberIndex === 0}
+            detailPadding="2px"
           >
             <PagedTable title="Dedupe - Posidex" columns={DEDUPE_COLUMNS} rows={member.dedupePosidex} />
 
-            <div style={{ marginTop: 20 }}>
-              <PagedTable
-                title="IPRU"
-                columns={IPRU_COLUMNS((ipruIndex) => openRiders(member, ipruIndex))}
-                rows={member.ipru.map((item, ipruIndex) => ({ ...item.row, ipruIndex }))}
-              />
+            <div style={{ marginTop: 12 }}>
+              {/* 16 columns share the full width, so cell text and padding are slightly smaller here. */}
+              <Box
+                sx={{
+                  "& .MuiTable-root th, & .MuiTable-root td": { px: "4px", fontSize: "10px" },
+                  "& .MuiTable-root th .MuiTypography-root": { fontSize: "10px" },
+                  "& .MuiTable-root td .MuiTypography-root": { fontSize: "10px" },
+                }}
+              >
+                <PagedTable
+                  title="IPRU"
+                  columns={IPRU_COLUMNS((ipruIndex) => openRiders(member, ipruIndex))}
+                  rows={member.ipru.map((item, ipruIndex) => ({ ...item.row, ipruIndex }))}
+                />
+              </Box>
             </div>
 
-            <div style={{ marginTop: 20 }}>
+            <div style={{ marginTop: 12 }}>
               <PagedTable
                 title="IIB / Non IPRU and Negative Match Details"
                 columns={IIB_COLUMNS}
@@ -481,7 +493,7 @@ export function PreviousPolicy({
             </div>
 
             {showApplicationForm && (
-              <div style={{ marginTop: 20 }}>
+              <div style={{ marginTop: 12 }}>
                 <PagedTable
                   title="Details as per application form"
                   columns={APPLICATION_FORM_COLUMNS}

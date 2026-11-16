@@ -2,7 +2,8 @@ import type { AuditTrailItem } from "@insurance-poc/common/audit-trail";
 import type { OpenTaskItem } from "@insurance-poc/common/open-tasks";
 import type { PreviousPolicyData } from "@insurance-poc/common/previous-policy";
 import type { RiskMember } from "@insurance-poc/common/risk-details";
-import type { LifeAssuredApplicant, FieldData, NomineeRow } from "@insurance-poc/common/life-assured";
+import type { LifeAssuredApplicant } from "@insurance-poc/common/life-assured";
+import { mapApplicantProfileValue } from "./lifeAssuredData";
 import { mapMembersPreviousPolicy } from "./previousPolicyData";
 
 type JsonRecord = Record<string, unknown>;
@@ -173,65 +174,17 @@ function mapRiskDetails(values: unknown[]): RiskMember[] | undefined {
 
 /* ---- Applicant profile (one entry per member) ---- */
 
-const fieldList = (value: unknown): FieldData[] =>
-  recordList(value).map((item) => ({ label: str(item.label), value: str(item.value) }));
-
-/** `value` list of the group called `label` inside `contact_and_address.value[]`. */
-const addressGroup = (groups: JsonRecord[], label: string): FieldData[] =>
-  fieldList(groups.find((group) => str(group.label) === label)?.value);
-
-const hasText = (row: JsonRecord): boolean => Object.values(row).some((cell) => str(cell) !== "");
-
+/** Same mapping as the DVT Applicant Profile tab; only id/label come from the member row. */
 function mapApplicantProfile(
   profile: JsonRecord,
   memberLabel: string,
   index: number,
 ): LifeAssuredApplicant {
-  const imageDetails = isRecord(profile.image_details) ? profile.image_details : {};
-  const personalKyc = isRecord(profile.personal_kyc) ? profile.personal_kyc : {};
-  const contact = isRecord(profile.contact_and_address) ? profile.contact_and_address : {};
-  const nominee = isRecord(profile.nominee) ? profile.nominee : {};
-  const product = isRecord(profile.product_details) ? profile.product_details : {};
-
-  const imageValue = isRecord(imageDetails.value) ? imageDetails.value : {};
-  const kycGroups = Array.isArray(personalKyc.groups) ? personalKyc.groups : [];
-  const contactGroups = recordList(contact.value);
-  const productValue = isRecord(product.value) ? product.value : {};
-  const nomineeRows = recordList(recordList(nominee.value)[0]?.rows).filter(hasText);
-  const memberType = str(profile.memberType);
-
+  const applicant = mapApplicantProfileValue(profile);
   return {
-    id: memberType || `member-${index + 1}`,
-    partyId: str(profile.partyId) || undefined,
-    memberType: memberType || undefined,
+    ...applicant,
+    id: applicant.memberType || `member-${index + 1}`,
     label: memberLabel,
-    imageRecords: recordList(imageValue.rows).map((row) => ({
-      imageType: str(row.imageType),
-      document: str(row.document),
-      faceMatchScore: str(row.faceMatchScore),
-      imageQuality: str(row.imageQuality),
-      remarks: str(row.remarks),
-    })),
-    personalFields: fieldList(kycGroups[0]),
-    kycFields: fieldList(kycGroups[1]),
-    communicationAddress: addressGroup(contactGroups, "Communication Address"),
-    permanentAddress: addressGroup(contactGroups, "Permanent Address"),
-    contactDetails: addressGroup(contactGroups, "Contact Details"),
-    productFields: fieldList(productValue.value),
-    nominees: nomineeRows.map(
-      (row): NomineeRow => ({
-        nomineeName: str(row.name),
-        nomineeDOB: str(row.dob),
-        gender: str(row.gender),
-        relationship: str(row.relationship),
-        sharePercentage: Number(str(row.share)) || 0,
-        isLASame: "",
-        relationShipWithJL: "",
-        laFlag: "",
-      }),
-    ),
-    appointees: [],
-    lifestyleFields: [],
   };
 }
 

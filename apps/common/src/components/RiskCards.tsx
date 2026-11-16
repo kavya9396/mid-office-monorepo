@@ -45,6 +45,11 @@ export type RiskCardsProps = {
    * When omitted, those clicks open the details dialog instead (if the card has details).
    */
   onView?: (card: RiskCardData) => void;
+  /**
+   * When provided together with `onView`, only cards with these ids use `onView`;
+   * every other card keeps opening its details dialog.
+   */
+  viewCardIds?: readonly string[];
 };
 
 const TONES: Record<RiskTone, { border: string; accent: string }> = {
@@ -243,7 +248,7 @@ function RiskDetailsDialog({
   );
 }
 
-export function RiskCards({ cards, onView }: Readonly<RiskCardsProps>) {
+export function RiskCards({ cards, onView, viewCardIds }: Readonly<RiskCardsProps>) {
   const [openDetails, setOpenDetails] = useState<RiskCardDetails | null>(null);
 
   if (cards.length === 0) return null;
@@ -275,6 +280,7 @@ export function RiskCards({ cards, onView }: Readonly<RiskCardsProps>) {
         {cards.map((card) => {
           const { details } = card;
           const openCardDetails = details ? () => setOpenDetails(details) : undefined;
+          const usesOnView = onView !== undefined && (!viewCardIds || viewCardIds.includes(card.id));
           return (
             <RiskCard
               key={card.id}
@@ -282,7 +288,7 @@ export function RiskCards({ cards, onView }: Readonly<RiskCardsProps>) {
               tone={card.tone}
               fields={card.fields}
               viewLabel={card.viewLabel}
-              onCardClick={onView ? () => onView(card) : openCardDetails}
+              onCardClick={usesOnView ? () => onView(card) : openCardDetails}
               onOpenDetails={openCardDetails}
             />
           );

@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
+  canInvokeBreRetrigger,
+  clearBreRetriggerCount,
   getDrsApplicationNo,
   getDrsMemberCount,
   getDrsMemberId,
   getDrsRoleType,
+  readApiErrorMessage,
+  setBreRetriggerCount,
 } from "@insurance-poc/utils";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -16,11 +20,15 @@ import { QuickLinksModule } from "@insurance-poc/common/quick-links";
 import { buildQuickLinkItems } from "../drs/guwQuickLinks";
 import { groupPaths, replaceUrl } from "@insurance-poc/routes";
 import {
+  CustomButton,
   CustomDialog,
+  CustomLoader,
   CustomSnackbar,
   CustomTable,
   type Column,
 } from "@insurance-poc/ui";
+import { useRetriggerGroupBreMutation } from "../../services/breRetriggerApi";
+import { formatBreTimestamp, splitDiscrepancies } from "../drs/breFormat";
 import { GuwSdtRow } from "../guw/GuwSdtRow";
 import { GuwSectionDialogs, type GuwSectionDialogKey } from "../guw/GuwSectionDialogs";
 import { fetchGuwDrs, type GuwDrsRecord } from "../../services/guwService";
@@ -63,6 +71,10 @@ const QUICK_ITEMS = [
   { id: "raise-grievance", label: "Raise Grievance" },
 ];
 
+type BreRetriggerFinalOverrides = Partial<
+  Record<"status" | "decision" | "remarks" | "discrepancy" | "timestamp", string>
+>;
+
 type PageState =
   | { kind: "loading" }
   | { kind: "missing-id" }
@@ -91,6 +103,8 @@ export function ReferralDrsPage({ config }: Readonly<ReferralDrsPageProps>) {
   const isMultiLife = getDrsMemberCount() > 1;
   const postSubmitUrl = isMultiLife ? groupPaths.referralMemberSelection : groupPaths.inbox;
 
+  const [retriggerGroupBre, retriggerGroupBreState] = useRetriggerGroupBreMutation();
+
   const [page, setPage] = useState<PageState>(
     applicationNo ? { kind: "loading" } : { kind: "missing-id" },
   );
@@ -98,6 +112,9 @@ export function ReferralDrsPage({ config }: Readonly<ReferralDrsPageProps>) {
 
   const [sectionDialog, setSectionDialog] = useState<GuwSectionDialogKey | null>(null);
   const [breDetailOpen, setBreDetailOpen] = useState(false);
+  const [breRetriggerFinals, setBreRetriggerFinals] = useState<BreRetriggerFinalOverrides>({});
+  const [breRetriggerBarDecision, setBreRetriggerBarDecision] = useState<string | null>(null);
+  const [breRetriggerLimitDialogOpen, setBreRetriggerLimitDialogOpen] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
 
@@ -105,6 +122,51 @@ export function ReferralDrsPage({ config }: Readonly<ReferralDrsPageProps>) {
     setSnackbarMessage(message);
     setSnackbarOpen(true);
   };
+
+  const goToInbox = () => {
+    clearBreRetriggerCount();
+    navigate(groupPaths.inbox, { replace: true });
+  };
+
+  const handleBreRetrigger = async () => {
+    const appNo = applicationNo.trim();
+    if (appNo.length === 0) {
+      notify("Application number is missing.");
+      return;
+    }
+    if (retriggerGroupBreState.isLoading) return;
+
+    if (!canInvokeBreRetrigger()) {
+      setBreRetriggerLimitDialogOpen(true);
+      return;
+    }
+
+    try {
+      const mapped = await retriggerGroupBre({ applicationNumber: appNo }).unwrap();
+      setBreRetriggerCount(mapped.reTriggerCount);
+      setBreRetriggerBarDecision(mapped.barDecision);
+      setBreRetriggerFinals(mapped.rows);
+    } catch (reason: unknown) {
+      setBreRetriggerFinals((previous) => ({ ...previous, status: "" }));
+      const message = readApiErrorMessage(reason);
+      notify(message.length > 0 ? message : "Unable to retrigger BRE.");
+    }
+  };
+
+  const readBreRowFinal = (rowLabel: string, defaultFinal: string): string => {
+    const labelLower = rowLabel.toLowerCase();
+    if (labelLower.includes("status") && breRetriggerFinals.status !== undefined) return breRetriggerFinals.status;
+    if (labelLower.includes("decision") && breRetriggerFinals.decision !== undefined) return breRetriggerFinals.decision;
+    if (labelLower.includes("remark") && breRetriggerFinals.remarks !== undefined) return breRetriggerFinals.remarks;
+    if (labelLower.includes("discrepancy") && breRetriggerFinals.discrepancy !== undefined) return breRetriggerFinals.discrepancy;
+    if (labelLower.includes("timestamp") && breRetriggerFinals.timestamp !== undefined) return formatBreTimestamp(breRetriggerFinals.timestamp);
+    return defaultFinal;
+  };
+
+  useEffect(() => {
+    setBreRetriggerFinals({});
+    setBreRetriggerBarDecision(null);
+  }, [applicationNo]);
 
   useEffect(() => {
     if (!applicationNo) {
@@ -130,6 +192,9 @@ export function ReferralDrsPage({ config }: Readonly<ReferralDrsPageProps>) {
       data-testid="referral-drs-main"
       sx={{ minHeight: "100%", background: "#fff8f3", pb: 8 }}
     >
+      {retriggerGroupBreState.isLoading && (
+        <CustomLoader message="Retriggering BRE" fullScreen />
+      )}
       <Box>
         {page.kind === "ready" ? (
           <>
@@ -165,16 +230,20 @@ export function ReferralDrsPage({ config }: Readonly<ReferralDrsPageProps>) {
                   <RiskCards cards={page.record.riskCards} />
 
                   <BreCard
-                    decision={page.record.breData.breCode}
+                    decision={breRetriggerBarDecision ?? page.record.breData.breCode}
                     initialDiscrepancies={page.record.breData.initialDiscrepancy}
-                    finalDiscrepancies={page.record.breData.finalDiscrepancy}
+                    finalDiscrepancies={
+                      breRetriggerFinals.discrepancy !== undefined
+                        ? splitDiscrepancies(breRetriggerFinals.discrepancy)
+                        : page.record.breData.finalDiscrepancy
+                    }
                     statusChips={page.record.breData.statusChips.map((c) => ({
                       key: c.label,
                       label: c.label,
                       count: c.count,
                     }))}
                     onViewDetail={() => setBreDetailOpen(true)}
-                    onRefresh={() => { /* retrigger API TBD */ }}
+                    onRefresh={handleBreRetrigger}
                   />
                 </Box>
 
@@ -318,9 +387,27 @@ export function ReferralDrsPage({ config }: Readonly<ReferralDrsPageProps>) {
         {page.kind === "ready" ? (
           <DecisionComparisonTable
             headers={page.record.breData.detailHeaders}
-            rows={page.record.breData.detailRows}
+            rows={page.record.breData.detailRows.map((row) => ({
+              ...row,
+              final: readBreRowFinal(row.label, row.final),
+            }))}
           />
         ) : null}
+      </CustomDialog>
+
+      <CustomDialog
+        open={breRetriggerLimitDialogOpen}
+        onClose={() => setBreRetriggerLimitDialogOpen(false)}
+        showCloseIcon={false}
+        disableEscapeKeyDown
+        title="BRE Retrigger"
+        actions={
+          <CustomButton variant="contained" onClick={goToInbox}>
+            Ok
+          </CustomButton>
+        }
+      >
+        Kindly raise ticket with IT team
       </CustomDialog>
 
       {page.kind === "ready" ? (

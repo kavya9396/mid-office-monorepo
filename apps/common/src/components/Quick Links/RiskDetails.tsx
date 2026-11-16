@@ -35,7 +35,9 @@ export interface RiskDetailsProps {
   members?: RiskMember[];
   title?: string;
   showTitle?: boolean;
-  decisionOptions?: string[];
+  showEdit?: boolean;
+  /** Plain strings (label = value) or `{ label, value }` pairs, e.g. from master data. */
+  decisionOptions?: Array<string | { label: string; value: string }>;
   onSaveAssessment?: (member: RiskMember) => void;
   onSubmitDecision?: (member: RiskMember) => void;
 }
@@ -164,6 +166,7 @@ export function RiskDetails({
   members = DEFAULT_RISK_MEMBERS,
   title = "Risk Details",
   showTitle = true,
+  showEdit = true,
   decisionOptions = DEFAULT_DECISION_OPTIONS,
   onSaveAssessment,
   onSubmitDecision,
@@ -364,7 +367,7 @@ export function RiskDetails({
                   Save
                 </CustomButton>
               </>
-            ) : (
+            ) : showEdit ? (
               <CustomButton
                 data-testid="risk-edit"
                 onClick={startEdit}
@@ -372,7 +375,7 @@ export function RiskDetails({
               >
                 Edit
               </CustomButton>
-            )
+            ) : undefined
           }
         >
           Risk Assessment
@@ -486,7 +489,9 @@ export function RiskDetails({
           />
           <CustomSelect
             value={member.decision}
-            options={decisionOptions.map((option) => ({ label: option, value: option }))}
+            options={decisionOptions.map((option) =>
+              typeof option === "string" ? { label: option, value: option } : option
+            )}
             onChange={(value) => updateMember({ decision: value })}
           />
           <CustomButton

@@ -8480,6 +8480,20 @@
         "isActive": "Y",
         "miscMastId": "MONTHS",
         "type": "month"
+      },{
+        "code": "STD",
+        "description": "STD",
+        "value": "STD",
+        "isActive": "Y",
+        "miscMastId": "STD",
+        "type": "GUW_RSK_DEC"
+      },{
+        "code": "NON_STD",
+        "description": "NON STD",
+        "value": "NON STD",
+        "isActive": "Y",
+        "miscMastId": "NON_STD",
+        "type": "GUW_RSK_DEC"
       }
     ],
     "reason": [

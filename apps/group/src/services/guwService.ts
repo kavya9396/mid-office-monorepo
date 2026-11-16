@@ -73,6 +73,7 @@ export interface GuwSdtRow {
   grievanceHistoryCount: number;
   claimAuditCount: number;
   uwGuidelinesCount: number;
+  specialRemarksCount: number;
 }
 
 export interface GuwBreStatusChip {
@@ -476,7 +477,7 @@ function mapGrievanceSection(value: unknown): GuwGrievanceSection {
       key,
       header: headers[key] ?? GRIEVANCE_DEFAULT_HEADERS[key] ?? key,
     })),
-    rows: recordList(section.rows).map((r) => ({
+    rows: recordList(section.rows).filter(hasValues).map((r) => ({
       userName: text(r, "userName"),
       fupCode: text(r, "fupCode"),
       profile: text(r, "profile"),
@@ -542,7 +543,7 @@ function mapSpecialRemarksSection(value: unknown): GuwSpecialRemarksSection {
   return {
     title: str(section.title) || "Special Remarks",
     columnHeaders: headersByKey(SPECIAL_REMARKS_COLUMN_KEYS, section.columns),
-    rows: recordList(section.rows).map((r, index) => ({
+    rows: recordList(section.rows).filter(hasValues).map((r, index) => ({
       id: str(r.id) || String(index + 1),
       comments: str(r.comments),
       updatedDate: str(r.updatedDate),
@@ -558,7 +559,7 @@ function mapUwGuidelinesSection(value: unknown): GuwUwGuidelinesSection {
     : [];
   return {
     title: str(section.title) || "UW Guidelines",
-    rows: recordList(section.reasons).map((r) => ({
+    rows: recordList(section.reasons).filter(hasValues).map((r) => ({
       reason: str(r.reason),
       remark: str(r.remark),
       systemAction: str(r.systemAction),
@@ -579,6 +580,7 @@ function mapSdtRow(sdtSection: unknown, dialogs: GuwDialogSections): GuwSdtRow {
     grievanceHistoryCount: dialogs.grievanceHistory.rows.length,
     claimAuditCount: dialogs.claimAudit.rows.length,
     uwGuidelinesCount: dialogs.uwGuidelines.rows.length,
+    specialRemarksCount: dialogs.specialRemarks.rows.length,
   };
 }
 

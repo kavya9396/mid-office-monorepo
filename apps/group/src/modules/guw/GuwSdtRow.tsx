@@ -139,7 +139,10 @@ export function GuwSdtRow({
             label={`UW Guidelines (${data.uwGuidelinesCount})`}
             onClick={onUwGuidelines}
           />
-          <ActionButton label="Special Remarks" onClick={onSpecialRemarks} />
+          <ActionButton
+            label={`Special Remarks (${data.specialRemarksCount})`}
+            onClick={onSpecialRemarks}
+          />
         </CustomBox>
       )}
     </CustomBox>

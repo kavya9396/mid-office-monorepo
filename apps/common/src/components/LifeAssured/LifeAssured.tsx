@@ -18,6 +18,8 @@ import { ContactAddress } from "./Applicant Profile/Contact & Address";
 import { ProductDetails } from "./Applicant Profile/Product Details";
 import { Nominee, type AppointeeRow, type NomineeRow } from "./Applicant Profile/Nominee";
 import { Lifestyle } from "./Applicant Profile/Lifestyle";
+import { FieldCard } from "./Applicant Profile/Fields";
+import { PaymentPayout } from "./Applicant Profile/Payment & Payout";
 
 export { hasPendingPanPendcode } from "./editApplicant.validation";
 export { PAN_INVALID_SUBMIT_BLOCKED_MESSAGE } from "./editApplicant.messages";
@@ -54,6 +56,14 @@ export type LifeAssuredApplicant = {
   nominees: NomineeRow[];
   appointees: AppointeeRow[];
   lifestyleFields: FieldData[];
+  /** GUW only: `generic` tab. */
+  genericFields?: FieldData[];
+  /** GUW only: `eia` tab. */
+  eiaFields?: FieldData[];
+  /** GUW only: `payment_and_payout` tab, "Payment Details" card. */
+  paymentDetails?: FieldData[];
+  /** GUW only: `payment_and_payout` tab, "Payout Details" card. */
+  payoutDetails?: FieldData[];
   /** Values pre-filled in the Edit dialog. */
   editValues?: Partial<EditApplicantValues>;
   /** Nominee rows pre-filled in the Edit dialog. */
@@ -87,6 +97,8 @@ export type LifeAssuredProps = {
   onViewFinancial?: (applicantId: string) => void;
   /** When true the profile image column is hidden (e.g. inside a dialog). */
   hideProfileImage?: boolean;
+  /** Tab set: `dvt` (default) or `guw` (Generic, eIA and Payment & Payout instead of Lifestyle, and no Edit button). */
+  variant?: "dvt" | "guw";
 };
 
 type ProfileTab =
@@ -95,7 +107,10 @@ type ProfileTab =
   | "contactAddress"
   | "productDetails"
   | "nominee"
-  | "lifestyle";
+  | "lifestyle"
+  | "generic"
+  | "eia"
+  | "paymentPayout";
 
 const PROFILE_TABS: TabItem<ProfileTab>[] = [
   { key: "imageDetails", label: "Image Details" },
@@ -104,6 +119,17 @@ const PROFILE_TABS: TabItem<ProfileTab>[] = [
   { key: "productDetails", label: "Product Details" },
   { key: "nominee", label: "Nominee" },
   { key: "lifestyle", label: "Lifestyle" },
+];
+
+const GUW_PROFILE_TABS: TabItem<ProfileTab>[] = [
+  { key: "imageDetails", label: "Image Details" },
+  { key: "personalKyc", label: "Personal & KYC" },
+  { key: "contactAddress", label: "Contact & Address" },
+  { key: "nominee", label: "Nominee" },
+  { key: "generic", label: "Generic" },
+  { key: "productDetails", label: "Product Details" },
+  { key: "eia", label: "eIA" },
+  { key: "paymentPayout", label: "Payment & Payout" },
 ];
 
 type ApplicantProfileSectionProps = Omit<LifeAssuredProps, "applicants"> & {
@@ -116,6 +142,7 @@ function ApplicantProfileSection({
   onViewMedical,
   onViewFinancial,
   hideProfileImage = false,
+  variant = "dvt",
 }: Readonly<ApplicantProfileSectionProps>) {
   const [tab, setTab] = useState<ProfileTab>("imageDetails");
 
@@ -139,6 +166,17 @@ function ApplicantProfileSection({
         return <Nominee nominees={applicant.nominees} appointees={applicant.appointees} />;
       case "lifestyle":
         return <Lifestyle fields={applicant.lifestyleFields} />;
+      case "generic":
+        return <FieldCard title="Generic" fields={applicant.genericFields ?? []} columns={4} />;
+      case "eia":
+        return <FieldCard title="eIA" fields={applicant.eiaFields ?? []} columns={4} />;
+      case "paymentPayout":
+        return (
+          <PaymentPayout
+            paymentDetails={applicant.paymentDetails ?? []}
+            payoutDetails={applicant.payoutDetails ?? []}
+          />
+        );
     }
   };
 
@@ -172,7 +210,7 @@ function ApplicantProfileSection({
             flexWrap: "wrap",
           }}
         >
-          <CustomTabs tabs={PROFILE_TABS} value={tab} onChange={setTab} />
+          <CustomTabs tabs={variant === "guw" ? GUW_PROFILE_TABS : PROFILE_TABS} value={tab} onChange={setTab} />
           <Box sx={{ ml: "auto", display: "flex", alignItems: "center", gap: 0.5, flexShrink: 0 }}>
             {onEdit && (
               <CustomButton variant="outlined" onClick={() => onEdit(applicant.id)}>

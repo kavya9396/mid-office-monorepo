@@ -132,6 +132,7 @@ describe("InboxScreen", () => {
       taskId: "RT-1001",
       instanceId: "RI-1001",
       roleType: "CVT_POOL",
+      roleLabel: "CVT Pool",
       applicationNo: "RET-CVT-001",
     });
     expect(navigate).toHaveBeenCalledWith("/app/RET-CVT-001/drs");

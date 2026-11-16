@@ -119,10 +119,8 @@ export function InboxScreen({
 
     const persistTaskContext = () => {
       const roleType = drsRoleFromInboxCase(item);
-      const roleLabel =
-        readFieldText(item.fields.role) ||
-        readFieldText(item.fields.roleLabel) ||
-        toDisplayLabel(item.poolName || activeTask || roleType);
+      // Header label comes from the role type (e.g. GUW_TASK -> "GUW Task"), not the `role` key (GROUP_GUW_USER).
+      const roleLabel = toDisplayLabel(roleType || item.poolName || activeTask);
       if (taskId.length > 0 || instanceId.length > 0 || roleType.length > 0 || roleLabel.length > 0) {
         setDrsOpenContext({
           taskId,
