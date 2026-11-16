@@ -7,8 +7,27 @@ import { mapMembersPreviousPolicy } from "./previousPolicyData";
 
 type JsonRecord = Record<string, unknown>;
 
+export interface RaiseGrievanceRow {
+  id: string;
+  fupCode: string;
+  profile: string;
+  /** Remarks By User, pre-filled from the payload (usually empty). */
+  remarks: string;
+}
+
+/** `subSections[raiseGrievance].value` of one member. */
+export interface RaiseGrievanceData {
+  title: string;
+  section: string;
+  fupCodeHeader: string;
+  profileHeader: string;
+  remarksHeader: string;
+  rows: RaiseGrievanceRow[];
+}
+
 /** Data of the Quick Link pages, read from `data.membersDetails[].subSections[]` (DVT). */
 export interface QuickLinksSubSections {
+  raiseGrievance?: RaiseGrievanceData;
   previousPolicy?: PreviousPolicyData;
   openTasks?: OpenTaskItem[];
   auditTrail?: AuditTrailItem[];
@@ -96,22 +115,47 @@ function mapProposalFormLink(values: unknown[]): string | undefined {
   return undefined;
 }
 
+/* ---- Raise grievance (one member) ---- */
+
+/**
+ * Maps `subSections[raiseGrievance]` of ONE member (`member.subSections`). Rows with neither a
+ * FUP code nor a profile are dropped. `undefined` when the member has no such section.
+ */
+export function mapRaiseGrievance(subSections: unknown): RaiseGrievanceData | undefined {
+  const value = recordList(subSections).find((item) => item.name === "raiseGrievance")?.value;
+  if (!isRecord(value)) return undefined;
+  const headers = recordList(value.columns).map((column) => str(column.label));
+  return {
+    title: str(value.title) || "Raise Grievance",
+    section: str(value.section) || "Medical Requirements",
+    fupCodeHeader: headers[0] || "FUP Code",
+    profileHeader: headers[1] || "Profile",
+    remarksHeader: headers[2] || "Remarks By User",
+    rows: recordList(value.rows)
+      .map((row) => ({
+        fupCode: str(row.fupCode).trim(),
+        profile: str(row.profile).trim(),
+        remarks: str(row.Remarks) || str(row.remarks),
+      }))
+      .filter((row) => row.fupCode !== "" || row.profile !== "")
+      .map((row, index) => ({ id: `grievance-${index + 1}`, ...row })),
+  };
+}
+
 /* ---- Risk details (one entry per member) ---- */
 
 const labelValues = (value: unknown) =>
   recordList(value).map((item) => ({ label: str(item.label), value: str(item.value) }));
 
 function mapRiskMember(entry: JsonRecord, index: number): RiskMember {
-  const details = labelValues(
-    isRecord(entry.risk_details) && isRecord(entry.risk_details.memberDetails)
-      ? entry.risk_details.memberDetails.value
-      : undefined,
-  );
-  const assessment = isRecord(entry.riskAssessament) ? entry.riskAssessament : {};
-  const decision = isRecord(entry.riskDecision) ? entry.riskDecision : {};
+  // Everything sits under `risk_details`: memberDetails, riskAssessament and riskDecision.
+  const risk = isRecord(entry.risk_details) ? entry.risk_details : {};
+  const details = labelValues(isRecord(risk.memberDetails) ? risk.memberDetails.value : undefined);
+  const assessment = isRecord(risk.riskAssessament) ? risk.riskAssessament : {};
+  const decision = isRecord(risk.riskDecision) ? risk.riskDecision : {};
   return {
     id: `risk-member-${index + 1}`,
-    name: details.find((field) => field.label === "Customer Name")?.value || `Member ${index + 1}`,
+    name: str(entry.member) || `Member ${index + 1}`,
     details,
     assessment: labelValues(assessment.value).map((field, fieldIndex) => ({
       id: `f${fieldIndex}`,

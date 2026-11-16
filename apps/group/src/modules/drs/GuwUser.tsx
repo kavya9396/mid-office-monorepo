@@ -6,11 +6,12 @@ import {
   getDrsMemberId,
   getDrsRoleLabel,
   getDrsRoleType,
+  readApiErrorMessage,
 } from "@insurance-poc/utils";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { DecisionComparisonTable } from "@insurance-poc/common/decision-bar";
-import { CustomDialog, CustomSnackbar } from "@insurance-poc/ui";
+import { CustomDialog, CustomSnackbar, DeleteIcon } from "@insurance-poc/ui";
 import { BreCard } from "@insurance-poc/common/bre-card";
 import { ApplicantBanner, type RowDetailsOptions } from "@insurance-poc/common/applicant-banner";
 import { groupPaths } from "@insurance-poc/routes";
@@ -18,11 +19,16 @@ import { QuickLinksModule } from "@insurance-poc/common/quick-links";
 import { ApplicantProfile } from "@insurance-poc/common/applicant-profile";
 import { GROUP_QUICK_LINKS_CONFIG } from "../config/quickLinks.config";
 import { buildQuickLinkItems, withProposalFormLink } from "./guwQuickLinks";
-import { RequirementMgmt } from "@insurance-poc/common/requirement-mgmt";
+import {
+  RequirementMgmt,
+  isNewRequirement,
+  type RequirementItem,
+} from "@insurance-poc/common/requirement-mgmt";
 import { RiskCards } from "@insurance-poc/common/risk-cards";
 import { GuwSdtRow } from "../guw/GuwSdtRow";
 import { GuwUwPanel } from "../guw/GuwUwPanel";
 import { GuwSectionDialogs, type GuwSectionDialogKey } from "../guw/GuwSectionDialogs";
+import { GuwRaiseGrievanceDialog } from "../guw/GuwRaiseGrievanceDialog";
 import {
   requirementStatusVariants,
   requirementStatusOrder,
@@ -33,6 +39,8 @@ import {
   loadGuwSubmittedDecision,
   type GuwDrsRecord,
 } from "../../services/guwService";
+import { useSaveGroupDrsRequirementsMutation } from "../../services/drsApi";
+import { getGroupDrsTaskConfig } from "../../config/drsTaskConfig";
 
 // Placeholder profile image (inline SVG).
 const PROFILE_IMAGE_URL = `data:image/svg+xml;utf8,${encodeURIComponent(
@@ -67,6 +75,8 @@ const GuwUser = () => {
   const roleLabel = getDrsRoleLabel();
   const roleType = getDrsRoleType();
   const memberStorageKey = isMultiLife ? guwMemberDecisionKey(applicationNo, memberId) : undefined;
+  const drsTaskConfig = getGroupDrsTaskConfig(roleType);
+  const [saveGroupDrsRequirements] = useSaveGroupDrsRequirementsMutation();
 
   const [page, setPage] = useState<PageState>(
     applicationNo ? { kind: "loading" } : { kind: "missing-id" },
@@ -76,12 +86,32 @@ const GuwUser = () => {
   const [breDetailOpen, setBreDetailOpen] = useState(false);
   const [requirementOpen, setRequirementOpen] = useState(false);
   const [applicantProfileOpen, setApplicantProfileOpen] = useState(false);
+  const [raiseGrievanceOpen, setRaiseGrievanceOpen] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
 
   const notify = (message: string) => {
     setSnackbarMessage(message);
     setSnackbarOpen(true);
+  };
+
+  const handleSaveRequirements = async (updatedRequirements: RequirementItem[]) => {
+    try {
+      const saved = await saveGroupDrsRequirements({
+        applicationNo,
+        roleType: drsTaskConfig.roleType,
+        lob: "G",
+        requirements: updatedRequirements,
+      }).unwrap();
+      setPage((prev) =>
+        prev.kind === "ready"
+          ? { kind: "ready", record: { ...prev.record, requirements: saved } }
+          : prev,
+      );
+      notify("Requirements saved successfully.");
+    } catch (err: unknown) {
+      notify(readApiErrorMessage(err) || "Failed to save requirements.");
+    }
   };
 
   useEffect(() => {
@@ -193,19 +223,36 @@ const GuwUser = () => {
               items={buildQuickLinkItems(
                 withProposalFormLink(quickLinksConfig.items, page.record.quickLinks.proposalFormLink),
                 notify,
-                ["applicant-profile"],
+                ["applicant-profile", "raise-grievance"],
               )}
               title="Quick Links"
               applicationNo={applicationNo}
               roleType={roleLabel || quickLinksConfig.defaultRoleType}
               onNavigate={(path) => navigate(path)}
               onNotify={notify}
-              dialogItemIds={["applicant-profile"]}
-              onDialogItemClick={() => setApplicantProfileOpen(true)}
+              dialogItemIds={["applicant-profile", "raise-grievance"]}
+              onDialogItemClick={(item) => {
+                if (item.id === "raise-grievance") setRaiseGrievanceOpen(true);
+                else setApplicantProfileOpen(true);
+              }}
+            />
+
+            <GuwRaiseGrievanceDialog
+              open={raiseGrievanceOpen}
+              onClose={() => setRaiseGrievanceOpen(false)}
+              data={page.record.quickLinks.raiseGrievance}
+              context={{
+                applicationNo: page.record.applicationNo || applicationNo,
+                partyId: page.record.partyId || undefined,
+                lifeNumber: page.record.lifeNumber || undefined,
+                transactionId: page.record.transactionId || null,
+              }}
+              notify={notify}
             />
 
             <ApplicantProfile
               applicants={page.record.quickLinks.applicantProfile ?? []}
+              memberTabs
               open={applicantProfileOpen}
               onClose={() => setApplicantProfileOpen(false)}
             />
@@ -236,10 +283,34 @@ const GuwUser = () => {
         >
           <Box sx={{ p: 1 }}>
             <RequirementMgmt
+              applicationKey={applicationNo}
               requirements={page.record.requirements}
-              readOnly
               statusVariants={requirementStatusVariants}
               statusOrder={requirementStatusOrder}
+              fieldOptions={{
+                profile:
+                  page.record.memberTypes.length > 0
+                    ? page.record.memberTypes.map((type) => ({ label: type, value: type }))
+                    : undefined,
+              }}
+              addButton={{
+                label: "+ Add Requirement",
+                onClick: () => console.log("Add Requirement clicked"),
+              }}
+              rowActions={[
+                {
+                  key: "delete",
+                  label: "Remove requirement",
+                  icon: <DeleteIcon width={16} height={16} />,
+                  tone: "danger",
+                  hidden: (row) => !isNewRequirement(row),
+                  onClick: (row, { removeRow }) => {
+                    console.log("Delete requirement", row.id);
+                    removeRow();
+                  },
+                },
+              ]}
+              onSave={handleSaveRequirements}
             />
           </Box>
         </CustomDialog>

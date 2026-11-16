@@ -1,5 +1,6 @@
-import { Typography } from "@mui/material";
-import { CustomDialog } from "@insurance-poc/ui";
+import { useState } from "react";
+import { Box, Typography } from "@mui/material";
+import { CustomDialog, CustomTabs } from "@insurance-poc/ui";
 import { LifeAssured, type LifeAssuredApplicant, type LifeAssuredProps } from "../LifeAssured/LifeAssured";
 
 
@@ -8,6 +9,11 @@ export type ApplicantProfileDialogProps = Partial<Omit<LifeAssuredProps, "applic
   applicants: LifeAssuredApplicant[];
   open: boolean;
   onClose: () => void;
+  /**
+   * When true, applicants are selected through member tabs (one applicant shown at a time, as in the
+   * GUW prototype) instead of being listed one after another (DVT).
+   */
+  memberTabs?: boolean;
 };
 
 export function ApplicantProfile({
@@ -17,7 +23,12 @@ export function ApplicantProfile({
   onEdit,
   onViewMedical,
   onViewFinancial,
+  memberTabs = false,
 }: Readonly<ApplicantProfileDialogProps>) {
+  const [selectedId, setSelectedId] = useState("");
+  const showMemberTabs = memberTabs && applicants.length > 0;
+  const selected = applicants.find((applicant) => applicant.id === selectedId) ?? applicants[0];
+
   return (
     <CustomDialog
       open={open}
@@ -31,8 +42,17 @@ export function ApplicantProfile({
       fullWidth
       contentSx={{ p: 0 }}
     >
+      {showMemberTabs && selected && (
+        <Box sx={{ display: "flex", justifyContent: "center", px: 1, pt: 1, pb: 0.5 }}>
+          <CustomTabs
+            tabs={applicants.map((applicant) => ({ key: applicant.id, label: applicant.label }))}
+            value={selected.id}
+            onChange={setSelectedId}
+          />
+        </Box>
+      )}
       <LifeAssured
-        applicants={applicants}
+        applicants={showMemberTabs && selected ? [selected] : applicants}
         hideProfileImage
         onEdit={onEdit}
         onViewMedical={onViewMedical}

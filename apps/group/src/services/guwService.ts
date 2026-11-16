@@ -5,7 +5,11 @@ import type { RequirementItem } from "@insurance-poc/common/requirement-mgmt";
 import type { ComparisonRow } from "@insurance-poc/common/decision-bar";
 import { store } from "../app/store";
 import { groupDrsApi } from "./drsApi";
-import { mapMembersQuickLinks, type QuickLinksSubSections } from "../modules/drs/quickLinksData";
+import {
+  mapMembersQuickLinks,
+  mapRaiseGrievance,
+  type QuickLinksSubSections,
+} from "../modules/drs/quickLinksData";
 import { mapRequirements, type RawRequirement } from "../modules/drs/requirementData";
 import { formatBreTimestamp, splitDiscrepancies } from "../modules/drs/breFormat";
 import guwValidationMock from "../../../../mock/drs/guw-validation.json";
@@ -215,6 +219,10 @@ export interface GuwDrsRecord {
   applicationNo: string;
   /** `partyId` of the member (`subSections[applicantProfile]`); "" when the payload has none. */
   partyId: string;
+  /** `subSections[applicantProfile].lifeNumber` of the member; "" when absent. */
+  lifeNumber: string;
+  /** Envelope `transactionId`; "" when absent. */
+  transactionId: string;
 
   applicantName: string;
   applicationLabel: string;
@@ -228,6 +236,8 @@ export interface GuwDrsRecord {
   sections: GuwDialogSections;
   uwData?: GuwUwData;
   requirements: RequirementItem[];
+  /** Distinct `membersDetails[].memberType` values; options for the requirement "Profile" field. */
+  memberTypes: string[];
   /** `data.subSections[]` mapped for the Quick Links dialogs. */
   quickLinks: QuickLinksSubSections;
 }
@@ -731,6 +741,8 @@ export function mapGuwDrsPayload(payload: unknown, memberId?: string): GuwDrsRec
   return {
     applicationNo,
     partyId: str(applicantProfile.partyId),
+    lifeNumber: str(applicantProfile.lifeNumber),
+    transactionId: str(root.transactionId),
     applicantName,
     applicationLabel: `App No. - ${applicationNo}`,
     rowDetails,
@@ -739,7 +751,17 @@ export function mapGuwDrsPayload(payload: unknown, memberId?: string): GuwDrsRec
     breData: mapBreData(findSection(commonSection, "latestBreDecision"), rawReqs),
     sections: dialogSections,
     requirements,
-    quickLinks: mapMembersQuickLinks(root.membersDetails),
+    memberTypes: Array.from(
+      new Set(
+        records
+          .map((m) => str(m.memberType).trim())
+          .filter((type) => type.length > 0),
+      ),
+    ),
+    quickLinks: {
+      ...mapMembersQuickLinks(root.membersDetails),
+      raiseGrievance: mapRaiseGrievance(data.subSections),
+    },
     uwData: {
       breOverallDecision: fieldValue(caseDecisionFields, "BRE Overall Decision"),
       breOverallRemarks: fieldValue(caseDecisionFields, "BRE Overall Remarks"),

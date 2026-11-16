@@ -1277,11 +1277,11 @@
               ],
               "rows": [
                 {
-                  "userId": "",
-                  "userName": "",
-                  "poolName": "",
-                  "caseStatus": "",
-                  "Decision": "",
+                  "userId": "ipru74685",
+                  "userName": "test",
+                  "poolName": "hod",
+                  "caseStatus": "pending",
+                  "Decision": "accept",
                   "updatedDate": "",
                   "comments": ""
                 }
@@ -1445,13 +1445,13 @@
               ],
               "rows": [
                 {
-                  "callLogDate": "",
-                  "callId": "",
-                  "ct": "",
-                  "st": "",
-                  "callDetails": "",
-                  "userPoll": "",
-                  "source": ""
+                  "callLogDate": "12-11-2026",
+                  "callId": "CL123",
+                  "ct": "2",
+                  "st": "4",
+                  "callDetails": "test",
+                  "userPoll": "test",
+                  "source": "source123"
                 },
                 {
                   "callLogDate": "",
@@ -1477,11 +1477,11 @@
                     "value": [
                       {
                         "label": "KRN No",
-                        "value": ""
+                        "value": "K123"
                       },
                       {
                         "label": "Application No",
-                        "value": ""
+                        "value": "OB90777123"
                       },
                       {
                         "label": "Customer Name",
@@ -2950,7 +2950,7 @@
             "name": "riskDetails",
             "value": [
               {
-                "member": "Lifeassured1",
+                "member": "Lifeassured2",
                 "risk_details": {
                   "label": "Risk Details",
                   "memberDetails": {

@@ -1,9 +1,12 @@
 import { Box } from "@mui/material";
 import { RiskDetails } from "@insurance-poc/common/risk-details";
+import { CustomLoader } from "@insurance-poc/ui";
 import { useGroupQuickLinks } from "../drs/useGroupQuickLinks";
 
 export function GroupRiskDetailsPage() {
-  const { data } = useGroupQuickLinks();
+  const { data, loading } = useGroupQuickLinks();
+  // RiskDetails copies `members` into state on first render, so wait for the DRS before mounting it.
+  if (loading) return <CustomLoader message="Loading risk details" />;
   return (
     <Box sx={{ p: { xs: 1, sm: 1.5 }, maxWidth: 1536, mx: "auto" }}>
       <RiskDetails members={data?.riskDetails} />
