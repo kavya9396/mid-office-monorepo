@@ -25,7 +25,6 @@ import {
   type GuwUwDecisionRequest,
   type GuwUwDecisionResult,
 } from "./guwDecisionService";
-import groupDrsSaveMock from "../modules/drs/mock/groupDrsSave.json";
 import groupDrsApplicantSaveMock from "../modules/drs/mock/groupDrsApplicantSave.json";
 import { mapGroupDrsPayload, mapRawRequirementRows, type GroupDrsData } from "./drsService";
 
@@ -576,30 +575,34 @@ export const groupDrsApi = createApi({
 
         console.log("[saveGroupDrsRequirements] PUT payload to send:", body);
 
-        if (useMock) {
-          const savedMockRows = groupDrsSaveMock.data?.requirementManagement;
-          const mockMapped =
-            Array.isArray(savedMockRows) && savedMockRows.length > 0
-              ? mapRawRequirementRows(savedMockRows)
-              : arg.requirements.map((item, idx) => ({
-                  ...item,
-                  id: typeof item.id === "number" ? item.id : 17630 + idx,
-                  status: item.status || "Pending",
-                }));
+        // Save response mirrors the applicant-save payload: the rows live in the
+        // `requirementManagement` entry of `commonSection`.
+        const applyResponseToCache = (responseData: unknown): RequirementItem[] => {
+          const resp = isRecord(responseData) ? responseData : null;
+          const respData = isRecord(resp?.data) ? resp.data : resp;
+          const sections = Array.isArray(respData?.commonSection) ? respData.commonSection : respData?.sections;
+          const requirementSection = Array.isArray(sections)
+            ? sections.find((s) => isRecord(s) && s.name === "requirementManagement")
+            : undefined;
+          const updatedRequirements = mapRawRequirementRows(requirementSection);
 
           if (arg.queryArg) {
             api.dispatch(
               groupDrsApi.util.updateQueryData("getGroupDrs", arg.queryArg, (draft) => {
-                draft.requirements = mockMapped;
+                draft.requirements = updatedRequirements;
               }),
             );
           }
           api.dispatch(
             groupDrsApi.util.updateQueryData("getGroupDrs", arg.applicationNo, (draft) => {
-              draft.requirements = mockMapped;
+              draft.requirements = updatedRequirements;
             }),
           );
-          return { data: mockMapped };
+          return updatedRequirements;
+        };
+
+        if (useMock) {
+          return { data: applyResponseToCache(groupDrsApplicantSaveMock) };
         }
 
         const drsDataUrl = groupBusinessUrls.drsData;
@@ -617,25 +620,7 @@ export const groupDrsApi = createApi({
         if (result.error) return { error: result.error };
 
         try {
-          const resp = result.data as Record<string, unknown> | null;
-          const respData = isRecord(resp?.data) ? resp.data : resp;
-          const reqRows = respData?.requirementManagement;
-          const updatedRequirements = mapRawRequirementRows(reqRows);
-
-          if (arg.queryArg) {
-            api.dispatch(
-              groupDrsApi.util.updateQueryData("getGroupDrs", arg.queryArg, (draft) => {
-                draft.requirements = updatedRequirements;
-              }),
-            );
-          }
-          api.dispatch(
-            groupDrsApi.util.updateQueryData("getGroupDrs", arg.applicationNo, (draft) => {
-              draft.requirements = updatedRequirements;
-            }),
-          );
-
-          return { data: updatedRequirements };
+          return { data: applyResponseToCache(result.data) };
         } catch (reason: unknown) {
           return { error: customError(readError(reason)) };
         }
