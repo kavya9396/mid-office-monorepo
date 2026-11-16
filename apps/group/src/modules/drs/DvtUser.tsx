@@ -56,6 +56,7 @@ import { useRetriggerGroupBreMutation } from "../../services/breRetriggerApi";
 import { useCompleteGroupTaskMutation } from "../../services/completeTaskApi";
 import {
   useGetGroupDrsQuery,
+  useSaveGroupDrsApplicantMutation,
   useSaveGroupDrsRequirementsMutation,
 } from "../../services/drsApi";
 import {
@@ -163,6 +164,7 @@ const DvtUser = () => {
   );
   const [saveFinancial] = useSaveGroupFinancialMutation();
   const [saveGroupDrsRequirements] = useSaveGroupDrsRequirementsMutation();
+  const [saveGroupDrsApplicant] = useSaveGroupDrsApplicantMutation();
 
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
   const [applicantProfileOpen, setApplicantProfileOpen] = useState(false);
@@ -325,6 +327,43 @@ const DvtUser = () => {
       setSnackbarMessage("Requirements saved successfully.");
     } catch (err: unknown) {
       setSnackbarMessage(readApiErrorMessage(err) || "Failed to save requirements.");
+    }
+  };
+
+  const handleSaveEditApplicant = async (
+    applicantId: string,
+    values: Parameters<NonNullable<React.ComponentProps<typeof LifeAssured>["onSaveEdit"]>>[1],
+    nominees: Parameters<NonNullable<React.ComponentProps<typeof LifeAssured>["onSaveEdit"]>>[2],
+    riders: Parameters<NonNullable<React.ComponentProps<typeof LifeAssured>["onSaveEdit"]>>[3],
+    loan: Parameters<NonNullable<React.ComponentProps<typeof LifeAssured>["onSaveEdit"]>>[4],
+  ) => {
+    const applicant = applicants.find((a) => a.id === applicantId);
+    console.log("[handleSaveEditApplicant] Saving applicant:", applicantId, { values, nominees, riders, loan });
+    try {
+      await saveGroupDrsApplicant({
+        applicationNo,
+        applicantId,
+        partyId: applicant?.partyId,
+        memberType: applicant?.memberType ?? applicantId,
+        values,
+        nominees,
+        riders,
+        loan,
+        initialValues: applicant?.editValues,
+        initialNominees: applicant?.editNominees,
+        initialRiders: applicant?.editRiders,
+        initialLoan: applicant?.editLoan,
+        roleType: drsTaskConfig.roleType,
+        screenType: drsTaskConfig.screenType,
+        businessType: drsTaskConfig.businessType,
+        queryArg: {
+          applicationNo: requestedApplicationNo,
+          ...drsTaskConfig,
+        },
+      }).unwrap();
+      setSnackbarMessage("Member profile updated successfully.");
+    } catch (err: unknown) {
+      setSnackbarMessage(readApiErrorMessage(err) || "Failed to update member profile.");
     }
   };
 
@@ -499,6 +538,7 @@ const DvtUser = () => {
         applicants={applicants}
         editOptions={readEditOptions()}
         onEdit={handleApplicantAction("Edit")}
+        onSaveEdit={handleSaveEditApplicant}
         onViewMedical={openMedical}
         onViewFinancial={openFinancial}
         onValidatePan={handleValidatePan}

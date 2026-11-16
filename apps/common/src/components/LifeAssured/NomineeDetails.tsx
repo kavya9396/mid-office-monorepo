@@ -191,6 +191,7 @@ export function NomineeDetails({ nominees, onChange, onNotify }: Readonly<Nomine
               size="small"
               aria-label="Edit nominee"
               onClick={() => startEdit(rowIndex)}
+              disabled={editingIndex !== null}
               sx={iconButtonSx}
             >
               <EditIcon width={16} height={16} />
@@ -201,6 +202,7 @@ export function NomineeDetails({ nominees, onChange, onNotify }: Readonly<Nomine
               size="small"
               aria-label="Delete nominee"
               onClick={() => deleteNominee(rowIndex)}
+              disabled={nominees.length <= 1 || editingIndex !== null}
               sx={dangerButtonSx}
             >
               <DeleteIcon width={16} height={16} />

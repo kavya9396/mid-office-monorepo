@@ -54,11 +54,6 @@
       "import": "./src/components/ClaimAudit.tsx",
       "default": "./src/components/ClaimAudit.tsx"
     },
-    "./grievance-history": {
-      "types": "./src/components/GrievanceHistory.tsx",
-      "import": "./src/components/GrievanceHistory.tsx",
-      "default": "./src/components/GrievanceHistory.tsx"
-    },
     "./special-remarks": {
       "types": "./src/components/SpecialRemarks.tsx",
       "import": "./src/components/SpecialRemarks.tsx",
