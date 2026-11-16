@@ -373,40 +373,6 @@ export function MemberSelection() {
         </Box>
       </Box>
 
-      {/* Financial Decision and Medical Decision (read-only) */}
-      <Box sx={{ m: "8px 4px 0", p: "8px 8px 0" }}>
-        <Box
-          component="dl"
-          sx={{
-            display: "grid",
-            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-            m: 0,
-            border: "1px solid #e5e0dd",
-            background: "#fcfaf9",
-          }}
-        >
-          {[
-            ["Financial Decision", record?.sdtRow.financialDecision],
-            ["Medical Decision", record?.sdtRow.medicalDecision],
-          ].map(([label, value], index) => (
-            <Box
-              key={label}
-              sx={{ p: "10px 16px", borderLeft: index > 0 ? "1px solid #e5e0dd" : "none" }}
-            >
-              <Typography
-                component="dt"
-                sx={{ mb: "6px", color: "#938883", fontSize: 12, fontWeight: 700, letterSpacing: ".3px" }}
-              >
-                {label}
-              </Typography>
-              <Typography component="dd" sx={{ m: 0, color: "#37312e", fontSize: 12, fontWeight: 600 }}>
-                {value}
-              </Typography>
-            </Box>
-          ))}
-        </Box>
-      </Box>
-
       {/* HOD / Sr UW: role decision card — final submit goes to the inbox */}
       {referralConfig && (
         <Box sx={{ m: "8px 12px 0" }}>

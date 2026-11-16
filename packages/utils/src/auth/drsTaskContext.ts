@@ -116,8 +116,70 @@ export function getDrsMemberCount(): number {
   return readContext().memberCount;
 }
 
+const ROLE_ACRONYMS = new Set([
+  "ACCUITY",
+  "AMR",
+  "CMO",
+  "COPS",
+  "CPT",
+  "CUW",
+  "CVT",
+  "DVT",
+  "ECG",
+  "GOPS",
+  "GUW",
+  "HO",
+  "HOD",
+  "IIFL",
+  "IT",
+  "MR",
+  "NMR",
+  "PIVV",
+  "RI",
+  "SR",
+  "SUW",
+  "TMT",
+  "UW",
+]);
+
+const ROLE_DISPLAY_OVERRIDES: Record<string, string> = {
+  MMT_TASK: "MMT Task",
+  SR_UW_TASK: "Sr UW Task",
+  SR_UW: "Sr UW",
+  DVT_TASK: "DVT Task",
+  GUW_TASK: "GUW Task",
+  CVT_TASK: "CVT Task",
+  CUW_TASK: "CUW Task",
+};
+
+export function toDisplayRoleLabel(value: string): string {
+  const trimmed = value.trim();
+  if (trimmed.length === 0) return "";
+  const upperTrimmed = trimmed.toUpperCase();
+  const override = ROLE_DISPLAY_OVERRIDES[upperTrimmed];
+  if (override !== undefined) return override;
+
+  return trimmed
+    .split(/[_\s]+/)
+    .filter((part) => part.length > 0)
+    .map((part) => {
+      const upper = part.toUpperCase();
+      if (ROLE_ACRONYMS.has(upper)) return upper;
+      const lower = part.toLowerCase();
+      return `${lower.charAt(0).toUpperCase()}${lower.slice(1)}`;
+    })
+    .join(" ");
+}
+
 export function getDrsRoleLabel(): string {
-  return readContext().roleLabel;
+  const ctx = readContext();
+  if (ctx.roleLabel && ctx.roleLabel.length > 0) {
+    return ctx.roleLabel;
+  }
+  if (ctx.roleType && ctx.roleType.length > 0) {
+    return toDisplayRoleLabel(ctx.roleType);
+  }
+  return "";
 }
 
 /** Inbox → DRS: task ids + pool key in session (`/app/{applicationNo}/drs` has no query). */
@@ -131,7 +193,7 @@ export function absorbDrsQueryFromSearch(params: URLSearchParams): boolean {
   const roleType = readText(params.get("roleType"));
   const memberId = readText(params.get("memberId"));
   const memberCount = readMemberCount(params.get("memberCount"));
-  const roleLabel = readText(params.get("role"));
+  const roleLabel = readText(params.get("role")) || (roleType ? toDisplayRoleLabel(roleType) : "");
   const hasQuery =
     applicationNo.length > 0 ||
     roleType.length > 0 ||

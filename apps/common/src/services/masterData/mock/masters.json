@@ -5783,8 +5783,8 @@
       },
       {
         "code": "STD",
-        "description": "Standard1",
-        "value": "Standard1",
+        "description": "Standard",
+        "value": "Standard",
         "isActive": "Y",
         "miscMastId": "300",
         "type": "GUW_TERM_DESC"

@@ -2,6 +2,7 @@ import { Outlet, useLocation, useSearchParams } from "react-router-dom";
 import Box from "@mui/material/Box";
 import { Header } from "@insurance-poc/common/header";
 import { drsRoutePath, parseDrsApplicationNo } from "@insurance-poc/routes";
+import { getDrsApplicationNo, getDrsRoleLabel } from "@insurance-poc/utils";
 
 const INBOX_PATH = "/inbox";
 
@@ -24,10 +25,14 @@ export function RetailAppLayout() {
   const [params] = useSearchParams();
   const normalizedPath = stripTrailingSlashes(location.pathname);
   const isInbox = normalizedPath.toLowerCase() === INBOX_PATH;
-  const role = isInbox ? undefined : readQueryValue(params.get("role"));
+  const sessionAppNo = getDrsApplicationNo();
+  const sessionRole = getDrsRoleLabel();
+  const role = isInbox ? undefined : readQueryValue(params.get("role")) ?? (sessionRole || undefined);
   const applicationNo = isInbox
     ? undefined
-    : parseDrsApplicationNo(normalizedPath) ?? readQueryValue(params.get("applicationNo"));
+    : parseDrsApplicationNo(normalizedPath) ??
+      readQueryValue(params.get("applicationNo")) ??
+      (sessionAppNo.length > 0 ? sessionAppNo : undefined);
   const drsPath = applicationNo ? drsRoutePath(applicationNo) : undefined;
 
   return (

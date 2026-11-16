@@ -42,6 +42,7 @@ const PROFILE_IMAGE_URL = `data:image/svg+xml;utf8,${encodeURIComponent(
 // Row 0 is the member line (Name / App No. are shown in the banner header); row 1 is the product line (bold); row 2 is Riders; row 3 is Sum at Risk.
 const GUW_BANNER_OPTIONS: RowDetailsOptions = {
   emphasisRowIds: [1],
+  valueOnlyRowIds: [0],
   skipFieldNames: ["Name", "App No.", "App No"],
   rowLabels: { 2: "Riders", 3: "Sum at Risk" },
 };

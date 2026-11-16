@@ -13,7 +13,6 @@ import {
 import { referralConfigForRoleType } from "../services/referralUwService";
 
 const INBOX_PATH = "/inbox";
-const REFERRAL_DRS_PATH = "/referral/drs";
 
 function stripTrailingSlashes(pathname: string): string {
   let end = pathname.length;
@@ -24,62 +23,6 @@ function stripTrailingSlashes(pathname: string): string {
   return stripped.length > 0 ? stripped : "/";
 }
 
-function parseMemberCount(raw: string | null): number {
-  const parsed = Number.parseInt(raw ?? "0", 10);
-  return Number.isNaN(parsed) ? 0 : parsed;
-}
-
-function isDrsSectionPath(pathname: string): boolean {
-  return /\/drs\/(financial|medical)$/i.test(pathname);
-}
-
-function isGuwOrReferralRole(roleType: string): boolean {
-  return roleType === "GUW" || referralConfigForRoleType(roleType) !== null;
-}
-
-function isMemberDrsRoute(
-  isInbox: boolean,
-  memberCount: number,
-  roleType: string,
-  normalizedPath: string,
-): boolean {
-  if (isInbox || memberCount <= 1) return false;
-  if (!isGuwOrReferralRole(roleType)) return false;
-  const lowerPath = normalizedPath.toLowerCase();
-  return parseDrsApplicationNo(normalizedPath) !== null || lowerPath === REFERRAL_DRS_PATH;
-}
-
-function buildMemberSelectionBackPath(input: {
-  isDrsSection: boolean;
-  drsPath: string | undefined;
-  locationSearch: string;
-  isMemberDrs: boolean;
-  roleType: string;
-  applicationNo: string | null;
-  role: string | null;
-  inboxRoleType: string | null;
-}): string | undefined {
-  const { isDrsSection, drsPath, locationSearch, isMemberDrs, roleType } = input;
-  if (isDrsSection && drsPath) {
-    return `${drsPath}${locationSearch}`;
-  }
-  if (!isMemberDrs) {
-    return undefined;
-  }
-
-  const backParams = new URLSearchParams({
-    applicationNo: input.applicationNo ?? "",
-    roleType: input.inboxRoleType ?? "",
-  });
-  const roleVal = input.role ?? "";
-  if (roleVal.length > 0) {
-    backParams.set("role", roleVal);
-  }
-
-  const memberSelectionPath =
-    roleType === "GUW" ? "/guw/member-selection" : "/referral/member-selection";
-  return `${memberSelectionPath}?${backParams.toString()}`;
-}
 
 export function GroupAppLayout() {
   const location = useLocation();
@@ -91,9 +34,10 @@ export function GroupAppLayout() {
   const sessionApplicationNo = getDrsApplicationNo();
   const applicationNo = isInbox
     ? undefined
-    : pathApplicationNo ?? (sessionApplicationNo.length > 0 ? sessionApplicationNo : undefined);
+    : pathApplicationNo ??
+      (sessionApplicationNo.length > 0 ? sessionApplicationNo : params.get("applicationNo")?.trim() || undefined);
   const drsPath = applicationNo ? drsRoutePath(applicationNo) : undefined;
-  const role = isInbox ? undefined : getDrsRoleLabel() || undefined;
+  const role = isInbox ? undefined : getDrsRoleLabel() || params.get("role")?.trim() || undefined;
 
   useEffect(() => {
     if (params.toString().length === 0) return;

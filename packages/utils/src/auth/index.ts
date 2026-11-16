@@ -43,6 +43,7 @@ export {
   removeDrsTaskContext,
   setDrsOpenContext,
   setDrsTaskIds,
+  toDisplayRoleLabel,
   type DrsTaskContext,
 } from "./drsTaskContext";
 export {

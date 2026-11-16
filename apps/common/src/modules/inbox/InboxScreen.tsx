@@ -19,7 +19,7 @@ import {
   type InboxCase,
   type InboxData,
 } from "./inboxApi";
-import { taskDetailsTitle } from "./inboxFormat";
+import { taskDetailsTitle, toDisplayLabel } from "./inboxFormat";
 import { InboxSidebar } from "./InboxSidebar";
 import { InboxTable } from "./InboxTable";
 
@@ -119,8 +119,18 @@ export function InboxScreen({
 
     const persistTaskContext = () => {
       const roleType = drsRoleFromInboxCase(item);
-      if (taskId.length > 0 || instanceId.length > 0 || roleType.length > 0) {
-        setDrsOpenContext({ taskId, instanceId, roleType, applicationNo: item.applicationNo });
+      const roleLabel =
+        readFieldText(item.fields.role) ||
+        readFieldText(item.fields.roleLabel) ||
+        toDisplayLabel(item.poolName || activeTask || roleType);
+      if (taskId.length > 0 || instanceId.length > 0 || roleType.length > 0 || roleLabel.length > 0) {
+        setDrsOpenContext({
+          taskId,
+          instanceId,
+          roleType,
+          roleLabel,
+          applicationNo: item.applicationNo,
+        });
       } else {
         clearDrsTaskIds();
       }

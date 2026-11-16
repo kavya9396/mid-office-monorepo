@@ -54,6 +54,7 @@ export {
   removeDrsTaskContext,
   setDrsOpenContext,
   setDrsTaskIds,
+  toDisplayRoleLabel,
   clearInboxNavigationLoading,
   isInboxNavigationLoading,
   markInboxNavigationLoading,

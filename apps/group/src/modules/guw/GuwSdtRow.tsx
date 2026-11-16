@@ -14,6 +14,7 @@ type GuwSdtRowProps = {
   onClaimAudit?: () => void;
   onUwGuidelines?: () => void;
   onSpecialRemarks?: () => void;
+  showActions?: boolean;
 };
 
 function DecisionCell({
@@ -93,12 +94,15 @@ export function GuwSdtRow({
   onClaimAudit,
   onUwGuidelines,
   onSpecialRemarks,
+  showActions = true,
 }: Readonly<GuwSdtRowProps>) {
   return (
     <CustomBox
       sx={{
         display: "grid",
-        gridTemplateColumns: "repeat(3, minmax(130px, 1fr)) auto",
+        gridTemplateColumns: showActions
+          ? "repeat(3, minmax(130px, 1fr)) auto"
+          : "repeat(3, minmax(0, 1fr))",
         background: "#fcfaf9",
         border: "1px solid #e4dedb",
         borderLeft: "4px solid #e45f14",
@@ -112,30 +116,32 @@ export function GuwSdtRow({
       <DecisionCell label="LumiQ Decision" value={data.lumiqDecision} borderLeft />
 
       {/* action buttons */}
-      <CustomBox
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "flex-end",
-          gap: "6px",
-          padding: "4px 10px",
-          borderLeft: "1px solid #e8e1de",
-        }}
-      >
-        <ActionButton
-          label={`Grievance History (${data.grievanceHistoryCount})`}
-          onClick={onGrievanceHistory}
-        />
-        <ActionButton
-          label={`Claim Audit (${data.claimAuditCount})`}
-          onClick={onClaimAudit}
-        />
-        <ActionButton
-          label={`UW Guidelines (${data.uwGuidelinesCount})`}
-          onClick={onUwGuidelines}
-        />
-        <ActionButton label="Special Remarks" onClick={onSpecialRemarks} />
-      </CustomBox>
+      {showActions && (
+        <CustomBox
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            gap: "6px",
+            padding: "4px 10px",
+            borderLeft: "1px solid #e8e1de",
+          }}
+        >
+          <ActionButton
+            label={`Grievance History (${data.grievanceHistoryCount})`}
+            onClick={onGrievanceHistory}
+          />
+          <ActionButton
+            label={`Claim Audit (${data.claimAuditCount})`}
+            onClick={onClaimAudit}
+          />
+          <ActionButton
+            label={`UW Guidelines (${data.uwGuidelinesCount})`}
+            onClick={onUwGuidelines}
+          />
+          <ActionButton label="Special Remarks" onClick={onSpecialRemarks} />
+        </CustomBox>
+      )}
     </CustomBox>
   );
 }
