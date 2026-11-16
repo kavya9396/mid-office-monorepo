@@ -162,11 +162,11 @@ export function readBreOutputFromResponse(value: unknown): BreOutput {
 /** Maps a successful BRE output into Final-column values for the comparison modal and bar. */
 export function mapBreRetriggerOutput(output: BreOutput): BreRetriggerMappedFinal {
   return {
-    barDecision: output.systemDecision,
+    barDecision: output.decisionTypes.breDecision,
     reTriggerCount: output.reTriggerCount,
     rows: {
       status: "Success",
-      decision: output.systemDecision,
+      decision: output.decisionTypes.breDecision,
       remarks: output.breRemarks,
       discrepancy: output.decisionTypes.breRequirement,
       timestamp: output.systemDecisionDateTime,
