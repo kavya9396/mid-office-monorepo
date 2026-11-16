@@ -38,6 +38,9 @@ const REQUIRED_FIELDS: RiderField[] = ["sumAssured", "riderTerm"];
 export const isRiderBlank = (rider: RiderEditRow) =>
   REQUIRED_FIELDS.some((field) => !rider[field].trim());
 
+export const isRiderEmpty = (rider: Partial<RiderEditRow>) =>
+  !(rider.riderName?.trim() || rider.sumAssured?.trim() || rider.riderTerm?.trim());
+
 export function RiderDetails({ riders, onChange, onNotify }: Readonly<RiderDetailsProps>) {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [draft, setDraft] = useState<RiderEditRow>(EMPTY_RIDER);
@@ -48,6 +51,9 @@ export function RiderDetails({ riders, onChange, onNotify }: Readonly<RiderDetai
   };
 
   const cancelEdit = () => {
+    if (editingIndex !== null && editingIndex < riders.length && isRiderEmpty(riders[editingIndex])) {
+      onChange(riders.filter((_, i) => i !== editingIndex));
+    }
     setEditingIndex(null);
     setDraft(EMPTY_RIDER);
   };
@@ -93,30 +99,38 @@ export function RiderDetails({ riders, onChange, onNotify }: Readonly<RiderDetai
       key: "actions",
       header: "Actions",
       width: "130px",
-      render: (_value, _row, rowIndex) =>
-        editingIndex === rowIndex ? (
-          <Box sx={{ display: "flex", gap: 0.5 }}>
-            <CustomButton
-              type="button"
-              size="small"
-              aria-label="Save rider"
-              onClick={saveEdit}
-              sx={iconButtonSx}
-            >
-              <TickIcon width={16} height={16} />
-            </CustomButton>
-            <CustomButton
-              type="button"
-              variant="outlined"
-              size="small"
-              aria-label="Cancel editing rider"
-              onClick={cancelEdit}
-              sx={iconButtonSx}
-            >
-              <CloseIcon width={16} height={16} />
-            </CustomButton>
-          </Box>
-        ) : (
+      render: (_value, row, rowIndex) => {
+        if (editingIndex === rowIndex) {
+          return (
+            <Box sx={{ display: "flex", gap: 0.5 }}>
+              <CustomButton
+                type="button"
+                size="small"
+                aria-label="Save rider"
+                onClick={saveEdit}
+                sx={iconButtonSx}
+              >
+                <TickIcon width={16} height={16} />
+              </CustomButton>
+              <CustomButton
+                type="button"
+                variant="outlined"
+                size="small"
+                aria-label="Cancel editing rider"
+                onClick={cancelEdit}
+                sx={iconButtonSx}
+              >
+                <CloseIcon width={16} height={16} />
+              </CustomButton>
+            </Box>
+          );
+        }
+
+        if (isRiderEmpty(row)) {
+          return null;
+        }
+
+        return (
           <Box sx={{ display: "flex", gap: 0.5 }}>
             <CustomButton
               type="button"
@@ -139,7 +153,8 @@ export function RiderDetails({ riders, onChange, onNotify }: Readonly<RiderDetai
               <DeleteIcon width={16} height={16} />
             </CustomButton>
           </Box>
-        ),
+        );
+      },
     },
     fieldColumn("riderName", "Rider Name"),
     fieldColumn("sumAssured", "Rider Sum Assured"),
@@ -147,6 +162,7 @@ export function RiderDetails({ riders, onChange, onNotify }: Readonly<RiderDetai
   ];
 
   const tableData: RiderTableRow[] = riders.map((rider) => ({ ...rider, actions: "" }));
+  const hasVisibleRiders = riders.length > 0 && (editingIndex !== null || riders.some((r) => !isRiderEmpty(r)));
 
   return (
     <Box>
@@ -164,7 +180,7 @@ export function RiderDetails({ riders, onChange, onNotify }: Readonly<RiderDetai
         </CustomButton>
       </Box>
 
-      {riders.length === 0 ? (
+      {!hasVisibleRiders ? (
         <Box sx={{ p: 2, border: "1px dashed #CFC7C3", borderRadius: 1, bgcolor: "#FFFFFF", textAlign: "center" }}>
           <Typography sx={{ fontSize: "12px", color: "#777" }}>No rider details available</Typography>
         </Box>

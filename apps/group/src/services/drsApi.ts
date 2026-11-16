@@ -1,10 +1,17 @@
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { createApi } from "@reduxjs/toolkit/query/react";
 import type { RequirementItem } from "@insurance-poc/common/requirement-mgmt";
+import type {
+  EditApplicantValues,
+  LoanEditValues,
+  NomineeEditRow,
+  RiderEditRow,
+} from "@insurance-poc/common/life-assured";
 import {
   absoluteApiBaseUrl,
   createBusinessBaseQuery,
   getDrsRoleType,
+  getSessionBusinessType,
   getSessionUser,
   groupBusinessUrls,
   useMock,
@@ -19,6 +26,7 @@ import {
   type GuwUwDecisionResult,
 } from "./guwDecisionService";
 import groupDrsSaveMock from "../modules/drs/mock/groupDrsSave.json";
+import groupDrsApplicantSaveMock from "../modules/drs/mock/groupDrsApplicantSave.json";
 import { mapGroupDrsPayload, mapRawRequirementRows, type GroupDrsData } from "./drsService";
 
 export type GroupDrsQueryArg =
@@ -36,6 +44,26 @@ export type SaveGroupDrsRequirementsArg = {
   requirements: RequirementItem[];
   roleType?: string;
   lob?: string;
+  userId?: string;
+  queryArg?: GroupDrsQueryArg;
+};
+
+export type SaveGroupDrsApplicantArg = {
+  applicationNo: string;
+  applicantId: string;
+  partyId?: string;
+  memberType?: string;
+  values: EditApplicantValues;
+  nominees: NomineeEditRow[];
+  riders: RiderEditRow[];
+  loan: LoanEditValues;
+  initialValues?: Partial<EditApplicantValues>;
+  initialNominees?: NomineeEditRow[];
+  initialRiders?: RiderEditRow[];
+  initialLoan?: Partial<LoanEditValues>;
+  roleType?: string;
+  screenType?: string;
+  businessType?: string;
   userId?: string;
   queryArg?: GroupDrsQueryArg;
 };
@@ -94,6 +122,355 @@ export const toRequirementRequestItem = (item: RequirementItem) => {
 
   return payload;
 };
+
+type KeyValueField = { key: string; label: string; value: string };
+
+type FieldMapping<T> = {
+  key: string;
+  label: string;
+  getValue: (source: T) => string | undefined;
+  getInitial: (initial: Partial<T>) => string | undefined;
+};
+
+const toCleanString = (val?: string | number): string =>
+  val === undefined || val === null ? "" : String(val).trim();
+
+const isFieldChanged = (
+  current?: string | number,
+  initial?: string | number,
+  hasInitialScope = true,
+): boolean => {
+  const c = toCleanString(current);
+  if (!hasInitialScope) return c !== "";
+  return c !== toCleanString(initial);
+};
+
+const PERSONAL_KYC_MAPPINGS: FieldMapping<EditApplicantValues>[] = [
+  { key: "proposerSummary.dob", label: "Date Of Birth", getValue: (v) => v.dob, getInitial: (i) => i.dob },
+  { key: "proposerSummary.gender", label: "Gender", getValue: (v) => v.gender, getInitial: (i) => i.gender },
+  { key: "proposerSummary.residentStatus", label: "Resident Status", getValue: (v) => v.immigrationStatus, getInitial: (i) => i.immigrationStatus },
+  { key: "kycDetails.panNumber", label: "Pan Number", getValue: (v) => v.panNumber, getInitial: (i) => i.panNumber },
+  { key: "kycDetails.isPanValid", label: "Pan Flag", getValue: (v) => v.isPanValid, getInitial: (i) => i.isPanValid },
+  { key: "kycDetails.aadharSeedingStatus", label: "Pan Aadhar Seeding Status", getValue: (v) => v.aadharSeedingStatus, getInitial: (i) => i.aadharSeedingStatus },
+  { key: "kycDetails.immigrationStatus", label: "Immigration Status", getValue: (v) => v.immigrationStatus, getInitial: (i) => i.immigrationStatus },
+  { key: "personalDetails.applicantStatus", label: "Applicant Status", getValue: (v) => v.applicantStatus, getInitial: (i) => i.applicantStatus },
+  { key: "kycDetails.nsdlNameMatching", label: "Nsdl Name Matching", getValue: (v) => v.nsdlNameMatching, getInitial: (i) => i.nsdlNameMatching },
+  { key: "kycDetails.nsdlDobMatching", label: "Nsdl Dob Matching", getValue: (v) => v.nsdlDobMatching, getInitial: (i) => i.nsdlDobMatching },
+  { key: "kycDetails.dobDocument", label: "Dob Document", getValue: (v) => v.dobDocument, getInitial: (i) => i.dobDocument },
+  { key: "kycDetails.genderDocument", label: "Gender Document", getValue: (v) => v.genderDocument, getInitial: (i) => i.genderDocument },
+  { key: "kycDetails.pincodeDocument", label: "Pincode Document", getValue: (v) => v.pincodeDocument, getInitial: (i) => i.pincodeDocument },
+];
+
+function buildPersonalKycSection(
+  values: EditApplicantValues,
+  initialValues?: Partial<EditApplicantValues>,
+) {
+  const fields: KeyValueField[] = [];
+  const keys: string[] = [];
+  const hasScope = Boolean(initialValues);
+
+  for (const mapping of PERSONAL_KYC_MAPPINGS) {
+    const currentVal = mapping.getValue(values);
+    const initialVal = initialValues ? mapping.getInitial(initialValues) : undefined;
+    if (isFieldChanged(currentVal, initialVal, hasScope)) {
+      fields.push({ key: mapping.key, label: mapping.label, value: currentVal ?? "" });
+      keys.push(mapping.key);
+    }
+  }
+
+  return {
+    section: fields.length > 0 ? { groups: [fields] } : undefined,
+    keys,
+  };
+}
+
+const BASE_LOAN_MAPPINGS: FieldMapping<LoanEditValues>[] = [
+  { key: "productDetail.sumAssured", label: "Base Sum Assured", getValue: (l) => l.baseSumAssured, getInitial: (i) => i.baseSumAssured },
+  { key: "groupDetails.loanAmount", label: "Loan Amount", getValue: (l) => l.loanAmount, getInitial: (i) => i.loanAmount },
+  { key: "groupDetails.dateOfLoanDisbursement", label: "Date of Loan Disbursement", getValue: (l) => l.loanDisbursementDate, getInitial: (i) => i.loanDisbursementDate },
+  { key: "groupDetails.shareOfLoan", label: "Share of Loan", getValue: (l) => l.loanShare, getInitial: (i) => i.loanShare },
+  { key: "groupDetails.loanTerm", label: "Loan Term", getValue: (l) => l.loanTerm, getInitial: (i) => i.loanTerm },
+  { key: "productDetail.policyTerm", label: "Policy Term", getValue: (l) => l.policyTerm, getInitial: (i) => i.policyTerm },
+  { key: "sourcingDetail.lanNumber", label: "Loan Account Number", getValue: (l) => l.loanAccountNumber, getInitial: (i) => i.loanAccountNumber },
+];
+
+function buildBaseAndLoanSection(
+  loan: LoanEditValues,
+  initialLoan?: Partial<LoanEditValues>,
+) {
+  const fields: KeyValueField[] = [];
+  const keys: string[] = [];
+  const hasScope = Boolean(initialLoan);
+
+  for (const mapping of BASE_LOAN_MAPPINGS) {
+    const currentVal = mapping.getValue(loan);
+    const initialVal = initialLoan ? mapping.getInitial(initialLoan) : undefined;
+    if (isFieldChanged(currentVal, initialVal, hasScope)) {
+      fields.push({ key: mapping.key, label: mapping.label, value: currentVal ?? "" });
+      keys.push(mapping.key);
+    }
+  }
+
+  return {
+    section: fields.length > 0 ? { value: fields } : undefined,
+    keys,
+  };
+}
+
+function buildContactAddressSection(
+  values: EditApplicantValues,
+  initialValues?: Partial<EditApplicantValues>,
+) {
+  const groups: Array<{ label: string; value: KeyValueField[] }> = [];
+  const keys: string[] = [];
+  const hasScope = Boolean(initialValues);
+
+  if (isFieldChanged(values.zipCode, initialValues?.zipCode, hasScope)) {
+    groups.push({
+      label: "Communication Address",
+      value: [{ key: "address.communication.pinCode", label: "Pincode", value: values.zipCode ?? "" }],
+    });
+    keys.push("address.communication.pinCode");
+  }
+
+  const contactFields: KeyValueField[] = [];
+  if (isFieldChanged(values.mobileNo, initialValues?.mobileNo, hasScope)) {
+    contactFields.push({ key: "contactDetails.mobileNo", label: "Mobile No", value: values.mobileNo ?? "" });
+    keys.push("contactDetails.mobileNo");
+  }
+  if (isFieldChanged(values.emailId, initialValues?.emailId, hasScope)) {
+    contactFields.push({ key: "contactDetails.emailId", label: "Email Id", value: values.emailId ?? "" });
+    keys.push("contactDetails.emailId");
+  }
+  if (contactFields.length > 0) {
+    groups.push({ label: "Contact Details", value: contactFields });
+  }
+
+  return {
+    section: groups.length > 0 ? { value: groups } : undefined,
+    keys,
+  };
+}
+
+function buildFinancialSection(
+  values: EditApplicantValues,
+  initialValues?: Partial<EditApplicantValues>,
+) {
+  const fields: KeyValueField[] = [];
+  const keys: string[] = [];
+
+  if (isFieldChanged(values.annualIncome, initialValues?.annualIncome, Boolean(initialValues))) {
+    fields.push({ key: "financialDetails.annualIncome", label: "Annual Income", value: values.annualIncome ?? "" });
+    keys.push("financialDetails.annualIncome");
+  }
+
+  return {
+    section: fields.length > 0 ? { value: fields } : undefined,
+    keys,
+  };
+}
+
+function buildMedicalLifestyleSection(
+  values: EditApplicantValues,
+  initialValues?: Partial<EditApplicantValues>,
+) {
+  const groups: Array<{ label: string; value: unknown }> = [];
+  const keys: string[] = [];
+  const hasScope = Boolean(initialValues);
+
+  const healthFields: KeyValueField[] = [];
+  if (isFieldChanged(values.height, initialValues?.height, hasScope)) {
+    healthFields.push({ key: "height", label: "Height", value: values.height ?? "" });
+    keys.push("height");
+  }
+  if (isFieldChanged(values.weight, initialValues?.weight, hasScope)) {
+    healthFields.push({ key: "weight", label: "Weight", value: values.weight ?? "" });
+    keys.push("weight");
+  }
+  if (healthFields.length > 0) {
+    groups.push({ label: "Health Information", value: healthFields });
+  }
+
+  if (isFieldChanged(values.lifestyleHabits, initialValues?.lifestyleHabits, hasScope)) {
+    groups.push({ label: "Lifestyle Habits", value: values.lifestyleHabits ?? "" });
+    keys.push("personalDetails.lifestyleHabits");
+  }
+
+  return {
+    section: groups.length > 0 ? { value: groups } : undefined,
+    keys,
+  };
+}
+
+function buildNomineeSection(nominees: NomineeEditRow[], initialNominees?: NomineeEditRow[]) {
+  const isChanged = !initialNominees || JSON.stringify(nominees) !== JSON.stringify(initialNominees);
+  if (!isChanged || nominees.length === 0) {
+    return { section: undefined, keys: [] };
+  }
+
+  const rows = nominees.map((n, idx) => ({
+    nomineeId: (n as { nomineeId?: string }).nomineeId || `NOM${String(idx + 1).padStart(16, "0")}`,
+    firstName: n.firstName,
+    lastName: n.lastName,
+    dob: n.dob,
+    gender: n.gender,
+    relationship: n.proposerNomineeRelation,
+    share: n.percentage,
+    accountNumber: n.accountNumber,
+    ifsc: n.ifsc,
+  }));
+
+  return {
+    section: { value: [{ label: "Nominee Details", rows }] },
+    keys: ["nominee.rows"],
+  };
+}
+
+function buildProductDetailsSection(riders: RiderEditRow[], initialRiders?: RiderEditRow[]) {
+  const isChanged = !initialRiders || JSON.stringify(riders) !== JSON.stringify(initialRiders);
+  if (!isChanged || riders.length === 0) {
+    return { section: undefined, keys: [] };
+  }
+
+  const rows = riders.map((r) => ({
+    ...((r as { productId?: string }).productId ? { productId: (r as { productId?: string }).productId } : {}),
+    productName: r.riderName,
+    productType: "rider",
+    sumAssured: r.sumAssured,
+    term: r.riderTerm,
+  }));
+
+  return {
+    section: { value: { rows } },
+    keys: ["product_details.rows"],
+  };
+}
+
+export function buildApplicantSavePayload(arg: SaveGroupDrsApplicantArg) {
+  const sessionUser = getSessionUser();
+  const userId = arg.userId ?? sessionUser?.username ?? "dvt.user";
+  const taskType = arg.roleType ?? getDrsRoleType();
+  const taskConfig = getGroupDrsTaskConfig(taskType);
+  const roleType = arg.roleType ?? taskConfig.roleType ?? "DVT_TASK";
+  const screenType = arg.screenType ?? taskConfig.screenType ?? "DVT_INFORMAL";
+  const businessType = arg.businessType ?? getSessionBusinessType() ?? taskConfig.businessType ?? "GROUP";
+
+  const personalKyc = buildPersonalKycSection(arg.values, arg.initialValues);
+  const contactAddress = buildContactAddressSection(arg.values, arg.initialValues);
+  const financial = buildFinancialSection(arg.values, arg.initialValues);
+  const medicalLifestyle = buildMedicalLifestyleSection(arg.values, arg.initialValues);
+  const baseAndLoan = buildBaseAndLoanSection(arg.loan, arg.initialLoan);
+  const nominee = buildNomineeSection(arg.nominees, arg.initialNominees);
+  const productDetails = buildProductDetailsSection(arg.riders, arg.initialRiders);
+
+  const applicantProfileValue: Record<string, unknown> = {};
+  if (personalKyc.section) applicantProfileValue.personal_kyc = personalKyc.section;
+  if (contactAddress.section) applicantProfileValue.contact_and_address = contactAddress.section;
+  if (financial.section) applicantProfileValue.financial_and_profession = financial.section;
+  if (medicalLifestyle.section) applicantProfileValue.medical_and_lifestyle = medicalLifestyle.section;
+  if (baseAndLoan.section) applicantProfileValue.base_and_loan_details = baseAndLoan.section;
+  if (nominee.section) applicantProfileValue.nominee = nominee.section;
+  if (productDetails.section) applicantProfileValue.product_details = productDetails.section;
+
+  const keysSent = [
+    ...personalKyc.keys,
+    ...contactAddress.keys,
+    ...financial.keys,
+    ...medicalLifestyle.keys,
+    ...baseAndLoan.keys,
+    ...nominee.keys,
+    ...productDetails.keys,
+  ];
+
+  const payload = {
+    applicationNo: arg.applicationNo,
+    userId,
+    roleType,
+    screenType,
+    businessType,
+    data: {
+      membersDetails: [
+        {
+          memberType: arg.memberType ?? arg.applicantId ?? "lifeassured1",
+          partyId: arg.partyId ?? "",
+          sections: [
+            {
+              name: "applicantProfile",
+              value: applicantProfileValue,
+            },
+          ],
+        },
+      ],
+    },
+  };
+
+  return { payload, keysSent };
+}
+
+function updateFieldValues(
+  fields: Array<{ label: string; value?: string | number | null }> | undefined,
+  valueMap: Record<string, string | undefined>,
+) {
+  if (!fields) return;
+  for (const field of fields) {
+    const updated = valueMap[field.label.toLowerCase()];
+    if (updated !== undefined && updated !== "") {
+      field.value = updated;
+    }
+  }
+}
+
+function toNomineeDisplayRows(nominees: NomineeEditRow[]) {
+  return nominees.map((n) => ({
+    nomineeName: `${n.firstName} ${n.lastName}`.trim(),
+    nomineeDOB: n.dob,
+    gender: n.gender,
+    relationship: n.proposerNomineeRelation,
+    sharePercentage: Number(n.percentage) || 0,
+    isLASame: "",
+    relationShipWithJL: "",
+    laFlag: "",
+  }));
+}
+
+function updateApplicantInGroupDrsDraft(draft: GroupDrsData, arg: SaveGroupDrsApplicantArg) {
+  const applicant = draft.applicants.find(
+    (a) => a.id === arg.applicantId || (arg.partyId && a.partyId === arg.partyId),
+  );
+  if (!applicant) return;
+
+  applicant.editValues = { ...applicant.editValues, ...arg.values };
+  applicant.editLoan = { ...applicant.editLoan, ...arg.loan };
+  applicant.editNominees = arg.nominees;
+  applicant.editRiders = arg.riders;
+
+  updateFieldValues(applicant.personalFields, {
+    "date of birth": arg.values.dob,
+    gender: arg.values.gender,
+    "resident status": arg.values.immigrationStatus,
+  });
+
+  updateFieldValues(applicant.kycFields, {
+    "pan number": arg.values.panNumber,
+    "pan flag": arg.values.isPanValid,
+    "pan aadhar seeding status": arg.values.aadharSeedingStatus,
+  });
+
+  updateFieldValues(applicant.contactDetails, {
+    "mobile number": arg.values.mobileNo,
+    "email id": arg.values.emailId,
+  });
+
+  updateFieldValues(applicant.lifestyleFields, {
+    height: arg.values.height,
+    weight: arg.values.weight,
+    "lifestyle habits": arg.values.lifestyleHabits,
+  });
+
+  if (arg.nominees?.length > 0) {
+    applicant.nominees = toNomineeDisplayRows(arg.nominees);
+  }
+}
 
 export const groupDrsApi = createApi({
   reducerPath: "groupDrsApi",
@@ -264,6 +641,80 @@ export const groupDrsApi = createApi({
         }
       },
     }),
+    saveGroupDrsApplicant: build.mutation<unknown, SaveGroupDrsApplicantArg>({
+      async queryFn(arg, api, _extra, baseQuery) {
+        const { payload: body, keysSent } = buildApplicantSavePayload(arg);
+
+        console.log("[saveGroupDrsApplicant] PUT payload to send:", body);
+        console.log("[saveGroupDrsApplicant] Keys sent in request payload:", keysSent);
+
+        const applyResponseToCache = (responseData: unknown) => {
+          let mapped: GroupDrsData;
+          try {
+            mapped = mapGroupDrsPayload(responseData);
+          } catch (e) {
+            console.warn(
+              "[saveGroupDrsApplicant] Could not map full response payload, falling back to field update:",
+              e,
+            );
+            if (arg.queryArg) {
+              api.dispatch(
+                groupDrsApi.util.updateQueryData("getGroupDrs", arg.queryArg, (draft) => {
+                  updateApplicantInGroupDrsDraft(draft, arg);
+                }),
+              );
+            }
+            api.dispatch(
+              groupDrsApi.util.updateQueryData("getGroupDrs", arg.applicationNo, (draft) => {
+                updateApplicantInGroupDrsDraft(draft, arg);
+              }),
+            );
+            return;
+          }
+
+          const updateDraft = (draft: GroupDrsData) => {
+            draft.cardDetails = mapped.cardDetails;
+            draft.breDecision = mapped.breDecision;
+            draft.dvtDecision = mapped.dvtDecision;
+            draft.requirements = mapped.requirements;
+            draft.applicants = mapped.applicants;
+            draft.memberTypes = mapped.memberTypes;
+            draft.quickLinks = mapped.quickLinks;
+          };
+
+          if (arg.queryArg) {
+            api.dispatch(groupDrsApi.util.updateQueryData("getGroupDrs", arg.queryArg, updateDraft));
+          }
+          api.dispatch(groupDrsApi.util.updateQueryData("getGroupDrs", arg.applicationNo, updateDraft));
+        };
+
+        if (useMock) {
+          applyResponseToCache(groupDrsApplicantSaveMock);
+          return { data: groupDrsApplicantSaveMock };
+        }
+
+        const drsDataUrl = groupBusinessUrls.drsData;
+        if (drsDataUrl.length === 0) {
+          return { error: customError("Group DRS data API is not configured.") };
+        }
+
+        const result = await baseQuery({
+          url: drsDataUrl,
+          method: "PUT",
+          body,
+          headers: { accept: "*/*", "Content-Type": "application/json" },
+        });
+
+        if (result.error) return { error: result.error };
+
+        try {
+          applyResponseToCache(result.data);
+          return { data: result.data };
+        } catch (reason: unknown) {
+          return { error: customError(readError(reason)) };
+        }
+      },
+    }),
   }),
 });
 
@@ -272,4 +723,5 @@ export const {
   useGetGuwDrsPayloadQuery,
   useGetGuwUwDecisionMutation,
   useSaveGroupDrsRequirementsMutation,
+  useSaveGroupDrsApplicantMutation,
 } = groupDrsApi;

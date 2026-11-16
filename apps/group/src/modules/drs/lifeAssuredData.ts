@@ -152,20 +152,42 @@ const CONTACT_LABELS = [
 
 const LIFESTYLE_LABELS = ["Height", "Weight", "Other Medical History"] as const;
 
-/** Builds one field per expected label (case-insensitive match); missing labels get "-". */
+const normalizeLabel = (label: string) =>
+  label.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+
+const isLabelMatch = (a: string, b: string) => {
+  const normA = normalizeLabel(a);
+  const normB = normalizeLabel(b);
+  if (normA === normB) return true;
+  if (
+    (normA === "mobileno" || normA === "mobilenumber" || normA === "mobile") &&
+    (normB === "mobileno" || normB === "mobilenumber" || normB === "mobile")
+  ) {
+    return true;
+  }
+  if (
+    (normA === "pincode" || normA === "zipcode" || normA === "postalcode" || normA === "pincode") &&
+    (normB === "pincode" || normB === "zipcode" || normB === "postalcode" || normB === "pincode")
+  ) {
+    return true;
+  }
+  return false;
+};
+
+/** Builds one field per expected label (normalized match); missing labels get "-". */
 const readFixedFields = (value: unknown, labels: readonly string[]): FieldData[] => {
   const received = readFields(value);
   return labels.map((label) => ({
     label,
-    value: received.find((field) => field.label.trim().toLowerCase() === label.toLowerCase())?.value ?? "-",
+    value: received.find((field) => isLabelMatch(field.label, label))?.value ?? "-",
   }));
 };
 
-/** Finds an entry of a [{ label, ... }] list by label (case-insensitive). */
+/** Finds an entry of a [{ label, ... }] list by label (normalized match). */
 const findByLabel = (entries: unknown, label: string): JsonRecord | undefined =>
   asArray(entries)
     .filter(isRecord)
-    .find((entry) => str(entry.label).trim().toLowerCase() === label.toLowerCase());
+    .find((entry) => isLabelMatch(str(entry.label), label));
 
 const maskKycField = (field: FieldData): FieldData =>
   MASKED_KYC_LABELS.has(field.label)
@@ -195,9 +217,11 @@ const readLoan = (baseAndLoan: unknown): LoanEditValues => {
   return loan;
 };
 
-/** Finds a field value by label (case-insensitive) in a [{ label, value }] list. */
-const fieldValue = (fields: FieldData[], label: string): string =>
-  str(fields.find((field) => field.label.trim().toLowerCase() === label.toLowerCase())?.value);
+/** Finds a field value by label in a [{ label, value }] list. */
+const fieldValue = (fields: FieldData[], label: string): string => {
+  const found = fields.find((field) => isLabelMatch(field.label, label))?.value;
+  return found === "-" ? "" : str(found);
+};
 
 const MONTHS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
 

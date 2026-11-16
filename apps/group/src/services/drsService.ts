@@ -262,11 +262,14 @@ function readRiders(cardDetails: unknown): RiderEditRow[] {
     (item): item is Record<string, unknown> => isRecord(item) && item.name === RIDER_TABLE_NAME,
   );
   if (!table || !Array.isArray(table.rows)) return [];
-  return table.rows.filter(isRecord).map((row) => ({
-    riderName: readText(row.name),
-    sumAssured: readText(row.sumAssured),
-    riderTerm: "",
-  }));
+  return table.rows
+    .filter(isRecord)
+    .map((row) => ({
+      riderName: readText(row["Rider Code"]) || readText(row.name) || readText(row.riderName) || readText(row["Rider Name"]),
+      sumAssured: readText(row["Sum Assured"]) || readText(row.sumAssured),
+      riderTerm: readText(row.term) || readText(row.riderTerm) || readText(row["Rider Term"]),
+    }))
+    .filter((r) => Boolean(r.riderName.trim() || r.sumAssured.trim() || r.riderTerm.trim()));
 }
 
 function readApplicantMembers(section: Record<string, unknown> | null): unknown[] {
