@@ -9,5 +9,6 @@ export function apigeeBasicAuthorization(): string {
   if (username.length === 0 || password.length === 0) {
     throw new Error("Auth credentials are not configured.");
   }
-  return `Basic ${btoa(`${username}:${password}`)}`;
+  const credentials = `${username}:${password}`;
+  return `Basic ${btoa(credentials)}`;
 }
