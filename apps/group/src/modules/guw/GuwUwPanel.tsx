@@ -145,12 +145,12 @@ const readReasonOptions = (types: string[]) =>
       }),
   );
 
-/** BSTD Code options: master `misc` BSTD types combined, value is the master code. */
+/** BSTD Code options: master `misc` BSTD types combined; value and label are the master code. */
 const readBstdCodeOptions = () =>
   ["GUW_BSD_CODE_MED", "GUW_BSD_CODE_NON_MED", "GUW_BSD_CODE_TELE", "GUW_BSD_CODE_VID"].flatMap((type) =>
     getMasterList("misc", type)
       .filter((entry) => entry.isActive === "Y")
-      .map((entry) => ({ value: entry.code, label: entry.value ?? entry.description })),
+      .map((entry) => ({ value: entry.code, label: entry.code })),
   );
 
 /**
@@ -173,28 +173,25 @@ const readFirstAvailableMiscOptions = (types: string[]) => {
 
 const readPostponementPeriodOptions = () => readFirstAvailableMiscOptions(["GUW_POST_PERIOD"]);
 
-// Counter Offer table "Type" values the rules know by name; the master supplies the option list.
-const BOR_STD_TYPES = ["Standard", "Borderline Standard"];
-const CO_TYPES = ["Standard", "Borderline Standard", "Reduce Cover", "Reduce PT"];
 const DENY_RIDER_TYPE = "Deny Rider";
 
+// Decision Details "Type" master `misc` type per decision.
+const TYPE_MASTER_BY_DECISION: Record<string, string | undefined> = {
+  BOR_STD: "GUW_BSTD_TYPE",
+  EP: "GUW_EP_TYPE",
+  CO: "GUW_CO_TYPE",
+};
+
 /**
- * Counter Offer table "Type" options. Same rules as before, but the values come from master data:
- * Borderline Standard -> Standard + Borderline Standard; Counter Offer -> GUW_CO_TYPE;
- * Extra Premium -> GUW_CO_TYPE + GUW_EP_TYPE. "Deny Rider" is offered for rider rows only.
+ * Decision Details "Type" options from master data: Borderline Standard -> GUW_BSTD_TYPE;
+ * Extra Premium -> GUW_EP_TYPE; Counter Offer -> GUW_CO_TYPE. "Deny Rider" is offered for rider rows only.
  */
 const readCounterOfferTypeOptions = (decision: string, isRider: boolean) => {
-  const coTypes = readFirstAvailableMiscOptions(["GUW_CO_TYPE"]);
-  const epTypes = decision === "EP" ? readFirstAvailableMiscOptions(["GUW_EP_TYPE"]) : [];
-  const merged = [...coTypes, ...epTypes].filter(
-    (option, index, all) => all.findIndex((other) => other.value === option.value) === index,
+  const masterType = TYPE_MASTER_BY_DECISION[decision];
+  if (!masterType) return [];
+  return readFirstAvailableMiscOptions([masterType]).filter(
+    (option) => option.value !== DENY_RIDER_TYPE || isRider,
   );
-  return merged.filter((option) => {
-    if (option.value === DENY_RIDER_TYPE) return isRider && decision !== "BOR_STD";
-    if (decision === "BOR_STD") return BOR_STD_TYPES.includes(option.value);
-    if (decision === "CO") return CO_TYPES.includes(option.value);
-    return true;
-  });
 };
 
 // Loading Class / Loading Reason Code values are the master text (the `uw-decision` request carries the text).

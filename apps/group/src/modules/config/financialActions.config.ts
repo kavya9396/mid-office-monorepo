@@ -25,10 +25,7 @@ export const GROUP_FINANCIAL_ACTIONS_CONFIG: Record<
   },
   // Same sections as DVT, with the Agree button added next to Edit / Reset / Save.
   guw: {
-    hiddenSectionKeys: [
-      "bre_financial_decision", // BRE Financial Decision
-      "decision", // Decision
-    ],
+    hiddenSectionKeys: [],
     defaultMode: "editAndReview",
     sectionModes: {},
   },
