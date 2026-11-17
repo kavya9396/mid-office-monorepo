@@ -19,9 +19,11 @@ import {
 import { getGroupDrsTaskConfig } from "../config/drsTaskConfig";
 import groupDrsMock from "../modules/drs/mock/groupDrs.json";
 import guwDrsMock from "../../../../mock/drs/guw-informal-drs.json";
+import guwHodDrsMock from "../../../../mock/drs/guw-hod-drs.json";
+import guwSrUwDrsMock from "../../../../mock/drs/guw-sr-uw-drs.json";
 import guwUwDecisionMock from "../../../../mock/drs/guw-uw-decision.json";
 import {
-  mapGuwUwDecision,
+  mapGuwUwDecisions,
   type GuwUwDecisionRequest,
   type GuwUwDecisionResult,
 } from "./guwDecisionService";
@@ -504,6 +506,11 @@ export const groupDrsApi = createApi({
     getGuwDrsPayload: build.query<unknown, GroupDrsQueryArg>({
       async queryFn(arg, _api, _extra, baseQuery) {
         if (useMock) {
+          const mockRole = (typeof arg === "string" ? getDrsRoleType() : (arg.taskType ?? arg.roleType ?? getDrsRoleType()))
+            ?.trim()
+            .toUpperCase();
+          if (mockRole === "HOD" || mockRole === "HOD_TASK") return { data: guwHodDrsMock as unknown };
+          if (mockRole === "SR_UW" || mockRole === "SR_UW_TASK") return { data: guwSrUwDrsMock as unknown };
           return { data: guwDrsMock as unknown };
         }
         const drsDataUrl = groupBusinessUrls.drsData;
@@ -521,13 +528,16 @@ export const groupDrsApi = createApi({
         return { data: result.data };
       },
     }),
-    /** Member-level UW decision (decision code + remarks) for the GUW screen. */
-    getGuwUwDecision: build.mutation<GuwUwDecisionResult, GuwUwDecisionRequest>({
+    /**
+     * Member-level UW decision (decision code + remarks) for the GUW screen.
+     * Raise Referral sends an array (one item per referral) and gets one saved decision per item back.
+     */
+    getGuwUwDecision: build.mutation<GuwUwDecisionResult[], GuwUwDecisionRequest | GuwUwDecisionRequest[]>({
       async queryFn(arg, _api, _extra, baseQuery) {
         console.log("[getGuwUwDecision] request payload:", arg);
         if (useMock) {
           console.log("[getGuwUwDecision] response (mock):", guwUwDecisionMock);
-          return { data: mapGuwUwDecision(guwUwDecisionMock) };
+          return { data: mapGuwUwDecisions(guwUwDecisionMock) };
         }
         const uwDecisionUrl = groupBusinessUrls.uwDecision;
         if (uwDecisionUrl.length === 0) {
@@ -547,7 +557,7 @@ export const groupDrsApi = createApi({
         console.log("[getGuwUwDecision] response:", result.data);
 
         try {
-          return { data: mapGuwUwDecision(result.data) };
+          return { data: mapGuwUwDecisions(result.data) };
         } catch (reason: unknown) {
           return { error: customError(readError(reason)) };
         }

@@ -13,6 +13,15 @@ export interface GuwDecisionRowInput {
   loadingReason: string;
 }
 
+/** One selected Raise Referral row (Refer To / Reason / Remarks / Assigned To). */
+export interface GuwReferralRowInput {
+  /** Referral row code, e.g. REF_HOD. Sent as `referTo`. */
+  target: string;
+  reason: string;
+  remarks: string;
+  assignedTo: string;
+}
+
 export interface GuwDecisionFormInput {
   applicationNo: string;
   partyId: string;
@@ -193,6 +202,37 @@ export function buildGuwUwDecisionRequest(input: GuwDecisionFormInput): GuwUwDec
   return request;
 }
 
+/** Base fields shared by every referral request (the per-row fields are added by the caller). */
+export type GuwReferralBaseInput = Pick<GuwDecisionFormInput, "applicationNo" | "partyId" | "roleType" | "screenType" | "createdBy">;
+
+/**
+ * Raise Referral: one `uw-decision` request per selected referral row, sent together as an array.
+ * Each item carries `reason`, `referTo`, `uwRemarks` and (when entered) `assignedTo`.
+ */
+export function buildGuwUwReferralRequests(
+  base: GuwReferralBaseInput,
+  rows: GuwReferralRowInput[],
+): GuwUwDecisionRequest[] {
+  return rows.map((row) => {
+    const request: GuwUwDecisionRequest = {
+      applicationNo: base.applicationNo,
+      partyId: base.partyId,
+      roleType: base.roleType,
+      level: "member",
+      screenType: base.screenType,
+      decision: "REFERRAL",
+      decisionCode: "REFERRAL",
+      uwRemarks: row.remarks.trim(),
+      reason: row.reason,
+      referTo: row.target,
+      createdBy: base.createdBy,
+    };
+    const assignedTo = row.assignedTo.trim();
+    if (assignedTo) request.assignedTo = assignedTo;
+    return request;
+  });
+}
+
 /** Fixed request value for the GUW screen. */
 export const GUW_UW_DECISION_SCREEN_TYPE = "GUW";
 
@@ -204,6 +244,16 @@ function readText(value: unknown): string {
   if (typeof value === "string") return value;
   if (typeof value === "number") return String(value);
   return "";
+}
+
+/**
+ * DTO -> domain list. Accepts a bare object, an array, or either one wrapped in `{ data }`
+ * (Raise Referral returns one saved decision per referral); throws when it is none of these.
+ */
+export function mapGuwUwDecisions(payload: unknown): GuwUwDecisionResult[] {
+  const root = isRecord(payload) && "data" in payload ? payload.data : payload;
+  if (Array.isArray(root)) return root.map((item) => mapGuwUwDecision(item));
+  return [mapGuwUwDecision(root)];
 }
 
 /** DTO -> domain. Accepts the bare object or one wrapped in `{ data }`; throws when it is neither. */
