@@ -1,7 +1,10 @@
 import {
+  apigeeBasicAuthorization,
   authUrls,
   buildJsonAuthPostHeaders,
+  decryptPayload,
   encodeBase64,
+  encryptPayload,
   getLastLoginAt,
   getRefreshToken,
   getSessionUser,
@@ -372,25 +375,49 @@ async function resolveAuth<T>(mock: () => T, real: () => Promise<T>): Promise<T>
   return mock();
 }
 
+async function unwrapLoginPayload(payload: unknown): Promise<unknown> {
+  if (!isRecord(payload)) return payload;
+  const encrypted = payload.encryptedResponse;
+  if (typeof encrypted !== "string" || encrypted.trim().length === 0) return payload;
+  return decryptPayload(encrypted);
+}
+
 async function realLogin(request: LoginRequest): Promise<LoginResult> {
   let response: Response;
   try {
-    response = await postAuth(authUrls.login, {
+    const payload = {
       username: encodeBase64(request.userId),
       password: encodeBase64(request.password),
       businessType: request.businessType,
-    });
+    };
+    if (import.meta.env.DEV) {
+      console.info("[Login] POST", authUrls.login);
+      console.info("[Login] Authorization", apigeeBasicAuthorization());
+      console.info("[Login] payload before encrypt", payload);
+    }
+    const encryptedRequest = await encryptPayload(payload);
+    const body = { encryptedRequest };
+    if (import.meta.env.DEV) {
+      console.info("[Login] request body", body);
+    }
+    response = await postAuth(authUrls.login, body);
   } catch (reason: unknown) {
     const detail = reason instanceof Error ? reason.message : "Network error";
     return failure(
-      `Unable to reach the login API (${detail}). Check VPN/DNS and VITE_BASE_URL.`,
+      `Unable to reach the login API (${detail}). Check VPN/DNS and VITE_APIGEE_AUTH_LOGIN_API.`,
     );
   }
 
   const body = await parseResponseBody(response);
   if (body.kind === "empty") return failure("Unable to sign in.");
   if (body.kind === "text") return failure(body.text);
-  return parseLoginPayload(body.payload, request.businessType, response.ok);
+  try {
+    const payload = await unwrapLoginPayload(body.payload);
+    return parseLoginPayload(payload, request.businessType, response.ok);
+  } catch (reason: unknown) {
+    const detail = reason instanceof Error ? reason.message : "Unable to read the login response.";
+    return failure(detail);
+  }
 }
 
 function mockForgotPassword(userId: string): AuthActionResponse {
@@ -545,7 +572,6 @@ export async function fetchChangePassword(
           newPassword: request.newPassword,
         },
         "Change password",
-        token,
       );
     },
   );

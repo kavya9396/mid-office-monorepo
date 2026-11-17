@@ -26,6 +26,8 @@ vi.mock("@insurance-poc/utils", async () => {
     get useMock() {
       return authMode.useMock;
     },
+    encryptPayload: async (payload: unknown) => JSON.stringify(payload),
+    decryptPayload: async (encrypted: string) => JSON.parse(encrypted) as unknown,
     authUrls: {
       get login() {
         return authMode.urls.login;
@@ -71,6 +73,14 @@ function asRecord(value: unknown): Record<string, unknown> {
     throw new Error("Expected a JSON object.");
   }
   return value;
+}
+
+function loginFields(body: Record<string, unknown>): Record<string, unknown> {
+  const encrypted = body.encryptedRequest;
+  if (typeof encrypted !== "string") {
+    throw new Error("encryptedRequest was not a string.");
+  }
+  return asRecord(parseJson(encrypted));
 }
 
 function readString(record: Record<string, unknown>, key: string): string {
@@ -217,20 +227,23 @@ describe("login module", () => {
       vi.useRealTimers();
       const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
         jsonResponse({
-          response_code: 200,
-          error: false,
-          message: "Login successful",
-          data: {
-            token: "access-token",
-            refreshToken: "refresh-token",
-            username: "UW001",
-            displayName: "Retail Underwriter",
-            firstLogin: false,
-            mustChangePassword: false,
-            lastLoginAt: "2026-10-06T14:10:20",
-            roles: ["CVT_POOL"],
-            authorizedBusinessTypes: ["RETAIL"],
-          },
+          statusCode: "200",
+          encryptedResponse: JSON.stringify({
+            response_code: 200,
+            error: false,
+            message: "Login successful",
+            data: {
+              token: "access-token",
+              refreshToken: "refresh-token",
+              username: "UW001",
+              displayName: "Retail Underwriter",
+              firstLogin: false,
+              mustChangePassword: false,
+              lastLoginAt: "2026-10-06T14:10:20",
+              roles: ["CVT_POOL"],
+              authorizedBusinessTypes: ["RETAIL"],
+            },
+          }),
         }),
       );
       vi.stubGlobal("fetch", fetchMock);
@@ -248,14 +261,15 @@ describe("login module", () => {
       expect(result.refreshToken).toBe("refresh-token");
       expect(result.lastLoginAt).toBe("2026-10-06T14:10:20");
       const posted = postedRequest(fetchMock);
+      const fields = loginFields(posted.body);
       expect(posted.url).toBe(authMode.urls.login);
-      expect(posted.headers.get("X-Apigee-Authorization")).toBe(
+      expect(posted.headers.get("Authorization")).toBe(
         `Basic ${btoa(`${BASIC_USER}:${BASIC_PASSWORD}`)}`,
       );
-      expect(posted.headers.get("Authorization")).toBeNull();
-      expect(readString(posted.body, "username")).toBe(encodeBase64("UW001"));
-      expect(readString(posted.body, "password")).toBe(encodeBase64("secret"));
-      expect(readString(posted.body, "businessType")).toBe("RETAIL");
+      expect(posted.headers.get("X-Apigee-Authorization")).toBeNull();
+      expect(readString(fields, "username")).toBe(encodeBase64("UW001"));
+      expect(readString(fields, "password")).toBe(encodeBase64("secret"));
+      expect(readString(fields, "businessType")).toBe("RETAIL");
     });
 
     it("posts the login business type selected on the form", async () => {
@@ -291,7 +305,7 @@ describe("login module", () => {
       expectSuccess(result);
       expect(result.businessType).toBe("GROUP");
       const posted = postedRequest(fetchMock);
-      expect(readString(posted.body, "businessType")).toBe("GROUP");
+      expect(readString(loginFields(posted.body), "businessType")).toBe("GROUP");
     });
 
     it("reads first-login flags from common SIT wire formats", async () => {
@@ -413,7 +427,7 @@ describe("login module", () => {
       expect(result.status).toBe("FAILURE");
       if (result.status === "SUCCESS") throw new Error("expected failure");
       expect(result.message).toContain("Failed to fetch");
-      expect(result.message).toContain("VITE_BASE_URL");
+      expect(result.message).toContain("VITE_APIGEE_AUTH_LOGIN_API");
     });
   });
 
@@ -493,7 +507,7 @@ describe("login module", () => {
       expect(result.message).toBe(forgotPasswordMock.success.message);
       const posted = postedRequest(fetchMock);
       expect(posted.url).toBe(authMode.urls.forgotPassword);
-      expect(posted.headers.get("X-Apigee-Authorization")).toContain("Basic ");
+      expect(posted.headers.get("Authorization")).toContain("Basic ");
       expect(readString(posted.body, "userId")).toBe("UW001");
     });
   });
@@ -616,7 +630,7 @@ describe("login module", () => {
       expect(fetchMock).not.toHaveBeenCalled();
     });
 
-    it("posts the current and new password with the user bearer token", async () => {
+    it("posts the current and new password with Apigee basic authorization", async () => {
       authMode.useMock = false;
       vi.useRealTimers();
       const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
@@ -637,10 +651,10 @@ describe("login module", () => {
       expect(result.message).toBe(changePasswordMock.success.message);
       const posted = postedRequest(fetchMock);
       expect(posted.url).toBe(authMode.urls.changePassword);
-      expect(posted.headers.get("Authorization")).toBe("Bearer user-jwt");
-      expect(posted.headers.get("X-Apigee-Authorization")).toBe(
+      expect(posted.headers.get("Authorization")).toBe(
         `Basic ${btoa(`${BASIC_USER}:${BASIC_PASSWORD}`)}`,
       );
+      expect(posted.headers.get("X-Apigee-Authorization")).toBeNull();
       expect(readString(posted.body, "username")).toBe("UW001");
       expect(readString(posted.body, "oldPassword")).toBe(POLICY_OLD_PASSWORD);
       expect(readString(posted.body, "newPassword")).toBe(POLICY_NEW_PASSWORD);
@@ -710,9 +724,7 @@ describe("login module", () => {
       const posted = postedRequest(fetchMock);
       expect(posted.url).toBe(authMode.urls.logout);
       expect(posted.headers.get("Authorization")).toBe("Bearer user-jwt");
-      expect(posted.headers.get("X-Apigee-Authorization")).toBe(
-        `Basic ${btoa(`${BASIC_USER}:${BASIC_PASSWORD}`)}`,
-      );
+      expect(posted.headers.get("X-Apigee-Authorization")).toBeNull();
       expect(posted.headers.get("accept")).toBe("*/*");
       expect(posted.headers.get("Content-Type")).toBe("application/json");
       expect(readString(posted.body, "refreshToken")).toBe(
