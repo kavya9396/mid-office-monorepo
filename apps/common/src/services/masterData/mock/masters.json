@@ -6205,14 +6205,6 @@
         "miscMastId": "337",
         "type": "GUW_RECONS_TYPE"
       },
-      { "code": "STD", "description": "Standard", "value": "Standard", "isActive": "Y", "miscMastId": "9001", "type": "GUW_CO_TYPE" },
-      { "code": "BSD_STD", "description": "Borderline Standard", "value": "Borderline Standard", "isActive": "Y", "miscMastId": "9002", "type": "GUW_CO_TYPE" },
-      { "code": "RED_COVER", "description": "Reduce Cover", "value": "Reduce Cover", "isActive": "Y", "miscMastId": "9003", "type": "GUW_CO_TYPE" },
-      { "code": "RED_PT", "description": "Reduce PT", "value": "Reduce PT", "isActive": "Y", "miscMastId": "9004", "type": "GUW_CO_TYPE" },
-      { "code": "DENY_RIDER", "description": "Deny Rider", "value": "Deny Rider", "isActive": "Y", "miscMastId": "9005", "type": "GUW_CO_TYPE" },
-      { "code": "MED_LOAD", "description": "Medical Loading", "value": "Medical Loading", "isActive": "Y", "miscMastId": "9006", "type": "GUW_EP_TYPE" },
-      { "code": "FE_LOAD", "description": "FE Loading", "value": "FE Loading", "isActive": "Y", "miscMastId": "9007", "type": "GUW_EP_TYPE" },
-      { "code": "SMK_LOAD", "description": "Smoker Loading", "value": "Smoker Loading", "isActive": "Y", "miscMastId": "9008", "type": "GUW_EP_TYPE" },
       { "code": "3M", "description": "3 months", "value": "3 months", "isActive": "Y", "miscMastId": "9009", "type": "GUW_POST_PERIOD" },
       { "code": "6M", "description": "6 months", "value": "6 months", "isActive": "Y", "miscMastId": "9010", "type": "GUW_POST_PERIOD" },
       { "code": "12M", "description": "12 months", "value": "12 months", "isActive": "Y", "miscMastId": "9011", "type": "GUW_POST_PERIOD" },
@@ -8494,6 +8486,97 @@
         "isActive": "Y",
         "miscMastId": "NON_STD",
         "type": "GUW_RSK_DEC"
+      },{
+        "code": "STD",
+        "description": "Standard",
+        "value": "Standard",
+        "isActive": "Y",
+        "miscMastId": "STD",
+        "type": "GUW_BSTD_TYPE"
+      },{
+        "code": "BSTD",
+        "description": "Borderline Standard",
+        "value": "Borderline Standard",
+        "isActive": "Y",
+        "miscMastId": "BSTD",
+        "type": "GUW_BSTD_TYPE"
+      },{
+        "code": "STD",
+        "description": "Standard",
+        "value": "Standard",
+        "isActive": "Y",
+        "miscMastId": "STD",
+        "type": "GUW_CO_TYPE"
+      },{
+        "code": "BSTD",
+        "description": "Borderline Standard",
+        "value": "Borderline Standard",
+        "isActive": "Y",
+        "miscMastId": "BSTD",
+        "type": "GUW_CO_TYPE"
+      },{
+        "code": "RED_COV",
+        "description": "Reduce Cover",
+        "value": "Reduce Cover",
+        "isActive": "Y",
+        "miscMastId": "RED_COV",
+        "type": "GUW_CO_TYPE"
+      },{
+        "code": "RED_PT",
+        "description": "Reduce PT",
+        "value": "Reduce PT",
+        "isActive": "Y",
+        "miscMastId": "RED_PT",
+        "type": "GUW_CO_TYPE"
+      },{
+        "code": "STD",
+        "description": "Standard",
+        "value": "Standard",
+        "isActive": "Y",
+        "miscMastId": "STD",
+        "type": "GUW_EP_TYPE"
+      },{
+        "code": "BSTD",
+        "description": "Borderline Standard",
+        "value": "Borderline Standard",
+        "isActive": "Y",
+        "miscMastId": "BSTD",
+        "type": "GUW_EP_TYPE"
+      },{
+        "code": "RED_COV",
+        "description": "Reduce Cover",
+        "value": "Reduce Cover",
+        "isActive": "Y",
+        "miscMastId": "RED_COV",
+        "type": "GUW_EP_TYPE"
+      },{
+        "code": "RED_PT",
+        "description": "Reduce PT",
+        "value": "Reduce PT",
+        "isActive": "Y",
+        "miscMastId": "RED_PT",
+        "type": "GUW_EP_TYPE"
+      },{
+        "code": "MED_LOAD",
+        "description": "Medical Loading",
+        "value": "Medical Loading",
+        "isActive": "Y",
+        "miscMastId": "MED_LOAD",
+        "type": "GUW_EP_TYPE"
+      },{
+        "code": "FE_LOAD",
+        "description": "FE Loading",
+        "value": "FE Loading",
+        "isActive": "Y",
+        "miscMastId": "FE_LOAD",
+        "type": "GUW_EP_TYPE"
+      },{
+        "code": "SMOK_LOAD",
+        "description": "Smoker Loading",
+        "value": "Smoker Loading",
+        "isActive": "Y",
+        "miscMastId": "FE_LOAD",
+        "type": "GUW_EP_TYPE"
       }
     ],
     "reason": [

@@ -143,6 +143,56 @@
         "role": "RETAIL_MMT_ADMIN",
         "roleType": "MMT_TASK"
       }
+    ],"HOD_TASK": [
+      {
+        "id": 3,
+        "applicationNo": "OS30413321",
+        "productCode": "GP1",
+        "masterPlanNo": 49,
+        "poolTAT": null,
+        "productType": "base",
+        "product": "ICICI PRU SUPER PROTECT CREDIT",
+        "typeOfGroupBusiness": null,
+        "sumAssured": 2210000,
+        "caseReceivedDate": "2026-11-08",
+        "channelCode": "CABR",
+        "channel": null,
+        "breDecision": "ST",
+        "dateAndTimeStamp": "2026-11-14T11:44:56.998813",
+        "taskId": "1352",
+        "instanceId": "295",
+        "dueDate": "2026-11-16T12:00:00Z",
+        "startTime": "2026-11-14T07:06:37Z",
+        "atRiskTime": "2026-11-16T06:42:40Z",
+        "businessType": "GROUP",
+        "role": "GROUP_GUW_USER",
+        "roleType": "HOD_TASK"
+      }
+    ],"SR_UW_TASK": [
+      {
+        "id": 3,
+        "applicationNo": "OS30413321",
+        "productCode": "GP1",
+        "masterPlanNo": 49,
+        "poolTAT": null,
+        "productType": "base",
+        "product": "ICICI PRU SUPER PROTECT CREDIT",
+        "typeOfGroupBusiness": null,
+        "sumAssured": 2210000,
+        "caseReceivedDate": "2026-11-08",
+        "channelCode": "CABR",
+        "channel": null,
+        "breDecision": "ST",
+        "dateAndTimeStamp": "2026-11-14T11:44:56.998813",
+        "taskId": "1352",
+        "instanceId": "295",
+        "dueDate": "2026-11-16T12:00:00Z",
+        "startTime": "2026-11-14T07:06:37Z",
+        "atRiskTime": "2026-11-16T06:42:40Z",
+        "businessType": "GROUP",
+        "role": "GROUP_GUW_USER",
+        "roleType": "SR_UW_TASK"
+      }
     ]
   }
 }

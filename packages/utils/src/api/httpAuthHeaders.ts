@@ -13,22 +13,20 @@ function normalizeBearerToken(bearerToken?: string): string {
   return token.startsWith("Bearer ") ? token : `Bearer ${token}`;
 }
 
-/** Headers for Common auth-service POST calls (login, forgot, reset, change, logout). */
+/**
+ * Auth-service calls (login, forgot, reset, change password).
+ * Apigee gateway credential is `Authorization: Basic base64(username:password)`.
+ * When a user token is passed (logout), that Bearer value is `Authorization` instead.
+ */
 export function buildJsonAuthPostHeaders(bearerToken?: string): HeadersInit {
-  const headers: Record<string, string> = {
-    ...JSON_AUTH_HEADERS,
-    "X-Apigee-Authorization": apigeeBasicAuthorization(),
-  };
+  const headers: Record<string, string> = { ...JSON_AUTH_HEADERS };
   const authorization = normalizeBearerToken(bearerToken);
-  if (authorization.length > 0) {
-    headers.Authorization = authorization;
-  }
+  headers.Authorization = authorization.length > 0 ? authorization : apigeeBasicAuthorization();
   return headers;
 }
 
-/** Apigee Basic plus session Bearer for Retail/Group business APIs. */
+/** Session Bearer only. Business APIs do not send the Apigee Basic credential. */
 export function applyBusinessApiAuthHeaders(headers: Headers): void {
-  headers.set("X-Apigee-Authorization", apigeeBasicAuthorization());
   const token = getToken()?.trim() ?? "";
   if (token.length > 0 && !isFirstLoginChangePending()) {
     headers.set("Authorization", `Bearer ${token}`);
