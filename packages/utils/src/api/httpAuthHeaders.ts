@@ -13,22 +13,21 @@ function normalizeBearerToken(bearerToken?: string): string {
   return token.startsWith("Bearer ") ? token : `Bearer ${token}`;
 }
 
-/** Headers for Common auth-service POST calls (login, forgot, reset, change, logout). */
+/**
+ * Auth-service POST headers.
+ * Login, forgot, reset, and change password send Apigee `Authorization: Basic`.
+ * Logout sends the session `Authorization: Bearer` token.
+ */
 export function buildJsonAuthPostHeaders(bearerToken?: string): HeadersInit {
-  const headers: Record<string, string> = {
-    ...JSON_AUTH_HEADERS,
-    "X-Apigee-Authorization": apigeeBasicAuthorization(),
-  };
+  const headers: Record<string, string> = { ...JSON_AUTH_HEADERS };
   const authorization = normalizeBearerToken(bearerToken);
-  if (authorization.length > 0) {
-    headers.Authorization = authorization;
-  }
+  headers.Authorization =
+    authorization.length > 0 ? authorization : apigeeBasicAuthorization();
   return headers;
 }
 
-/** Apigee Basic plus session Bearer for Retail/Group business APIs. */
+/** Session Bearer only for Retail/Group business APIs. */
 export function applyBusinessApiAuthHeaders(headers: Headers): void {
-  headers.set("X-Apigee-Authorization", apigeeBasicAuthorization());
   const token = getToken()?.trim() ?? "";
   if (token.length > 0 && !isFirstLoginChangePending()) {
     headers.set("Authorization", `Bearer ${token}`);

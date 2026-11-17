@@ -8,6 +8,7 @@ import {
 import { MmtGrievanceDrsPage } from "./MmtGrievanceDrsPage";
 import DvtUser from "./DvtUser";
 import GuwUser from "./GuwUser";
+import { RefCmoDrsPage } from "./RefCmoDrsPage";
 import { ReferralDrsPage } from "../referral-uw/ReferralDrsPage";
 import { fetchGuwMembers } from "../../services/guwService";
 import { HOD_CONFIG, SR_UW_CONFIG } from "../../services/referralUwService";
@@ -90,6 +91,9 @@ const SCREEN_BY_ROLE: Record<string, () => JSX.Element | null> = {
   SR_UW: SrUwEntry,
   DVT_TASK: DvtUser,
   MMT_TASK: MmtGrievanceDrsPage,
+  REF_CMO_TASK: RefCmoDrsPage,
+  HO_CMO_TASK: RefCmoDrsPage,
+  VENDOR_CMO_TASK: RefCmoDrsPage,
 };
 
 export function GroupDrsPage() {

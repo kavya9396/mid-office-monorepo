@@ -32,4 +32,5 @@ export const GROUP_FINANCIAL_ACTIONS_CONFIG: Record<
     defaultMode: "editAndReview",
     sectionModes: {},
   },
+  
 };

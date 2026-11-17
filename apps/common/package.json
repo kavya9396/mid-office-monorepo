@@ -139,6 +139,11 @@
       "import": "./src/components/Header/ApplicantBanner.tsx",
       "default": "./src/components/Header/ApplicantBanner.tsx"
     },
+    "./cmo": {
+      "types": "./src/components/cmo/index.ts",
+      "import": "./src/components/cmo/index.ts",
+      "default": "./src/components/cmo/index.ts"
+    },
     "./header": {
       "types": "./src/components/layout/Header.tsx",
       "import": "./src/components/layout/Header.tsx",

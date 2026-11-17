@@ -16,7 +16,10 @@ export const useMock = readFlag(import.meta.env.VITE_USE_MOCK) !== "false";
 /** Full auth URLs from .env. Read on use so mock mode does not require them. */
 export const authUrls = {
   get login(): string {
-    return requiredUrl(import.meta.env.VITE_AUTH_LOGIN_API, "VITE_AUTH_LOGIN_API");
+    return requiredUrl(
+      import.meta.env.VITE_APIGEE_AUTH_LOGIN_API,
+      "VITE_APIGEE_AUTH_LOGIN_API",
+    );
   },
   get forgotPassword(): string {
     return requiredUrl(

@@ -20,6 +20,21 @@ export const GROUP_DRS_TASK_CONFIG: Record<string, GroupDrsTaskConfig> = {
     screenType: "MMT",
     businessType: "GROUP",
   },
+  REF_CMO_TASK: {
+    roleType: "REF_CMO_TASK",
+    screenType: "REF_CMO",
+    businessType: "GROUP",
+  },
+  HO_CMO_TASK: {
+    roleType: "HO_CMO_TASK",
+    screenType: "HO_CMO",
+    businessType: "GROUP",
+  },
+  VENDOR_CMO_TASK: {
+    roleType: "VENDOR_CMO_TASK",
+    screenType: "VENDOR_CMO",
+    businessType: "GROUP",
+  },
 };
 
 export const DEFAULT_GROUP_DRS_TASK_CONFIG: GroupDrsTaskConfig = {
