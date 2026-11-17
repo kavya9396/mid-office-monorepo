@@ -21,7 +21,11 @@ import {
 import { groupPaths, replaceUrl } from "@insurance-poc/routes";
 import { getDrsRoleType, getMasterList, getSessionUser } from "@insurance-poc/utils";
 import { useGetGuwUwDecisionMutation } from "../../services/drsApi";
-import { buildGuwUwDecisionRequest, GUW_UW_DECISION_SCREEN_TYPE } from "../../services/guwDecisionService";
+import {
+  buildGuwUwDecisionRequest,
+  buildGuwUwReferralRequests,
+  GUW_UW_DECISION_SCREEN_TYPE,
+} from "../../services/guwDecisionService";
 import {
   clearGuwSubmittedDecision,
   saveGuwSubmittedDecision,
@@ -825,6 +829,21 @@ export function GuwUwPanel({
         notify("Please select at least one referral", "error");
         return;
       }
+      // Sr UW / HOD Opinion: Reason, Remarks and Assigned To are mandatory
+      const incomplete = selectedReferrals.find(
+        (r) =>
+          ASSIGNABLE_REFERRALS.includes(r.target) &&
+          (!r.reason.trim() || !r.remarks.trim() || !r.assignedTo.trim()),
+      );
+      if (incomplete) {
+        const missing = [
+          !incomplete.reason.trim() ? "Reason" : "",
+          !incomplete.remarks.trim() ? "Remarks" : "",
+          !incomplete.assignedTo.trim() ? "Assigned To" : "",
+        ].filter(Boolean);
+        notify(`Please enter ${missing.join(", ")} for ${incomplete.label}`, "error");
+        return;
+      }
     } else {
       if (!dialogRemarks.trim()) {
         notify("Please enter UW Remarks", "error");
@@ -955,9 +974,24 @@ export function GuwUwPanel({
 
   const finalizeSubmit = async () => {
     // Member level: save the decision (by code) through the `uw-decision` API before the final commit
+    if (!partyId) {
+      console.warn("[GuwUwPanel] uw-decision API not called: partyId is empty", { applicationNo, drsApplicationNo });
+    }
     if (partyId) {
-      const response = await getUwDecision(
-        buildGuwUwDecisionRequest({
+      // Raise Referral: one request per selected referral, sent together as an array
+      const isReferral = effectiveDecision === "REFERRAL";
+      const uwDecisionRequest = isReferral
+        ? buildGuwUwReferralRequests(
+            {
+              applicationNo: drsApplicationNo || applicationNo,
+              partyId,
+              roleType: getDrsRoleType(),
+              screenType: GUW_UW_DECISION_SCREEN_TYPE,
+              createdBy: getSessionUser()?.username ?? "",
+            },
+            referralRows.filter((r) => r.selected),
+          )
+        : buildGuwUwDecisionRequest({
           applicationNo: drsApplicationNo || applicationNo,
           partyId,
           roleType: getDrsRoleType(),
@@ -993,9 +1027,11 @@ export function GuwUwPanel({
             loadingClass: row.loadingClass,
             loadingReason: row.loadingReason,
           })),
-        }),
-      );
+        });
+      console.log("[GuwUwPanel] uw-decision payload:", uwDecisionRequest);
+      const response = await getUwDecision(uwDecisionRequest);
       if ("error" in response) {
+        console.error("[GuwUwPanel] uw-decision failed:", response.error);
         notify("Unable to submit the decision. Please try again.", "error");
         return;
       }
@@ -1019,6 +1055,16 @@ export function GuwUwPanel({
     setTimeout(() => {
       replaceUrl(redirectUrl);
     }, 700);
+  };
+
+  // Main Submit: final submit of the decision already saved from the dialog
+  const handleMainSubmit = () => {
+    if (!submittedDecision || !dialogDecision || !selectedDecision) {
+      notify("Please select a decision and complete the decision details before submitting", "error");
+      return;
+    }
+    console.log("[GuwUwPanel] main Submit clicked", { selectedDecision, dialogDecision, partyId });
+    void finalizeSubmit();
   };
 
   const handleDialogClose = () => {
@@ -1328,6 +1374,7 @@ export function GuwUwPanel({
           ))}
           <CustomButton
             variant="contained"
+            onClick={handleMainSubmit}
             sx={{
               background: "#e45f14",
               color: "#fff",
