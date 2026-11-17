@@ -65,7 +65,8 @@ export function RiderDetails({ riders, onChange, onNotify }: Readonly<RiderDetai
       return;
     }
     onChange(riders.map((rider, index) => (index === editingIndex ? { ...draft } : rider)));
-    cancelEdit();
+    setEditingIndex(null);
+    setDraft(EMPTY_RIDER);
   };
 
   const deleteRider = (index: number) => {
