@@ -7,5 +7,6 @@ export {
   landingUrls,
   masterUrls,
   nsdlUrls,
+  isApigeeMode,
   useMock,
 } from "./appConfig";

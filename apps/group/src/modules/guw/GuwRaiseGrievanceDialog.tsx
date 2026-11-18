@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Box, Typography } from "@mui/material";
 import {
   CustomButton,
@@ -10,14 +10,17 @@ import {
 } from "@insurance-poc/ui";
 import type { GrievanceHistoryRow } from "@insurance-poc/common/grievance-history";
 import { readApiErrorMessage } from "@insurance-poc/utils";
-import { useSaveMmtGrievancesMutation } from "../../services/mmtGrievanceApi";
+import {
+  useLazyGetMmtGrievancesQuery,
+  useSaveMmtGrievancesMutation,
+} from "../../services/mmtGrievanceApi";
 import type { MmtGrievanceMemberContext } from "../../services/mmtGrievanceService";
 import type { RaiseGrievanceData, RaiseGrievanceRow } from "../drs/quickLinksData";
 
 export type GuwRaiseGrievanceDialogProps = {
   open: boolean;
   onClose: () => void;
-  /** `subSections[raiseGrievance]` of the member; nothing is listed without it. */
+  /** `subSections[raiseGrievance]` of the member; only its title / column headers are used. */
   data?: RaiseGrievanceData;
   /** applicationNo / partyId / lifeNumber / transactionId sent with the save request. */
   context: MmtGrievanceMemberContext;
@@ -28,9 +31,11 @@ const REMARKS_REQUIRED_MESSAGE = "Remarks By User is mandatory for every selecte
 
 /**
  * Quick Links -> Raise Grievance (guw-drs-screen-prototype.html `openRaiseGrievance`).
- * Rows, title and column headers come from `subSections[raiseGrievance]`. The Raise Grievance button
- * validates and then calls the MMT grievance save API (`useSaveMmtGrievancesMutation`); each
- * selected row goes out as `{ fupCode, profile, userRemarks }`.
+ * On open it calls the MMT grievance fetch API (`VITE_MMT_GRIEVANCE_FETCH_API`, same request as the
+ * MMT screen) and lists the returned `openGrievances` rows. Title and column headers come from
+ * `subSections[raiseGrievance]`. The Raise Grievance button validates and then calls the MMT
+ * grievance save API (`useSaveMmtGrievancesMutation`); each selected row goes out as
+ * `{ fupCode, profile, userRemarks }`.
  */
 export function GuwRaiseGrievanceDialog({
   open,
@@ -40,15 +45,28 @@ export function GuwRaiseGrievanceDialog({
   notify,
 }: Readonly<GuwRaiseGrievanceDialogProps>) {
   const [saveGrievances, saveState] = useSaveMmtGrievancesMutation();
+  const [fetchGrievances, fetchState] = useLazyGetMmtGrievancesQuery();
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
   const [remarks, setRemarks] = useState<Readonly<Record<string, string>>>({});
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
 
-  const rows: RaiseGrievanceRow[] = (data?.rows ?? []).map((row) => ({
+  const fetchedRows: RaiseGrievanceRow[] = (fetchState.data?.openGrievances ?? []).map(
+    (row, index) => ({
+      id: `grievance-${index + 1}`,
+      fupCode: row.fupCode,
+      profile: row.profile,
+      remarks: row.grievanceRemarks,
+    }),
+  );
+  const rows: RaiseGrievanceRow[] = fetchedRows.map((row) => ({
     ...row,
     remarks: remarks[row.id] ?? row.remarks,
   }));
+  const isLoadingRows = fetchState.isFetching || fetchState.isUninitialized;
+  const loadError = fetchState.isError
+    ? readApiErrorMessage(fetchState.error, "Unable to load grievances.")
+    : "";
   const allSelected = rows.length > 0 && rows.every((row) => selected.has(row.id));
   const isMissingRemarks = (row: RaiseGrievanceRow) => selected.has(row.id) && !row.remarks.trim();
 
@@ -69,6 +87,12 @@ export function GuwRaiseGrievanceDialog({
     setSubmitted(false);
     setError("");
   };
+
+  useEffect(() => {
+    if (!open) return;
+    resetForm();
+    void fetchGrievances(context);
+  }, [open, context.applicationNo, context.partyId, context.lifeNumber]);
 
   const handleRaise = async () => {
     const chosen = rows.filter((row) => selected.has(row.id));
@@ -174,12 +198,17 @@ export function GuwRaiseGrievanceDialog({
           role="alert"
           sx={{ minHeight: 18, mt: "8px", color: "#d32f2f", textAlign: "center", fontSize: "12px" }}
         >
-          {error}
+          {error || loadError}
         </Typography>
+        {isLoadingRows && !loadError ? (
+          <Typography sx={{ textAlign: "center", fontSize: "12px", color: "#7b716c" }}>
+            Loading grievances...
+          </Typography>
+        ) : null}
         <Box sx={{ display: "flex", justifyContent: "center", mt: "10px" }}>
           <CustomButton
             type="button"
-            disabled={rows.length === 0 || saveState.isLoading}
+            disabled={rows.length === 0 || isLoadingRows || saveState.isLoading}
             onClick={() => void handleRaise()}
             sx={{ minWidth: 180, borderRadius: "50px" }}
           >

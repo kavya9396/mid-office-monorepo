@@ -1,11 +1,12 @@
 import {
-  apigeeBasicAuthorization,
   authUrls,
   buildJsonAuthPostHeaders,
+  buildLoginAuthHeaders,
   decryptPayload,
   encodeBase64,
   encryptPayload,
   getLastLoginAt,
+  isApigeeMode,
   getRefreshToken,
   getSessionUser,
   getToken,
@@ -346,10 +347,15 @@ function asAuthAction(payload: AuthActionPayload): AuthActionResponse {
   };
 }
 
-function postAuth(url: string, body: unknown, bearerToken?: string): Promise<Response> {
+function postAuth(
+  url: string,
+  body: unknown,
+  bearerToken?: string,
+  headers?: HeadersInit,
+): Promise<Response> {
   return fetch(url, {
     method: "POST",
-    headers: buildJsonAuthPostHeaders(bearerToken),
+    headers: headers ?? buildJsonAuthPostHeaders(bearerToken),
     body: JSON.stringify(body),
   });
 }
@@ -376,36 +382,35 @@ async function resolveAuth<T>(mock: () => T, real: () => Promise<T>): Promise<T>
 }
 
 async function unwrapLoginPayload(payload: unknown): Promise<unknown> {
-  if (!isRecord(payload)) return payload;
+  if (!isApigeeMode() || !isRecord(payload)) return payload;
   const encrypted = payload.encryptedResponse;
   if (typeof encrypted !== "string" || encrypted.trim().length === 0) return payload;
   return decryptPayload(encrypted);
 }
 
 async function realLogin(request: LoginRequest): Promise<LoginResult> {
+  const apigee = isApigeeMode();
   let response: Response;
   try {
-    const payload = {
+    const credentials = {
       username: encodeBase64(request.userId),
       password: encodeBase64(request.password),
       businessType: request.businessType,
     };
+    // Apigee mode sends { encryptedRequest }. Mid-office mode sends the credentials as JSON.
+    const body = apigee ? { encryptedRequest: await encryptPayload(credentials) } : credentials;
+    const headers = buildLoginAuthHeaders();
     if (import.meta.env.DEV) {
       console.info("[Login] POST", authUrls.login);
-      console.info("[Login] Authorization", apigeeBasicAuthorization());
-      console.info("[Login] payload before encrypt", payload);
-    }
-    const encryptedRequest = await encryptPayload(payload);
-    const body = { encryptedRequest };
-    if (import.meta.env.DEV) {
+      console.info("[Login] apigee mode", apigee);
+      console.info("[Login] headers", headers);
       console.info("[Login] request body", body);
     }
-    response = await postAuth(authUrls.login, body);
+    response = await postAuth(authUrls.login, body, undefined, headers);
   } catch (reason: unknown) {
     const detail = reason instanceof Error ? reason.message : "Network error";
-    return failure(
-      `Unable to reach the login API (${detail}). Check VPN/DNS and VITE_APIGEE_AUTH_LOGIN_API.`,
-    );
+    const urlName = apigee ? "VITE_APIGEE_AUTH_LOGIN_API" : "VITE_AUTH_LOGIN_API";
+    return failure(`Unable to reach the login API (${detail}). Check VPN/DNS and ${urlName}.`);
   }
 
   const body = await parseResponseBody(response);

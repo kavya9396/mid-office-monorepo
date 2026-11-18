@@ -26,8 +26,6 @@ vi.mock("@insurance-poc/utils", async () => {
     get useMock() {
       return authMode.useMock;
     },
-    encryptPayload: async (payload: unknown) => JSON.stringify(payload),
-    decryptPayload: async (encrypted: string) => JSON.parse(encrypted) as unknown,
     authUrls: {
       get login() {
         return authMode.urls.login;
@@ -75,14 +73,6 @@ function asRecord(value: unknown): Record<string, unknown> {
   return value;
 }
 
-function loginFields(body: Record<string, unknown>): Record<string, unknown> {
-  const encrypted = body.encryptedRequest;
-  if (typeof encrypted !== "string") {
-    throw new Error("encryptedRequest was not a string.");
-  }
-  return asRecord(parseJson(encrypted));
-}
-
 function readString(record: Record<string, unknown>, key: string): string {
   const value = record[key];
   if (typeof value !== "string") {
@@ -128,6 +118,7 @@ async function runMock<T>(work: () => Promise<T>): Promise<T> {
 describe("login module", () => {
   beforeEach(() => {
     sessionStorage.clear();
+    vi.stubEnv("VITE_USE_APIGEE", "false");
     vi.stubEnv("VITE_AUTH_BASIC_USERNAME", BASIC_USER);
     vi.stubEnv("VITE_AUTH_BASIC_PASSWORD", BASIC_PASSWORD);
   });
@@ -227,23 +218,20 @@ describe("login module", () => {
       vi.useRealTimers();
       const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
         jsonResponse({
-          statusCode: "200",
-          encryptedResponse: JSON.stringify({
-            response_code: 200,
-            error: false,
-            message: "Login successful",
-            data: {
-              token: "access-token",
-              refreshToken: "refresh-token",
-              username: "UW001",
-              displayName: "Retail Underwriter",
-              firstLogin: false,
-              mustChangePassword: false,
-              lastLoginAt: "2026-10-06T14:10:20",
-              roles: ["CVT_POOL"],
-              authorizedBusinessTypes: ["RETAIL"],
-            },
-          }),
+          response_code: 200,
+          error: false,
+          message: "Login successful",
+          data: {
+            token: "access-token",
+            refreshToken: "refresh-token",
+            username: "UW001",
+            displayName: "Retail Underwriter",
+            firstLogin: false,
+            mustChangePassword: false,
+            lastLoginAt: "2026-10-06T14:10:20",
+            roles: ["CVT_POOL"],
+            authorizedBusinessTypes: ["RETAIL"],
+          },
         }),
       );
       vi.stubGlobal("fetch", fetchMock);
@@ -261,15 +249,69 @@ describe("login module", () => {
       expect(result.refreshToken).toBe("refresh-token");
       expect(result.lastLoginAt).toBe("2026-10-06T14:10:20");
       const posted = postedRequest(fetchMock);
-      const fields = loginFields(posted.body);
       expect(posted.url).toBe(authMode.urls.login);
-      expect(posted.headers.get("Authorization")).toBe(
+      expect(posted.headers.get("Authorization")).toBeNull();
+      expect(posted.headers.get("X-Apigee-Authorization")).toBe(
         `Basic ${btoa(`${BASIC_USER}:${BASIC_PASSWORD}`)}`,
       );
+      expect(readString(posted.body, "username")).toBe(encodeBase64("UW001"));
+      expect(readString(posted.body, "password")).toBe(encodeBase64("secret"));
+      expect(readString(posted.body, "businessType")).toBe("RETAIL");
+    });
+
+    it("encrypts login and sends Authorization when apigee mode is on", async () => {
+      authMode.useMock = false;
+      vi.useRealTimers();
+      vi.stubEnv("VITE_USE_APIGEE", "true");
+      vi.stubEnv("VITE_APIGEE_BASIC_USERNAME", "apigee-user");
+      vi.stubEnv("VITE_APIGEE_BASIC_PASSWORD", "apigee-secret");
+      vi.stubEnv("VITE_CLIENT_ID", "12345678901234567890123456789012");
+      const { decryptPayload, encryptPayload } = await import("@insurance-poc/utils");
+      const envelope = {
+        response_code: 200,
+        error: false,
+        message: "Login successful",
+        data: {
+          token: "access-token",
+          refreshToken: "refresh-token",
+          username: "UW001",
+          displayName: "Retail Underwriter",
+          firstLogin: false,
+          mustChangePassword: false,
+          lastLoginAt: "2026-10-06T14:10:20",
+          roles: ["CVT_POOL"],
+          authorizedBusinessTypes: ["RETAIL"],
+        },
+      };
+      const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+        jsonResponse({
+          statusCode: "200",
+          encryptedResponse: await encryptPayload(envelope),
+        }),
+      );
+      vi.stubGlobal("fetch", fetchMock);
+      const { fetchLogin } = await loadLogin();
+      const { encodeBase64 } = await import("@insurance-poc/utils");
+
+      const result = await fetchLogin({
+        userId: "UW001",
+        password: "secret",
+        businessType: "RETAIL",
+      });
+
+      expectSuccess(result);
+      expect(result.accessToken).toBe("access-token");
+      const posted = postedRequest(fetchMock);
+      expect(posted.headers.get("Authorization")).toBe(
+        `Basic ${btoa("apigee-user:apigee-secret")}`,
+      );
       expect(posted.headers.get("X-Apigee-Authorization")).toBeNull();
-      expect(readString(fields, "username")).toBe(encodeBase64("UW001"));
-      expect(readString(fields, "password")).toBe(encodeBase64("secret"));
-      expect(readString(fields, "businessType")).toBe("RETAIL");
+      const decrypted = await decryptPayload<Record<string, unknown>>(
+        readString(posted.body, "encryptedRequest"),
+      );
+      expect(readString(decrypted, "username")).toBe(encodeBase64("UW001"));
+      expect(readString(decrypted, "password")).toBe(encodeBase64("secret"));
+      expect(readString(decrypted, "businessType")).toBe("RETAIL");
     });
 
     it("posts the login business type selected on the form", async () => {
@@ -305,7 +347,7 @@ describe("login module", () => {
       expectSuccess(result);
       expect(result.businessType).toBe("GROUP");
       const posted = postedRequest(fetchMock);
-      expect(readString(loginFields(posted.body), "businessType")).toBe("GROUP");
+      expect(readString(posted.body, "businessType")).toBe("GROUP");
     });
 
     it("reads first-login flags from common SIT wire formats", async () => {
@@ -427,7 +469,7 @@ describe("login module", () => {
       expect(result.status).toBe("FAILURE");
       if (result.status === "SUCCESS") throw new Error("expected failure");
       expect(result.message).toContain("Failed to fetch");
-      expect(result.message).toContain("VITE_APIGEE_AUTH_LOGIN_API");
+      expect(result.message).toContain("VITE_AUTH_LOGIN_API");
     });
   });
 
@@ -507,7 +549,10 @@ describe("login module", () => {
       expect(result.message).toBe(forgotPasswordMock.success.message);
       const posted = postedRequest(fetchMock);
       expect(posted.url).toBe(authMode.urls.forgotPassword);
-      expect(posted.headers.get("Authorization")).toContain("Basic ");
+      expect(posted.headers.get("Authorization")).toBeNull();
+      expect(posted.headers.get("X-Apigee-Authorization")).toBe(
+        `Basic ${btoa(`${BASIC_USER}:${BASIC_PASSWORD}`)}`,
+      );
       expect(readString(posted.body, "userId")).toBe("UW001");
     });
   });
@@ -566,6 +611,10 @@ describe("login module", () => {
       expect(result.message).toBe(resetPasswordMock.success.message);
       const posted = postedRequest(fetchMock);
       expect(posted.url).toBe(authMode.urls.resetPassword);
+      expect(posted.headers.get("Authorization")).toBeNull();
+      expect(posted.headers.get("X-Apigee-Authorization")).toBe(
+        `Basic ${btoa(`${BASIC_USER}:${BASIC_PASSWORD}`)}`,
+      );
       expect(readString(posted.body, "token")).toBe("reset-token");
       expect(readString(posted.body, "newPassword")).toBe(POLICY_NEW_PASSWORD);
     });
@@ -630,7 +679,7 @@ describe("login module", () => {
       expect(fetchMock).not.toHaveBeenCalled();
     });
 
-    it("posts the current and new password with Apigee basic authorization", async () => {
+    it("posts the current and new password with X-Apigee-Authorization", async () => {
       authMode.useMock = false;
       vi.useRealTimers();
       const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
@@ -651,10 +700,10 @@ describe("login module", () => {
       expect(result.message).toBe(changePasswordMock.success.message);
       const posted = postedRequest(fetchMock);
       expect(posted.url).toBe(authMode.urls.changePassword);
-      expect(posted.headers.get("Authorization")).toBe(
+      expect(posted.headers.get("Authorization")).toBeNull();
+      expect(posted.headers.get("X-Apigee-Authorization")).toBe(
         `Basic ${btoa(`${BASIC_USER}:${BASIC_PASSWORD}`)}`,
       );
-      expect(posted.headers.get("X-Apigee-Authorization")).toBeNull();
       expect(readString(posted.body, "username")).toBe("UW001");
       expect(readString(posted.body, "oldPassword")).toBe(POLICY_OLD_PASSWORD);
       expect(readString(posted.body, "newPassword")).toBe(POLICY_NEW_PASSWORD);
@@ -724,7 +773,9 @@ describe("login module", () => {
       const posted = postedRequest(fetchMock);
       expect(posted.url).toBe(authMode.urls.logout);
       expect(posted.headers.get("Authorization")).toBe("Bearer user-jwt");
-      expect(posted.headers.get("X-Apigee-Authorization")).toBeNull();
+      expect(posted.headers.get("X-Apigee-Authorization")).toBe(
+        `Basic ${btoa(`${BASIC_USER}:${BASIC_PASSWORD}`)}`,
+      );
       expect(posted.headers.get("accept")).toBe("*/*");
       expect(posted.headers.get("Content-Type")).toBe("application/json");
       expect(readString(posted.body, "refreshToken")).toBe(

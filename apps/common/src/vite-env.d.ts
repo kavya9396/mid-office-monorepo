@@ -2,6 +2,9 @@
 
 interface ImportMetaEnv {
   readonly VITE_USE_MOCK?: string;
+  readonly VITE_USE_APIGEE?: string;
+  readonly VITE_APIGEE_BASIC_USERNAME?: string;
+  readonly VITE_APIGEE_BASIC_PASSWORD?: string;
   readonly VITE_BASE_URL?: string;
   readonly VITE_AUTH_SERVICE?: string;
   readonly VITE_AUTH_LOGIN_API?: string;
