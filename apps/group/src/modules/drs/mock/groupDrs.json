@@ -812,7 +812,7 @@
                     {
                       "key": "kycDetails.aadharSeedingStatus",
                       "label": "Pan Aadhar Seeding Status",
-                      "value": ""
+                      "value": "Yes"
                     },
                     {
                       "label": "Identity Proof Type",
@@ -849,7 +849,7 @@
                     {
                       "key": "personalDetails.applicantStatus",
                       "label": "Applicant Status",
-                      "value": "Active"
+                      "value": "Borrower"
                     },
                     {
                       "key": "kycDetails.immigrationStatus",
@@ -859,27 +859,27 @@
                     {
                       "key": "kycDetails.nsdlNameMatching",
                       "label": "Nsdl Name Matching",
-                      "value": ""
+                      "value": "Yes"
                     },
                     {
                       "key": "kycDetails.nsdlDobMatching",
                       "label": "Nsdl Dob Matching",
-                      "value": ""
+                      "value": "Yes"
                     },
                     {
                       "key": "kycDetails.dobDocument",
                       "label": "Dob Document",
-                      "value": ""
+                      "value": "Yes"
                     },
                     {
                       "key": "kycDetails.genderDocument",
                       "label": "Gender Document",
-                      "value": ""
+                      "value": "Yes"
                     },
                     {
                       "key": "kycDetails.pincodeDocument",
                       "label": "Pincode Document",
-                      "value": ""
+                      "value": "Yes"
                     }
                   ]
                 ]
@@ -1096,14 +1096,14 @@
                       {
                         "nomineeId": "6779ba44-d6e3-439c-bfd0-4eceb138629d",
                         "name": "MADHI",
-                        "firstName": "MADHI",
-                        "lastName": "",
+                        "firstName": "MADHU",
+                        "lastName": "Sudan",
                         "dob": "1999-12-13T00:00",
                         "gender": "Male",
                         "relationship": "Brother",
                         "proposerNomineeRelation": "Brother",
                         "share": "100",
-                        "accountNumber": "6765575",
+                        "accountNumber": "676557567655751223",
                         "ifsc": "ICIC0000012"
                       }
                     ]

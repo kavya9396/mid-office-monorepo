@@ -11,6 +11,7 @@ import {
   absoluteApiBaseUrl,
   createBusinessBaseQuery,
   getDrsRoleType,
+  getMasterList,
   getSessionBusinessType,
   getSessionUser,
   groupBusinessUrls,
@@ -146,6 +147,19 @@ const isFieldChanged = (
   return c !== toCleanString(initial);
 };
 
+function toApplicantStatusCode(status: string | undefined): string {
+  const trimmed = (status ?? "").trim();
+  if (!trimmed) return "";
+  const list = getMasterList("misc", "APPLICANT_STATUS");
+  const match = list.find(
+    (entry) =>
+      entry.code.toLowerCase() === trimmed.toLowerCase() ||
+      entry.description?.trim().toLowerCase() === trimmed.toLowerCase() ||
+      entry.value?.trim().toLowerCase() === trimmed.toLowerCase(),
+  );
+  return match?.code ?? trimmed.toLowerCase();
+}
+
 const PERSONAL_KYC_MAPPINGS: FieldMapping<EditApplicantValues>[] = [
   { key: "proposerSummary.dob", label: "Date Of Birth", getValue: (v) => v.dob, getInitial: (i) => i.dob },
   { key: "proposerSummary.gender", label: "Gender", getValue: (v) => v.gender, getInitial: (i) => i.gender },
@@ -154,7 +168,7 @@ const PERSONAL_KYC_MAPPINGS: FieldMapping<EditApplicantValues>[] = [
   { key: "kycDetails.isPanValid", label: "Pan Flag", getValue: (v) => v.isPanValid, getInitial: (i) => i.isPanValid },
   { key: "kycDetails.aadharSeedingStatus", label: "Pan Aadhar Seeding Status", getValue: (v) => v.aadharSeedingStatus, getInitial: (i) => i.aadharSeedingStatus },
   { key: "kycDetails.immigrationStatus", label: "Immigration Status", getValue: (v) => v.immigrationStatus, getInitial: (i) => i.immigrationStatus },
-  { key: "personalDetails.applicantStatus", label: "Applicant Status", getValue: (v) => v.applicantStatus, getInitial: (i) => i.applicantStatus },
+  { key: "personalDetails.applicantStatus", label: "Applicant Status", getValue: (v) => toApplicantStatusCode(v.applicantStatus), getInitial: (i) => toApplicantStatusCode(i.applicantStatus) },
   { key: "kycDetails.nsdlNameMatching", label: "Nsdl Name Matching", getValue: (v) => v.nsdlNameMatching, getInitial: (i) => i.nsdlNameMatching },
   { key: "kycDetails.nsdlDobMatching", label: "Nsdl Dob Matching", getValue: (v) => v.nsdlDobMatching, getInitial: (i) => i.nsdlDobMatching },
   { key: "kycDetails.dobDocument", label: "Dob Document", getValue: (v) => v.dobDocument, getInitial: (i) => i.dobDocument },
@@ -327,6 +341,19 @@ function buildNomineeSection(nominees: NomineeEditRow[], initialNominees?: Nomin
   };
 }
 
+function toRiderCode(nameOrCode: string): string {
+  const trimmed = nameOrCode.trim();
+  if (!trimmed) return "";
+  const list = getMasterList("rider");
+  const match = list.find(
+    (entry) =>
+      entry.code === trimmed ||
+      entry.description?.trim().toLowerCase() === trimmed.toLowerCase() ||
+      entry.code?.trim().toLowerCase() === trimmed.toLowerCase(),
+  );
+  return match?.code ?? trimmed;
+}
+
 function buildProductDetailsSection(riders: RiderEditRow[], initialRiders?: RiderEditRow[]) {
   const isChanged = !initialRiders || JSON.stringify(riders) !== JSON.stringify(initialRiders);
   if (!isChanged || riders.length === 0) {
@@ -335,7 +362,7 @@ function buildProductDetailsSection(riders: RiderEditRow[], initialRiders?: Ride
 
   const rows = riders.map((r) => ({
     ...((r as { productId?: string }).productId ? { productId: (r as { productId?: string }).productId } : {}),
-    productName: r.riderName,
+    productName: toRiderCode(r.riderName),
     productType: "rider",
     sumAssured: r.sumAssured,
     term: r.riderTerm,

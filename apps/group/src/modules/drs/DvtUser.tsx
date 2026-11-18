@@ -225,13 +225,15 @@ const DvtUser = () => {
     const outcome = resolveNsdlOutcome(result, pendingPanPendcode);
     if (outcome === "blocked") {
       setInvalidPanByApplicant((current) => ({ ...current, [applicantId]: input }));
-    } else if (outcome !== "apiErrorShowMessage") {
+    } else {
+      // Success or an API failure: the applicant no longer blocks case submission.
       setInvalidPanByApplicant((current) => {
         const { [applicantId]: _removed, ...rest } = current;
         return rest;
       });
     }
     return {
+      apiFailed: !result.apiSuccess,
       message: result.message,
       matches: result.matches,
       panValid: outcome === "apiErrorShowMessage" ? undefined : outcome === "success",

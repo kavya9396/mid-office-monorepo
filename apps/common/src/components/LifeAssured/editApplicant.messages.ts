@@ -10,6 +10,9 @@ export const requiredMessage = (label: string) => `${label} is required`;
 /** Save was clicked while the PAN is not validated (`isPanValid` is not YES). */
 export const PAN_NOT_VALIDATED_MESSAGE = "Please validate PAN with NSDL before saving";
 
+/** The NSDL call failed (`error` is true or the HTTP status is not 200). Info notice; Save stays allowed. */
+export const PAN_API_FAILED_MESSAGE = "PAN api failed, please raise PAL pend code";
+
 /** Added after the API `message` when the API errors and there is no pending PAN pendcode. */
 export const RAISE_PAN_PENDCODE_MESSAGE = "Please raise a PAN pendcode.";
 

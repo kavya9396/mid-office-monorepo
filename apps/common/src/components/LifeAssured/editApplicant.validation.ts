@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { loanSchema } from "./LoanDetails";
+import { nomineeSchema } from "./NomineeDetails";
 import { RAISE_PAN_PENDCODE_MESSAGE, requiredMessage } from "./editApplicant.messages";
  
 /**
@@ -35,11 +36,15 @@ export const editApplicantSchema = z.object({
   applicantStatus: required("Applicant Status"),
 });
  
-// Base & Loan Details live in the same form under `loan`
-export const editFormSchema = editApplicantSchema.extend({ loan: loanSchema });
+// Base & Loan Details and Nominees live in the same form
+export const editFormSchema = editApplicantSchema.extend({
+  loan: loanSchema,
+  nominees: z.array(nomineeSchema),
+});
  
 export type EditApplicantValues = z.infer<typeof editApplicantSchema>;
 export type EditFormValues = z.infer<typeof editFormSchema>;
+export { nomineeSchema };
  
 /** Master codes for the Yes / No selects of the dialog: "Y" is shown as Yes, "N" as No. */
 export const PAN_VALID_YES = "Y";
@@ -115,6 +120,11 @@ export type PanValidationInput = { panNumber: string; dob: string };
  * (API error while a PAN pendcode is already pending, open question 9).
  */
 export type PanValidationResult = {
+  /**
+   * The call failed (`error` is true or the HTTP status is not 200). Checked before everything else:
+   * the dialog shows the info notice and lets the user save without a validated PAN.
+   */
+  apiFailed?: boolean;
   panValid?: boolean;
   /** NSDL match flags (add-on #17). Missing means "not available", which the dialog shows as NO. */
   matches?: NsdlMatchSelection;
@@ -135,4 +145,6 @@ export type PanStatus = {
   nsdlNameMatching?: string;
   nsdlDobMatching?: string;
   aadharSeedingStatus?: string;
+  /** The last NSDL call failed; Save is allowed until the next NSDL result. */
+  apiFailed?: boolean;
 };

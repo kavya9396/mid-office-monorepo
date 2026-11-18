@@ -21,6 +21,12 @@ function customError(error: string): FetchBaseQueryError {
   return { status: "CUSTOM_ERROR", error };
 }
 
+/** HTTP status of the fetch response that fetchBaseQuery puts in `meta.response`, when present. */
+function readHttpStatus(meta: unknown): number | undefined {
+  if (typeof meta !== "object" || meta === null || !("response" in meta)) return undefined;
+  return meta.response instanceof Response ? meta.response.status : undefined;
+}
+
 export const groupNsdlApi = createApi({
   reducerPath: "groupNsdlApi",
   baseQuery: createBusinessBaseQuery(absoluteApiBaseUrl),
@@ -48,6 +54,11 @@ export const groupNsdlApi = createApi({
           decryptResponse: false,
         });
         if (result.error) return { error: result.error };
+        // Any HTTP status other than 200 is an API failure (shown as the "PAN api failed" info notice).
+        const status = readHttpStatus(result.meta);
+        if (status !== undefined && status !== 200) {
+          return { error: customError(`NSDL PAN validate API returned status ${status}.`) };
+        }
 
         try {
           return { data: readNsdlPanValidateResponse(result.data) };
