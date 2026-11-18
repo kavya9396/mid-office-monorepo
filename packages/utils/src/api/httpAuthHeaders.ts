@@ -1,6 +1,7 @@
 import { isFirstLoginChangePending } from "../auth/firstLoginFlow";
 import { getToken } from "../auth/session";
-import { apigeeBasicAuthorization } from "./apigeeBasicAuth";
+import { isApigeeMode } from "../config/appConfig";
+import { apigeeBasicAuthorization, apigeeGatewayAuthorization } from "./apigeeBasicAuth";
 
 const JSON_AUTH_HEADERS = {
   accept: "*/*",
@@ -14,14 +15,30 @@ function normalizeBearerToken(bearerToken?: string): string {
 }
 
 /**
- * Auth-service calls (login, forgot, reset, change password).
- * Apigee gateway credential is `Authorization: Basic base64(username:password)`.
- * When a user token is passed (logout), that Bearer value is `Authorization` instead.
+ * Login headers follow VITE_USE_APIGEE.
+ * true: `Authorization: Basic` from VITE_APIGEE_BASIC_USERNAME / VITE_APIGEE_BASIC_PASSWORD.
+ * false: `X-Apigee-Authorization: Basic` from VITE_AUTH_BASIC_USERNAME / VITE_AUTH_BASIC_PASSWORD.
+ */
+export function buildLoginAuthHeaders(): HeadersInit {
+  if (isApigeeMode()) {
+    return { ...JSON_AUTH_HEADERS, Authorization: apigeeGatewayAuthorization() };
+  }
+  return { ...JSON_AUTH_HEADERS, "X-Apigee-Authorization": apigeeBasicAuthorization() };
+}
+
+/**
+ * Forgot password, reset password, change password, and logout.
+ * These stay on the mid-office header. Logout also sends `Authorization: Bearer`.
  */
 export function buildJsonAuthPostHeaders(bearerToken?: string): HeadersInit {
-  const headers: Record<string, string> = { ...JSON_AUTH_HEADERS };
+  const headers: Record<string, string> = {
+    ...JSON_AUTH_HEADERS,
+    "X-Apigee-Authorization": apigeeBasicAuthorization(),
+  };
   const authorization = normalizeBearerToken(bearerToken);
-  headers.Authorization = authorization.length > 0 ? authorization : apigeeBasicAuthorization();
+  if (authorization.length > 0) {
+    headers.Authorization = authorization;
+  }
   return headers;
 }
 

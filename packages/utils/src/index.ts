@@ -3,9 +3,10 @@ export {
   authUrls,
   breUrls,
   groupBusinessUrls,
-  mmtGrievanceUrls,
+  isApigeeMode,
   landingUrls,
   masterUrls,
+  mmtGrievanceUrls,
   nsdlUrls,
   useMock,
 } from "./config";
@@ -70,8 +71,10 @@ export {
 } from "./auth";
 export {
   apigeeBasicAuthorization,
+  apigeeGatewayAuthorization,
   applyBusinessApiAuthHeaders,
   buildJsonAuthPostHeaders,
+  buildLoginAuthHeaders,
   createBusinessBaseQuery,
   decryptPayload,
   encodeBase64,
