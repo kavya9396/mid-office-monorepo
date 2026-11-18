@@ -13,10 +13,18 @@ function requiredUrl(value: string | undefined, name: string): string {
 /** Shared by Common, Retail, and Group. False only when VITE_USE_MOCK is exactly "false". */
 export const useMock = readFlag(import.meta.env.VITE_USE_MOCK) !== "false";
 
+/** True only when VITE_USE_APIGEE is exactly "true". Read on each call so .env is the switch. */
+export function isApigeeMode(): boolean {
+  return readFlag(import.meta.env.VITE_USE_APIGEE).toLowerCase() === "true";
+}
+
 /** Full auth URLs from .env. Read on use so mock mode does not require them. */
 export const authUrls = {
   get login(): string {
-    return requiredUrl(import.meta.env.VITE_APIGEE_AUTH_LOGIN_API, "VITE_APIGEE_AUTH_LOGIN_API");
+    // VITE_USE_APIGEE=true uses the Apigee login URL. Otherwise the mid-office IAM URL.
+    return isApigeeMode()
+      ? requiredUrl(import.meta.env.VITE_APIGEE_AUTH_LOGIN_API, "VITE_APIGEE_AUTH_LOGIN_API")
+      : requiredUrl(import.meta.env.VITE_AUTH_LOGIN_API, "VITE_AUTH_LOGIN_API");
   },
   get forgotPassword(): string {
     return requiredUrl(
@@ -107,6 +115,9 @@ export const groupBusinessUrls = {
   },
   get uwDecision(): string {
     return configuredUrl(import.meta.env.VITE_GROUP_UW_DECISION_API);
+  },
+  get dvtValidation(): string {
+    return configuredUrl(import.meta.env.VITE_GROUP_DVT_VALIDATION_API);
   },
   get financialFetch(): string {
     return configuredUrl(import.meta.env.VITE_GROUP_FINANCIAL_FETCH_API);

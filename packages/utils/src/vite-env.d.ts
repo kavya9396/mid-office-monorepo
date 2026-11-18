@@ -1,6 +1,9 @@
 interface ImportMetaEnv {
   readonly VITE_USE_MOCK?: string;
+  readonly VITE_USE_APIGEE?: string;
   readonly VITE_CLIENT_ID?: string;
+  readonly VITE_APIGEE_BASIC_USERNAME?: string;
+  readonly VITE_APIGEE_BASIC_PASSWORD?: string;
   readonly VITE_BASE_URL?: string;
   readonly VITE_AUTH_SERVICE?: string;
   readonly VITE_AUTH_LOGIN_API?: string;
@@ -27,6 +30,7 @@ interface ImportMetaEnv {
   readonly VITE_GROUP_DRS_SERVICE?: string;
   readonly VITE_GROUP_DRS_DATA_API?: string;
   readonly VITE_GROUP_UW_DECISION_API?: string;
+  readonly VITE_GROUP_DVT_VALIDATION_API?: string;
   readonly VITE_FINANCE_SERVICE?: string;
   readonly VITE_GROUP_FINANCIAL_FETCH_API?: string;
   readonly VITE_GROUP_FINANCIAL_SAVE_API?: string;
