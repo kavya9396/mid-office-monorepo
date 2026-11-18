@@ -169,5 +169,6 @@ export const mmtGrievanceApi = createApi({
 export const {
   useGetMmtDrsQuery,
   useGetMmtGrievancesQuery,
+  useLazyGetMmtGrievancesQuery,
   useSaveMmtGrievancesMutation,
 } = mmtGrievanceApi;
