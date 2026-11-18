@@ -19,6 +19,11 @@ import {
 import { getGroupDrsTaskConfig } from "../config/drsTaskConfig";
 import groupDrsMock from "../modules/drs/mock/groupDrs.json";
 import guwDrsMock from "../../../../mock/drs/guw-informal-drs.json";
+import refCmoDrsMock from "../../../../mock/drs/ref-cmo-drs.json";
+import hoCmoSpecialDrsMock from "../../../../mock/drs/ho-cmo-special-drs.json";
+import hoCmoReferralDrsMock from "../../../../mock/drs/ho-cmo-referral-drs.json";
+import vendorCmoEcgDrsMock from "../../../../mock/drs/vendor-cmo-ecg-drs.json";
+import vendorCmoTmtDrsMock from "../../../../mock/drs/vendor-cmo-tmt-drs.json";
 import guwUwDecisionMock from "../../../../mock/drs/guw-uw-decision.json";
 import {
   mapGuwUwDecision,
@@ -78,6 +83,15 @@ function readError(reason: unknown): string {
 function customError(error: string): FetchBaseQueryError {
   return { status: "CUSTOM_ERROR", error };
 }
+
+/** Mock DRS payloads keyed by `GroupDrsTaskConfig.screenId`, not by role or screen type. */
+const DRS_MOCK_BY_SCREEN_ID: Record<string, unknown> = {
+  refCmo: refCmoDrsMock,
+  hoCmoSpecial: hoCmoSpecialDrsMock,
+  hoCmoReferral: hoCmoReferralDrsMock,
+  vendorCmoEcg: vendorCmoEcgDrsMock,
+  vendorCmoTmt: vendorCmoTmtDrsMock,
+};
 
 /**
  * DRS fetch request body. `roleType` / `screenType` / `businessType` come from `drsTaskConfig`
@@ -504,7 +518,14 @@ export const groupDrsApi = createApi({
     getGuwDrsPayload: build.query<unknown, GroupDrsQueryArg>({
       async queryFn(arg, _api, _extra, baseQuery) {
         if (useMock) {
-          return { data: guwDrsMock as unknown };
+          const taskType = (
+            typeof arg === "string" ? getDrsRoleType() : (arg.taskType ?? arg.roleType ?? getDrsRoleType())
+          )
+            .trim()
+            .toUpperCase();
+          // Mock file follows `screenId`, so renaming roleType or screenType keeps the same payload.
+          const screenId = getGroupDrsTaskConfig(taskType).screenId;
+          return { data: (screenId ? (DRS_MOCK_BY_SCREEN_ID[screenId] ?? guwDrsMock) : guwDrsMock) as unknown };
         }
         const drsDataUrl = groupBusinessUrls.drsData;
         if (drsDataUrl.length === 0) {

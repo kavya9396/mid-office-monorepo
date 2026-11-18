@@ -53,9 +53,14 @@ const subSectionValues = (members: JsonRecord[], name: string): unknown[] =>
     .map((member) => recordList(member.subSections).find((item) => item.name === name)?.value)
     .filter((value) => value !== undefined);
 
-/** Rows of a table section: either a bare list or `{ columns, rows }`. */
-const tableRows = (value: unknown): JsonRecord[] =>
-  Array.isArray(value) ? recordList(value) : isRecord(value) ? recordList(value.rows) : [];
+/** Rows of a table section: a bare list, `{ columns, rows }`, or `{ columns, value }`. */
+const tableRows = (value: unknown): JsonRecord[] => {
+  if (Array.isArray(value)) return recordList(value);
+  if (!isRecord(value)) return [];
+  if (Array.isArray(value.rows)) return recordList(value.rows);
+  if (Array.isArray(value.value)) return recordList(value.value);
+  return [];
+};
 
 /**
  * Mapped rows of the first member that has any non-empty row; `[]` when members have the
@@ -152,11 +157,19 @@ function mapRiskMember(entry: JsonRecord, index: number): RiskMember {
   // Everything sits under `risk_details`: memberDetails, riskAssessament and riskDecision.
   const risk = isRecord(entry.risk_details) ? entry.risk_details : {};
   const details = labelValues(isRecord(risk.memberDetails) ? risk.memberDetails.value : undefined);
-  const assessment = isRecord(risk.riskAssessament) ? risk.riskAssessament : {};
-  const decision = isRecord(risk.riskDecision) ? risk.riskDecision : {};
+  const assessment = isRecord(entry.riskAssessament)
+    ? entry.riskAssessament
+    : isRecord(risk.riskAssessament)
+      ? risk.riskAssessament
+      : {};
+  const decision = isRecord(entry.riskDecision)
+    ? entry.riskDecision
+    : isRecord(risk.riskDecision)
+      ? risk.riskDecision
+      : {};
   return {
     id: `risk-member-${index + 1}`,
-    name: str(entry.member) || `Member ${index + 1}`,
+    name: str(entry.member) || str(risk.member) || `Member ${index + 1}`,
     details,
     assessment: labelValues(assessment.value).map((field, fieldIndex) => ({
       id: `f${fieldIndex}`,

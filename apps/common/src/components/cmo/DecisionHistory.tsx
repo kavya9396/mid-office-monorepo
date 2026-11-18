@@ -106,14 +106,12 @@ const DecisionHistory = ({ rows, readOnly = false }: DecisionHistoryProps) => {
       render: (_value, row) => (
         <CustomTextField
           fullWidth
-          multiline
-          minRows={2}
           placeholder="Enter CMO remarks"
           disabled={readOnly}
           value={row.cmoRemarks}
           onChange={(event) => updateRow(row.id, { cmoRemarks: event.target.value })}
           sx={{
-            "& .MuiOutlinedInput-root": { height: "auto", minHeight: 56 },
+            "& .MuiOutlinedInput-root": { height: 40, minHeight: 40 },
           }}
         />
       ),

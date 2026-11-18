@@ -9,8 +9,13 @@ import { MmtGrievanceDrsPage } from "./MmtGrievanceDrsPage";
 import DvtUser from "./DvtUser";
 import GuwUser from "./GuwUser";
 import { RefCmoDrsPage } from "./RefCmoDrsPage";
+import { HoCmoSpecial } from "./HoCmoSpecial";
+import { HoCmoReferral } from "./HoCmoReferral";
+import { VendorCmoEcg } from "./VendorCmoEcg";
+import { VendorCmoTmt } from "./VendorCmoTmt";
 import { ReferralDrsPage } from "../referral-uw/ReferralDrsPage";
 import { fetchGuwMembers } from "../../services/guwService";
+import { getGroupDrsTaskConfig } from "../../config/drsTaskConfig";
 import { HOD_CONFIG, SR_UW_CONFIG } from "../../services/referralUwService";
 
 interface MemberEntryProps {
@@ -92,13 +97,21 @@ const SCREEN_BY_ROLE: Record<string, () => JSX.Element | null> = {
   DVT_TASK: DvtUser,
   MMT_TASK: MmtGrievanceDrsPage,
   REF_CMO_TASK: RefCmoDrsPage,
-  HO_CMO_TASK: RefCmoDrsPage,
-  VENDOR_CMO_TASK: RefCmoDrsPage,
+};
+
+/** CMO pages keyed by `screenId`, so a roleType or screenType rename still opens the same screen. */
+const SCREEN_BY_ID: Record<string, () => JSX.Element> = {
+  refCmo: RefCmoDrsPage,
+  hoCmoSpecial: HoCmoSpecial,
+  hoCmoReferral: HoCmoReferral,
+  vendorCmoEcg: VendorCmoEcg,
+  vendorCmoTmt: VendorCmoTmt,
 };
 
 export function GroupDrsPage() {
   const roleType = getDrsRoleType().trim().toUpperCase();
-  const Screen = SCREEN_BY_ROLE[roleType] ?? DvtUser;
+  const screenId = getGroupDrsTaskConfig(roleType).screenId;
+  const Screen = (screenId ? SCREEN_BY_ID[screenId] : undefined) ?? SCREEN_BY_ROLE[roleType] ?? DvtUser;
   return <Screen />;
 }
 
