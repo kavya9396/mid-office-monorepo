@@ -87,7 +87,7 @@ export function DecisionSection({
   ariaLabel = "DVT Decision",
   remarksLabel = "DVT Remarks",
   decisionLabel = "DVT Decision",
-  decisionCodeLabel = "Decision Code",
+  // decisionCodeLabel = "Decision Code",
   submitButtonLabel = "Submit",
   decisionOptions = DEFAULT_DVT_DECISION_OPTIONS,
   remarks: controlledRemarks,
@@ -165,8 +165,8 @@ export function DecisionSection({
           xs: "1fr",
           md:
             readOnly || hideSubmit
-              ? "minmax(0, 1fr) 250px 220px"
-              : "minmax(0, 1fr) 250px 220px auto",
+              ? "minmax(0, 1fr) 250px"
+              : "minmax(0, 1fr) 250px auto",
         },
         gap: 1.25,
         alignItems: hasErrors ? "start" : "center",
@@ -203,7 +203,7 @@ export function DecisionSection({
         helperText={decisionError || undefined}
       />
 
-      <CustomTextField
+      {/* <CustomTextField
         label={decisionCodeLabel}
         value={decisionCodeVal}
         size="small"
@@ -229,7 +229,7 @@ export function DecisionSection({
             borderWidth: "1px",
           },
         }}
-      />
+      /> */}
 
       {!readOnly && !hideSubmit && (
         <CustomButton

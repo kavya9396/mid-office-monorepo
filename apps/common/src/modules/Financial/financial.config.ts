@@ -1016,6 +1016,7 @@ export const FINANCIAL_MESSAGES = {
   sectionSaved: (title: string) => `${title} saved successfully.`,
   saveFailed: "Unable to save the financial details. Please try again.",
   validationFailed: "Please correct the highlighted fields before saving.",
+  unsavedChanges: "Please save the financial details before submitting.",
 } as const;
 
 const YES_NO_LABEL =

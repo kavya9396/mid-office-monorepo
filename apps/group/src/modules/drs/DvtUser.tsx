@@ -189,6 +189,9 @@ const DvtUser = () => {
   // Cleared when that applicant's PAN or Birthdate changes, or when a later validation succeeds.
   const [invalidPanByApplicant, setInvalidPanByApplicant] = useState<Record<string, PanValidationInput>>({});
   const [panBlockedNoticeOpen, setPanBlockedNoticeOpen] = useState(false);
+  // Requirement Management has edits (status change, added rows...) that were not saved yet.
+  const [requirementsDirty, setRequirementsDirty] = useState(false);
+  const [saveRequirementsNoticeOpen, setSaveRequirementsNoticeOpen] = useState(false);
   const handlePanStatusChange = (applicantId: string, status: PanStatus) => {
     setPanStatusByApplicant((current) => ({ ...current, [applicantId]: status }));
     setInvalidPanByApplicant((current) => {
@@ -305,6 +308,10 @@ const DvtUser = () => {
   });
   const handleDecisionSubmit = async (payload: DecisionSubmitPayload) => {
     if (isMemberDecisionMissing) return;
+    if (requirementsDirty) {
+      setSaveRequirementsNoticeOpen(true);
+      return;
+    }
     if (Object.keys(invalidPanByApplicant).length > 0) {
       setPanBlockedNoticeOpen(true);
       return;
@@ -542,6 +549,13 @@ const DvtUser = () => {
         onClose={() => setPanBlockedNoticeOpen(false)}
       />
 
+      <CustomSnackbar
+        open={saveRequirementsNoticeOpen}
+        message="Please save the requirements before submitting."
+        severity="warning"
+        onClose={() => setSaveRequirementsNoticeOpen(false)}
+      />
+
       <DecisionBar
         title="BRE Decision"
         items={[
@@ -579,6 +593,7 @@ const DvtUser = () => {
           },
         ]}
         onSave={handleSaveRequirements}
+        onDirtyChange={setRequirementsDirty}
       />
 
       <LifeAssured

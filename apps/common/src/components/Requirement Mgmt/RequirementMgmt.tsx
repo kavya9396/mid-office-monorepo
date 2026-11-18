@@ -90,6 +90,7 @@ export function RequirementMgmt({
   filter,
   labels: labelOverrides,
   onSave,
+  onDirtyChange,
   applicationKey,
 }: Readonly<RequirementMgmtProps>) {
   const labels: RequirementLabels = { ...DEFAULT_LABELS, ...labelOverrides };
@@ -97,12 +98,16 @@ export function RequirementMgmt({
   const masterTeamOptions = readMasterTeamOptions();
   const filterConfig = resolveFilterConfig(filter, readOnly);
 
-  const { rows, saving, addRow, updateRow, patchRow, removeRow, save } = useRequirementRows(
+  const { rows, saving, isDirty, addRow, updateRow, patchRow, removeRow, save } = useRequirementRows(
     requirements,
     onSave,
   );
   const cascade = useRequirementMstCascade(patchRow);
   const [dialogValue, setDialogValue] = useState<{ title: string; value: string } | null>(null);
+
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
 
   useEffect(() => {
     if (applicationKey && applicationKey.trim().length > 0) {
