@@ -84,6 +84,10 @@ type PageState =
   | { kind: "ready"; record: GuwDrsRecord };
 
 const quickLinksConfig = GROUP_QUICK_LINKS_CONFIG.guw;
+// Member DRS page: no Raise Referral / Counter Sign buttons (only the member-selection summary has them)
+const MEMBER_ACTION_OPTIONS = [{ value: "HOLD", label: "Hold" }];
+
+
 
 const GuwUser = () => {
   const navigate = useNavigate();
@@ -335,6 +339,7 @@ const GuwUser = () => {
               drsApplicationNo={page.record.applicationNo}
               partyId={page.record.partyId}
               storageKey={memberStorageKey}
+              actionOptions={MEMBER_ACTION_OPTIONS}
               redirectUrl={postSubmitUrl}
               breOverallDecision={page.record.uwData?.breOverallDecision}
               breOverallRemarks={page.record.uwData?.breOverallRemarks}
