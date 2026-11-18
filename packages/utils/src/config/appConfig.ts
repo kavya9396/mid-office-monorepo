@@ -116,6 +116,9 @@ export const groupBusinessUrls = {
   get uwDecision(): string {
     return configuredUrl(import.meta.env.VITE_GROUP_UW_DECISION_API);
   },
+  get dvtValidation(): string {
+    return configuredUrl(import.meta.env.VITE_GROUP_DVT_VALIDATION_API);
+  },
   get financialFetch(): string {
     return configuredUrl(import.meta.env.VITE_GROUP_FINANCIAL_FETCH_API);
   },

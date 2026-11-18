@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Box, Typography } from "@mui/material";
 import { colors, CustomButton, CustomTabs, type TabItem } from "@insurance-poc/ui";
+import { DecisionSection, type DecisionOption } from "../DecisionSection";
 import { ProfileImage } from "./ProfileImage";
 import type { FieldData } from "./Applicant Profile/Fields";
 import {
@@ -99,7 +100,19 @@ export type LifeAssuredProps = {
   hideProfileImage?: boolean;
   /** Tab set: `dvt` (default) or `guw` (Generic, eIA and Payment & Payout instead of Lifestyle, and no Edit button). */
   variant?: "dvt" | "guw";
+  /** When true, a decision section (remarks, decision, decision code) is shown at the end of each life assured. */
+  showDecision?: boolean;
+  /** When true, the required-field errors of every decision section are shown. */
+  showDecisionErrors?: boolean;
+  /** Decision dropdown options; omit to use the `DecisionSection` defaults. */
+  decisionOptions?: DecisionOption[];
+  /** Decision code shown (read-only) in every life assured's decision section. */
+  decisionCode?: string;
+  /** Fires when the remarks or decision of a life assured's decision section change. */
+  onMemberDecisionChange?: (applicantId: string, value: MemberDecisionValue) => void;
 };
+
+export type MemberDecisionValue = { remarks: string; decision: string };
 
 type ProfileTab =
   | "imageDetails"
@@ -132,8 +145,9 @@ const GUW_PROFILE_TABS: TabItem<ProfileTab>[] = [
   { key: "paymentPayout", label: "Payment & Payout" },
 ];
 
-type ApplicantProfileSectionProps = Omit<LifeAssuredProps, "applicants"> & {
+type ApplicantProfileSectionProps = Omit<LifeAssuredProps, "applicants" | "onMemberDecisionChange"> & {
   applicant: LifeAssuredApplicant;
+  onDecisionChange?: (value: MemberDecisionValue) => void;
 };
 
 function ApplicantProfileSection({
@@ -143,8 +157,19 @@ function ApplicantProfileSection({
   onViewFinancial,
   hideProfileImage = false,
   variant = "dvt",
+  showDecision = false,
+  showDecisionErrors = false,
+  decisionOptions,
+  decisionCode,
+  onDecisionChange,
 }: Readonly<ApplicantProfileSectionProps>) {
   const [tab, setTab] = useState<ProfileTab>("imageDetails");
+  const [memberDecision, setMemberDecision] = useState<MemberDecisionValue>({ remarks: "", decision: "" });
+  const updateMemberDecision = (patch: Partial<MemberDecisionValue>) => {
+    const next = { ...memberDecision, ...patch };
+    setMemberDecision(next);
+    onDecisionChange?.(next);
+  };
 
   const renderTab = () => {
     switch (tab) {
@@ -231,6 +256,24 @@ function ApplicantProfileSection({
         </Box>
 
         <Box sx={{ p: 0.5 }}>{renderTab()}</Box>
+
+        {showDecision && (
+          <DecisionSection
+            ariaLabel={`${applicant.label} Decision`}
+            remarksLabel={`${applicant.label} Remarks`}
+            decisionLabel={`${applicant.label} Decision`}
+            decisionCodeLabel={`${applicant.label} Decision Code`}
+            decisionOptions={decisionOptions}
+            decision={memberDecision.decision}
+            remarks={memberDecision.remarks}
+            onDecisionChange={(decision) => updateMemberDecision({ decision })}
+            onRemarksChange={(remarks) => updateMemberDecision({ remarks })}
+            decisionCode={decisionCode}
+            showErrors={showDecisionErrors}
+            hideSubmit
+            sx={{ border: "none", borderTop: `1px solid ${colors.borderAccent}`, borderRadius: 0 }}
+          />
+        )}
       </Box>
     </Box>
   );
@@ -244,6 +287,7 @@ export function LifeAssured({
   onValidatePan,
   panStatusByApplicant,
   onPanStatusChange,
+  onMemberDecisionChange,
   ...actions
 }: Readonly<LifeAssuredProps>) {
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -265,7 +309,13 @@ export function LifeAssured({
   return (
     <Box sx={{ display: "grid", gap: 2 }}>
       {applicants.map((applicant) => (
-        <ApplicantProfileSection key={applicant.id} applicant={applicant} onEdit={handleEdit} {...actions} />
+        <ApplicantProfileSection
+          key={applicant.id}
+          applicant={applicant}
+          onEdit={handleEdit}
+          onDecisionChange={(value) => onMemberDecisionChange?.(applicant.id, value)}
+          {...actions}
+        />
       ))}
 
       <EditApplicantDialog

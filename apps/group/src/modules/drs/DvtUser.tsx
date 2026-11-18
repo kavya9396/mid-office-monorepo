@@ -11,6 +11,7 @@ import {
   readApiErrorMessage,
   setBreRetriggerCount,
   getMasterList,
+  getSessionUser,
 } from "@insurance-poc/utils";
 import { getGroupDrsTaskConfig } from "../../config/drsTaskConfig";
 
@@ -29,6 +30,7 @@ import {
 } from "@insurance-poc/common/decision-bar";
 import { DetailCard } from "@insurance-poc/common/detail-card";
 import { DecisionSection, type DecisionSubmitPayload } from "@insurance-poc/common/decision-section";
+import { ValidationList, type ValidationRow } from "@insurance-poc/common/validation-list";
 import {
   hasPendingPanPendcode,
   LifeAssured,
@@ -64,6 +66,7 @@ import {
   useSaveGroupFinancialMutation,
 } from "../../services/financialApi";
 import type { CardType } from "../../services/drsService";
+import { useFetchDvtValidationMutation } from "../../services/dvtValidationApi";
 import { useValidateNsdlPanMutation } from "../../services/nsdlApi";
 import { createNsdlPanValidateRequest, resolveNsdlOutcome } from "../../services/nsdlService";
 import { GROUP_FINANCIAL_ACTIONS_CONFIG } from "../config/financialActions.config";
@@ -142,7 +145,9 @@ const DvtUser = () => {
       applicationNo: requestedApplicationNo,
       ...drsTaskConfig,
     },
-    { skip: requestedApplicationNo.length === 0 },
+    // Always hit the DRS API when the screen mounts; otherwise RTK Query serves the cached
+    // result (keepUnusedDataFor defaults to 60s) when the user comes back to the same task.
+    { skip: requestedApplicationNo.length === 0, refetchOnMountOrArgChange: true },
   );
   const applicationNo = requestedApplicationNo || drs.data?.applicationNo || "";
   const drsBasePath = applicationNo.length > 0 ? drsRoutePath(applicationNo) : "";
@@ -171,7 +176,12 @@ const DvtUser = () => {
   const [breDetailOpen, setBreDetailOpen] = useState(false);
   const [decision, setDecision] = useState("");
   const [remarks, setRemarks] = useState("");
+  // Remarks + decision entered in each life assured's own decision section, keyed by applicant id.
+  const [memberDecisions, setMemberDecisions] = useState<Record<string, { remarks: string; decision: string }>>({});
+  const [showMemberDecisionErrors, setShowMemberDecisionErrors] = useState(false);
   const [completeGroupTask, completeGroupTaskState] = useCompleteGroupTaskMutation();
+  const [fetchDvtValidation, fetchDvtValidationState] = useFetchDvtValidationMutation();
+  const [validationRows, setValidationRows] = useState<ValidationRow[]>([]);
   const [validateNsdlPan] = useValidateNsdlPanMutation();
   // Last NSDL result per applicant; kept here so it survives closing the dialog and the submit step can read it.
   const [panStatusByApplicant, setPanStatusByApplicant] = useState<Record<string, PanStatus>>({});
@@ -285,7 +295,14 @@ const DvtUser = () => {
   };
   const handleApplicantAction = (action: string) => (applicantId: string) =>
     console.log(`${action} clicked`, applicantId);
+  const handleMemberDecisionChange = (applicantId: string, value: { remarks: string; decision: string }) =>
+    setMemberDecisions((current) => ({ ...current, [applicantId]: value }));
+  const isMemberDecisionMissing = applicants.some((applicant) => {
+    const value = memberDecisions[applicant.id];
+    return !value || value.remarks.trim() === "" || value.decision === "";
+  });
   const handleDecisionSubmit = async (payload: DecisionSubmitPayload) => {
+    if (isMemberDecisionMissing) return;
     if (Object.keys(invalidPanByApplicant).length > 0) {
       setPanBlockedNoticeOpen(true);
       return;
@@ -293,6 +310,28 @@ const DvtUser = () => {
     const appNo = applicationNo.trim();
     if (appNo.length === 0) {
       setSnackbarMessage("Application number is missing.");
+      return;
+    }
+    // Validation API first; the complete-task API is called only when it returns no validations.
+    try {
+      const validation = await fetchDvtValidation({
+        userId: getSessionUser()?.username ?? "",
+        role: "DVT",
+        applicationNo: appNo,
+        partyId: activePartyId,
+        dvtDecision: payload.decision,
+      }).unwrap();
+      if (validation.validations.length > 0) {
+        // The API returns no member type; the request was made for the selected applicant's party.
+        const memberType = selectedApplicant?.memberType ?? selectedApplicant?.label ?? "";
+        setValidationRows(
+          validation.validations.map((item) => ({ memberType, reason: item.reason, remarks: item.remarks })),
+        );
+        return;
+      }
+    } catch (reason: unknown) {
+      const apiMessage = readApiErrorMessage(reason);
+      setSnackbarMessage(apiMessage.length > 0 ? apiMessage : "Unable to validate the DVT decision.");
       return;
     }
     try {
@@ -544,6 +583,11 @@ const DvtUser = () => {
         onValidatePan={handleValidatePan}
         panStatusByApplicant={panStatusByApplicant}
         onPanStatusChange={handlePanStatusChange}
+        showDecision
+        showDecisionErrors={showMemberDecisionErrors}
+        onMemberDecisionChange={handleMemberDecisionChange}
+        decisionOptions={decisionOptions}
+        decisionCode={dvtDecision.decisionCode}
       />
 
       <DecisionSection
@@ -554,8 +598,23 @@ const DvtUser = () => {
         onRemarksChange={setRemarks}
         defaultDecisionCode={dvtDecision.decisionCode}
         onSubmit={handleDecisionSubmit}
-        isSubmitting={completeGroupTaskState.isLoading}
+        onSubmitAttempt={() => setShowMemberDecisionErrors(true)}
+        isSubmitting={fetchDvtValidationState.isLoading || completeGroupTaskState.isLoading}
       />
+
+      <CustomDialog
+        open={validationRows.length > 0}
+        onClose={() => setValidationRows([])}
+        title={
+          <Typography component="span" sx={{ fontSize: 16, fontWeight: 700 }}>
+            Validations
+          </Typography>
+        }
+        maxWidth="md"
+        fullWidth
+      >
+        <ValidationList rows={validationRows} />
+      </CustomDialog>
 
       <CustomDialog
         open={breDetailOpen}

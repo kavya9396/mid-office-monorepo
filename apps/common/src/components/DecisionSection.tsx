@@ -52,8 +52,14 @@ export type DecisionSectionProps = {
   defaultDecisionCode?: string;
   /** Callback fired when clicking the submit button */
   onSubmit?: (data: DecisionSubmitPayload) => void;
+  /** Fires on every submit click, before validation (even when this section's own fields are invalid) */
+  onSubmitAttempt?: () => void;
+  /** When true, shows the required-field errors without waiting for this section's submit */
+  showErrors?: boolean;
   /** When true, hides the submit button and disables all fields */
   readOnly?: boolean;
+  /** When true, hides the submit button but keeps the fields editable */
+  hideSubmit?: boolean;
   /** When true, disables all fields and the submit button */
   disabled?: boolean;
   /** Indicates submission in progress */
@@ -93,7 +99,10 @@ export function DecisionSection({
   defaultDecision = "",
   defaultDecisionCode = "",
   onSubmit,
+  onSubmitAttempt,
+  showErrors = false,
   readOnly = false,
+  hideSubmit = false,
   disabled = false,
   isSubmitting = false,
   submitDisabled = false,
@@ -123,14 +132,16 @@ export function DecisionSection({
     onDecisionChange?.(value);
   };
 
+  const validate = submitAttempted || showErrors;
   const remarksError =
-    submitAttempted && remarksVal.trim() === "" ? "Remarks are required" : "";
+    validate && remarksVal.trim() === "" ? "Remarks are required" : "";
   const decisionError =
-    submitAttempted && decisionVal === "" ? "Decision is required" : "";
+    validate && decisionVal === "" ? "Decision is required" : "";
   const hasErrors = remarksError !== "" || decisionError !== "";
 
   const handleSubmit = () => {
     setSubmitAttempted(true);
+    onSubmitAttempt?.();
     if (remarksVal.trim() === "" || decisionVal === "") {
       return;
     }
@@ -152,7 +163,10 @@ export function DecisionSection({
         display: "grid",
         gridTemplateColumns: {
           xs: "1fr",
-          md: "minmax(0, 1fr) 250px 220px auto",
+          md:
+            readOnly || hideSubmit
+              ? "minmax(0, 1fr) 250px 220px"
+              : "minmax(0, 1fr) 250px 220px auto",
         },
         gap: 1.25,
         alignItems: hasErrors ? "start" : "center",
@@ -217,7 +231,7 @@ export function DecisionSection({
         }}
       />
 
-      {!readOnly && (
+      {!readOnly && !hideSubmit && (
         <CustomButton
           variant="contained"
           disabled={isDisabled || submitDisabled || isSubmitting}

@@ -7,6 +7,7 @@ import { groupBreRetriggerApi } from "../services/breRetriggerApi";
 import { groupCompleteTaskApi } from "../services/completeTaskApi";
 import { groupInboxApi } from "../services/inboxApi";
 import { groupNsdlApi } from "../services/nsdlApi";
+import { groupDvtValidationApi } from "../services/dvtValidationApi";
 import { mmtGrievanceApi } from "../services/mmtGrievanceApi";
 
 const listenerMiddleware = createListenerMiddleware();
@@ -19,6 +20,7 @@ listenerMiddleware.startListening({
     listenerApi.dispatch(groupFinancialApi.util.resetApiState());
     listenerApi.dispatch(groupCompleteTaskApi.util.resetApiState());
     listenerApi.dispatch(groupNsdlApi.util.resetApiState());
+    listenerApi.dispatch(groupDvtValidationApi.util.resetApiState());
     listenerApi.dispatch(groupBreRetriggerApi.util.resetApiState());
     listenerApi.dispatch(mmtGrievanceApi.util.resetApiState());
   },
@@ -33,6 +35,7 @@ export const store = configureStore({
     [groupFinancialApi.reducerPath]: groupFinancialApi.reducer,
     [groupCompleteTaskApi.reducerPath]: groupCompleteTaskApi.reducer,
     [groupNsdlApi.reducerPath]: groupNsdlApi.reducer,
+    [groupDvtValidationApi.reducerPath]: groupDvtValidationApi.reducer,
     [groupBreRetriggerApi.reducerPath]: groupBreRetriggerApi.reducer,
     [mmtGrievanceApi.reducerPath]: mmtGrievanceApi.reducer,
   },
@@ -46,6 +49,7 @@ export const store = configureStore({
         groupFinancialApi.middleware,
         groupCompleteTaskApi.middleware,
         groupNsdlApi.middleware,
+        groupDvtValidationApi.middleware,
         groupBreRetriggerApi.middleware,
         mmtGrievanceApi.middleware,
       ),

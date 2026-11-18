@@ -64,6 +64,11 @@
       "import": "./src/components/UwGuidelines.tsx",
       "default": "./src/components/UwGuidelines.tsx"
     },
+    "./validation-list": {
+      "types": "./src/components/ValidationList.tsx",
+      "import": "./src/components/ValidationList.tsx",
+      "default": "./src/components/ValidationList.tsx"
+    },
     "./requirement-mgmt": {
       "types": "./src/components/Requirement Mgmt/RequirementMgmt.tsx",
       "import": "./src/components/Requirement Mgmt/RequirementMgmt.tsx",
