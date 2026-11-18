@@ -316,19 +316,25 @@ const DvtUser = () => {
     }
     // Validation API first; the complete-task API is called only when it returns no validations.
     try {
+      // One entry per life assured, each with the decision chosen in its own decision section.
       const validation = await fetchDvtValidation({
         userId: getSessionUser()?.username ?? "",
         role: "DVT",
         applicationNo: appNo,
-        partyId: activePartyId,
-        dvtDecision: payload.decision,
+        partyDecision: applicants.map((applicant) => ({
+          partyId: applicant.partyId ?? "",
+          dvtDecision: memberDecisions[applicant.id]?.decision ?? "",
+        })),
       }).unwrap();
-      if (validation.validations.length > 0) {
-        // The API returns no member type; the request was made for the selected applicant's party.
-        const memberType = selectedApplicant?.memberType ?? selectedApplicant?.label ?? "";
-        setValidationRows(
-          validation.validations.map((item) => ({ memberType, reason: item.reason, remarks: item.remarks })),
-        );
+      const rows: ValidationRow[] = validation.partyValidations.flatMap((party) =>
+        party.validations.map((item) => ({
+          memberType: party.memberType,
+          reason: item.reason,
+          remarks: item.remarks,
+        })),
+      );
+      if (rows.length > 0) {
+        setValidationRows(rows);
         return;
       }
     } catch (reason: unknown) {
