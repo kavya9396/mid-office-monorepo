@@ -16,6 +16,7 @@ import {
   colors,
   CustomAccordion,
   CustomButton,
+  CustomCheckbox,
   CustomDialog,
   CustomSearchSelect,
   CustomSelect,
@@ -36,6 +37,7 @@ import {
   MEDICAL_FAMILY_RELATION_OPTIONS,
   type MedicalCmoDecision,
   type MedicalFamilyRow,
+  getVisibleMedicalQuestions,
   MEDICAL_GROUPS,
   MEDICAL_LOCKED_FIELDS,
   MEDICAL_MESSAGES,
@@ -62,6 +64,8 @@ import {
 } from "./medical.schema";
 
 dayjs.extend(customParseFormat);
+
+export { mapMedicalFetchPayload, type MedicalFetchResult } from "./medical.mapper";
 
 export interface MedicalProps {
   summary?: ReactNode;
@@ -90,6 +94,8 @@ interface MedicalStore {
   get: (id: string) => string;
   set: (id: string, value: string) => void;
   subscribe: (id: string, listener: Listener) => () => void;
+  /** Fires on any change to a value whose id starts with `prefix`. */
+  subscribePrefix: (prefix: string, listener: Listener) => () => void;
   snapshot: () => Record<string, string>;
   pick: (prefix: string) => Record<string, string>;
   restore: (prefix: string, saved: Readonly<Record<string, string>>) => void;
@@ -164,8 +170,18 @@ const createInitialValues = (sections: readonly MedicalSection[]) => {
     section.fields.forEach(([, value], index) => {
       initial[fieldId(section.key, index)] = value;
     });
+    section.questionnaire?.forEach((question) => {
+      initial[`${section.key}-q-${question.id}-response`] = question.response ?? "";
+      initial[`${section.key}-q-${question.id}-remarks`] = question.remarks ?? "";
+    });
     section.parameters?.forEach(([, unit], index) => {
-      initial[`${section.key}-param-${index}-unit`] = unit;
+      const fetched = section.parameterValues?.[index];
+      initial[`${section.key}-param-${index}-unit`] = fetched?.unit || unit;
+      if (fetched) {
+        initial[`${section.key}-param-${index}-value`] = fetched.value;
+        initial[`${section.key}-param-${index}-from`] = fetched.from;
+        initial[`${section.key}-param-${index}-to`] = fetched.to;
+      }
     });
     if (section.layout === "familyHistory") {
       const familyRows = section.familyRows ?? FAMILY_DEFAULT_ROWS;
@@ -187,6 +203,12 @@ const createMedicalStore = (
 ): MedicalStore => {
   const values: Record<string, string> = { ...initial };
   const listeners: Record<string, Set<Listener>> = {};
+  const prefixListeners = new Map<string, Set<Listener>>();
+  const notifyPrefixes = (id: string) => {
+    prefixListeners.forEach((set, prefix) => {
+      if (id.startsWith(prefix)) set.forEach((listener) => listener());
+    });
+  };
 
   return {
     get: (id) => values[id] ?? "",
@@ -194,12 +216,24 @@ const createMedicalStore = (
       if (values[id] === value) return;
       values[id] = value;
       listeners[id]?.forEach((listener) => listener());
+      notifyPrefixes(id);
     },
     subscribe: (id, listener) => {
       listeners[id] ??= new Set<Listener>();
       listeners[id].add(listener);
       return () => {
         listeners[id]?.delete(listener);
+      };
+    },
+    subscribePrefix: (prefix, listener) => {
+      let set = prefixListeners.get(prefix);
+      if (!set) {
+        set = new Set<Listener>();
+        prefixListeners.set(prefix, set);
+      }
+      set.add(listener);
+      return () => {
+        prefixListeners.get(prefix)?.delete(listener);
       };
     },
     snapshot: () => ({ ...values }),
@@ -472,6 +506,15 @@ const RequiredMark = memo(function RequiredMark() {
   );
 });
 
+/** Asterisk beside a questionnaire Remarks field, shown while the selected Response requires it. */
+const RemarksRequiredMark = memo(function RemarksRequiredMark({
+  responseId,
+  isRequired,
+}: Readonly<{ responseId: string; isRequired: (responseKey?: string) => boolean }>) {
+  const responseValue = useFieldValue(responseId);
+  return isRequired(responseValue) ? <RequiredMark /> : null;
+});
+
 function RequiredHeader({
   label,
   required,
@@ -503,7 +546,12 @@ interface MedicalControlProps {
   validator?: MedicalFieldValidator;
   /** Store id of the field the validator's rules depend on. */
   dependencyId?: string;
+  /** Multi-select over `options`; the stored value is the selected keys joined by ",". */
+  multiple?: boolean;
 }
+
+/** Option key that is mutually exclusive with the other options of a multi-select question. */
+const MULTI_SELECT_NONE_KEY = "NO";
 
 const MedicalControl = memo(function MedicalControl({
   id,
@@ -516,6 +564,7 @@ const MedicalControl = memo(function MedicalControl({
   options: optionsOverride,
   validator,
   dependencyId,
+  multiple = false,
 }: Readonly<MedicalControlProps>) {
   const store = useMedicalStore();
   const value = useFieldValue(id);
@@ -538,8 +587,17 @@ const MedicalControl = memo(function MedicalControl({
     !readOnly && (touched || attempted)
       ? validator?.validate(value, dependencyValue)
       : undefined;
+  const isMissingRequired =
+    !readOnly &&
+    validator?.isRequired(dependencyValue) === true &&
+    value.trim() === "";
 
   if (readOnly) {
+    const selectedKeys = multiple ? value.split(",").filter(Boolean) : [value];
+    const readOnlyText = selectedKeys
+      .map((key) => optionsOverride?.find((option) => option.value === key)?.label)
+      .filter((label): label is string => label !== undefined)
+      .join(", ");
     return (
       <Box
         role="textbox"
@@ -548,12 +606,52 @@ const MedicalControl = memo(function MedicalControl({
         data-field={id}
         sx={READ_ONLY_DISPLAY_SX}
       >
-        {value || "-"}
+        {multiple
+          ? readOnlyText || placeholder
+          : optionsOverride?.find((option) => option.value === value)?.label ?? (value || placeholder)}
       </Box>
     );
   }
 
   const options = optionsOverride ?? getMedicalOptions(kind);
+  if (multiple && options.length > 0) {
+    const selectedKeys = value.split(",").filter(Boolean);
+    const toggle = (key: string) => {
+      const isSelected = selectedKeys.includes(key);
+      // "NO" is exclusive: picking it clears every other option, and picking any other option clears "NO".
+      const next = isSelected
+        ? selectedKeys.filter((item) => item !== key)
+        : key === MULTI_SELECT_NONE_KEY
+          ? [key]
+          : [...selectedKeys.filter((item) => item !== MULTI_SELECT_NONE_KEY), key];
+      onChange(options.map((option) => option.value).filter((item) => next.includes(item)).join(","));
+    };
+    return (
+      <Box sx={EDITABLE_CONTROL_SX} data-field={id} aria-label={ariaLabel}>
+        <Box
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            columnGap: 2,
+            rowGap: 0.5,
+            "& .MuiTypography-root": { fontSize: "12px" },
+          }}
+        >
+          {options.map((option) => (
+            <CustomCheckbox
+              key={option.value}
+              label={option.label}
+              checked={selectedKeys.includes(option.value)}
+              onChange={() => toggle(option.value)}
+            />
+          ))}
+        </Box>
+        {errorMessage && (
+          <Typography sx={{ color: "#B42318", fontSize: 12 }}>{errorMessage}</Typography>
+        )}
+      </Box>
+    );
+  }
   if (options.length > 0) {
     return (
       <Box sx={EDITABLE_CONTROL_SX} data-field={id}>
@@ -587,6 +685,22 @@ const MedicalControl = memo(function MedicalControl({
     );
   }
 
+  if (kind === "time") {
+    return (
+      <Box sx={EDITABLE_CONTROL_SX} data-field={id}>
+        <CustomTextField
+          fullWidth
+          type="time"
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          onBlur={() => setTouched(true)}
+          error={Boolean(errorMessage) || isMissingRequired}
+          helperText={errorMessage}
+        />
+      </Box>
+    );
+  }
+
   return (
     <Box sx={EDITABLE_CONTROL_SX} data-field={id}>
       <CustomTextField
@@ -596,7 +710,7 @@ const MedicalControl = memo(function MedicalControl({
         placeholder={placeholder}
         onChange={(event) => onChange(event.target.value)}
         onBlur={() => setTouched(true)}
-        error={Boolean(errorMessage)}
+        error={Boolean(errorMessage) || isMissingRequired}
         helperText={errorMessage}
         htmlInputProps={{ "aria-label": ariaLabel }}
       />
@@ -1257,6 +1371,164 @@ const ParameterTable = memo(function ParameterTable({
   );
 });
 
+/* ------------------------------------------------------------------ */
+/* Questionnaire: one row per question (ID, Question, Response, Remarks) */
+/* Each row is keyed by its position in `fields`, like any other field. */
+/* ------------------------------------------------------------------ */
+
+interface QuestionnaireRow {
+  id: string;
+  label: string;
+  /** Option label (or "Yes") of the parent response that asks this sub-question. Empty for top-level. */
+  triggeredBy: string;
+  index: number;
+  response: string;
+  remarks: string;
+}
+
+const QuestionnaireBody = memo(function QuestionnaireBody({
+  section,
+}: Readonly<{ section: MedicalSection }>) {
+  const editing = useContext(EditingContext);
+  const store = useMedicalStore();
+  const questions = section.questionnaire ?? [];
+  const responsePrefix = `${section.key}-q-`;
+  const responseKey = useSyncExternalStore(
+    useCallback(
+      (onStoreChange) => store.subscribePrefix(responsePrefix, onStoreChange),
+      [store, responsePrefix],
+    ),
+    () =>
+      questions
+        .map((question) => store.get(`${responsePrefix}${question.id}-response`))
+        .join("\u0000"),
+  );
+  const visibleQuestions = useMemo(
+    () =>
+      getVisibleMedicalQuestions(questions, (questionId) =>
+        store.get(`${responsePrefix}${questionId}-response`),
+      ),
+    // responseKey changes whenever a questionnaire response changes, so it drives the recompute.
+    [questions, store, responsePrefix, responseKey],
+  );
+  const rows = useMemo<QuestionnaireRow[]>(
+    () =>
+      visibleQuestions.map((question) => {
+        const parent = questions.find((item) => item.id === question.parentId);
+        const triggerOption =
+          question.parentOption === null
+            ? "Yes"
+            : parent?.answerType?.find((option) => option.key === question.parentOption)?.label ?? "";
+        return {
+          id: question.id,
+          label: question.questionDesc,
+          triggeredBy: question.parentId === null ? "" : triggerOption,
+          index: questions.indexOf(question),
+          response: question.response ?? "",
+          remarks: question.remarks ?? "",
+        };
+      }),
+    [questions, visibleQuestions],
+  );
+  const columns = useMemo<Column<QuestionnaireRow>[]>(
+    () => [
+      { key: "id", header: "ID", width: "6%" },
+      {
+        key: "label",
+        header: "Question",
+        width: "50%",
+        render: (_value, row) => (
+          <Box>
+            {row.label}
+            {row.triggeredBy && (
+              <Typography
+                component="div"
+                sx={{ color: "#7B716C", fontSize: 11, mt: "2px" }}
+              >
+                Asked for response: {row.triggeredBy}
+              </Typography>
+            )}
+          </Box>
+        ),
+      },
+      {
+        key: "response",
+        header: "Response",
+        width: "20%",
+        render: (_value, row) => {
+          const question = questions[row.index];
+          return (
+            <MedicalControl
+              id={`${section.key}-q-${row.id}-response`}
+              ariaLabel={`Response, question ${row.id}`}
+              kind="text"
+              readOnly={!editing}
+              multiple={question.questionType === "MULTISELECT"}
+              placeholder=""
+              options={question.answerType?.map((option) => ({
+                value: option.key,
+                label: option.label,
+              }))}
+            />
+          );
+        },
+      },
+      {
+        key: "remarks",
+        header: "Remarks",
+        width: "20%",
+        render: (_value, row) => {
+          const question = questions[row.index];
+          const responseId = `${section.key}-q-${row.id}-response`;
+          const remarksMandatoryFor = (responseKey: string) =>
+            question.answerType?.some(
+              (option) =>
+                option.key === responseKey && option.remarksMandatory === "Y",
+            ) ?? false;
+          const validator: MedicalFieldValidator = {
+            dependsOn: "response",
+            isRequired: (responseKey) => remarksMandatoryFor(responseKey ?? ""),
+            validate: (value, responseKey) =>
+              remarksMandatoryFor(responseKey ?? "") && value.trim() === ""
+                ? "Remarks are mandatory for the selected response"
+                : undefined,
+          };
+          return (
+            <Box sx={{ display: "flex", alignItems: "flex-start", gap: "2px" }}>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <MedicalControl
+                  id={`${section.key}-q-${row.id}-remarks`}
+                  ariaLabel={`Remarks, question ${row.id}`}
+                  kind="text"
+                  readOnly={!editing}
+                  validator={validator}
+                  dependencyId={responseId}
+                  placeholder=""
+                />
+              </Box>
+              {editing && (
+                <RemarksRequiredMark
+                  responseId={responseId}
+                  isRequired={validator.isRequired}
+                />
+              )}
+            </Box>
+          );
+        },
+      },
+    ],
+    [editing, questions, section.key],
+  );
+
+  return (
+    <CustomTable<QuestionnaireRow>
+      columns={columns}
+      data={rows}
+      getRowId={(row) => row.id}
+    />
+  );
+});
+
 const SectionBody = memo(function SectionBody({
   section,
 }: Readonly<SectionBodyProps>) {
@@ -1265,6 +1537,9 @@ const SectionBody = memo(function SectionBody({
   }
   if (section.layout === "habitAddiction") {
     return <HabitAddictionBody section={section} />;
+  }
+  if (section.layout === "questionnaire") {
+    return <QuestionnaireBody section={section} />;
   }
   const tableLabels = section.tableFieldLabels ?? [];
   return (
@@ -1565,9 +1840,10 @@ export function Medical({
       (s) => s.key === "blood_pressure_pulse_details",
     );
     if (!section) return;
+    // Every reading shown counts (Systolic 1..N), however many the API returned.
     const idsOf = (prefix: string) =>
       section.fields.flatMap(([label], index) =>
-        new RegExp(`^${prefix} [1-3]$`).test(label)
+        new RegExp(`^${prefix} \\d+$`).test(label)
           ? [fieldId(section.key, index)]
           : [],
       );

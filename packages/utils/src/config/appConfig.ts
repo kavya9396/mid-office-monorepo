@@ -101,6 +101,9 @@ export const groupBusinessUrls = {
   get financialSave(): string {
     return configuredUrl(import.meta.env.VITE_GROUP_FINANCIAL_SAVE_API);
   },
+  get medicalFetch(): string {
+    return configuredUrl(import.meta.env.VITE_MEDICAL_FETCH_API);
+  },
 };
 
 /** NSDL external-event-service URLs from .env. Empty when unset — mock mode skips them. */

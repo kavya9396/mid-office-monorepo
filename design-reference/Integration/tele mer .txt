@@ -1,0 +1,295 @@
+ID	QUESTION_NAME	QUESTION_DETAILS	QUESTION_TYPE	QUESTION_GROUP	QUESTION_MANDATORY	CREATED_BY	QUESTION_ID	QUESTION_FORM	VERSION	PARENT_ID	INPUT_TYPE	DROPDOWN_OPTIONS
+1	Is there any physical deformity or disorder?			1	YES	ipru25491	1.a	TELEMER	1			
+2	Has there been any significant weight gain or weight loss recently			1	YES	ipru25491	1.b	TELEMER	1			
+3	In the past, has the Life assured Been hospitalized for Accident/ Medical treatment / Surgery (If Yes, provide details)			2	YES	ipru25491	2.a	TELEMER	1			
+4	In the past, has the Life assured Undergone any blood tests , Radiological tests like USG / 2-D Echo / CT scan/MRI/Mammogram or any other tests			2	YES	ipru25491	2.b	TELEMER	1			
+5	Any history of Angioplasty, Bypass,Open Heart Surgery?			3	YES	ipru25491	3.a	TELEMER	1			
+6	Any History of breathlessness on exertion, irregular heart beat, chest pain?			3	YES	ipru25491	3.b	TELEMER	1			
+7	Is the life assured suffering from High Blood Sugar/Diabetes/Hypertension?			4	YES	ipru25491	4.a	TELEMER	1			
+8	What was the latest BP/Sugar reading?			4	YES	ipru25491	4.b	TELEMER	1			
+9	Any history of breathlessness, wheezing cough, bronchitis,asthma, TB?			5	YES	ipru25491	5.a	TELEMER	1			
+10	Is there any history of evidence of cancer, tumor, growth or cyst?			6	YES	ipru25491	6.a	TELEMER	1			
+11	Has Life assured suffered from significant enlargement of lymph glands?			6	YES	ipru25491	6.b	TELEMER	1			
+12	Is there: Any history of hernia, disease of liver, gall bladder, pancreas, stomach,intestine?			7	YES	ipru25491	7.a	TELEMER	1			
+13	Is there: Any history of piles, fissure, fistula, ulcerative colitis?			7	YES	ipru25491	7.b	TELEMER	1			
+14	Is there: Any history of jaundice? If yes, any viral markers done?			7	YES	ipru25491	7.c	TELEMER	1			
+15	Has the Life assured suffered from or is suffering from kidney, ureter, bladder disease, stones, or any other urinary disease?			8	YES	ipru25491	8.a	TELEMER	1			
+16	Any history of arthritis / fracture / joint surgery / gout?			9	YES	ipru25491	9.a	TELEMER	1			
+17	Any history of error of refraction / ear discharge / perforation / nose bleed or any other eye / ear / nose / throat abnormality			10	YES	ipru25491	10.a	TELEMER	1			
+18	Is there any history of Fits/ seizures, paralysis, abnormal gait, speech, fainting, frequent headaches?			11	YES	ipru25491	11.a	TELEMER	1			
+19	Has the Life assured suffered from or suffering from Low Hemoglobin /thalassaemia, thyroid dysfunction?			12	YES	ipru25491	12.a	TELEMER	1			
+20	Is there any history of skin disorder ?			13	YES	ipru25491	13.a	TELEMER	1			
+21	Any operative / non operative significant scars - burns, injuries.			13	YES	ipru25491	13.b	TELEMER	1			
+22	Has the Life assured treated for any psychiatric ailment?			14	YES	ipru25491	14.a	TELEMER	1			
+23	Has the Life assured or his / her spouse been tested or is under treatment for HIV / AIDS / Sexually transmitted diseases (e.g. syphilis, gonorrhoea, etc.)			15	YES	ipru25491	15.a	TELEMER	1			
+24	Are you currently under any form of medication?			16	YES	ipru25491	16.a	TELEMER	1			
+25	Any adverse menstrual history and Last Menstrual Period?		FOR FEMALE life assured ONLY	17	YES	ipru25491	17.a	TELEMER	1			
+26	Any history of miscarriage, abortion, MTP, gestational HT/DM? If yes give details.			17	YES	ipru25491	17.b	TELEMER	1			
+27	Is there any history of pregnancy? If yes, number of weeks.			17	YES	ipru25491	17.c	TELEMER	1			
+28	Is there any history of disease related to breast and uterus? If yes give details.			17	YES	ipru25491	17.d	TELEMER	1			
+29	Have you undergone any of these tests: pap smear, mammogram or ultrasound of pelvis? If yes, please give details of date, reason and result.			17	YES	ipru25491	17.e	TELEMER	1			
+30	Did sales ask you all questions present in											
+application form ?												
+			18	YES	ipru36045	13-FEB-22 02.25.37.090000000 AM	TELEMER	1				
+31	If there is mismatch in information in											
+application form and disclosure made on												
+tele, then why was this information not												
+disclosed on application form?												
+			19	YES	ipru36045	13-FEB-22 02.25.42.240000000 AM	TELEMER	1				
+231	 Have you undergone blood transfusion? 			17	YES	ipru53975	17.1.5	TELEMER	2	HB/Blood Disorder/Anaemia	selectValue	YES,NO
+232	 When was the latest checkup done? Any reports available/Not available?			17	YES	ipru53975	17.1.6	TELEMER	2	HB/Blood Disorder/Anaemia	selectRange	0,0.9,1,60
+234	 How did you come to know? 			17	YES	ipru53975	17.2.1	TELEMER	2	Thalessamia	text	
+235	 When was it diagnosed? 			17	YES	ipru53975	17.2.2	TELEMER	2	Thalessamia	selectRange	0,0.9,1,60
+236	 When was the Last Check Up done? 			17	YES	ipru53975	17.2.3	TELEMER	2	Thalessamia	selectRange	0,0.9,1,60
+237	 Have you required any blood transfusion?			17	YES	ipru53975	17.2.4	TELEMER	2	Thalessamia	selectValue	YES,NO
+238	Thyroid-Hypothyroid/Hyperthyroid? 			17	YES	ipru53975	17.3	TELEMER	2	Thyroid	selectValue	Hypothyroid,Hyperthyroid 
+239	 When was it diagnosed? 			17	YES	ipru53975	17.3.1	TELEMER	2	Thyroid	selectRange	0,0.9,1,60
+240	 What are the symptoms? 			17	YES	ipru53975	17.3.2	TELEMER	2	Thyroid	text	
+241	 Any medication you are on? 			17	YES	ipru53975	17.3.3	TELEMER	2	Thyroid	text	
+242	 What is your current status? 			17	YES	ipru53975	17.3.4	TELEMER	2	Thyroid	text	
+243	 When was the latest checkup done? 			17	YES	ipru53975	17.3.5	TELEMER	2	Thyroid	selectRange	0,0.9,1,60
+244	 PME's available/not available?			17	YES	ipru53975	17.3.6	TELEMER	2	Thyroid	selectValue	YES,NO
+245	Skin-When was the issue diagnosed? 			17	YES	ipru53975	17.4	TELEMER	2	Skin	selectRange	0,0.9,1,60
+246	What are the symptoms? 			17	YES	ipru53975	17.4.1	TELEMER	2	Skin	text	
+247	What are the aggravating factors? 			17	YES	ipru53975	17.4.2	TELEMER	2	Skin	text	
+249	What is your current status? 			17	YES	ipru53975	17.4.4	TELEMER	2	Skin	text	
+250	Chronic Psoriasis-Do you have any any Deformity? 			17	YES	ipru53975	17.4.5	TELEMER	2	Skin	text	
+251	Are you on Any steroids?			17	YES	ipru53975	17.4.6	TELEMER	2	Skin	text	
+253	 Any diagnosis of Schizophrenia/Bipolar personality/stress/depression, anxiety? -			18	YES	ipru53975	18.1	TELEMER	2	18	text	
+254	 since how many years? 			18	YES	ipru53975	18.2	TELEMER	2	18	selectRange	0,0.9,1,60
+255	What are the symptoms? 			18	YES	ipru53975	18.3	TELEMER	2	18	text	
+256	 Are you on medication? 			18	YES	ipru53975	18.4	TELEMER	2	18	text	
+257	 Did you undergo counselling ?			18	YES	ipru53975	18.5	TELEMER	2	18	selectValue	YES,NO
+258	 PME's available/not available?			18	YES	ipru53975	18.6	TELEMER	2	18	selectValue	YES,NO
+259	Were you ever hospitalized for Covid infection or its complication or do you have any ongoing complications related to covid-19 Infection?			0	YES	ipru53975	19	TELEMER	2	0	selectValue	YES,NO
+260	 Please mention the date of admission and discharge after recovery  			19	YES	ipru53975	19.1	TELEMER	2	19	text	
+261	 How many days were you hospitalised     			19	YES	ipru53975	19.2	TELEMER	2	19	selectRange	0,100
+262	 Did you require ICU (Intensive Care Unit) admission and care?			19	YES	ipru53975	19.3	TELEMER	2	19	selectValue	YES,NO
+263	 Did you suffer from prolonged complications lasting more than 4 weeks?          YES/NO			19	YES	ipru53975	19.4	TELEMER	2	19	selectValue	YES,NO
+264	  If yes, please mention date of recovery			19.4	YES	ipru53975	19.4.1	TELEMER	2	19.4	text	
+265	Any adverse menstrual history and Last Menstrual Period?			0	YES	ipru53975	20	TELEMER	2	0	selectValue	YES,NO
+266	Please let us know your last menstrual period?			20	YES	ipru53975	20.1	TELEMER	2	20	text	
+267	If Not menstruating ask when did she started her Menopause?			20	YES	ipru53975	20.2	TELEMER	2	20	text	
+268	Any history of miscarriage, abortion, MTP, gestational HT/DM? If yes give details.			0	YES	ipru53975	21	TELEMER	2	0	selectValue	YES,NO
+269	Have you taken any Treatment  for gestational issues? When was last check-up done ?			21	YES	ipru53975	21.1	TELEMER	2	21	text	
+270	Are you currently pregnant? If yes, number of weeks.			0	YES	ipru53975	22	TELEMER	2	0	selectValue	YES,NO
+271	 Do you have any gestational issues? 			22	YES	ipru53975	22.1	TELEMER	2	22	text	
+272	 Have you done investigations? any ANC check up done with reports availability.			22	YES	ipru53975	22.2	TELEMER	2	22	selectValue	YES,NO
+273	Is there any history of disease related to uterus,cervix,ovaries and breast lump/cysts? If yes give details.			0	YES	ipru53975	23	TELEMER	2	0	selectValue	YES,NO
+274	 What are the symptoms?			23	YES	ipru53975	23.1	TELEMER	2	23	text	
+275	 Since how many years?			23	YES	ipru53975	23.2	TELEMER	2	23	selectRange	0,0.9,1,60
+276	 Are you on any medications?			23	YES	ipru53975	23.3	TELEMER	2	23	text	
+277	 Have you done PAP Smear and Mammography? 			23	YES	ipru53975	23.4	TELEMER	2	23	selectValue	YES,NO
+278	 PME's available/not available?			23	YES	ipru53975	23.5	TELEMER	2	23	selectValue	YES,NO
+279	Have you undergone any of these tests: pap smear, mammogram or ultrasound of pelvis? If yes, please give details of date, reason and result.			0	YES	ipru53975	24	TELEMER	2	0	selectValue	YES,NO
+280	PME's available/Not available?			24	YES	ipru53975	24.1	TELEMER	2	24	selectValue	YES,NO
+281	 What are the findings ? 			24	YES	ipru53975	24.2	TELEMER	2	24	text	
+282	 Are the reports normal? 			24	YES	ipru53975	24.3	TELEMER	2	24	selectValue	YES,NO
+283	 Did the doctor advice you for any medicines ?  			24	YES	ipru53975	24.4	TELEMER	2	24	text	
+32	Is there any physical deformity or disorder?			0	YES	ipru53975	1	TELEMER	2	0	selectValue	YES,NO
+33	Name of the deformity?			1	YES	ipru53975	1.1	TELEMER	2	1	text	
+34	Since how many years?			1	YES	ipru53975	1.2	TELEMER	2	1	number	
+35	Which part of the body is affected?			1	YES	ipru53975	1.3	TELEMER	2	1	text	
+36	% of Disability?			1	YES	ipru53975	1.4	TELEMER	2	1	selectRange	0,100
+37	Do you have Disability Certificate?			1	YES	ipru53975	1.5	TELEMER	2	1	selectValue	YES,NO
+38	Surgery done if any?			1	YES	ipru53975	1.6	TELEMER	2	1	text	
+39	Can you carry out your daily activities with ease?			1	YES	ipru53975	1.7	TELEMER	2	1	selectValue	YES,NO
+40	Do you require support to walk if yes what type of support? (If leg affected)			1	YES	ipru53975	1.8	TELEMER	2	1	selectValue	YES,NO
+41	 Have you experienced a significant weight change (gain/ loss) of 5 kgs or more?			0	YES	ipru53975	2	TELEMER	2	0	selectValue	YES,NO
+42	Are you facing any health issues?			2	YES	ipru53975	2.1	TELEMER	2	2	text	
+43	Have you done some weight loss/weight gain programme?			2	YES	ipru53975	2.2	TELEMER	2	2	text	
+44	In the past, has the Life assured been hospitalized for Accident/ Medical treatment / Surgery? (If Yes, provide details)			0	YES	ipru53975	3	TELEMER	2	0	selectValue	YES,NO
+45	History of Hospitaisation?			3	YES	ipru53975	3.1	TELEMER	2	3	text	
+46	How many years back?			3	YES	ipru53975	3.2	TELEMER	2	3	selectRange	0,0.9,1,60
+47	What was the reason for hospitalization? 			3	YES	ipru53975	3.3	TELEMER	2	3	text	
+48	How many days were you hospitalized ? 			3	YES	ipru53975	3.4	TELEMER	2	3	selectRange	0,100
+49	How long did you take medications? Can you name the medicine.			3	YES	ipru53975	3.5	TELEMER	2	3	text	
+50	Is the symptom reoccurred? current status? Any complaints after that?			3	YES	ipru53975	3.6	TELEMER	2	3	text	
+52	In the past, has the Life assured Undergone any blood tests,HIV/Hep B/Hep C/Radiological tests like USG / 2-D Echo / CT scan/MRI/Mammogram or any other tests?			0	YES	ipru53975	4	TELEMER	2	0	selectValue	YES,NO
+53	PME's available/Not available?			4	YES	ipru53975	4.1	TELEMER	2	4	selectValue	YES,NO
+54	What are the findings ? 			4	YES	ipru53975	4.2	TELEMER	2	4	text	
+55	Are the reports normal? 			4	YES	ipru53975	4.3	TELEMER	2	4	selectValue	YES,NO
+56	Did the doctor advice you for any medicines ? Name of Medicines if any			4	YES	ipru53975	4.4	TELEMER	2	4	text	
+57	Any history of Angioplasty, Bypass, Open Heart Surgery?			0	YES	ipru53975	5	TELEMER	2	0	selectValue	YES,NO
+58	Any 2D/Echo/Angiography/CT Scan/MRI suggested to you?			5	YES	ipru53975	5.1	TELEMER	2	5	text	
+59	History of angioplasty/Bypass done? 			5	YES	ipru53975	5.2	TELEMER	2	5	text	
+60	how many years back?			5	YES	ipru53975	5.3	TELEMER	2	5	selectRange	0,0.9,1,60
+61	What were symptoms? 			5	YES	ipru53975	5.4	TELEMER	2	5	text	
+62	No of stents placed , current treatment details? 			5	YES	ipru53975	5.5	TELEMER	2	5	text	
+63	PME available not available?			5	YES	ipru53975	5.6	TELEMER	2	5	selectValue	YES,NO
+64	"Any history of heart diseases-chest pain/palpitations/
+Breathlessness on exertion?"			0	YES	ipru53975	6	TELEMER	2	0	select	Chest Pain,Palpitations,Breathlessness on Exertion,Others,NO
+66	 What were the complaints or sysmptoms?			6	YES	ipru53975	6.1.1	TELEMER	2	Chest Pain	text	
+67	 Any Investigations done?			6	YES	ipru53975	6.1.2	TELEMER	2	Chest Pain	text	
+68	 What was the diagnosis?			6	YES	ipru53975	6.1.3	TELEMER	2	Chest Pain	text	
+69	 What was the treatment taken? Any hospitalisation?			6	YES	ipru53975	6.1.4	TELEMER	2	Chest Pain	text	
+70	 Palpitations - Since how many years?			6	YES	ipru53975	6.2	TELEMER	2	Palpitations	selectRange	0,0.9,1,60
+71	 What were the complaints or sysmptoms?			6	YES	ipru53975	6.2.1	TELEMER	2	Palpitations	text	
+73	 What was the diagnosis?			6	YES	ipru53975	6.2.3	TELEMER	2	Palpitations	text	
+74	 What was the treatment taken? Any hospitalisation?			6	YES	ipru53975	6.2.4	TELEMER	2	Palpitations	text	
+75	Breathlessness on exertion- Since how many years?			6	YES	ipru53975	6.3	TELEMER	2	Breathlessness on Exertion	selectRange	0,0.9,1,60
+76	 What were the complaints or sysmptoms?			6	YES	ipru53975	6.3.1	TELEMER	2	Breathlessness on Exertion	text	
+78	 What was the diagnosis?			6	YES	ipru53975	6.3.3	TELEMER	2	Breathlessness on Exertion	text	
+79	 What was the treatment taken? Any hospitalisation?			6	YES	ipru53975	6.3.4	TELEMER	2	Breathlessness on Exertion	text	
+80	Is the life assured suffering from BP/Diabetes/Cholesterol/Lipid?			0	YES	ipru53975	7	TELEMER	2	0	select	BP,Diabetes,Cholesterol,Lipid,Others,NO
+81	Diabetes Mellitus -Since how many years?			7	YES	ipru53975	7.1	TELEMER	2	Diabetes	selectRange	0,0.9,1,60
+82	 What medication are you currently taking? 			7	YES	ipru53975	7.1.1	TELEMER	2	Diabetes	text	
+83	 Do you have any Complaints or any Symptoms? 			7	YES	ipru53975	7.1.2	TELEMER	2	Diabetes	text	
+84	 Can you tell us when you completed your last check-up. Latest checkup done? Current status? 			7	YES	ipru53975	7.1.3	TELEMER	2	Diabetes	text	
+85	 Are you suffering from any complications due to diabetes ie neuropathy? retinopathy? ulcers? Diabetic foot?			7	YES	ipru53975	7.1.4	TELEMER	2	Diabetes	text	
+86	BP (Hypertension)-Since how many years? 			7	YES	ipru53975	7.2	TELEMER	2	BP	selectRange	0,0.9,1,60
+87	 What Medications are you currently taking?			7	YES	ipru53975	7.2.1	TELEMER	2	BP	text	
+88	 Do you have any complaints? symptoms? 			7	YES	ipru53975	7.2.2	TELEMER	2	BP	text	
+89	 When was the last checkup done? Reports status			7	YES	ipru53975	7.2.3	TELEMER	2	BP	text	
+90	 Elevated Cholesterol-Since how many years? 			7	YES	ipru53975	7.3	TELEMER	2	Cholesterol	selectRange	0,0.9,1,60
+91	 What Medications are you currently taking ? 			7	YES	ipru53975	7.3.1	TELEMER	2	Cholesterol	text	
+92	 Do you have any complaints or symptoms currently?			7	YES	ipru53975	7.3.2	TELEMER	2	Cholesterol	text	
+93	 latest checkup done? Reports status			7	YES	ipru53975	7.3.3	TELEMER	2	Cholesterol	text	
+94	Any history of breathlessness, wheezing cough, bronchitis, asthma, TB or any other lung disease?			0	YES	ipru53975	8	TELEMER	2	0	select	Breathlessness,Wheezing cough,Bronchitis,Asthma,TB,Others,NO
+95	Asthma/Breathing difficulty: since how many years are you suffering ? 			8	YES	ipru53975	8.1	TELEMER	2	Asthma	selectRange	0,0.9,1,60
+96	 do you know the aggravating factor that trigger  ?			8	YES	ipru53975	8.1.1	TELEMER	2	Asthma	text	
+97	 can you tell us the medicines you were using for Asthma?			8	YES	ipru53975	8.1.2	TELEMER	2	Asthma	text	
+98	 Have  you  been  hospitalized for this complaint .			8	YES	ipru53975	8.1.3	TELEMER	2	Asthma	selectValue	YES,NO
+99	 DO you have the latest  PFT?X-ray done/PME's available?			8	YES	ipru53975	8.1.4	TELEMER	2	Asthma	selectValue	YES,NO
+100	 Have you  visited any  doctor recently , did you have any aggravation of asthma in the night? , When was the last  episodes you had? .			8	YES	ipru53975	8.1.5	TELEMER	2	Asthma	text	
+101	Currently are you suffering from TB or History of TB? 			8	YES	ipru53975	8.2	TELEMER	2	TB	text	
+102	Pulmonary/Extrapulmonary? 			8	YES	ipru53975	8.2.1	TELEMER	2	TB	selectValue	Pulmonary,Extrapulmonary
+103	since how many years were you suffering from TB , what were the Symptoms? 			8	YES	ipru53975	8.2.2	TELEMER	2	TB	text	
+104	What was the treatmenth given? 			8	YES	ipru53975	8.2.3	TELEMER	2	TB	text	
+105	What were in the investigations done ?. 			8	YES	ipru53975	8.2.4	TELEMER	2	TB	text	
+106	Are you on medication currently?, 			8	YES	ipru53975	8.2.5	TELEMER	2	TB	text	
+107	Do you have any  complaints  now ?			8	YES	ipru53975	8.2.6	TELEMER	2	TB	selectValue	YES,NO
+108	Any recurrence? 			8	YES	ipru53975	8.2.7	TELEMER	2	TB	selectValue	YES,NO
+203	Is there any history of Fits/ seizures, paralysis, abnormal gait, speech, fainting, frequent headaches or any disorder of brain or spinal cord?			0	YES	ipru53975	16	TELEMER	2	0	select	Fits/Epilepsy,Paralysis,Frequent Headache,Others,NO
+51	PME's available/Not available?			3	YES	ipru53975	3.7	TELEMER	2	3	selectValue	YES,NO
+215	 What is your current health status?			16	YES	ipru53975	16.2.4	TELEMER	2	Paralysis	text	
+248	What is site of patch if Eczema or Psoriasis?			17	YES	ipru53975	17.4.3	TELEMER	2	Skin	text	
+72	 Any Investigations done?			6	YES	ipru53975	6.2.2	TELEMER	2	Palpitations	text	
+182	 Which Parts were affected?-site  like arm/forearm/joints/thigh/below the knees? 			14	YES	ipru53975	14.2.1	TELEMER	2	Fracture	text	
+65	 Chest Pain - Since how many years?			6	YES	ipru53975	6.1	TELEMER	2	Chest Pain	selectRange	0,0.9,1,60
+77	 Any Investigations done?			6	YES	ipru53975	6.3.2	TELEMER	2	Breathlessness on Exertion	text	
+183	 Plaster/surgery done? Plaster-How many months? Surgery-if implant? Has the implant been placed  is in situ or removed? After how many months? 			14	YES	ipru53975	14.2.2	TELEMER	2	Fracture	text	
+233	Thalessamia-Thalasemia -Is it Thalassemia Minor/Major?			17	YES	ipru53975	17.2	TELEMER	2	Thalessamia	selectValue	Thalassemia Minor,Thalassemia Major
+252	Any treatment taken for psychological issues like stress/anxiety/Depression or Mental ailment?			0	YES	ipru53975	18	TELEMER	2	0	selectValue	YES,NO
+287	Previous  insurance declined remarks			26	YES	ipru53975	26.1	TELEMER	2	26	text	
+285	Any consumption of medications?			25	YES	ipru53975	25.1	TELEMER	2	25	text	
+109	Do you have PME's available/Not available? 			8	YES	ipru53975	8.2.8	TELEMER	2	TB	selectValue	YES,NO
+110	If Pulmonary then do you have pleural effusion history.. 			8	YES	ipru53975	8.2.9	TELEMER	2	TB	selectValue	YES,NO
+111	Have you underwent AKT Treatment?   			8	YES	ipru53975	8.2.10	TELEMER	2	TB	selectValue	YES,NO
+112	Do you have Tapping history? ( removal of  fluid from lung ) .			8	YES	ipru53975	8.2.11	TELEMER	2	TB	selectValue	YES,NO
+113	Is there any history of evidence of cancer, tumor, growth or cyst/lymph gland?			0	YES	ipru53975	9	TELEMER	2	0	selectValue	YES,NO
+114	 Known case of or history of lump/growth/tumor/Cancer,- 			9	YES	ipru53975	9.1	TELEMER	2	9	text	
+115	Can you tell us  when was it first noticed . Since when? 			9	YES	ipru53975	9.2	TELEMER	2	9	selectRange	0,0.9,1,60
+116	 What were the investigations done? 			9	YES	ipru53975	9.3	TELEMER	2	9	text	
+117	 Treatment , Any Biopsy done ,any chemo or radio therapy taken.?			9	YES	ipru53975	9.4	TELEMER	2	9	text	
+118	 Do you have PME 's?			9	YES	ipru53975	9.5	TELEMER	2	9	selectValue	YES,NO
+119	Is there: Any history of hernia, disease of liver, gall bladder, pancreas, stomach, intestine?			0	YES	ipru53975	10	TELEMER	2	0	select	Stomach,Gall Bladder,Hernia,Pancreas,Intestine,Others,NO
+120	 Do you have any history of Stomach complaints?			10	YES	ipru53975	10.1	TELEMER	2	Stomach	text	
+121	 Since when? 			10	YES	ipru53975	10.1.1	TELEMER	2	Stomach	selectRange	0,0.9,1,60
+122	 What are/were the symptoms? 			10	YES	ipru53975	10.1.2	TELEMER	2	Stomach	text	
+123	 What treatment has been taken? 			10	YES	ipru53975	10.1.3	TELEMER	2	Stomach	text	
+124	 What is your Current status? 			10	YES	ipru53975	10.1.4	TELEMER	2	Stomach	text	
+125	 PME's available/Not available?			10	YES	ipru53975	10.1.5	TELEMER	2	Stomach	selectValue	YES,NO
+126	 Gall bladder stone or Inflammation -What are the symptoms? 			10	YES	ipru53975	10.2	TELEMER	2	Gall Bladder	text	
+127	 Did you require any hospitalization /any surgery? 			10	YES	ipru53975	10.2.1	TELEMER	2	Gall Bladder	text	
+128	 What treatment have you taken? 			10	YES	ipru53975	10.2.2	TELEMER	2	Gall Bladder	text	
+129	 Any complications you faced?			10	YES	ipru53975	10.2.3	TELEMER	2	Gall Bladder	text	
+130	 What is your current status?			10	YES	ipru53975	10.2.4	TELEMER	2	Gall Bladder	text	
+131	 PME's available/not available?			10	YES	ipru53975	10.2.5	TELEMER	2	Gall Bladder	selectValue	YES,NO
+132	Hernia-Since when? 			10	YES	ipru53975	10.3	TELEMER	2	Hernia	selectRange	0,0.9,1,60
+133	 type? right inguinal, left inguinal, Umbilical? 			10	YES	ipru53975	10.3.1	TELEMER	2	Hernia	text	
+134	 symptoms, 			10	YES	ipru53975	10.3.2	TELEMER	2	Hernia	text	
+135	 Treatment? any hospitalization? surgery? Laparoscopic? 			10	YES	ipru53975	10.3.3	TELEMER	2	Hernia	text	
+136	 PME's available/Not available? 			10	YES	ipru53975	10.3.4	TELEMER	2	Hernia	selectValue	YES,NO
+137	 Current status			10	YES	ipru53975	10.3.5	TELEMER	2	Hernia	text	
+138	Is there: Any history of piles, fissure, fistula, ulcerative colitis?			0	YES	ipru53975	11	TELEMER	2	0	select	Piles,Fissure,Fistula,Ulcerative Colitis,Others,NO
+139	 Piles- When was the diagnosis of Piles done? 			11	YES	ipru53975	11.1	TELEMER	2	Piles	selectRange	0,0.9,1,60
+140	 What are the symptoms? 			11	YES	ipru53975	11.2	TELEMER	2	Piles	text	
+141	 What Treatment have you taken? 			11	YES	ipru53975	11.3	TELEMER	2	Piles	text	
+142	 Did you require any Hospitalization or Surgery ?			11	YES	ipru53975	11.4	TELEMER	2	Piles	text	
+143	 What is your current status? 			11	YES	ipru53975	11.5	TELEMER	2	Piles	text	
+144	 PME's available/Not available? 			11	YES	ipru53975	11.6	TELEMER	2	Piles	selectValue	YES,NO
+145	 Bleeding piles if severe then-Any anaemia due to it?			11	YES	ipru53975	11.7	TELEMER	2	Piles	text	
+146	Is there: Any history of jaundice or any liver disorder? If yes, any viral markers done?			0	YES	ipru53975	12	TELEMER	2	0	select	Jaundice,Fatty Liver,Others,NO
+147	Jaundice-When did you suffer from Jaundice? 			12	YES	ipru53975	12.1	TELEMER	2	Jaundice	selectRange	0,0.9,1,60
+148	 What were your symptoms? 			12	YES	ipru53975	12.1.1	TELEMER	2	Jaundice	text	
+149	 What treatment has been taken? 			12	YES	ipru53975	12.1.2	TELEMER	2	Jaundice	text	
+150	 What is your current status? 			12	YES	ipru53975	12.1.3	TELEMER	2	Jaundice	text	
+151	 Did you suffer from any complications? 			12	YES	ipru53975	12.1.4	TELEMER	2	Jaundice	text	
+152	 PME's available/Not available?			12	YES	ipru53975	12.1.5	TELEMER	2	Jaundice	selectValue	YES,NO
+153	Fatty Liver-When was the diagnosis of Fatty liver done? 			12	YES	ipru53975	12.2	TELEMER	2	Fatty Liver	selectRange	0,0.9,1,60
+154	 What are the symptoms? 			12	YES	ipru53975	12.2.1	TELEMER	2	Fatty Liver	text	
+155	 What Treatment have you taken? 			12	YES	ipru53975	12.2.2	TELEMER	2	Fatty Liver	text	
+156	 Did you require any Hospitalization or Surgery ?			12	YES	ipru53975	12.2.3	TELEMER	2	Fatty Liver	text	
+157	 What is your current status? 			12	YES	ipru53975	12.2.4	TELEMER	2	Fatty Liver	text	
+158	 PME's available/Not available?			12	YES	ipru53975	12.2.5	TELEMER	2	Fatty Liver	selectValue	YES,NO
+159	Has the Life assured suffered from or is suffering from kidney, ureter, bladder disease, stones, or any other urinary disease or disorders of reproductive system?			0	YES	ipru53975	13	TELEMER	2	0	select	Kidney Stone,Kidney Failure,Others,NO
+160	 Kidney stone-?  When was the diagnosis done? 			13	YES	ipru53975	13.1	TELEMER	2	Kidney Stone	selectRange	0,0.9,1,60
+161	 What is the size and site of stone? 			13	YES	ipru53975	13.1.1	TELEMER	2	Kidney Stone	text	
+162	 What treatment have you taken? 			13	YES	ipru53975	13.1.2	TELEMER	2	Kidney Stone	text	
+163	 Have you undergone surgery? 			13	YES	ipru53975	13.1.3	TELEMER	2	Kidney Stone	text	
+164	 Has the stone passed in urine or not? 			13	YES	ipru53975	13.1.4	TELEMER	2	Kidney Stone	selectValue	YES,NO
+165	 Repeat USG done to check, any reoccurrence? 			13	YES	ipru53975	13.1.5	TELEMER	2	Kidney Stone	text	
+166	 What is your current status? 			13	YES	ipru53975	13.1.6	TELEMER	2	Kidney Stone	text	
+167	 PME's available/not available?			13	YES	ipru53975	13.1.7	TELEMER	2	Kidney Stone	selectValue	YES,NO
+168	 Kidney failure/polycystic kidney/Horse shoe kidney/Single Kidney/-how did you come to know? 			13	YES	ipru53975	13.2	TELEMER	2	Kidney Failure	text	
+169	 Accidental findings? What are the Signs and symptoms? 			13	YES	ipru53975	13.2.1	TELEMER	2	Kidney Failure	text	
+170	 Do you have BP shoot up? 			13	YES	ipru53975	13.2.2	TELEMER	2	Kidney Failure	text	
+171	 In case of-Kidney failure? Dialysis -Did you undergo Haemodialysis/peritoneal dialysis? 			13	YES	ipru53975	13.2.3	TELEMER	2	Kidney Failure	text	
+172	 Have you undergone Kidney transplant/donor history? 			13	YES	ipru53975	13.2.4	TELEMER	2	Kidney Failure	text	
+173	 What is your current status? 			13	YES	ipru53975	13.2.5	TELEMER	2	Kidney Failure	text	
+174	 When was the last Kidney function tests and serum creatinine done?			13	YES	ipru53975	13.2.6	TELEMER	2	Kidney Failure	text	
+175	Any history of arthritis / fracture / joint surgery / gout Or disorders of connective tissues?			0	YES	ipru53975	14	TELEMER	2	0	select	GOUT,Fracture,Rheumatoid Arthritis,Others,NO
+176	GOUT- How was it diagnosed? 			14	YES	ipru53975	14.1	TELEMER	2	GOUT	selectRange	0,0.9,1,60
+177	 Since when are you having issues? 			14	YES	ipru53975	14.1.1	TELEMER	2	GOUT	text	
+178	 Any Investigations  done? 			14	YES	ipru53975	14.1.2	TELEMER	2	GOUT	text	
+179	 What is your current status? 			14	YES	ipru53975	14.1.3	TELEMER	2	GOUT	text	
+180	 When was the last check up done? Are reports available?			14	YES	ipru53975	14.1.4	TELEMER	2	GOUT	text	
+181	 Fracture-History of fracture/when did you suffer from fracture? How many years? 			14	YES	ipru53975	14.2	TELEMER	2	Fracture	selectRange	0,0.9,1,60
+184	 What is your Current status? 			14	YES	ipru53975	14.2.3	TELEMER	2	Fracture	text	
+185	 PME's available /not available?			14	YES	ipru53975	14.2.4	TELEMER	2	Fracture	selectValue	YES,NO
+186	 Rheumatoid Arthritis- since when, if long standing any deformity. 			14	YES	ipru53975	14.3	TELEMER	2	Rheumatoid Arthritis	selectRange	0,0.9,1,60
+187	 Any steroids consumed. Last ESR/CRP/RA Test done? reports?			14	YES	ipru53975	14.3.1	TELEMER	2	Rheumatoid Arthritis	text	
+188	 If Ankyl spondylitis -history in detail? HLA  test? any disability?			14	YES	ipru53975	14.3.2	TELEMER	2	Rheumatoid Arthritis	text	
+189	Are you suffering from any issues concerning eyes/ears/nose/mouth/throat?			0	YES	ipru53975	15	TELEMER	2	0	select	EAR,EYE,Others,NO
+190	 EAR-Did you suffer from Deafness or Otitis media?  			15	YES	ipru53975	15.1	TELEMER	2	EAR	text	
+191	 When was the diagnosis done? /any aid needed?			15	YES	ipru53975	15.1.1	TELEMER	2	EAR	selectRange	0,0.9,1,60
+192	 Did you have any symptoms - any discharge/pain/ any injury? 			15	YES	ipru53975	15.1.2	TELEMER	2	EAR	text	
+193	 Audiogram done? 			15	YES	ipru53975	15.1.3	TELEMER	2	EAR	selectValue	YES,NO
+194	 Percentage of deafness   			15	YES	ipru53975	15.1.4	TELEMER	2	EAR	selectRange	0,100
+195	 EYE-Have you suffered from Cataract/Glaucoma?-PME's available?			15	YES	ipru53975	15.2	TELEMER	2	EYE	text	
+196	 Any issues of blindness-do you know the reason? 			15	YES	ipru53975	15.2.1	TELEMER	2	EYE	text	
+197	 What is your occupation? 			15	YES	ipru53975	15.2.2	TELEMER	2	EYE	text	
+198	 Are you aware of the percentage of blindness? 			15	YES	ipru53975	15.2.3	TELEMER	2	EYE	selectRange	0,100
+199	 Are your daily activities being managed?			15	YES	ipru53975	15.2.4	TELEMER	2	EYE	text	
+200	 Others ; Current status, 			15	YES	ipru53975	15.3	TELEMER	2	Others	text	
+201	 Any investigation or surgery done , 			15	YES	ipru53975	15.3.1	TELEMER	2	Others	text	
+202	 details of treatment received 			15	YES	ipru53975	15.3.2	TELEMER	2	Others	text	
+284	Are you currently under any form of medication?			0	YES	ipru53975	25	TELEMER	2	0	selectValue	YES,NO
+286	Any previous life insurance declined or issued on revised terms?			0	YES	ipru53975	26	TELEMER	2	0	selectValue	YES,NO
+204	 Fits/epilepsy-When are you suffering from these issues? 			16	YES	ipru53975	16.1	TELEMER	2	Fits/Epilepsy	selectRange	0,0.9,1,60
+205	 What are the symptoms-like-fainting, jerks, stiffness of body with tongue bites? 			16	YES	ipru53975	16.1.1	TELEMER	2	Fits/Epilepsy	text	
+206	 What are the medications? Have you been Hospitalized? 			16	YES	ipru53975	16.1.2	TELEMER	2	Fits/Epilepsy	text	
+207	 When was your Last EEG done? 			16	YES	ipru53975	16.1.3	TELEMER	2	Fits/Epilepsy	selectRange	0,0.9,1,60
+208	 When was your last visit to neurologist? 			16	YES	ipru53975	16.1.4	TELEMER	2	Fits/Epilepsy	selectRange	0,0.9,1,60
+209	 Any current health issues? 			16	YES	ipru53975	16.1.5	TELEMER	2	Fits/Epilepsy	text	
+210	 PME?s available/not available?			16	YES	ipru53975	16.1.6	TELEMER	2	Fits/Epilepsy	selectValue	YES,NO
+211	Paralysis -When was the Episode?, 			16	YES	ipru53975	16.2	TELEMER	2	Paralysis	selectRange	0,0.9,1,60
+212	 What are the symptoms? 			16	YES	ipru53975	16.2.1	TELEMER	2	Paralysis	text	
+213	 Which parts in the body are affected? 			16	YES	ipru53975	16.2.2	TELEMER	2	Paralysis	text	
+214	 Have you done tests like CT/MRI ? ,Are  reports available or not? 			16	YES	ipru53975	16.2.3	TELEMER	2	Paralysis	selectValue	YES,NO
+216	 Are you suffering from Frequent headache? 			16	YES	ipru53975	16.3	TELEMER	2	Frequent Headache	text	
+217	 Any issues of frequent fainting? -since when? 			16	YES	ipru53975	16.3.1	TELEMER	2	Frequent Headache	text	
+218	 How many years Years? 			16	YES	ipru53975	16.3.2	TELEMER	2	Frequent Headache	selectRange	0,0.9,1,60
+219	 What are the symptoms? 			16	YES	ipru53975	16.3.3	TELEMER	2	Frequent Headache	text	
+220	 Are you taking any medication? 			16	YES	ipru53975	16.3.4	TELEMER	2	Frequent Headache	text	
+221	 Have you been hospitalized? 			16	YES	ipru53975	16.3.5	TELEMER	2	Frequent Headache	text	
+222	 Do you have MRI/CT reports? 			16	YES	ipru53975	16.3.6	TELEMER	2	Frequent Headache	selectValue	YES,NO
+223	 What is your current status ? 			16	YES	ipru53975	16.3.7	TELEMER	2	Frequent Headache	text	
+224	 PME's available?			16	YES	ipru53975	16.3.8	TELEMER	2	Frequent Headache	selectValue	YES,NO
+225	Has the Life assured suffered from or suffering from Low Hemoglobin /thalassaemia, thyroid dysfunction/skin disorder or any blood disorder??			0	YES	ipru53975	17	TELEMER	2	0	select	HB/Blood Disorder/Anaemia,Thalessamia,Thyroid,Skin,Others,NO
+226	 HB/Blood disorder/anaemia-Since how many years? 			17	YES	ipru53975	17.1	TELEMER	2	HB/Blood Disorder/Anaemia	selectRange	0,0.9,1,60
+227	 What are the symptoms? 			17	YES	ipru53975	17.1.1	TELEMER	2	HB/Blood Disorder/Anaemia	text	
+228	 What are your report values ? 			17	YES	ipru53975	17.1.2	TELEMER	2	HB/Blood Disorder/Anaemia	text	
+229	 Are you taking any medications? 			17	YES	ipru53975	17.1.3	TELEMER	2	HB/Blood Disorder/Anaemia	text	
+230	 Are you taking any supplements? 			17	YES	ipru53975	17.1.4	TELEMER	2	HB/Blood Disorder/Anaemia	text	

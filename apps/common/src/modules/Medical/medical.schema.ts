@@ -265,13 +265,13 @@ export const calculateMedicalMeasurements = (
   let heightFts = "";
   let inches = "";
   if (height > 0) {
-    const totalInches = Math.round(height / 2.54);
+    const totalInches = height / 2.54;
     heightFts = String(Math.floor(totalInches / 12));
-    inches = String(totalInches % 12);
+    inches = (totalInches % 12).toFixed(2);
   }
   const bmi =
     height > 0 && weight > 0
-      ? (weight / (height / 100) ** 2).toFixed(1)
+      ? (weight / (height / 100) ** 2).toFixed(2)
       : "";
   return { heightFts, inches, bmi };
 };
@@ -280,15 +280,16 @@ export const calculateMedicalMeasurements = (
 /* Section: Blood pressure and Pulse details                          */
 /* ------------------------------------------------------------------ */
 
+/**
+ * Label of one BP reading, e.g. "Systolic 3". The number is the API `readingId`.
+ * The API can return more than four readings, so reading fields are not listed in the schema:
+ * `getMedicalFieldValidator` validates them by label (Systolic 1 / Diastolic 1 required, rest optional).
+ */
+export const MEDICAL_BP_READING_LABEL = /^(Systolic|Diastolic) (\d+)$/;
+
 export const medicalBloodPressurePulseSchema = z.object({
-  systolic1: mandatoryNumeric("Systolic 1"),
-  systolic2: optionalNumeric("Systolic 2"),
-  systolic3: optionalNumeric("Systolic 3"),
   /** Auto populated — average of the entered Systolic readings. */
   avgSystolic: optionalText,
-  diastolic1: mandatoryNumeric("Diastolic 1"),
-  diastolic2: optionalNumeric("Diastolic 2"),
-  diastolic3: optionalNumeric("Diastolic 3"),
   /** Auto populated — average of the entered Diastolic readings. */
   avgDiastolic: optionalText,
   pulseRate: mandatoryNumeric("Pulse Rate"),
@@ -1167,13 +1168,7 @@ export const MEDICAL_SECTION_FIELD_KEYS: Readonly<
     "Tele Type": "teleType",
   },
   blood_pressure_pulse_details: {
-    "Systolic 1": "systolic1",
-    "Systolic 2": "systolic2",
-    "Systolic 3": "systolic3",
     "Avg Systolic": "avgSystolic",
-    "Diastolic 1": "diastolic1",
-    "Diastolic 2": "diastolic2",
-    "Diastolic 3": "diastolic3",
     "Avg Diastolic": "avgDiastolic",
     "Pulse Rate": "pulseRate",
   },
@@ -1357,6 +1352,23 @@ export interface MedicalFieldValidator {
   validate: (value: string, dependencyValue?: string) => string | undefined;
 }
 
+/** BP readings: Systolic 1 / Diastolic 1 are required, every further reading is optional. */
+const getMedicalBpReadingValidator = (
+  label: string,
+): MedicalFieldValidator | undefined => {
+  const match = MEDICAL_BP_READING_LABEL.exec(label);
+  if (!match) return undefined;
+  const fieldSchema =
+    match[2] === "1" ? mandatoryNumeric(label) : optionalNumeric(label);
+  return {
+    isRequired: () => !fieldSchema.safeParse("").success,
+    validate: (value) => {
+      const result = fieldSchema.safeParse(value);
+      return result.success ? undefined : result.error.issues[0]?.message;
+    },
+  };
+};
+
 /**
  * Field-level validator for a config field, or `undefined` when the section or
  * field has no schema.
@@ -1365,6 +1377,10 @@ export const getMedicalFieldValidator = (
   sectionKey: string,
   label: string,
 ): MedicalFieldValidator | undefined => {
+  if (sectionKey === "blood_pressure_pulse_details") {
+    const readingValidator = getMedicalBpReadingValidator(label);
+    if (readingValidator) return readingValidator;
+  }
   const fieldKeys = MEDICAL_SECTION_FIELD_KEYS[sectionKey];
   const fieldKey = fieldKeys?.[label];
   const createSchema = MEDICAL_SECTION_SCHEMAS[sectionKey];

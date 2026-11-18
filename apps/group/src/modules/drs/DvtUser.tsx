@@ -53,6 +53,7 @@ import {
   useGetGroupFinancialDetailsQuery,
   useSaveGroupFinancialMutation,
 } from "../../services/financialApi";
+import { useGetGroupMedicalDetailsQuery } from "../../services/medicalApi";
 import type { CardType } from "../../services/drsService";
 import { useValidateNsdlPanMutation } from "../../services/nsdlApi";
 import { createNsdlPanValidateRequest, resolveNsdlOutcome } from "../../services/nsdlService";
@@ -101,6 +102,11 @@ function readQueryError(error: unknown): string {
   return "Unable to load the Group DRS.";
 }
 
+function readMedicalError(error: unknown): string {
+  const message = readApiErrorMessage(error);
+  return message.length > 0 ? message : "Unable to load the medical details.";
+}
+
 // Which BRE rows highlight differences between Initial and Final (as in the prototype)
 const BRE_DIFF_BY_ROW_ID: Record<string, ComparisonRow["diff"]> = {
   decision: "value",
@@ -142,6 +148,10 @@ const DvtUser = () => {
     { skip: !isFinancialRoute || !applicationNo || !activePartyId },
   );
   const [saveFinancial] = useSaveGroupFinancialMutation();
+  const medicalQuery = useGetGroupMedicalDetailsQuery(
+    { applicationNumber: applicationNo, partyId: activePartyId },
+    { skip: !isMedicalRoute || !applicationNo || !activePartyId },
+  );
 
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
   const [applicantProfileOpen, setApplicantProfileOpen] = useState(false);
@@ -232,6 +242,12 @@ const DvtUser = () => {
   const handleFinancialApplicantChange = (applicantKey: string) => {
     navigate(
       { pathname: financialPath, search },
+      { replace: true, state: { applicantId: applicantKey } satisfies ApplicantRouteState },
+    );
+  };
+  const handleMedicalApplicantChange = (applicantKey: string) => {
+    navigate(
+      { pathname: medicalPath, search },
       { replace: true, state: { applicantId: applicantKey } satisfies ApplicantRouteState },
     );
   };
@@ -349,11 +365,34 @@ const DvtUser = () => {
 
   if (isMedicalRoute) {
     const medicalApplicants = applicants.map((applicant) => ({ key: applicant.id, label: applicant.label }));
+    if (medicalQuery.isLoading || medicalQuery.isFetching) {
+      return <CustomLoader message="Loading medical details" />;
+    }
+    if (medicalQuery.isError) {
+      return (
+        <Box sx={{ p: 2 }}>
+          <Typography>{readMedicalError(medicalQuery.error)}</Typography>
+        </Box>
+      );
+    }
+    // `null` means the API found no medical record; show that instead of another record.
+    if (medicalQuery.data === null) {
+      return (
+        <Box sx={{ p: 2 }}>
+          <Typography>No medical details found for this applicant.</Typography>
+        </Box>
+      );
+    }
     return (
       <Medical
+        // A new key per applicant resets the form state held inside Medical.
+        key={`${activePartyId}`}
         summary={detailCards}
         applicants={medicalApplicants.length > 0 ? medicalApplicants : undefined}
         initialApplicantKey={currentApplicantId}
+        groups={medicalQuery.data?.groups}
+        sections={medicalQuery.data?.sections}
+        onApplicantChange={handleMedicalApplicantChange}
         onBack={closeMedical}
         onSubmit={(payload) => console.log("Submit medical", payload)}
       />

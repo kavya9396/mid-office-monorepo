@@ -42,22 +42,61 @@ export type MedicalParameterDef = readonly [
   options?: readonly MedicalOption[],
 ];
 
+/** Fetched entry of one `parameters` row (same index as the row): Value, Normal Range and Unit. */
+export interface MedicalParameterValue {
+  value: string;
+  from: string;
+  to: string;
+  unit: string;
+}
+
+/** One answer option of a questionnaire question, as returned by the master. */
+export interface MedicalQuestionOption {
+  key: string;
+  label: string;
+  /** "Y" makes `remarks` mandatory when this option is selected. */
+  remarksMandatory?: string;
+  /** Child question ids triggered by this option. */
+  subQuestionIds: readonly string[];
+}
+
+/** One question of a questionnaire section (API `question_table` item). */
+export interface MedicalQuestion {
+  id: string;
+  parentId: string | null;
+  /** Option key of `parentId` that shows this question; null when shown on YES / unconditionally. */
+  parentOption: string | null;
+  questionDesc: string;
+  questionDetails: string | null;
+  questionGroup: number;
+  mandatory: boolean;
+  questionType: "TEXT" | "NUMBER" | "SINGLESELECT" | "MULTISELECT";
+  answerType: readonly MedicalQuestionOption[] | null;
+  section: string;
+  response: string | null;
+  remarks: string | null;
+}
+
 export interface MedicalSection {
   key: string;
   groupKey: string;
   title: string;
+  /** Questions for a `questionnaire` layout, from the API. Replaces `fields` for that layout. */
+  questionnaire?: readonly MedicalQuestion[];
   /**
    * Test-parameter table shown below the field grid. Each row has a Value, a
    * Normal Range (from - to) and a computed Findings (Normal / Abnormal).
    */
   parameters?: readonly MedicalParameterDef[];
+  /** Fetched entries for `parameters`, one per row in the same order. Findings is always computed. */
+  parameterValues?: readonly MedicalParameterValue[];
   /** Heading shown above the `parameters` table. */
   parametersTitle?: string;
   /**
    * Renders a dedicated body instead of the default field grid.
    * `habitAddiction` expects `fields` in groups of three per habit: Indicator, Quantity, No. of Year.
    */
-  layout?: "familyHistory" | "habitAddiction";
+  layout?: "familyHistory" | "habitAddiction" | "questionnaire";
   /**
    * Labels of `fields` shown together as a one-row table below the field grid
    * (e.g. lab Value / Range / Unit / Findings), using the labels as column headers.
@@ -100,7 +139,8 @@ export type MedicalControlKind =
   | "medicalType"
   | "mets"
   | "negativePositive"
-  | "date";
+  | "date"
+  | "time";
 
 export interface MedicalOption {
   label: string;
@@ -214,9 +254,9 @@ export const MEDICAL_APPLICATION_FORM_LIFESTYLE_FIELDS: readonly MedicalFieldDef
   ["Tobacco", "", false],
   ["Alcohol", "", false],
   ["Narcotics", "", false],
-  // ["Adverse", "", false],
-  // ["Hazardous Occupation", "", false],
-  // ["Illness Impairment", "", false],
+  ["Adverse", "", false],
+  ["Hazardous Occupation", "", false],
+  ["Illness Impairment", "", false],
 ];
 
 export const MEDICAL_APPLICATION_FORM_LIFESTYLE_SECTION: MedicalSection = {
@@ -321,47 +361,139 @@ export const MEDICAL_FAMILY_HISTORY_SECTION: MedicalSection = {
   fields: [],
 };
 
-export const MEDICAL_BP_PULSE_FIELDS: readonly MedicalFieldDef[] = [
-  // 5-column grid: row 1 = Systolic 1-4 + Avg, row 2 = Diastolic 1-4 + Avg, row 3 = Pulse Rate.
-  ["Systolic 1", "", true],
-  ["Systolic 2", "", false],
-  ["Systolic 3", "", false],
-  ["Systolic 4", "", false],
-  ["Avg Systolic", "", false],
-  ["Diastolic 1", "", true],
-  ["Diastolic 2", "", false],
-  ["Diastolic 3", "", false],
-  ["Diastolic 4", "", false],
-  ["Avg Diastolic", "", false],
-  ["Pulse Rate", "", true],
+/** Reading slots (readingId 1-4) always shown; the API can return more, see `createMedicalBpPulseSection`. */
+export const MEDICAL_BP_DEFAULT_READING_IDS: readonly number[] = [1, 2, 3, 4];
+
+/**
+ * Builds the BP & Pulse section for the given reading ids (ascending).
+ * Grid: row 1 = Systolic readings + Avg, row 2 = Diastolic readings + Avg, row 3 = Pulse Rate,
+ * so the grid has one column per reading plus one for the average.
+ */
+export function createMedicalBpPulseSection(readingIds: readonly number[]): MedicalSection {
+  const readings = (prefix: "Systolic" | "Diastolic"): MedicalFieldDef[] =>
+    readingIds.map((id): MedicalFieldDef => [`${prefix} ${id}`, "", id === 1]);
+  return {
+    key: "blood_pressure_pulse_details",
+    groupKey: "mer",
+    title: "Blood pressure and Pulse details",
+    cols: readingIds.length + 1,
+    fields: [
+      ...readings("Systolic"),
+      ["Avg Systolic", "", false],
+      ...readings("Diastolic"),
+      ["Avg Diastolic", "", false],
+      ["Pulse Rate", "", true],
+    ],
+  };
+}
+
+export const MEDICAL_BP_PULSE_SECTION: MedicalSection = createMedicalBpPulseSection(
+  MEDICAL_BP_DEFAULT_READING_IDS,
+);
+
+export const MEDICAL_BP_PULSE_FIELDS: readonly MedicalFieldDef[] = MEDICAL_BP_PULSE_SECTION.fields;
+
+/**
+ * Questionnaire items: one row per question with Response and Remarks.
+ * The question ID is shown as-is and is the key the API uses for the answer.
+ */
+const QUESTION_TYPES: readonly MedicalQuestion["questionType"][] = [
+  "TEXT",
+  "NUMBER",
+  "SINGLESELECT",
+  "MULTISELECT",
 ];
 
-export const MEDICAL_BP_PULSE_SECTION: MedicalSection = {
-  key: "blood_pressure_pulse_details",
-  groupKey: "mer",
-  title: "Blood pressure and Pulse details",
-  cols: 5,
-  fields: MEDICAL_BP_PULSE_FIELDS,
-};
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
 
-export const MEDICAL_QUESTION_TABLE_FIELDS: readonly MedicalFieldDef[] = [
-  ["Are you the examinees medical attendant?", "", true],
-  ["Is there any abnormality in general appearance?", "", true],
-  ["Describe Build", "", true],
-  ["Has there been any significant weight gain or weight loss?", "", true],
-  ["Has been hospitalized for accident/Medical treatment/Surgery?", "", true],
-  ["Any history of Cardiovascular disease / Hypertension / Diabetes?", "", true],
-  ["Any Respiratory / Asthma / TB / Lungs disorder?", "", true],
-  ["Any Gastrointestinal / Liver / Kidney disorder?", "", true],
-  ["Any Neurological / Psychiatric disorder / Epilepsy?", "", true],
-];
+/**
+ * Validates a questionnaire list from the API against `MedicalQuestion`.
+ * Throws on an unknown shape so bad data fails loudly, instead of a cast.
+ */
+export function parseMedicalQuestionnaire(raw: readonly unknown[]): readonly MedicalQuestion[] {
+  return raw.map((row, index) => {
+    if (!isRecord(row)) {
+      throw new Error(`Questionnaire row ${index} is not an object`);
+    }
+    const questionType = QUESTION_TYPES.find((type) => type === row.questionType);
+    if (
+      typeof row.id !== "string" ||
+      typeof row.questionDesc !== "string" ||
+      questionType === undefined
+    ) {
+      throw new Error(`Questionnaire row ${index} has an invalid id, question or type`);
+    }
+    const answerType = Array.isArray(row.answerType)
+      ? row.answerType.map((option: Record<string, unknown>) => ({
+          key: String(option.key),
+          label: String(option.label),
+          subQuestionIds: Array.isArray(option.subQuestionIds)
+            ? option.subQuestionIds.map(String)
+            : [],
+          ...(option.remarksMandatory === "Y" ? { remarksMandatory: "Y" } : {}),
+        }))
+      : null;
+    return {
+      id: row.id,
+      parentId: typeof row.parentId === "string" ? row.parentId : null,
+      parentOption: typeof row.parentOption === "string" ? row.parentOption : null,
+      questionDesc: row.questionDesc,
+      questionDetails: typeof row.questionDetails === "string" ? row.questionDetails : null,
+      questionGroup: Number(row.questionGroup),
+      mandatory: row.mandatory === true,
+      questionType,
+      answerType,
+      section: String(row.section),
+      response: typeof row.response === "string" ? row.response : null,
+      remarks: typeof row.remarks === "string" ? row.remarks : null,
+    };
+  });
+}
+
+/**
+ * Returns the questions to show for a questionnaire. A question with a `parentId` is shown only when
+ * its parent is shown and its trigger is met: `parentOption` must be among the parent's selected keys
+ * (multi-select), or, when `parentOption` is null, the parent's response must be "Y".
+ * `responseOf` returns the stored response for a question id ("" when unanswered).
+ */
+export function getVisibleMedicalQuestions(
+  questions: readonly MedicalQuestion[],
+  responseOf: (questionId: string) => string,
+): readonly MedicalQuestion[] {
+  const byId = new Map(questions.map((question) => [question.id, question]));
+  const visible = new Map<string, boolean>();
+
+  const isVisible = (question: MedicalQuestion): boolean => {
+    const cached = visible.get(question.id);
+    if (cached !== undefined) return cached;
+    let result = true;
+    if (question.parentId !== null) {
+      const parent = byId.get(question.parentId);
+      if (!parent || !isVisible(parent)) {
+        result = false;
+      } else if (question.parentOption === null) {
+        result = ["Y", "YES"].includes(responseOf(parent.id));
+      } else {
+        result = responseOf(parent.id).split(",").includes(question.parentOption);
+      }
+    }
+    visible.set(question.id, result);
+    return result;
+  };
+
+  return questions.filter(isVisible);
+}
 
 export const MEDICAL_QUESTION_TABLE_SECTION: MedicalSection = {
   key: "question_table",
   groupKey: "mer",
   title: "Question Table",
+  layout: "questionnaire",
   cols: 3,
-  fields: MEDICAL_QUESTION_TABLE_FIELDS,
+  fields: [],
+  questionnaire: [],
 };
 
 /* ------------------------------------------------------------------ */
@@ -427,6 +559,8 @@ const MEDICAL_TELE_MER_CONTROL_KINDS: Readonly<Record<string, MedicalControlKind
   "Annual Income": "number",
   "Previous Insurance Declined": "yesNo",
   "Medical Treatment": "yesNo",
+  Adversity: "yesNo",
+  "Time of Tele call": "time",
 };
 
 export const MEDICAL_TELE_FAMILY_HISTORY_SECTION: MedicalSection = {
@@ -463,21 +597,14 @@ export const MEDICAL_TELE_HABIT_ADDICTION_SECTION: MedicalSection = {
   fields: MEDICAL_TELE_HABIT_ADDICTION_FIELDS,
 };
 
-export const MEDICAL_TELE_QUESTION_TABLE_FIELDS: readonly MedicalFieldDef[] = [
-  ["Are you the examinees medical attendant?", "", true],
-  ["Is there any abnormality in general appearance?", "", true],
-  ["Describe Build", "", true],
-  ["Has there been any significant weight gain or loss?", "", true],
-  ["Any history of serious illness or surgery?", "", true],
-  ["Any chronic medical condition?", "", true],
-];
-
 export const MEDICAL_TELE_QUESTION_TABLE_SECTION: MedicalSection = {
   key: "tele_question_table",
   groupKey: "tele_video_mer",
   title: "Question Table",
+  layout: "questionnaire",
   cols: 3,
-  fields: MEDICAL_TELE_QUESTION_TABLE_FIELDS,
+  fields: [],
+  questionnaire: [],
 };
 
 export const MEDICAL_TELE_DISPOSITION_FIELDS: readonly MedicalFieldDef[] = [
@@ -1442,6 +1569,7 @@ export const MEDICAL_LOCKED_FIELDS: ReadonlySet<string> = new Set<string>([
   "Heart Rate Result",
   "Physical Medical Decision",
   "Tele/Video MER Decision",
+  "Tele Type",
   "MunichRe Medical Decision",
   "MunichRe Rating",
   "BIU Medical Status",
@@ -1534,7 +1662,7 @@ const MEDICAL_GENERAL_LABEL_RULES: readonly MedicalLabelRule[] = [
   [/^Relation Type$/i, "familyRelation"],
   [/Describe Build/i, "build"],
   [
-    /^(Is\b|Tele-Video MER Conducted|Verified|Smoking|Diving|Tobacco|Alcohol|Narcotics|Adverse|Hazardous|Illness|Any\b|Cigarettes|Gutka|Beer)/i,
+    /^(Is\b|Tele-Video MER Conducted|Verified|Family History As Per|Smoking|Diving|Tobacco|Alcohol|Narcotics|Adverse|Hazardous|Illness|Any\b|Cigarettes|Gutka|Beer)/i,
     "yesNo",
   ],
   [/Examinee Education/i, "education"],

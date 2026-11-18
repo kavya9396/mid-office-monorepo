@@ -1,0 +1,1010 @@
+# ============================================================================
+# Medical data fetch -> "View Medical" screen mapping (menu-wise)
+# ----------------------------------------------------------------------------
+# API   : POST /icic-medical-service/v1/medical-data/fetch  (UAT)
+# Sample: design-reference/medical-data-fetch-integration.txt
+# UI    : apps/common/src/modules/Medical/medical.config.ts
+#         apps/common/src/modules/Medical/medical.schema.ts
+# Spec  : docs/spec/integrations/medical-data-fetch.md
+#
+# Sections are listed in LEFT MENU order. Each UI section maps to one API
+# section (matched by correlation, not only exact name).
+#
+# CARDINALITY LEGEND
+#   1:1      one object per application + party
+#   1:N      array of rows (UI shows a repeating table / parameter list)
+#   1:N(?)   array in API, UI expects fixed rows (conflict, see comments)
+#
+# STATUS LEGEND
+#   match        same meaning, same name (or trivial casing difference)
+#   correlated   same meaning, different name / shape
+#   mismatch     different cardinality or shape that must be changed
+#   api_missing  UI field has no API counterpart in this sample
+#   ui_missing   API field has no UI counterpart in this sample
+#
+# API TEAM comments are prefixed with "# API TEAM:".
+# ============================================================================
+
+meta:
+  request:
+    applicationNumber: string        # required
+    partyId: string                  # required, one call per party
+  root:
+    cardinality: "1 record per applicationNumber + partyId"
+    client_type: "LA"                # # API TEAM: UI has two applicant tabs (Life Assured 1, Proposer). Confirm how Proposer data is returned: separate call per partyId, or same call?
+  sections_envelope:
+    # API TEAM: 44 sections are returned as a flat map under data.sections.
+    # Each test key is a singleton object. If the same test was done twice
+    # (e.g. two CBC reports, or two USG), the API cannot return both.
+    # Confirm whether repeats are possible. If yes, the shape must become an array per test key.
+    cardinality: "1 object per test key"
+  id_fields:
+    medAppDtlId: "root level, 118 in sample"
+    testDtlId: "per test object (e.g. cbc_group 167, hbsag 166, ecg 168); null for empty tests"
+    # API TEAM: UI needs a stable per-test id for Save/Edit. Confirm testDtlId is the key to send back on save.
+
+# ============================================================================
+# MENU 1 - OVERVIEW
+# ============================================================================
+menus:
+  - menu: overview
+    label: "Overview"
+    sections:
+      - ui_key: application_form_medical_lifestyle
+        ui_title: "Application Form Medical & Lifestyle Details"
+        api_key: application_form_medical
+        cardinality: { ui: "1:1", api: "1:1" }
+        status: match
+        fields:
+          - { ui: "Height", api: height }
+          - { ui: "Weight", api: weight }
+          - { ui: "BMI", api: bmi }
+          - { ui: "Family History As Per Application Form ?", api: familyHistoryAsPerApplicationForm }
+          - { ui: "Smoking", api: smoking }
+          - { ui: "Diving", api: diving }
+          - { ui: "Tobacco", api: tobacco }
+          - { ui: "Alcohol", api: alcohol }
+          - { ui: "Narcotics", api: narcotics }
+          - { ui: "Adverse", api: "NOT IN SAMPLE, API TEAM to confirm key", status: api_missing }
+          - { ui: "Hazardous Occupation", api: "NOT IN SAMPLE, API TEAM to confirm key", status: api_missing }
+          - { ui: "Illness Impairment", api: "NOT IN SAMPLE, API TEAM to confirm key", status: api_missing }
+        # API TEAM: all 9 values are null in the sample. Confirm whether this is a
+        # not-yet-filled application or a data gap.
+        # API TEAM: Adverse, Hazardous Occupation and Illness Impairment are shown in the UI (re-enabled)
+        #   but the API sample does not return them. Add these three keys to the application_form_medical object.
+
+# ============================================================================
+# MENU 2 - MER
+# ============================================================================
+  - menu: mer
+    label: "MER"
+    sections:
+      - ui_key: mer
+        api_key: mer
+        cardinality: { ui: "1:1", api: "1:1" }
+        status: correlated
+        fields:
+          - { ui: "Application No.", api: applicationNo, status: correlated }
+          - { ui: "First Name", api: firstName, status: match }
+          - { ui: "Last Name", api: lastName, status: match }
+          - { ui: "Is MER name same as proposal name?", api: isMerNameSameAsProposalName, status: match }
+          - { ui: "Place of Examination", api: placeOfExamination, status: match }
+          - { ui: "Gender", api: gender, status: correlated }
+          - { ui: "Name of ME", api: nameOfMe, status: match }
+          - { ui: "ME Code", api: meCode, status: match }
+          - { ui: "Is Identity Proof and Application Photo Match", api: isIdentityProofAndApplicationPhotoMatch, status: match }
+          - { ui: "Examinee DOB", api: examineeDob, status: correlated }
+          - { ui: "Examination Time", api: examTime, status: correlated }
+          - { ui: "Examinee Education SD", api: examineeEducationSd, status: match }
+          - { ui: "Examinee Occupation SD", api: examineeOccupationSd, status: match }
+          - { ui: "Examinee Income SD", api: examineeIncomeSd, status: match }
+          - { ui: "Examinee Photo ID Proof", api: examineePhotoIdProof, status: match }
+          - { ui: "Examinee Contact No", api: examineeContactNo, status: match }
+          - { ui: "Face match Score", api: faceMatchScore, status: match }
+          - { ui: "Diagnostic Centre Name", api: diagnosticCentreName, status: match }
+          - { ui: "Diagnostic Centre Address", api: diagnosticCentreAddress, status: match }
+          - { ui: "Diagnostic Centre Pincode", api: diagnosticCentrePincode, status: match }
+          - { ui: "Date of Examination", api: dateOfExamination, status: match }
+          - { ui: "Any previous life Insurance policy decline/Postpone/issued on revised term SD", api: anyPreviousLifeInsurancePolicyDeclinePostponeOrIssuedOnRevisedTermSd, status: correlated }
+        # API TEAM - cardinality/duplicates:
+        #   - dateOfBirth and examineeDob both carry the DOB. Keep one as the source of truth.
+        #   - genderCode ("U") and gender ("U") both carry gender. Keep one.
+        #   - examDate and dateOfExamination both carry exam date. Keep one.
+        #   - examineeIncomeSd and incomeCode both carry income. Keep one.
+        #   - applicationNo is null here but applicationNumber is set at root. Populate or drop.
+        # API TEAM - values:
+        #   - gender "U" is not in UI enum (MALE / FEMALE / TRANSGENDER). API TEAM: send the UI values
+        #     (MALE / FEMALE / TRANSGENDER); the UI lists are the source of truth (request 14).
+        #   - firstName "Virat Kohli" + lastName "UNKNOWN" + DOB 1900-01-01 look like placeholders. Confirm.
+        #   - Mandatory UI fields null in sample: isMerNameSameAsProposalName, placeOfExamination,
+        #     nameOfMe, meCode, examineePhotoIdProof, dateOfExamination.
+        #   - No examination time field in API while UI has one (api_missing).
+
+      - ui_key: habit_addictions
+        api_key: habit_and_addictions
+        cardinality: { ui: "1:1 (flat fields)", api: "1:1 object + habits[] 0..N" }
+        status: correlated
+        fields:
+          - { ui: "Cigarettes/beedis/cigar", api: cigarettesBeedisCigar }
+          - { ui: "Cigarettes/beedis/cigar Quant", api: cigarettesBeedisCigarQuant }
+          - { ui: "Cigarettes/beedis/cigar Year", api: cigarettesBeedisCigarYear }
+          - { ui: "Gutka / snuff / paan etc.", api: gutkaSnuffPaan }
+          - { ui: "Gutka / snuff / paan etc. Quant", api: gutkaSnuffPaanQuant }
+          - { ui: "Gutka / snuff / paan etc. Year", api: gutkaSnuffPaanYear }
+          - { ui: "Narcotic Consumption", api: narcoticConsumption }
+          - { ui: "Narcotic Consumption Quant", api: narcoticConsumptionQuant }
+          - { ui: "Narcotic Consumption Year", api: narcoticConsumptionYear }
+          - { ui: "Beer/Wine/Hard liquor", api: beerWineHardLiquor }
+          - { ui: "Beer/Wine/Hard liquor Quant", api: beerWineHardLiquorQuant }
+          - { ui: "Beer/Wine/Hard liquor Year", api: beerWineHardLiquorYear }
+        # API TEAM - cardinality:
+        #   - habits[] is empty while flat fields exist. Two representations of the same data.
+        #     Choose one: flat (matches UI today) or habits[] (1:N, one row per habit type).
+        #   - Freq and Remarks fields exist per habit in API (e.g. cigarettesBeedisCigarFreq) but the UI
+        #     has no such fields. Confirm if they should be shown.
+        #   - API key is "habit_and_addictions", UI key is "habit_addictions". Rename one.
+
+      - ui_key: measurement
+        api_key: measurement
+        cardinality: { ui: "1:1", api: "1:1" }
+        status: correlated
+        fields:
+          - { ui: "Height (cms)", api: heightCm }
+          - { ui: "Height (Fts)", api: heightFts, status: correlated }
+          - { ui: "Inches", api: inches, status: correlated }
+          - { ui: "Weight (Kgs)", api: weightKg }
+          - { ui: "Waist (cms)", api: waistCm }
+          - { ui: "Hips (cms)", api: hipsCm }
+          - { ui: "BMI", api: bmi }
+        # API TEAM - cardinality (duplicates):
+        #   - Every measurement has two keys: heightCm / heightCms, weightKg / weightKgs,
+        #     waistCm / waistCms, hipsCm / hipsCms, bmi / bmiCalculated, heightFts / heightFtsCalculated,
+        #     heightInches / heightInchCalculated / inches. Keep one per measure.
+        #   - Calculated values (heightFtsCalculated, bmiCalculated) are computed by UI. Confirm
+        #     whether the API should store them or only raw inputs.
+
+      - ui_key: family_history_health_status
+        api_key: family_history
+        cardinality: { ui: "1:N list (rows added at runtime)", api: "list members[] only (flat slots removed)" }
+        status: mismatch
+        fields:
+          - { ui: "Relation", api: "members[].relationType" }
+          - { ui: "Age", api: "members[].memberAge" }
+          - { ui: "Alive / Dead", api: "members[].aliveStatus" }
+          - { ui: "Health status", api: "members[].healthStatusDesc" }
+        # DECISION (open question 15): aliveStatus stays as is (only "A" = Alive is mapped; the Dead code is not
+        #   guessed). The code list comes from the master configuration when it is added.
+        #   relationType in uppercase (FATHER) is fine; the UI title-cases it to match the relation options.
+        # DECISION (open question 14): Health status should be a dropdown. The option list is not supplied yet,
+        #   so the UI shows healthStatusDesc as sent. Reference only (not a confirmed list): GOOD, FAIR, POOR,
+        #   CRITICAL, NOT KNOWN. The master supplies the real list.
+        # API TEAM - family history is a LIST, not fixed slots:
+        #   - Return members[] as the only source: one array item per family member, with a row id (memberId).
+        #     Return an empty array when there are no rows.
+        #   - Remove the flat slots fatherAge, motherAge, otherAge, fatherRelation, etc. They hold only one
+        #     BROTHER and one FATHER/MOTHER, so a second brother or a sister is lost.
+        #   - The UI needs memberId to edit or delete a specific row.
+        #   - Sample has BROTHER with null age and null alive status. Confirm if nullable is allowed.
+        #   - The same list shape applies to every family-history section with this structure (MER and Tele).
+
+      - ui_key: blood_pressure_pulse_details
+        api_key: blood_pressure_and_pulse
+        cardinality: { ui: "1:1 with fixed 4 readings", api: "1:1 + systolic[] / diastolic[] (readingId 1-4)" }
+        status: correlated
+        fields:
+          - { ui: "Systolic 1", api: "systolic[readingId=1].value" }
+          - { ui: "Systolic 2", api: "systolic[readingId=2].value" }
+          - { ui: "Systolic 3", api: "systolic[readingId=3].value" }
+          - { ui: "Systolic 4", api: "systolic[readingId=4].value" }
+          - { ui: "Avg Systolic", api: avgSystolic }
+          - { ui: "Diastolic 1", api: "diastolic[readingId=1].value" }
+          - { ui: "Diastolic 2", api: "diastolic[readingId=2].value" }
+          - { ui: "Diastolic 3", api: "diastolic[readingId=3].value" }
+          - { ui: "Diastolic 4", api: "diastolic[readingId=4].value" }
+          - { ui: "Avg Diastolic", api: avgDiastolic }
+          - { ui: "Pulse Rate", api: pulseRate }
+        # API TEAM - contract change (replaces the old fixed slots AND the old readings[]):
+        #   systolic and diastolic are arrays of { readingId, value }.
+        #     "systolic":  [ { "readingId": 1, "value": <number|null> }, ... readingId 2, 3, 4 ]
+        #     "diastolic": [ { "readingId": 1, "value": <number|null> }, ... readingId 2, 3, 4 ]
+        #   - readingId is 1 to 4 for now. The UI maps by readingId, not by array position.
+        #   - Remove the flat fields systolic1-4 / diastolic1-4 and the old readings[].
+        #   - Return all four readingIds with value null when not taken, or omit them. Confirm which.
+        #   - UI is flexible: slots 1-4 are always shown; any extra readingId the API returns (5, 6, ...) adds a
+        #     "Systolic n" / "Diastolic n" field, sorted by readingId. The grid gets one column per reading + Avg.
+        #     Systolic 1 / Diastolic 1 are required; every other reading is optional. Avg uses all readings shown.
+        #     readingId must be a whole number >= 1; other entries are ignored. Systolic and Diastolic can differ
+        #     in length: the UI shows the union of readingIds for both rows.
+        #   - Sample/mock: mock/medical/medical-data-fetch.json (all values null, as in the UAT sample).
+        #   - avgSystolicCalculated and avgDiastolicCalculated duplicate avgSystolic / avgDiastolic.
+        #   - pulseRemark and pulseOtherRemark exist in API but not in UI. Confirm if they should be shown.
+
+      # QUESTIONNAIRE (common component, reusable in any section)
+      # Part of the medical fetch response. The MER questionnaire is returned as the list
+      # `sections.question_table.questionnaire`; each item is one question. Source mock:
+      # mock/medical/medical-data-fetch.json.
+      #
+      # API response contract (one list per section):
+      #   questionnaire: [
+      #     {
+      #       id: "1.a",                  # question id (string, unique per section)
+      #       parentId: null,             # null for top-level questions; child = parent id
+      #       questionDesc: "...",        # question text shown in UI
+      #       questionDetails: "...|null",# hint text (e.g. "FOR FEMALE EXAMINEE ONLY")
+      #       questionGroup: 1,           # group number from master (QUESTION_GROUP)
+      #       mandatory: true,            # question must be answered (QUESTION_MANDATORY)
+      #       questionType: "TEXT | NUMBER | SINGLESELECT | MULTISELECT",
+      #       answerType: [               # options for SINGLESELECT / MULTISELECT, null otherwise
+      #         {
+      #           key: "Y",
+      #           label: "Yes",
+      #           remarksMandatory: "Y",  # "Y" = remarks mandatory when this option is selected
+      #           subQuestionIds: []      # child question ids this option triggers
+      #         },
+      #         { key: "N", label: "No", subQuestionIds: [] }
+      #       ],
+      #       section: "MER",            # MER | TELEVMER
+      #       response: "N",            # selected option key; null = not answered
+      #       remarkMandatory: false,   # resulting state for this question (derived from selected option)
+      #       remarks: null              # free text
+      #     }
+      #   ]
+      #
+      # UI column mapping: Question Id -> id | Question -> questionDesc | Response -> response (select of
+      # answerType) | Remarks -> remarks (required when the selected option has remarksMandatory "Y").
+      #
+      # API TEAM: question_table must be a questionnaire list of this shape. Replace the 47 flat
+      # sub-question answers in answers[] with this structure. The master owns remarksMandatory per option.
+      - ui_key: question_table
+        api_key: question_table
+        layout: questionnaire
+        cardinality: { ui: "questionnaire list (one row per question, from API)", api: "questionnaire list (sample: answers[] with 47 flat rows)" }
+        status: mismatch
+        fields:
+          - { ui: "Question Id", api: "id", status: correlated }
+          - { ui: "Parent Id", api: "parentId", status: api_missing }
+          - { ui: "Question", api: "questionDesc", status: correlated }
+          - { ui: "Question details", api: "questionDetails", status: api_missing }
+          - { ui: "Question group", api: "questionGroup", status: api_missing }
+          - { ui: "Mandatory", api: "mandatory", status: api_missing }
+          - { ui: "Question type", api: "questionType", status: api_missing }
+          - { ui: "Answer type (options)", api: "answerType", status: api_missing }
+          - { ui: "Remarks mandatory (per option)", api: "answerType[].remarksMandatory", status: api_missing }
+          - { ui: "Section", api: "section", status: api_missing }
+          - { ui: "Response", api: "response (sample: questionValue)", status: correlated }
+          - { ui: "Remarks", api: "remarks (sample: remark)", status: correlated }
+        # API TEAM - shape and cardinality:
+        #   - Sample has no parentId, questionDetails, questionGroup, mandatory, questionType, answerType,
+        #     remarksMandatory or section. Add them.
+        #   - Sample uses questionDesc / questionValue / remark. Confirm final names.
+        #   - Sample ids are "1.a", "2.b" (MER) and "1", "1.1", "7.1.2" (Tele). Use one format, e.g. "1", "1.1", "1.1.1".
+        #   - "Describe Build" is a free-text sub-question in the sample. Set questionType/answerType so
+        #     it is a dropdown (Normal / Thin / Muscular / Obese / Stocky).
+        #   - Many answers are null. Confirm null means "not asked" or "not answered".
+        #   - Option keys and remarksMandatory values come from the master; the mock uses Y / N and "Y" on Yes.
+
+  # ==========================================================================
+  # Blood test rows in MER menu: none. Next menu.
+  # ==========================================================================
+
+# ============================================================================
+# MENU 3 - TELE-VIDEO MER
+# ============================================================================
+  - menu: tele_video_mer
+    label: "TELE-VIDEO MER"
+    sections:
+      - ui_key: tele_mer
+        api_key: "tele_mer (root)"
+        cardinality: { ui: "1:1", api: "1:1" }
+        status: correlated
+        fields:
+          - { ui: "Application No.", api: applicationNo }
+          - { ui: "First Name", api: firstName }
+          - { ui: "Last Name", api: lastName }
+          - { ui: "Gender", api: gender }
+          - { ui: "Date of Birth", api: dateOfBirth }
+          - { ui: "Telephonic MER", api: telephonicMer }
+          - { ui: "Time of Tele call", api: dateTimeOfTeleCall, status: correlated }
+          - { ui: "Education", api: education }
+          - { ui: "Occupation", api: occupation }
+          - { ui: "Disclosure", api: disclosure }
+          - { ui: "Adversity", api: adversity }
+          - { ui: "Annual Income", api: annualIncome }
+          - { ui: "Examiner Name", api: examinerName }
+          - { ui: "Registration ID", api: registrationId }
+          - { ui: "MER Detail", api: merDetail }
+          - { ui: "Previous Insurance Declined", api: previousInsuranceDeclined }
+          - { ui: "Medical Treatment", api: medicalTreatment }
+          - { ui: "Address Including City and State", api: addressInclCityState }
+          - { ui: "Tele Findings", api: teleFindings }
+          - { ui: "Tele MER Final Remark", api: tmerFinalRemark }
+          - { ui: "Tele Type", api: teleType }
+        # API TEAM - cardinality:
+        #   - tele_mer is a single object. It is nested under sections and carries its own child
+        #     sections (measurement, family_history, habit_and_addictions, answers, disposition). Confirm the nesting is intended.
+        #   - medAppDtlId is null on tele_mer but set at root (118). Populate it.
+        #   - Every value is null in sample except applicationNo.
+        # DECISION (open question 11): "Time of Tele call" shows a time only in 12-hour form (for example "04:26 PM"), no date.
+        #   The code still stores HH:MM 24-hour (not changed yet).
+        # API TEAM: dateTimeOfTeleCall is null in the UAT sample and its name says date and time.
+        #   Confirm the format sent (time only, or a full date-time) so the UI can convert it to 12-hour.
+
+      - ui_key: tele_measurements
+        api_key: "tele_mer.measurement"
+        cardinality: { ui: "1:1", api: "1:1" }
+        status: correlated
+        fields:
+          - { ui: "Height (cms)", api: heightCms }
+          - { ui: "Height (ft)", api: heightFts }
+          - { ui: "Inches", api: inches }
+          - { ui: "Weight (kgs)", api: weightKgs }
+          - { ui: "BMI", api: bmi }
+        # API TEAM - cardinality (duplicates): same duplicated keys as MER measurement
+        #   (heightCm/heightCms, weightKg/weightKgs, bmi/bmiCalculated). Keep one per measure.
+        # UI note: "Height (ft)" is locked (MEDICAL_LOCKED_FIELDS). Confirm it is a calculated field.
+
+      - ui_key: tele_family_history
+        api_key: "tele_mer.family_history"
+        cardinality: { ui: "1:N list", api: "list members[] only (flat slots removed)" }
+        status: mismatch
+        fields:
+          - { ui: "Relation / Age / Alive / Health", api: "members[]" }
+        # DECISION (open question 14): Health Status should be a dropdown. The option list is not supplied yet,
+        #   so the UI shows healthStatusDesc as sent. Reference only (not a confirmed list): the prototype shows
+        #   GOOD; examples to ask the master about: GOOD, FAIR, POOR, CRITICAL, NOT KNOWN.
+        # API TEAM - same list shape as MER family history (see family_history_health_status):
+        #   - members[] is empty in the sample, while flat slots (fatherRelation, motherRelation,
+        #     otherRelation) carry relation names with null values. Use members[] only, with memberId,
+        #     and return an empty array when there are no rows.
+
+      - ui_key: tele_habit_addiction
+        api_key: "tele_mer.habit_and_addictions"
+        cardinality: { ui: "1:1 (flat fields)", api: "1:1 object + habits[] 0..N" }
+        status: correlated
+        fields:
+          - { ui: "Cigarette/beedis/cigar - Indicator", api: cigarettesBeedisCigar }
+          - { ui: "Cigarette/beedis/cigar - Quantity", api: cigarettesBeedisCigarQuant }
+          - { ui: "Cigarette/beedis/cigar - No. of Year", api: cigarettesBeedisCigarYear }
+          - { ui: "Gutka/Snuff/Paan etc. - Indicator", api: gutkaSnuffPaan }
+          - { ui: "Gutka/Snuff/Paan etc. - Quantity", api: gutkaSnuffPaanQuant }
+          - { ui: "Gutka/Snuff/Paan etc. - No. of Year", api: gutkaSnuffPaanYear }
+          - { ui: "Narrotic Consumption - Indicator", api: narcoticConsumption }
+          - { ui: "Narrotic Consumption - Quantity", api: narcoticConsumptionQuant }
+          - { ui: "Narrotic Consumption - No. of Year", api: narcoticConsumptionYear }
+          - { ui: "Beer/Wine/Hard liquor - Indicator", api: beerWineHardLiquor }
+          - { ui: "Beer/Wine/Hard liquor - Quantity", api: beerWineHardLiquorQuant }
+          - { ui: "Beer/Wine/Hard liquor - No. of Year", api: beerWineHardLiquorYear }
+        # API TEAM - cardinality: same as MER habits (flat fields vs habits[] array). Choose one.
+        # UI note: UI label "Narrotic" is a typo carried from the prototype. Not an API issue.
+
+      # QUESTIONNAIRE (layout: "questionnaire") - same contract as MER question_table.
+      # API TEAM: tele_mer.question_table must be a questionnaire list (questionId, questionText,
+      # response, remarks), not the flat 210-item answers[] list.
+      - ui_key: tele_question_table
+        api_key: "tele_mer.answers"
+        layout: questionnaire
+        cardinality: { ui: "1:N list of 6 questions (questionnaire)", api: "1:N questionnaire list (currently answers[] with 210 items in sample)" }
+        status: mismatch
+        fields:
+          - { ui: "Are you the examinees medical attendant?", api: "answers[questionId=1] is 'physical deformity' (different question, do not map)", status: api_missing }
+          - { ui: "Is there any abnormality in general appearance?", api: "answers[questionId=?] not found", status: api_missing }
+          - { ui: "Describe Build", api: "answers[questionId=1.x] not found", status: api_missing }
+          - { ui: "Has there been any significant weight gain or loss?", api: "answers[questionId=2]", status: correlated }
+          - { ui: "Any history of serious illness or surgery?", api: "answers[questionId=3 / 5]", status: correlated }
+          - { ui: "Any chronic medical condition?", api: "answers[questionId=7 / 8 / 10 / 11 / 13 / 14 / 16 / 17]", status: correlated }
+        # API TEAM - cardinality (main concern):
+        #   - UI has 6 questions. API has 210 answers (IDs 1 to 26, with sub-IDs such as 7.1.2).
+        #     Same issue as MER: group sub-questions under the UI question, or confirm the UI should show them all.
+        #   - "Describe Build" and "abnormality in general appearance" are in MER but not in Tele answers.
+        #     Confirm if they are asked in tele at all.
+        #   - Tele answers include the same question twice in different forms (e.g. "7.1" to "7.3.3"
+        #     for diabetes / BP / cholesterol). Clarify the parent-child relation with a parentQuestionId.
+
+      - ui_key: tele_disposition
+        api_key: "tele_mer.disposition"
+        cardinality: { ui: "1:1", api: "1:1" }
+        status: correlated
+        fields:
+          - { ui: "TUW Status", api: tuwStatus }
+          - { ui: "Remark", api: remark }
+          - { ui: "Note", api: note }
+          - { ui: "Remarks2", api: "not present", status: api_missing }
+        # API TEAM: "Remarks2" is in UI but not in API. Confirm if it is needed.
+
+# ============================================================================
+# MENU 4 - SPECIAL MEDICAL
+# Structure: header fields + test-specific fields. All single object (1:1).
+# Common header map (UI -> API) used by every section in this menu:
+#   Medical Type -> medicalType
+#   Test Date -> testDate
+#   Examinee Name -> examineeName
+#   Examinee Age -> examineeAge
+#   Diagnostic Centre Name -> diagnosticCentreName
+#   Doctor Name -> doctorName
+#   Doctor Registration No -> doctorRegNo (also doctorRegistrationNo, see note)
+#   Remark / Remarks -> remark / remarks (API uses both spellings across tests)
+# API TEAM - cardinality: each test is 1:1 per application. There is no array of
+#   repeat tests. See meta.sections_envelope.
+# API TEAM - naming: "remark" and "remarks" are used inconsistently across tests. Use one.
+# ============================================================================
+  - menu: special_medical
+    label: "SPECIAL MEDICAL"
+    sections:
+      - ui_key: 2decho
+        api_key: 2decho
+        cardinality: { ui: "1:1", api: "1:1 + parameters[] 0..N" }
+        status: correlated
+        fields:
+          - { ui: "Findings", api: findings }
+          - { ui: "Ejection Fraction", api: ejectionFraction }
+          - { ui: "Ejection Result", api: ejectionResult }
+          - { ui: "Rejection Abnormality", api: rejectionAbnormality }
+          - { ui: "Remarks", api: remarks }
+        # API TEAM - CMO decision: see the note under ecg. Same cmoDecisions[] contract.
+        # API TEAM: all 2decho values null in sample but testDtlId null too. This test is empty, not "not done".
+        #   Return a status field (not_done / done) so the UI can tell them apart.
+
+      - ui_key: blood_urea_nitro
+        api_key: blood_urea_and_nitro
+        cardinality: { ui: "1:1", api: "1:1" }
+        status: correlated
+        fields:
+          - { ui: "Findings", api: findings }
+          - { ui: "Blood Urea", api: bloodUrea }
+          - { ui: "BUN", api: bun }
+          - { ui: "Result", api: result }
+          - { ui: "Remark", api: remark }
+        # API TEAM: API key "blood_urea_and_nitro" vs UI "blood_urea_nitro". Rename one.
+
+      - ui_key: cxr
+        api_key: cxr
+        cardinality: { ui: "1:1", api: "1:1" }
+        status: match
+        fields:
+          - { ui: "Findings", api: findings }
+          - { ui: "Remark", api: remark }
+
+      - ui_key: dobutamine_stress_echo
+        api_key: dobutamine_stress_echocardiogram
+        cardinality: { ui: "1:1", api: "1:1" }
+        status: correlated
+        fields:
+          - { ui: "Findings", api: findings }
+          - { ui: "Ejection Fraction", api: ejectionFraction }
+          - { ui: "Ejection Result", api: ejectionResult }
+          - { ui: "Rejection Abnormality", api: rejectionAbnormality }
+          - { ui: "Remark", api: remark }
+        # API TEAM: UI key "dobutamine_stress_echo" vs API "dobutamine_stress_echocardiogram". Rename one.
+
+      - ui_key: exercise_stress_echo
+        api_key: exercise_stress_echocardiogram
+        cardinality: { ui: "1:1", api: "1:1" }
+        status: correlated
+        fields:
+          - { ui: "Findings", api: findings }
+          - { ui: "Ejection Fraction", api: ejectionFraction }
+          - { ui: "Ejection Result", api: ejectionResult }
+          - { ui: "Rejection Abnormality", api: rejectionAbnormality }
+          - { ui: "Remark", api: remark }
+        # API TEAM: UI key "exercise_stress_echo" vs API "exercise_stress_echocardiogram". Rename one.
+
+      - ui_key: ecg
+        api_key: ecg
+        cardinality: { ui: "1:1", api: "1:1 + parameters[] (empty)" }
+        status: correlated
+        fields:
+          - { ui: "Findings", api: findings }
+          - { ui: "Axis", api: axis }
+          - { ui: "Heart Rate", api: heartRate }
+          - { ui: "Heart Rate Finding", api: heartRateFinding }
+          - { ui: "Remark", api: remark }
+        # API TEAM - CMO decision (NEW, applies to 2decho, ecg and tmt, the three tests that show a "CMO decision" table):
+        #   Add cmoDecisions[] to the test object. One item per decision, newest or oldest first as the API sorts.
+        #     "cmoDecisions": [
+        #       { "userName": "Dr. Arvind Shah", "poolName": "Special Medical CMO", "decision": "Accepted",
+        #         "remarks": "ECG reviewed with normal sinus rhythm.", "updatedOn": "2026-09-19 07:12:30" }
+        #     ]
+        #   UI table columns: User Name -> userName, Pool Name -> poolName, Decision -> decision,
+        #     Comments/Remarks -> remarks, Date Updated On -> updatedOn.
+        #   Return an empty array (or omit the key) when no CMO has decided; the table is then hidden.
+        #   updatedOn is shown as sent (the prototype shows "YYYY-MM-DD HH:mm:ss"). Confirm the format and timezone.
+        #   Read-only audit trail: a fetch of what each CMO decided on the special medical test. No edit in the grid, and it is never sent on save.
+        #   Sample/mock: mock/medical/medical-data-fetch.json (prototype rows).
+        # API TEAM: "heartRateFinding" here but "heartRateFindings" is used in other tests. Use one.
+        #   Heart Rate is required in UI but null in sample.
+        #   Centre data looks inconsistent: centreName "ARROW Hosp: CE", centreAddress "Healthcare Pvt. GGN Ltd.",
+        #   doctorRegNo "HMC-004521" equals pincode "004521" pattern. Verify source.
+
+      - ui_key: mammogram
+        api_key: mammogram
+        cardinality: { ui: "1:1", api: "1:1" }
+        status: match
+        fields:
+          - { ui: "Findings", api: findings }
+          - { ui: "Remark", api: remark }
+
+      - ui_key: pap_smear
+        api_key: pap_smear
+        cardinality: { ui: "1:1", api: "1:1" }
+        status: match
+        fields:
+          - { ui: "Findings", api: findings }
+          - { ui: "Remarks", api: remarks }
+        # API TEAM: "remarks" here vs "remark" in cxr / mammogram. Use one.
+
+      - ui_key: pft
+        api_key: pft
+        cardinality: { ui: "1:1", api: "1:1" }
+        status: correlated
+        fields:
+          - { ui: "Date", api: date }
+          - { ui: "Inspiration", api: inspiration }
+          - { ui: "Expiration", api: expiration }
+          - { ui: "FEV1", api: fev1 }
+          - { ui: "FVC", api: fvc }
+          - { ui: "FEV1/FVC", api: fev1Fvc }
+          - { ui: "RV", api: rv }
+          - { ui: "VC", api: vc }
+        # API TEAM: FEV1, FVC and FEV1/FVC are required in UI but null in sample.
+        #   Sample test is empty (testDtlId null). Use a not_done status as for 2decho.
+
+      - ui_key: stool_test
+        api_key: stool_test
+        cardinality: { ui: "1:1", api: "1:1" }
+        status: match
+        fields:
+          - { ui: "Findings", api: findings }
+          - { ui: "Remarks", api: remarks }
+
+      - ui_key: tmt
+        api_key: tmt
+        cardinality: { ui: "1:1", api: "1:1" }
+        status: correlated
+        fields:
+          - { ui: "Findings", api: findings }
+          - { ui: "METS", api: mets }
+          - { ui: "Heart Rate Finding", api: heartRateFinding }
+          - { ui: "Heart Rate Result", api: heartRateResult }
+          - { ui: "Remarks", api: remarks }
+        # API TEAM: TMT uses "heartRateFinding" and "heartRateResult". ECG uses "heartRateFinding". Keep names consistent.
+        # API TEAM - CMO decision: see the note under ecg. Same cmoDecisions[] contract.
+
+      - ui_key: usg
+        api_key: usg
+        cardinality: { ui: "1:1", api: "1:1" }
+        status: match
+        fields:
+          - { ui: "Findings", api: findings }
+          - { ui: "Remarks", api: remarks }
+
+      - ui_key: fundoscopy_test
+        api_key: fundoscopy_test
+        cardinality: { ui: "1:1", api: "1:1" }
+        status: match
+        fields:
+          - { ui: "Findings", api: findings }
+          - { ui: "Remarks", api: remarks }
+
+# ============================================================================
+# MENU 5 - OTHER MEDICAL
+# Two shapes exist in UI. Cardinality differs:
+#   Shape A (single value)  : 1 result row  -> Value, Lab Range Start/End, Unit, Findings at section root.
+#   Shape B (parameter list): N result rows -> parameters[] with one row per analyte.
+# API TEAM: The API returns BOTH shapes for the same test in some cases (e.g. HBsAg). Pick one
+#   per test. Document which one is the source.
+# ============================================================================
+  - menu: other_medical
+    label: "OTHER MEDICAL"
+    sections:
+      # ---- Shape A: single value ----
+      # MAPPER (wired): reads the section root only. UI "Examinee Gender" -> examineeGender,
+      #   "Diagnostic Centre Address/Pincode" -> diagnosticCentreAddress/diagnosticCentrePincode,
+      #   "Doctor Registration No" -> doctorRegNo. HBsAg Value stays empty (root value is null).
+      - ui_key: blood_sugar_random
+        api_key: blood_sugar_random
+        cardinality: { ui: "1:1 (single value)", api: "1:1 + parameters[] (empty)" }
+        status: correlated
+        shape: single_value
+        header_fields: "Medical Type, Date, Examinee Name, Examinee Age, Examinee Gender, Diagnostic Centre Name/Address/Pincode, Doctor Name, Doctor Registration No"
+        result_fields:
+          - { ui: "Value", api: value }
+          - { ui: "Lab Range Start", api: labRangeValueStart }
+          - { ui: "Lab Range End", api: labRangeValueEnd }
+          - { ui: "Unit Value", api: unitsValue }
+          - { ui: "Findings", api: findings }
+        # API TEAM: "Date" in UI is "date" in API. Other tests use "testDate". Use one.
+        #   Two tests use "date" (CBC, RUA) and others "testDate". Standardise.
+
+      - ui_key: cot
+        api_key: cot
+        cardinality: { ui: "1:1 (single value)", api: "1:1 + parameters[] (empty)" }
+        status: correlated
+        shape: single_value
+        result_fields:
+          - { ui: "Value", api: value }
+          - { ui: "Lab Range Start", api: labRangeValueStart }
+          - { ui: "Lab Range End", api: labRangeValueEnd }
+          - { ui: "Unit Value", api: unitsValue }
+          - { ui: "Findings", api: findings }
+        # API TEAM: "Examinee Name" is required in UI but null in sample.
+
+      - ui_key: ghb
+        api_key: ghb
+        cardinality: { ui: "1:1 (single value)", api: "1:1" }
+        status: correlated
+        shape: single_value
+        result_fields:
+          - { ui: "Value", api: value }
+          - { ui: "Lab Range Start", api: labRangeValueStart }
+          - { ui: "Lab Range End", api: labRangeValueEnd }
+          - { ui: "Unit Value", api: unitsValue }
+          - { ui: "Findings", api: findings }
+        # API TEAM: UI "GHB" uses blood-sugar header fields (no separate header). Confirm the field set.
+
+      - ui_key: hba1c
+        api_key: hba1c
+        cardinality: { ui: "1:1 (single value)", api: "1:1" }
+        status: correlated
+        shape: single_value
+        result_fields:
+          - { ui: "Value", api: value }
+          - { ui: "Lab Range Start", api: labRangeValueStart }
+          - { ui: "Lab Range End", api: labRangeValueEnd }
+          - { ui: "Unit Value", api: unitsValue }
+          - { ui: "Findings", api: findings }
+
+      - ui_key: hbsag
+        api_key: hbsag
+        cardinality: { ui: "1:1 (single value)", api: "1:1 + parameters[] 1 row" }
+        status: mismatch
+        shape: single_value
+        # CHANGE R15 (parameter item shape): the mock's parameters[0] now uses the 6-key item
+        #   (paramName "Main", value "non_reactive"); it was paramValue / paramUnits / refRangeFrom / refRangeTo
+        #   with 24 keys. The conflict below (result in parameters[0], root value null) is unchanged.
+        result_fields:
+          - { ui: "Value", api: "value (null) OR parameters[0].paramValue", status: mismatch }
+          - { ui: "Findings", api: findings }
+        # API TEAM - cardinality (conflict):
+        #   - UI expects result at section root (value / findings). API sample returns root value = null
+        #     and the result in parameters[0] with paramName "Main" and paramValue "non_reactive".
+        #     If a result is always a single row, return it at root and drop parameters[] for this test.
+        #   - DECISION: no fallback in the UI. The mapper reads the root value only; the API must send the
+        #     result there. Until then HBsAg Value is empty on screen.
+        #   - Value "non_reactive" is a coded value. Confirm the code list (reactive / non_reactive).
+
+      - ui_key: hiv_elisa
+        api_key: hiv_elisa
+        cardinality: { ui: "1:1 (single value)", api: "1:1" }
+        status: correlated
+        shape: single_value
+        result_fields:
+          - { ui: "Value", api: value }
+          - { ui: "Lab Range Start", api: labRangeValueStart }
+          - { ui: "Lab Range End", api: labRangeValueEnd }
+          - { ui: "Unit Value", api: unitsValue }
+          - { ui: "Findings", api: findings }
+
+      - ui_key: ppbs
+        api_key: ppbs
+        cardinality: { ui: "1:1 (single value)", api: "1:1" }
+        status: correlated
+        shape: single_value
+        result_fields:
+          - { ui: "Value", api: value }
+          - { ui: "Lab Range Start", api: labRangeValueStart }
+          - { ui: "Lab Range End", api: labRangeValueEnd }
+          - { ui: "Unit Value", api: unitsValue }
+          - { ui: "Findings", api: findings }
+
+      - ui_key: serum_cotinine
+        api_key: serum_cotinine
+        cardinality: { ui: "1:1 (single value)", api: "1:1" }
+        status: correlated
+        shape: single_value
+        result_fields:
+          - { ui: "Value", api: value }
+          - { ui: "Lab Range Start", api: labRangeValueStart }
+          - { ui: "Lab Range End", api: labRangeValueEnd }
+          - { ui: "Unit Value", api: unitsValue }
+          - { ui: "Findings", api: findings }
+        # API TEAM: test code "SERUM_COT" vs UI key "serum_cotinine". Fine if mapped, but document.
+
+      - ui_key: fbs
+        api_key: fbs
+        cardinality: { ui: "1:1 (single value)", api: "1:1" }
+        status: match
+        shape: single_value
+        result_fields:
+          - { ui: "Value", api: value }
+          - { ui: "Lab Range Start", api: labRangeValueStart }
+          - { ui: "Lab Range End", api: labRangeValueEnd }
+          - { ui: "Unit Value", api: unitsValue }
+          - { ui: "Findings", api: findings }
+
+      - ui_key: hiv_western_blot
+        api_key: hiv_western_blot
+        cardinality: { ui: "1:1 (single value)", api: "1:1" }
+        status: match
+        shape: single_value
+        result_fields:
+          - { ui: "Value", api: value }
+          - { ui: "Lab Range Start", api: labRangeValueStart }
+          - { ui: "Lab Range End", api: labRangeValueEnd }
+          - { ui: "Unit Value", api: unitsValue }
+          - { ui: "Findings", api: findings }
+
+      - ui_key: hcv
+        api_key: hcv
+        cardinality: { ui: "1:1 (single value)", api: "1:1" }
+        status: match
+        shape: single_value
+        result_fields:
+          - { ui: "Value", api: value }
+          - { ui: "Lab Range Start", api: labRangeValueStart }
+          - { ui: "Lab Range End", api: labRangeValueEnd }
+          - { ui: "Unit Value", api: unitsValue }
+          - { ui: "Findings", api: findings }
+
+      - ui_key: microalbuminuria
+        api_key: microalbuminuria
+        cardinality: { ui: "1:1 (single value)", api: "1:1" }
+        status: correlated
+        shape: single_value
+        result_fields:
+          - { ui: "Findings (numeric entered value)", api: value, status: correlated }
+          - { ui: "Lab Range Start / End", api: "labRangeValueStart / labRangeValueEnd" }
+          - { ui: "Unit Value", api: unitsValue }
+          - { ui: "Result (auto)", api: findings, status: correlated }
+        # API TEAM: UI treats Findings as entered numeric value and Result as auto-calculated.
+        #   API has "value" (numeric) and "findings" (text). Confirm which is the entered value.
+        #   Value is null in sample.
+
+      - ui_key: psa
+        api_key: psa
+        cardinality: { ui: "1:1 (single value)", api: "1:1" }
+        status: correlated
+        shape: single_value
+        result_fields:
+          - { ui: "Findings (numeric entered value)", api: value, status: correlated }
+          - { ui: "Lab Range Start / End", api: "labRangeValueStart / labRangeValueEnd" }
+          - { ui: "Unit Value", api: unitsValue }
+          - { ui: "Result (auto)", api: findings, status: correlated }
+        # API TEAM: same as microalbuminuria. Confirm value vs findings.
+
+      # ---- Shape B: parameter list (N rows) ----
+      # CHANGE R15 (parameter item shape), applies to every Shape B test below (cbc_group, lft, lipids,
+      #   ogtt_group, rua_group, sma12_group, tft_group, s13_group) and to hbsag's parameters[0]:
+      #   BEFORE: parameters[] items had 24 keys (paramValue, paramUnits, refRangeFrom, refRangeTo,
+      #           ejectionFraction, axis, mets, ... plus applicationNumber and partyId).
+      #   AFTER : 6 keys only, the same result keys as the Shape A tests:
+      #           paramName           -> Parameter
+      #           value               -> Value
+      #           labRangeValueStart  -> Lab Range Start (Normal Range from)
+      #           labRangeValueEnd    -> Lab Range End   (Normal Range to)
+      #           unitsValue          -> Unit Value
+      #           findings            -> Findings
+      #   RENAMED: paramValue -> value, refRangeFrom -> labRangeValueStart, refRangeTo -> labRangeValueEnd,
+      #            paramUnits -> unitsValue. DROPPED: applicationNumber, partyId and the other test-specific keys.
+      #   Search "CHANGE R15" to find every entry that changed. See API-team request 15 in medical-data-fetch.md.
+      # MAPPER (wired): header fields (Medical Type, Date, Examinee, Diagnostic Centre, Doctor) are read from the
+      #   section root with the single-value keys, and Date reads "date". Each UI row takes the parameters[] item
+      #   with the same paramName: Value <- value, Normal Range <- labRangeValueStart / labRangeValueEnd,
+      #   Unit <- unitsValue. "findings" is NOT read: the UI computes Findings from Value and Normal Range
+      #   (red Abnormal when outside the range, green Normal otherwise). A row with no item stays empty; an item
+      #   with no UI row is dropped; a dropdown Value (RUA) outside the row's list is left empty.
+      - ui_key: cbc_group
+        api_key: cbc_group
+        cardinality: { ui: "1:N parameters (25 rows)", api: "1:N parameters[] (25 rows in the mock, one per UI row; the UAT sample had 12)" }
+        status: correlated
+        shape: parameter_list
+        # CHANGE R15 (parameter item shape): 6-key item, see the note above.
+        # Item shape (6 keys only): paramName, value, labRangeValueStart, labRangeValueEnd, unitsValue, findings.
+        # The mock uses the UI names below as paramName. The UAT sample used the API names on the right
+        # (and keys paramValue / paramUnits / refRangeFrom / refRangeTo); the 11 UAT rows keep their real values.
+        # API TEAM: send the UI names as paramName, in this order (or send a code the UI can map).
+        parameter_map:
+          - { ui: "Hemoglobin(Hb)", api: "parameters[paramName=Hemoglobin(Hb)]", uat_name: "Haemoglobin(Hb)", status: correlated }
+          - { ui: "RBC", api: "parameters[paramName=RBC]", status: match }
+          - { ui: "WBC", api: "parameters[paramName=WBC]", status: match }
+          - { ui: "Platelets", api: "parameters[paramName=Platelets]", status: match }
+          - { ui: "PCV", api: "parameters[paramName=PCV]", status: match }
+          - { ui: "MCV", api: "parameters[paramName=MCV]", status: match }
+          - { ui: "Differential_Neutrophil", api: "parameters[paramName=Differential_Neutrophil]", uat_name: Neutrophils, status: correlated }
+          - { ui: "Differential_Lymphocyte", api: "parameters[paramName=Differential_Lymphocyte]", uat_name: Lymphocytes, status: correlated }
+          - { ui: "Differential_Eosinophil", api: "parameters[paramName=Differential_Eosinophil]", uat_name: "Eosinophils / Esinophils", status: correlated }
+          - { ui: "Differential_Monocyte", api: "parameters[paramName=Differential_Monocyte]", uat_name: Monocytes, status: correlated }
+          - { ui: "Differential_Basophil", api: "parameters[paramName=Differential_Basophil]", uat_name: Basophils, status: correlated }
+          - { ui: "Esr", api: "parameters[paramName=Esr]", status: sample_data }
+          - { ui: "Absolute_Neutrophil / Lymphocyte / Eosinophil / Monocyte / Basophil", api: "parameters[paramName=<UI name>]", status: sample_data }
+          - { ui: "MPV, PDW, MCH, MCHC, RDW", api: "parameters[paramName=<UI name>]", status: sample_data }
+          - { ui: "RBC_Morphology, WBC_Morphology, Platelet_Morphology", api: "parameters[paramName=<UI name>]", status: sample_data }
+        # API TEAM - cardinality (main concern):
+        #   - UI has 25 parameter rows. The UAT sample returned 11 distinct rows. The mock now has all 25:
+        #     the 11 UAT rows plus 14 sample rows (ESR, absolute counts, MPV, PDW, MCH, MCHC, RDW, morphology;
+        #     value, unit and range are invented). Confirm if these are not performed (send with null) or never
+        #     sent by the lab feed.
+        #   - UAT sent both "Eosinophils" and "Esinophils" (same value 3%). The mock keeps one row,
+        #     Differential_Eosinophil. Send only one.
+        #   - Platelets: value "290000", unit "lakhs/cumm", range 1.5 to 4.1, flagged ABNORMAL (kept as in UAT).
+        #     The value, unit and range are inconsistent with each other. Verify the source feed.
+        #   - Examinee Name is required in UI but null in sample.
+        #   - Two date keys ("date" and "testDate") and two doctor reg keys ("doctorRegNo" and
+        #     "doctorRegistrationNo") at section root. Keep one of each.
+
+      - ui_key: lft
+        api_key: lft
+        cardinality: { ui: "1:N parameters (11 rows)", api: "1:N parameters[] (11 rows in the mock, one per UI row)" }
+        status: match
+        shape: parameter_list
+        # CHANGE R15 (parameter item shape): 6-key item, see MENU 5 note and the cbc_group entry.
+        #   The mock rows (value, unit, range) are sample data, not UAT data.
+        parameter_map:
+          - { ui: "SGPT/ALT", api: "parameters[paramName=SGPT/ALT]" }
+          - { ui: "SGOT/AST", api: "parameters[paramName=SGOT/AST]" }
+          - { ui: "GGT", api: "parameters[paramName=GGT]" }
+          - { ui: "Serum Bilirubin-Total", api: "parameters[paramName=Serum Bilirubin-Total]" }
+          - { ui: "Direct", api: "parameters[paramName=Direct]" }
+          - { ui: "Indirect", api: "parameters[paramName=Indirect]" }
+          - { ui: "Serum Protein- Total", api: "parameters[paramName=Serum Protein- Total]" }
+          - { ui: "Albumin", api: "parameters[paramName=Albumin]" }
+          - { ui: "Globulin=(Total-Albumin)", api: "parameters[paramName=Globulin=(Total-Albumin)]" }
+          - { ui: "Alkaline Phosphate", api: "parameters[paramName=Alkaline Phosphate]" }
+          - { ui: "Albumin/Globulin_Ratio", api: "parameters[paramName=Albumin/Globulin_Ratio]" }
+        # API TEAM: parameter names must match the UI exactly, or send a parameterCode the UI can map.
+        #   Sample has empty parameters, so confirm the shape with a populated record.
+
+      - ui_key: lipids
+        api_key: lipids
+        cardinality: { ui: "1:N parameters (6 rows)", api: "1:N parameters[] (6 rows in the mock, one per UI row)" }
+        status: match
+        shape: parameter_list
+        # CHANGE R15 (parameter item shape): 6-key item, see MENU 5 note and the cbc_group entry.
+        #   The mock rows (value, unit, range) are sample data, not UAT data.
+        parameter_map:
+          - { ui: "Total Cholesterol: TC", api: "parameters[paramName=Total Cholesterol: TC]", required: true }
+          - { ui: "Triglycerides: TG", api: "parameters[paramName=Triglycerides: TG]", required: true }
+          - { ui: "HDL", api: "parameters[paramName=HDL]", required: true }
+          - { ui: "LDL", api: "parameters[paramName=LDL]", required: true }
+          - { ui: "VLDL", api: "parameters[paramName=VLDL]" }
+          - { ui: "TC/HDL Ratio", api: "parameters[paramName=TC/HDL Ratio]", required: true }
+
+      - ui_key: ogtt_group
+        api_key: ogtt_group
+        cardinality: { ui: "1:N parameters (3 rows)", api: "1:N parameters[] (3 rows in the mock, one per UI row)" }
+        status: match
+        shape: parameter_list
+        # CHANGE R15 (parameter item shape): 6-key item, see MENU 5 note and the cbc_group entry.
+        #   The mock rows (value, unit, range) are sample data, not UAT data.
+        parameter_map:
+          - { ui: "OGTT1", api: "parameters[paramName=OGTT1]", required: true }
+          - { ui: "OGTT2", api: "parameters[paramName=OGTT2]", required: true }
+          - { ui: "OGTT3", api: "parameters[paramName=OGTT3]", required: true }
+        # API TEAM: OGTT is usually a time-series (0 / 1 / 2 hour). Confirm whether parameter names carry the time.
+
+      - ui_key: rua_group
+        api_key: rua_group
+        cardinality: { ui: "1:N parameters (21 rows)", api: "1:N parameters[] (21 rows in the mock, one per UI row)" }
+        status: match
+        shape: parameter_list
+        # CHANGE R15 (parameter item shape): 6-key item, see MENU 5 note and the cbc_group entry.
+        #   Dropdown-valued rows (most RUA rows) have no numeric range: labRangeValueStart / labRangeValueEnd /
+        #   unitsValue / findings are null and `value` carries the option text. The mock rows are sample data.
+        parameter_map:
+          - { ui: "Sugar/Glycosuria", api: "parameters[paramName=Sugar/Glycosuria]", required: true }
+          - { ui: "Albumin/Proteinuria", api: "parameters[paramName=Albumin/Proteinuria]", required: true }
+          - { ui: "RBC/Haematuria", api: "parameters[paramName=RBC/Haematuria]", required: true }
+          - { ui: "WBC/PUS/Pyuria", api: "parameters[paramName=WBC/PUS/Pyuria]", required: true }
+          - { ui: "Epithelial Cells", api: "parameters[paramName=Epithelial Cells]", required: true }
+          - { ui: "Gravity", api: "parameters[paramName=Gravity]", required: true }
+          - { ui: "Ketone Bodies", api: "parameters[paramName=Ketone Bodies]", required: true }
+          - { ui: "Urine_Colour, Urine_PH, Urine_Quantity, Urine_Appearance, Urine_Blood, Urine_Nitrite, Urine_Bile_Salts, Urine_Bile_Pigment, Urine_Bilirubin, Urine_Urobilinogen, Urine_Bacteria, Urine_Casts, Urine_Crystal, Urine_Deposit", api: "parameters[paramName=<UI name>]" }
+        # API TEAM: RUA has many dropdown-valued parameters (UI rules in medical.schema.ts). Send coded values.
+
+      - ui_key: sma12_group
+        api_key: sma12_group
+        cardinality: { ui: "1:N parameters (22 rows)", api: "1:N parameters[] (22 rows in the mock, one per UI row)" }
+        status: match
+        shape: parameter_list
+        # CHANGE R15 (parameter item shape): 6-key item, see MENU 5 note and the cbc_group entry.
+        # Each UI row maps to one parameters[] item. Match key: paramName (exactly the UI name below).
+        # Item shape (6 keys only, same result keys as the single-value tests):
+        #   paramName, value (Value), labRangeValueStart (Lab Range Start), labRangeValueEnd (Lab Range End),
+        #   unitsValue (Unit Value), findings (Findings).
+        # API TEAM: the CBC sample sends 24 keys per item (paramValue, paramUnits, refRangeFrom, refRangeTo,
+        #   ejectionFraction, axis, mets ...). Most are for other tests and are not used here. Send only the 6 keys
+        #   above for every parameter-list test, so one item shape works for all of them.
+        # "required" is the UI rule (value must be entered), not an API field.
+        parameter_map:
+          - { ui: "SGPT/ALT", api: "parameters[paramName=SGPT/ALT]", required: true }
+          - { ui: "SGOT/AST", api: "parameters[paramName=SGOT/AST]", required: true }
+          - { ui: "GGT", api: "parameters[paramName=GGT]", required: true }
+          - { ui: "Serum Bilirubin-Total", api: "parameters[paramName=Serum Bilirubin-Total]", required: true }
+          - { ui: "Direct", api: "parameters[paramName=Direct]", required: true }
+          - { ui: "Indirect=(Total-Direct)", api: "parameters[paramName=Indirect=(Total-Direct)]", required: true }
+          - { ui: "Serum Protein-Total", api: "parameters[paramName=Serum Protein-Total]", required: true }
+          - { ui: "Albumin", api: "parameters[paramName=Albumin]", required: true }
+          - { ui: "Globulin=(Total-Albumin)", api: "parameters[paramName=Globulin=(Total-Albumin)]", required: true }
+          - { ui: "Albumin/Globulin_Ratio", api: "parameters[paramName=Albumin/Globulin_Ratio]", required: true }
+          - { ui: "Alkaline Phosphate", api: "parameters[paramName=Alkaline Phosphate]", required: true }
+          - { ui: "Serum Creatinine", api: "parameters[paramName=Serum Creatinine]", required: true }
+          - { ui: "Serum Calcium", api: "parameters[paramName=Serum Calcium]" }
+          - { ui: "Serum Uric Acid", api: "parameters[paramName=Serum Uric Acid]" }
+          - { ui: "RBS", api: "parameters[paramName=RBS]" }
+          - { ui: "FBS", api: "parameters[paramName=FBS]" }
+          - { ui: "Total Cholesterol: TC", api: "parameters[paramName=Total Cholesterol: TC]", required: true }
+          - { ui: "Triglycerides: TG", api: "parameters[paramName=Triglycerides: TG]", required: true }
+          - { ui: "HDL", api: "parameters[paramName=HDL]", required: true }
+          - { ui: "LDL", api: "parameters[paramName=LDL]", required: true }
+          - { ui: "VLDL", api: "parameters[paramName=VLDL]" }
+          - { ui: "TC/HDL Ratio", api: "parameters[paramName=TC/HDL Ratio]", required: true }
+        # API TEAM: parameter names must match the UI names above exactly, or send a parameterCode the UI can map.
+        #   The mock rows (value, unit, range) are sample data, not UAT data.
+        # API TEAM: SMA12 overlaps with LFT analytes (rows 1-11) and lipid analytes (rows 17-22). Confirm no duplicate rows across groups.
+
+      - ui_key: tft_group
+        api_key: tft_group
+        cardinality: { ui: "1:N parameters (3 rows)", api: "1:N parameters[] (3 rows in the mock, one per UI row)" }
+        status: match
+        shape: parameter_list
+        # CHANGE R15 (parameter item shape): 6-key item, see MENU 5 note and the cbc_group entry.
+        #   The mock rows (value, unit, range) are sample data, not UAT data.
+        parameter_map:
+          - { ui: "Triiodothyronine-T3", api: "parameters[paramName=Triiodothyronine-T3]", required: true }
+          - { ui: "Thyroxin-T4", api: "parameters[paramName=Thyroxin-T4]", required: true }
+          - { ui: "Thyroid Stimulating - Tsh Harmones", api: "parameters[paramName=Thyroid Stimulating - Tsh Harmones]", required: true }
+        # API TEAM: UI label has typo "Harmones". Use the source code list, not the label, as the key.
+
+      - ui_key: s13_group
+        api_key: s13_group
+        cardinality: { ui: "1:N parameters (22 rows, same list as SMA12)", api: "1:N parameters[] (22 rows in the mock, same as SMA12)" }
+        status: correlated
+        shape: parameter_list
+        # CHANGE R15 (parameter item shape): 6-key item, see MENU 5 note and the cbc_group entry.
+        # The UI reuses the SMA12 list for S13, so the 22 rows, paramName values and required flags are the
+        # same as sma12_group above. The UI owns the row list (names and order); the API only fills the values by paramName.
+        parameter_map:
+          - { ui: "Same 22 rows as sma12_group (SGPT/ALT ... TC/HDL Ratio)", api: "parameters[paramName=<UI name>]", status: correlated }
+        # API TEAM: confirm the S13 analyte list. If it differs from SMA12, the UI list changes, not the API.
+        #   The mock rows (value, unit, range) are sample data, not UAT data.
+
+# ============================================================================
+# MENU 6 - DECISION
+# ============================================================================
+  - menu: decision
+    label: "Decision"
+    sections:
+      - ui_key: bre_medical_decision
+        api_key: bre_medical_decision
+        cardinality: { ui: "1:1", api: "1:1" }
+        status: correlated
+        fields:
+          - { ui: "Physical Medical Decision", api: physicalMedicalDecision }
+          - { ui: "Tele/Video MER Decision", api: teleVideoMerDecision }
+          - { ui: "MunichRe Medical Decision", api: munichReMedicalDecision }
+          - { ui: "MunichRe Rating", api: munichReRating }
+          - { ui: "BIU Medical Status", api: biuMedicalStatus }
+          - { ui: "Physical Medical Remark", api: physicalMedicalRemark }
+          - { ui: "Tele/Video MER Remark", api: teleVideoMerRemark }
+        # MAPPER (wired, read-only): the seven BRE fields are locked in the UI and shown as the API sends them.
+        # API TEAM: biuMedicalStatus is "N" in sample and the UI has no option list for it. Confirm code list (open question 30).
+        #   The mock carries sample values for the other fields (not UAT data).
+        #   Decision fields are null in sample. (The CMO decision grid on 2decho/ecg/tmt is a separate read-only audit trail, not edited here.) Confirm the save path for these fields.
+
+      - ui_key: decision
+        api_key: decision
+        cardinality: { ui: "1:1", api: "1:1" }
+        status: match
+        fields:
+          - { ui: "Medical Decision", api: medicalDecision }
+        # MAPPER (wired): dropdown Standard / Non-Standard; a value outside the list is left empty.
+        # API TEAM: null in the UAT sample (the mock has a sample value). Confirm the allowed values.
+
+# ============================================================================
+# UNMAPPED API SECTIONS (returned by API, no UI section in the left menu)
+# ============================================================================
+unmapped_api_sections:
+  - api_key: table_of_medical_documents
+    note: "Index list (codes 010 to 070). Not a section. Use it as the menu order source, not as data."
+    # API TEAM: lists "mer" twice (010 and 010.01). Also includes group codes (special_medical, other_medical) that are not sections. Clarify.
+  - api_key: medAppDtlId
+    note: "Root id. Not shown in UI."
