@@ -35,9 +35,7 @@ export type RoleListQueryConfig = {
 };
 
 export type RoleListRequestBody = {
-  request: {
-    businessType: SessionBusinessType;
-  };
+  businessType: SessionBusinessType;
 };
 
 function businessTypeForLabel(businessLabel: string): SessionBusinessType {
@@ -50,7 +48,7 @@ export function resolveRoleListBusinessType(businessLabel: string): SessionBusin
 }
 
 export function buildRoleListRequestBody(businessType: SessionBusinessType): RoleListRequestBody {
-  return { request: { businessType } };
+  return { businessType };
 }
 
 export async function queryLandingRoleList(
