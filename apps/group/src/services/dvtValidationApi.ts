@@ -13,7 +13,10 @@ import {
   type DvtValidationResult,
 } from "./dvtValidationService";
 
-/** Decision code that fails validation in mock mode (the example in the API contract). Any other code passes. */
+/**
+ * Decision code that fails validation in mock mode (the example in the API contract). When any party sends it,
+ * the mock file is returned as-is; otherwise no party has validations.
+ */
 const MOCK_FAILING_DECISION = "AMR";
 
 function readError(reason: unknown): string {
@@ -32,11 +35,9 @@ export const groupDvtValidationApi = createApi({
       async queryFn(request, _api, _extra, baseQuery) {
         if (useMock) {
           try {
-            const mock =
-              request.dvtDecision === MOCK_FAILING_DECISION
-                ? dvtValidationMock
-                : { ...dvtValidationMock, validations: [] };
-            return { data: readDvtValidationResponse(mock) };
+            const template = readDvtValidationResponse(dvtValidationMock);
+            const fails = request.partyDecision.some((party) => party.dvtDecision === MOCK_FAILING_DECISION);
+            return fails ? { data: template } : { data: { ...template, status: "Success", partyValidations: [] } };
           } catch (reason: unknown) {
             return { error: customError(readError(reason)) };
           }

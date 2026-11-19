@@ -50,6 +50,9 @@ export function useRequirementRows(
   const removeRow = (id: RequirementItem["id"]) =>
     setRows((current) => current.filter((item) => item.id !== id));
 
+  /** True while the local rows differ from the last saved `requirements`. */
+  const isDirty = JSON.stringify(rows) !== JSON.stringify(requirements);
+
   const save = async () => {
     if (!onSave || saving) return;
     setSaving(true);
@@ -60,5 +63,5 @@ export function useRequirementRows(
     }
   };
 
-  return { rows, saving, addRow, updateRow, patchRow, removeRow, save };
+  return { rows, saving, isDirty, addRow, updateRow, patchRow, removeRow, save };
 }

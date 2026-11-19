@@ -194,11 +194,6 @@ const maskKycField = (field: FieldData): FieldData =>
     ? { label: field.label, value: maskValue(typeof field.value === "string" ? field.value : undefined) }
     : field;
 
-const splitName = (name: string) => {
-  const [firstName = "", ...rest] = name.trim().split(/\s+/);
-  return { firstName, lastName: rest.join(" ") };
-};
-
 const toShare = (value: unknown) => {
   const raw = str(value).trim();
   const parsed = Number(raw);
@@ -254,13 +249,15 @@ export const readEditOptions = (): Partial<EditApplicantOptions> => ({
   genderDocument: toMasterOptions("misc", "IDENTITY"),
   pincodeDocument: toMasterOptions("misc", "ADDRESS"),
   residentStatus: toMasterOptions("resident_status"),
+  applicantStatus: toMasterOptions("misc", "applicant_status"),
+  riders: toMasterOptions("rider"),
 });
 
 /** Maps a displayed value (description / value / code) to the master code used as the select value. */
-const toMasterCode = (masterType: string, displayed: string): string => {
+const toMasterCode = (masterType: string, displayed: string, type?: string): string => {
   const target = displayed.trim().toLowerCase();
   if (!target) return "";
-  const entry = getMasterList(masterType).find(
+  const entry = getMasterList(masterType, type).find(
     (item) =>
       item.description.trim().toLowerCase() === target ||
       item.value?.trim().toLowerCase() === target ||
@@ -280,6 +277,7 @@ const toYesNo = (value: string): string => {
 type EditValuesSource = {
   personal: FieldData[];
   kyc: FieldData[];
+  rawPersonalKyc?: FieldData[];
   communicationAddress: FieldData[];
   contactDetails: FieldData[];
   financialAndProfession: FieldData[];
@@ -287,21 +285,31 @@ type EditValuesSource = {
   lifestyleHabits: string;
 };
 
-const readEditValues = (source: EditValuesSource): Partial<EditApplicantValues> => ({
-  dob: toIsoDate(fieldValue(source.personal, "Date of Birth")),
-  gender: toMasterCode("gender", fieldValue(source.personal, "Gender")),
-  zipCode: fieldValue(source.communicationAddress, "Pin Code"),
-  mobileNo: fieldValue(source.contactDetails, "Mobile Number"),
-  immigrationStatus: toMasterCode("resident_status", fieldValue(source.personal, "Resident Status")),
-  panNumber: fieldValue(source.kyc, "PAN Number"),
-  isPanValid: toYesNo(fieldValue(source.kyc, "PAN Flag")),
-  aadharSeedingStatus: toYesNo(fieldValue(source.kyc, "PAN Aadhar Seeding Status")),
-  emailId: fieldValue(source.contactDetails, "Email Id"),
-  height: fieldValue(source.health, "Height"),
-  weight: fieldValue(source.health, "Weight"),
-  lifestyleHabits: source.lifestyleHabits,
-  annualIncome: fieldValue(source.financialAndProfession, "Annual Income"),
-});
+const readEditValues = (source: EditValuesSource): Partial<EditApplicantValues> => {
+  const rawApplicantStatus = fieldValue(source.rawPersonalKyc ?? [], "Applicant Status");
+
+  return {
+    dob: toIsoDate(fieldValue(source.personal, "Date of Birth")),
+    gender: toMasterCode("gender", fieldValue(source.personal, "Gender")),
+    zipCode: fieldValue(source.communicationAddress, "Pin Code"),
+    mobileNo: fieldValue(source.contactDetails, "Mobile Number"),
+    immigrationStatus: toMasterCode("resident_status", fieldValue(source.personal, "Resident Status")),
+    panNumber: fieldValue(source.kyc, "PAN Number"),
+    isPanValid: toYesNo(fieldValue(source.kyc, "PAN Flag")),
+    aadharSeedingStatus: toYesNo(fieldValue(source.kyc, "PAN Aadhar Seeding Status")),
+    nsdlNameMatching: toYesNo(fieldValue(source.rawPersonalKyc ?? [], "Nsdl Name Matching")),
+    nsdlDobMatching: toYesNo(fieldValue(source.rawPersonalKyc ?? [], "Nsdl Dob Matching")),
+    emailId: fieldValue(source.contactDetails, "Email Id"),
+    height: fieldValue(source.health, "Height"),
+    weight: fieldValue(source.health, "Weight"),
+    lifestyleHabits: source.lifestyleHabits,
+    annualIncome: fieldValue(source.financialAndProfession, "Annual Income"),
+    applicantStatus:
+      toMasterCode("misc", rawApplicantStatus, "applicant_status") ||
+      rawApplicantStatus.trim().toLowerCase() ||
+      "applicant",
+  };
+};
 
 // product_details row key + default label, in column order. The row keys keep the API's own
 // spelling (`foundSource`, `partnertype`); labels come from `columns` by position when present.
@@ -367,13 +375,14 @@ const toApplicant = (member: JsonRecord, total: number, riders: RiderEditRow[]):
   }));
 
   const editNominees: NomineeEditRow[] = nomineeRows.map((row) => ({
-    ...splitName(str(row.name)),
+    firstName: str(row.firstName),
+    lastName: str(row.lastName),
     dob: str(row.dob).slice(0, 10),
     gender: str(row.gender),
-    proposerNomineeRelation: str(row.relationship),
+    proposerNomineeRelation: str(row.proposerNomineeRelation) || str(row.relationship),
     percentage: str(row.share),
-    accountNumber: "",
-    ifsc: "",
+    accountNumber: str(row.accountNumber),
+    ifsc: str(row.ifsc),
   }));
 
   const personalFields = readFixedFields(groups[0], PERSONAL_LABELS);
@@ -405,6 +414,7 @@ const toApplicant = (member: JsonRecord, total: number, riders: RiderEditRow[]):
     editValues: readEditValues({
       personal: personalFields,
       kyc: rawKycFields,
+      rawPersonalKyc: [...readFields(groups[0]), ...readFields(groups[1])],
       communicationAddress,
       contactDetails,
       financialAndProfession: readFields(asRecord(member.financial_and_profession).value),

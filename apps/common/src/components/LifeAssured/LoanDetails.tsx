@@ -67,6 +67,7 @@ export function LoanDetails({ values, onChange, errors }: Readonly<LoanDetailsPr
               value={values[field.name] ? dayjs(values[field.name]) : null}
               onChange={(date) => change(field.name, date?.isValid() ? date.format("YYYY-MM-DD") : "")}
               disableTodayAndFuture={false}
+              maxDate={dayjs()}
               error={!!errors?.[field.name]}
               helperText={errors?.[field.name]?.message}
             />

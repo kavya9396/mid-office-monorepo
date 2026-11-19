@@ -153,6 +153,8 @@ export type RequirementMgmtProps = {
 
   /** Shows the Save button in the footer when provided. */
   onSave?: (requirements: RequirementItem[]) => void | Promise<void>;
+  /** Fires when the table has unsaved changes (true) or matches the saved `requirements` again (false). */
+  onDirtyChange?: (dirty: boolean) => void;
   /** When this changes (e.g. DRS application no.), requirement master cascade session is reset. */
   applicationKey?: string;
 };

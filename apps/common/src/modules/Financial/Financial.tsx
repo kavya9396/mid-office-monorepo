@@ -1623,6 +1623,11 @@ export function Financial({
   };
 
   const handleSubmit = () => {
+    // A section still in edit mode has not been saved (Save and Reset both leave edit mode).
+    if (Object.values(editingRef.current).some(Boolean)) {
+      setSnackbar({ message: FINANCIAL_MESSAGES.unsavedChanges, severity: "warning" });
+      return;
+    }
     onSubmit?.({
       applicantKey: activeApplicantKey,
       values: store.snapshot(),

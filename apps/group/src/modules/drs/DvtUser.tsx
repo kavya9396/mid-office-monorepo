@@ -189,6 +189,9 @@ const DvtUser = () => {
   // Cleared when that applicant's PAN or Birthdate changes, or when a later validation succeeds.
   const [invalidPanByApplicant, setInvalidPanByApplicant] = useState<Record<string, PanValidationInput>>({});
   const [panBlockedNoticeOpen, setPanBlockedNoticeOpen] = useState(false);
+  // Requirement Management has edits (status change, added rows...) that were not saved yet.
+  const [requirementsDirty, setRequirementsDirty] = useState(false);
+  const [saveRequirementsNoticeOpen, setSaveRequirementsNoticeOpen] = useState(false);
   const handlePanStatusChange = (applicantId: string, status: PanStatus) => {
     setPanStatusByApplicant((current) => ({ ...current, [applicantId]: status }));
     setInvalidPanByApplicant((current) => {
@@ -225,13 +228,15 @@ const DvtUser = () => {
     const outcome = resolveNsdlOutcome(result, pendingPanPendcode);
     if (outcome === "blocked") {
       setInvalidPanByApplicant((current) => ({ ...current, [applicantId]: input }));
-    } else if (outcome !== "apiErrorShowMessage") {
+    } else {
+      // Success or an API failure: the applicant no longer blocks case submission.
       setInvalidPanByApplicant((current) => {
         const { [applicantId]: _removed, ...rest } = current;
         return rest;
       });
     }
     return {
+      apiFailed: !result.apiSuccess,
       message: result.message,
       matches: result.matches,
       panValid: outcome === "apiErrorShowMessage" ? undefined : outcome === "success",
@@ -303,6 +308,10 @@ const DvtUser = () => {
   });
   const handleDecisionSubmit = async (payload: DecisionSubmitPayload) => {
     if (isMemberDecisionMissing) return;
+    if (requirementsDirty) {
+      setSaveRequirementsNoticeOpen(true);
+      return;
+    }
     if (Object.keys(invalidPanByApplicant).length > 0) {
       setPanBlockedNoticeOpen(true);
       return;
@@ -314,19 +323,25 @@ const DvtUser = () => {
     }
     // Validation API first; the complete-task API is called only when it returns no validations.
     try {
+      // One entry per life assured, each with the decision chosen in its own decision section.
       const validation = await fetchDvtValidation({
         userId: getSessionUser()?.username ?? "",
         role: "DVT",
         applicationNo: appNo,
-        partyId: activePartyId,
-        dvtDecision: payload.decision,
+        partyDecision: applicants.map((applicant) => ({
+          partyId: applicant.partyId ?? "",
+          dvtDecision: memberDecisions[applicant.id]?.decision ?? "",
+        })),
       }).unwrap();
-      if (validation.validations.length > 0) {
-        // The API returns no member type; the request was made for the selected applicant's party.
-        const memberType = selectedApplicant?.memberType ?? selectedApplicant?.label ?? "";
-        setValidationRows(
-          validation.validations.map((item) => ({ memberType, reason: item.reason, remarks: item.remarks })),
-        );
+      const rows: ValidationRow[] = validation.partyValidations.flatMap((party) =>
+        party.validations.map((item) => ({
+          memberType: party.memberType,
+          reason: item.reason,
+          remarks: item.remarks,
+        })),
+      );
+      if (rows.length > 0) {
+        setValidationRows(rows);
         return;
       }
     } catch (reason: unknown) {
@@ -534,6 +549,13 @@ const DvtUser = () => {
         onClose={() => setPanBlockedNoticeOpen(false)}
       />
 
+      <CustomSnackbar
+        open={saveRequirementsNoticeOpen}
+        message="Please save the requirements before submitting."
+        severity="warning"
+        onClose={() => setSaveRequirementsNoticeOpen(false)}
+      />
+
       <DecisionBar
         title="BRE Decision"
         items={[
@@ -571,6 +593,7 @@ const DvtUser = () => {
           },
         ]}
         onSave={handleSaveRequirements}
+        onDirtyChange={setRequirementsDirty}
       />
 
       <LifeAssured

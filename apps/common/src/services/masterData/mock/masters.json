@@ -5766,6 +5766,38 @@
     ],
     "misc": [
       {
+        "code": "A",
+        "description": "Applicant",
+        "value": "Applicant",
+        "isActive": "Y",
+        "miscMastId": "621",
+        "type": "APPLICANT_STATUS"
+      },
+      {
+        "code": "CA",
+        "description": "CoApplicant",
+        "value": "CoApplicant",
+        "isActive": "Y",
+        "miscMastId": "622",
+        "type": "APPLICANT_STATUS"
+      },
+      {
+        "code": "B",
+        "description": "Borrower",
+        "value": "Borrower",
+        "isActive": "Y",
+        "miscMastId": "623",
+        "type": "APPLICANT_STATUS"
+      },
+      {
+        "code": "CB",
+        "description": "COBorrower",
+        "value": "COBorrower",
+        "isActive": "Y",
+        "miscMastId": "624",
+        "type": "APPLICANT_STATUS"
+      },
+      {
         "code": "Y",
         "description": "Yes",
         "value": "Yes",
@@ -6205,41 +6237,278 @@
         "miscMastId": "337",
         "type": "GUW_RECONS_TYPE"
       },
-      { "code": "3M", "description": "3 months", "value": "3 months", "isActive": "Y", "miscMastId": "9009", "type": "GUW_POST_PERIOD" },
-      { "code": "6M", "description": "6 months", "value": "6 months", "isActive": "Y", "miscMastId": "9010", "type": "GUW_POST_PERIOD" },
-      { "code": "12M", "description": "12 months", "value": "12 months", "isActive": "Y", "miscMastId": "9011", "type": "GUW_POST_PERIOD" },
-      { "code": "ML001", "description": "ML001 - Substandard", "value": "ML001 - Substandard", "isActive": "Y", "miscMastId": "9012", "type": "GUW_EP_LOAD_CLS" },
-      { "code": "ML002", "description": "ML002 - Rated Up", "value": "ML002 - Rated Up", "isActive": "Y", "miscMastId": "9013", "type": "GUW_EP_LOAD_CLS" },
-      { "code": "ML003", "description": "ML003 - Extra Mortality", "value": "ML003 - Extra Mortality", "isActive": "Y", "miscMastId": "9014", "type": "GUW_EP_LOAD_CLS" },
-      { "code": "ML004", "description": "ML004 - Occupational Hazard", "value": "ML004 - Occupational Hazard", "isActive": "Y", "miscMastId": "9015", "type": "GUW_EP_LOAD_CLS" },
-      { "code": "FE001", "description": "FE001 - Financial Extra", "value": "FE001 - Financial Extra", "isActive": "Y", "miscMastId": "9016", "type": "GUW_EP_LOAD_CLS" },
-      { "code": "FE002", "description": "FE002 - Income Mismatch", "value": "FE002 - Income Mismatch", "isActive": "Y", "miscMastId": "9017", "type": "GUW_EP_LOAD_CLS" },
-      { "code": "FE003", "description": "FE003 - High SA", "value": "FE003 - High SA", "isActive": "Y", "miscMastId": "9018", "type": "GUW_EP_LOAD_CLS" },
-      { "code": "SL001", "description": "SL001 - Smoker", "value": "SL001 - Smoker", "isActive": "Y", "miscMastId": "9019", "type": "GUW_EP_LOAD_CLS" },
-      { "code": "SL002", "description": "SL002 - Tobacco User", "value": "SL002 - Tobacco User", "isActive": "Y", "miscMastId": "9020", "type": "GUW_EP_LOAD_CLS" },
-      { "code": "SL003", "description": "SL003 - Ex-Smoker", "value": "SL003 - Ex-Smoker", "isActive": "Y", "miscMastId": "9021", "type": "GUW_EP_LOAD_CLS" },
-      { "code": "MED_HIST", "description": "Medical history", "value": "Medical history", "isActive": "Y", "miscMastId": "9022", "type": "GUW_EP_LOAD_RSN_CODE" },
-      { "code": "BMI_DEV", "description": "BMI deviation", "value": "BMI deviation", "isActive": "Y", "miscMastId": "9023", "type": "GUW_EP_LOAD_RSN_CODE" },
-      { "code": "PRE_EXIST", "description": "Pre-existing condition", "value": "Pre-existing condition", "isActive": "Y", "miscMastId": "9024", "type": "GUW_EP_LOAD_RSN_CODE" },
-      { "code": "HAZ_OCC", "description": "Hazardous occupation", "value": "Hazardous occupation", "isActive": "Y", "miscMastId": "9025", "type": "GUW_EP_LOAD_RSN_CODE" },
-      { "code": "INC_PROOF", "description": "Income proof inadequate", "value": "Income proof inadequate", "isActive": "Y", "miscMastId": "9026", "type": "GUW_EP_LOAD_RSN_CODE" },
-      { "code": "SA_EXCEED", "description": "SA exceeds eligibility", "value": "SA exceeds eligibility", "isActive": "Y", "miscMastId": "9027", "type": "GUW_EP_LOAD_RSN_CODE" },
-      { "code": "FIN_INCON", "description": "Financial inconsistency", "value": "Financial inconsistency", "isActive": "Y", "miscMastId": "9028", "type": "GUW_EP_LOAD_RSN_CODE" },
-      { "code": "ACT_SMOKER", "description": "Active smoker", "value": "Active smoker", "isActive": "Y", "miscMastId": "9029", "type": "GUW_EP_LOAD_RSN_CODE" },
-      { "code": "TOB_CHEW", "description": "Tobacco chewer", "value": "Tobacco chewer", "isActive": "Y", "miscMastId": "9030", "type": "GUW_EP_LOAD_RSN_CODE" },
-      { "code": "REC_CESS", "description": "Recent cessation", "value": "Recent cessation", "isActive": "Y", "miscMastId": "9031", "type": "GUW_EP_LOAD_RSN_CODE" },
-      { "code": "1", "description": "System issue", "value": "System issue", "isActive": "Y", "miscMastId": "9101", "type": "GUW_REF_IT_RSN" },
-      { "code": "2", "description": "Data correction", "value": "Data correction", "isActive": "Y", "miscMastId": "9102", "type": "GUW_REF_IT_RSN" },
-      { "code": "3", "description": "Other", "value": "Other", "isActive": "Y", "miscMastId": "9103", "type": "GUW_REF_IT_RSN" },
-      { "code": "1", "description": "Medical review", "value": "Medical review", "isActive": "Y", "miscMastId": "9104", "type": "GUW_TELE_MER_RSN" },
-      { "code": "2", "description": "Other", "value": "Other", "isActive": "Y", "miscMastId": "9105", "type": "GUW_TELE_MER_RSN" },
-      { "code": "1", "description": "Medical review", "value": "Medical review", "isActive": "Y", "miscMastId": "9106", "type": "GUW_HO_CMO_RSN" },
-      { "code": "2", "description": "Specialist opinion", "value": "Specialist opinion", "isActive": "Y", "miscMastId": "9107", "type": "GUW_HO_CMO_RSN" },
-      { "code": "3", "description": "Other", "value": "Other", "isActive": "Y", "miscMastId": "9108", "type": "GUW_HO_CMO_RSN" },
-      { "code": "1", "description": "Medical review", "value": "Medical review", "isActive": "Y", "miscMastId": "9109", "type": "GUW_CMO_RSN" },
-      { "code": "2", "description": "Specialist opinion", "value": "Specialist opinion", "isActive": "Y", "miscMastId": "9110", "type": "GUW_CMO_RSN" },
-      { "code": "3", "description": "Other", "value": "Other", "isActive": "Y", "miscMastId": "9111", "type": "GUW_CMO_RSN" },
-
+      {
+        "code": "3M",
+        "description": "3 months",
+        "value": "3 months",
+        "isActive": "Y",
+        "miscMastId": "9009",
+        "type": "GUW_POST_PERIOD"
+      },
+      {
+        "code": "6M",
+        "description": "6 months",
+        "value": "6 months",
+        "isActive": "Y",
+        "miscMastId": "9010",
+        "type": "GUW_POST_PERIOD"
+      },
+      {
+        "code": "12M",
+        "description": "12 months",
+        "value": "12 months",
+        "isActive": "Y",
+        "miscMastId": "9011",
+        "type": "GUW_POST_PERIOD"
+      },
+      {
+        "code": "ML001",
+        "description": "ML001 - Substandard",
+        "value": "ML001 - Substandard",
+        "isActive": "Y",
+        "miscMastId": "9012",
+        "type": "GUW_EP_LOAD_CLS"
+      },
+      {
+        "code": "ML002",
+        "description": "ML002 - Rated Up",
+        "value": "ML002 - Rated Up",
+        "isActive": "Y",
+        "miscMastId": "9013",
+        "type": "GUW_EP_LOAD_CLS"
+      },
+      {
+        "code": "ML003",
+        "description": "ML003 - Extra Mortality",
+        "value": "ML003 - Extra Mortality",
+        "isActive": "Y",
+        "miscMastId": "9014",
+        "type": "GUW_EP_LOAD_CLS"
+      },
+      {
+        "code": "ML004",
+        "description": "ML004 - Occupational Hazard",
+        "value": "ML004 - Occupational Hazard",
+        "isActive": "Y",
+        "miscMastId": "9015",
+        "type": "GUW_EP_LOAD_CLS"
+      },
+      {
+        "code": "FE001",
+        "description": "FE001 - Financial Extra",
+        "value": "FE001 - Financial Extra",
+        "isActive": "Y",
+        "miscMastId": "9016",
+        "type": "GUW_EP_LOAD_CLS"
+      },
+      {
+        "code": "FE002",
+        "description": "FE002 - Income Mismatch",
+        "value": "FE002 - Income Mismatch",
+        "isActive": "Y",
+        "miscMastId": "9017",
+        "type": "GUW_EP_LOAD_CLS"
+      },
+      {
+        "code": "FE003",
+        "description": "FE003 - High SA",
+        "value": "FE003 - High SA",
+        "isActive": "Y",
+        "miscMastId": "9018",
+        "type": "GUW_EP_LOAD_CLS"
+      },
+      {
+        "code": "SL001",
+        "description": "SL001 - Smoker",
+        "value": "SL001 - Smoker",
+        "isActive": "Y",
+        "miscMastId": "9019",
+        "type": "GUW_EP_LOAD_CLS"
+      },
+      {
+        "code": "SL002",
+        "description": "SL002 - Tobacco User",
+        "value": "SL002 - Tobacco User",
+        "isActive": "Y",
+        "miscMastId": "9020",
+        "type": "GUW_EP_LOAD_CLS"
+      },
+      {
+        "code": "SL003",
+        "description": "SL003 - Ex-Smoker",
+        "value": "SL003 - Ex-Smoker",
+        "isActive": "Y",
+        "miscMastId": "9021",
+        "type": "GUW_EP_LOAD_CLS"
+      },
+      {
+        "code": "MED_HIST",
+        "description": "Medical history",
+        "value": "Medical history",
+        "isActive": "Y",
+        "miscMastId": "9022",
+        "type": "GUW_EP_LOAD_RSN_CODE"
+      },
+      {
+        "code": "BMI_DEV",
+        "description": "BMI deviation",
+        "value": "BMI deviation",
+        "isActive": "Y",
+        "miscMastId": "9023",
+        "type": "GUW_EP_LOAD_RSN_CODE"
+      },
+      {
+        "code": "PRE_EXIST",
+        "description": "Pre-existing condition",
+        "value": "Pre-existing condition",
+        "isActive": "Y",
+        "miscMastId": "9024",
+        "type": "GUW_EP_LOAD_RSN_CODE"
+      },
+      {
+        "code": "HAZ_OCC",
+        "description": "Hazardous occupation",
+        "value": "Hazardous occupation",
+        "isActive": "Y",
+        "miscMastId": "9025",
+        "type": "GUW_EP_LOAD_RSN_CODE"
+      },
+      {
+        "code": "INC_PROOF",
+        "description": "Income proof inadequate",
+        "value": "Income proof inadequate",
+        "isActive": "Y",
+        "miscMastId": "9026",
+        "type": "GUW_EP_LOAD_RSN_CODE"
+      },
+      {
+        "code": "SA_EXCEED",
+        "description": "SA exceeds eligibility",
+        "value": "SA exceeds eligibility",
+        "isActive": "Y",
+        "miscMastId": "9027",
+        "type": "GUW_EP_LOAD_RSN_CODE"
+      },
+      {
+        "code": "FIN_INCON",
+        "description": "Financial inconsistency",
+        "value": "Financial inconsistency",
+        "isActive": "Y",
+        "miscMastId": "9028",
+        "type": "GUW_EP_LOAD_RSN_CODE"
+      },
+      {
+        "code": "ACT_SMOKER",
+        "description": "Active smoker",
+        "value": "Active smoker",
+        "isActive": "Y",
+        "miscMastId": "9029",
+        "type": "GUW_EP_LOAD_RSN_CODE"
+      },
+      {
+        "code": "TOB_CHEW",
+        "description": "Tobacco chewer",
+        "value": "Tobacco chewer",
+        "isActive": "Y",
+        "miscMastId": "9030",
+        "type": "GUW_EP_LOAD_RSN_CODE"
+      },
+      {
+        "code": "REC_CESS",
+        "description": "Recent cessation",
+        "value": "Recent cessation",
+        "isActive": "Y",
+        "miscMastId": "9031",
+        "type": "GUW_EP_LOAD_RSN_CODE"
+      },
+      {
+        "code": "1",
+        "description": "System issue",
+        "value": "System issue",
+        "isActive": "Y",
+        "miscMastId": "9101",
+        "type": "GUW_REF_IT_RSN"
+      },
+      {
+        "code": "2",
+        "description": "Data correction",
+        "value": "Data correction",
+        "isActive": "Y",
+        "miscMastId": "9102",
+        "type": "GUW_REF_IT_RSN"
+      },
+      {
+        "code": "3",
+        "description": "Other",
+        "value": "Other",
+        "isActive": "Y",
+        "miscMastId": "9103",
+        "type": "GUW_REF_IT_RSN"
+      },
+      {
+        "code": "1",
+        "description": "Medical review",
+        "value": "Medical review",
+        "isActive": "Y",
+        "miscMastId": "9104",
+        "type": "GUW_TELE_MER_RSN"
+      },
+      {
+        "code": "2",
+        "description": "Other",
+        "value": "Other",
+        "isActive": "Y",
+        "miscMastId": "9105",
+        "type": "GUW_TELE_MER_RSN"
+      },
+      {
+        "code": "1",
+        "description": "Medical review",
+        "value": "Medical review",
+        "isActive": "Y",
+        "miscMastId": "9106",
+        "type": "GUW_HO_CMO_RSN"
+      },
+      {
+        "code": "2",
+        "description": "Specialist opinion",
+        "value": "Specialist opinion",
+        "isActive": "Y",
+        "miscMastId": "9107",
+        "type": "GUW_HO_CMO_RSN"
+      },
+      {
+        "code": "3",
+        "description": "Other",
+        "value": "Other",
+        "isActive": "Y",
+        "miscMastId": "9108",
+        "type": "GUW_HO_CMO_RSN"
+      },
+      {
+        "code": "1",
+        "description": "Medical review",
+        "value": "Medical review",
+        "isActive": "Y",
+        "miscMastId": "9109",
+        "type": "GUW_CMO_RSN"
+      },
+      {
+        "code": "2",
+        "description": "Specialist opinion",
+        "value": "Specialist opinion",
+        "isActive": "Y",
+        "miscMastId": "9110",
+        "type": "GUW_CMO_RSN"
+      },
+      {
+        "code": "3",
+        "description": "Other",
+        "value": "Other",
+        "isActive": "Y",
+        "miscMastId": "9111",
+        "type": "GUW_CMO_RSN"
+      },
 
       {
         "code": "2228",
@@ -7889,7 +8158,7 @@
         "miscMastId": "85",
         "type": "DVT_TERM_DESC"
       },
-       {
+      {
         "code": "REF_GUW",
         "description": "Refer to GUW",
         "value": "Refer to GUW",
@@ -8472,105 +8741,120 @@
         "isActive": "Y",
         "miscMastId": "MONTHS",
         "type": "month"
-      },{
+      },
+      {
         "code": "STD",
         "description": "STD",
         "value": "STD",
         "isActive": "Y",
         "miscMastId": "STD",
         "type": "GUW_RSK_DEC"
-      },{
+      },
+      {
         "code": "NON_STD",
         "description": "NON STD",
         "value": "NON STD",
         "isActive": "Y",
         "miscMastId": "NON_STD",
         "type": "GUW_RSK_DEC"
-      },{
+      },
+      {
         "code": "STD",
         "description": "Standard",
         "value": "Standard",
         "isActive": "Y",
         "miscMastId": "STD",
         "type": "GUW_BSTD_TYPE"
-      },{
+      },
+      {
         "code": "BSTD",
         "description": "Borderline Standard",
         "value": "Borderline Standard",
         "isActive": "Y",
         "miscMastId": "BSTD",
         "type": "GUW_BSTD_TYPE"
-      },{
+      },
+      {
         "code": "STD",
         "description": "Standard",
         "value": "Standard",
         "isActive": "Y",
         "miscMastId": "STD",
         "type": "GUW_CO_TYPE"
-      },{
+      },
+      {
         "code": "BSTD",
         "description": "Borderline Standard",
         "value": "Borderline Standard",
         "isActive": "Y",
         "miscMastId": "BSTD",
         "type": "GUW_CO_TYPE"
-      },{
+      },
+      {
         "code": "RED_COV",
         "description": "Reduce Cover",
         "value": "Reduce Cover",
         "isActive": "Y",
         "miscMastId": "RED_COV",
         "type": "GUW_CO_TYPE"
-      },{
+      },
+      {
         "code": "RED_PT",
         "description": "Reduce PT",
         "value": "Reduce PT",
         "isActive": "Y",
         "miscMastId": "RED_PT",
         "type": "GUW_CO_TYPE"
-      },{
+      },
+      {
         "code": "STD",
         "description": "Standard",
         "value": "Standard",
         "isActive": "Y",
         "miscMastId": "STD",
         "type": "GUW_EP_TYPE"
-      },{
+      },
+      {
         "code": "BSTD",
         "description": "Borderline Standard",
         "value": "Borderline Standard",
         "isActive": "Y",
         "miscMastId": "BSTD",
         "type": "GUW_EP_TYPE"
-      },{
+      },
+      {
         "code": "RED_COV",
         "description": "Reduce Cover",
         "value": "Reduce Cover",
         "isActive": "Y",
         "miscMastId": "RED_COV",
         "type": "GUW_EP_TYPE"
-      },{
+      },
+      {
         "code": "RED_PT",
         "description": "Reduce PT",
         "value": "Reduce PT",
         "isActive": "Y",
         "miscMastId": "RED_PT",
         "type": "GUW_EP_TYPE"
-      },{
+      },
+      {
         "code": "MED_LOAD",
         "description": "Medical Loading",
         "value": "Medical Loading",
         "isActive": "Y",
         "miscMastId": "MED_LOAD",
         "type": "GUW_EP_TYPE"
-      },{
+      },
+      {
         "code": "FE_LOAD",
         "description": "FE Loading",
         "value": "FE Loading",
         "isActive": "Y",
         "miscMastId": "FE_LOAD",
         "type": "GUW_EP_TYPE"
-      },{
+      },
+      {
         "code": "SMOK_LOAD",
         "description": "Smoker Loading",
         "value": "Smoker Loading",

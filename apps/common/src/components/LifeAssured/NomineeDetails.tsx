@@ -1,5 +1,7 @@
 import { useState } from "react";
 import dayjs from "dayjs";
+import { z } from "zod";
+import type { FieldErrors } from "react-hook-form";
 import { Box, Typography } from "@mui/material";
 import {
   Calendar,
@@ -14,29 +16,40 @@ import {
   TickIcon,
   type Column,
 } from "@insurance-poc/ui";
-import { FILL_ALL_NOMINEE_FIELDS_MESSAGE } from "./editApplicant.messages";
+import { FILL_ALL_NOMINEE_FIELDS_MESSAGE, requiredMessage } from "./editApplicant.messages";
 
-export type NomineeEditRow = {
-  firstName: string;
-  lastName: string;
+const required = (label: string) => z.string().trim().min(1, requiredMessage(label));
+
+// All Nominee fields are mandatory
+export const nomineeSchema = z.object({
+  firstName: required("First Name"),
+  lastName: required("Last Name"),
   /** YYYY-MM-DD */
-  dob: string;
-  gender: string;
-  proposerNomineeRelation: string;
-  percentage: string;
-  accountNumber: string;
-  ifsc: string;
-};
+  dob: required("DOB"),
+  gender: required("Gender"),
+  proposerNomineeRelation: required("Relationship"),
+  percentage: required("Share %"),
+  accountNumber: required("Account No."),
+  ifsc: required("IFSC"),
+});
+
+export type NomineeEditRow = z.infer<typeof nomineeSchema>;
 
 type NomineeField = keyof NomineeEditRow;
 
 type NomineeTableRow = NomineeEditRow & { actions: string };
+
+type NomineeErrors = Partial<Record<NomineeField, string>>;
+
+export type NomineeFormErrors = NonNullable<FieldErrors<{ nominees: NomineeEditRow[] }>["nominees"]>;
 
 export type NomineeDetailsProps = {
   nominees: NomineeEditRow[];
   onChange: (nominees: NomineeEditRow[]) => void;
   /** Reports validation messages (shown as a snackbar by the parent). */
   onNotify: (message: string) => void;
+  /** Row-level error messages from form validation */
+  errors?: NomineeFormErrors;
 };
 
 const NOMINEE_FIELDS: NomineeField[] = [
@@ -68,8 +81,10 @@ const GENDER_OPTIONS = [
   { label: "Other", value: "Other" },
 ];
 
-export const isNomineeBlank = (nominee: NomineeEditRow) =>
-  NOMINEE_FIELDS.some((field) => !nominee[field].trim());
+export const isNomineeBlank = (nominee: NomineeEditRow) => !nomineeSchema.safeParse(nominee).success;
+
+export const isNomineeEmpty = (nominee: Partial<NomineeEditRow>) =>
+  NOMINEE_FIELDS.every((field) => !nominee[field]?.trim());
 
 export const iconButtonSx = { minWidth: 32, p: 0.5 };
 export const dangerButtonSx = {
@@ -79,28 +94,45 @@ export const dangerButtonSx = {
   "&:hover": { backgroundColor: colors.danger, color: colors.white },
 };
 
-export function NomineeDetails({ nominees, onChange, onNotify }: Readonly<NomineeDetailsProps>) {
+export function NomineeDetails({ nominees, onChange, onNotify, errors }: Readonly<NomineeDetailsProps>) {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [draft, setDraft] = useState<NomineeEditRow>(EMPTY_NOMINEE);
+  const [localErrors, setLocalErrors] = useState<NomineeErrors>({});
 
   const startEdit = (index: number) => {
     setEditingIndex(index);
     setDraft({ ...nominees[index] });
+    setLocalErrors({});
   };
 
   const cancelEdit = () => {
+    if (editingIndex !== null && editingIndex < nominees.length && isNomineeEmpty(nominees[editingIndex])) {
+      onChange(nominees.filter((_, i) => i !== editingIndex));
+    }
     setEditingIndex(null);
     setDraft(EMPTY_NOMINEE);
+    setLocalErrors({});
   };
 
   const saveEdit = () => {
     if (editingIndex === null) return;
-    if (isNomineeBlank(draft)) {
+    const result = nomineeSchema.safeParse(draft);
+    if (!result.success) {
+      const fieldErrors: NomineeErrors = {};
+      for (const issue of result.error.issues) {
+        const field = issue.path[0] as NomineeField;
+        if (field && !fieldErrors[field]) {
+          fieldErrors[field] = issue.message;
+        }
+      }
+      setLocalErrors(fieldErrors);
       onNotify(FILL_ALL_NOMINEE_FIELDS_MESSAGE);
       return;
     }
+    setLocalErrors({});
     onChange(nominees.map((nominee, index) => (index === editingIndex ? { ...draft } : nominee)));
-    cancelEdit();
+    setEditingIndex(null);
+    setDraft(EMPTY_NOMINEE);
   };
 
   const deleteNominee = (index: number) => {
@@ -112,11 +144,28 @@ export function NomineeDetails({ nominees, onChange, onNotify }: Readonly<Nomine
     onChange([...nominees, { ...EMPTY_NOMINEE }]);
     setEditingIndex(nominees.length);
     setDraft({ ...EMPTY_NOMINEE });
+    setLocalErrors({});
   };
 
-  const changeDraft = (field: NomineeField, value: string) => setDraft((prev) => ({ ...prev, [field]: value }));
+  const changeDraft = (field: NomineeField, value: string) => {
+    setDraft((prev) => ({ ...prev, [field]: value }));
+    if (localErrors[field]) {
+      setLocalErrors((prev) => {
+        const updated = { ...prev };
+        delete updated[field];
+        return updated;
+      });
+    }
+  };
 
   const renderEditor = (field: NomineeField) => {
+    const rowErrors = editingIndex !== null && Array.isArray(errors) ? errors[editingIndex] : undefined;
+    const fieldError =
+      localErrors[field] ??
+      (rowErrors && typeof rowErrors === "object" && field in rowErrors ? rowErrors[field]?.message : undefined);
+    const hasError = Boolean(fieldError);
+    const helperText = fieldError;
+
     if (field === "dob") {
       return (
         <Calendar
@@ -124,16 +173,28 @@ export function NomineeDetails({ nominees, onChange, onNotify }: Readonly<Nomine
           onChange={(date) => changeDraft("dob", date?.isValid() ? date.format("YYYY-MM-DD") : "")}
           disableTodayAndFuture={false}
           maxDate={dayjs()}
+          error={hasError}
+          helperText={helperText}
         />
       );
     }
     if (field === "gender") {
-      return <CustomSelect value={draft.gender} onChange={(value) => changeDraft("gender", value)} options={GENDER_OPTIONS} />;
+      return (
+        <CustomSelect
+          value={draft.gender}
+          onChange={(value) => changeDraft("gender", value)}
+          options={GENDER_OPTIONS}
+          error={hasError}
+          helperText={helperText}
+        />
+      );
     }
     return (
       <CustomTextField
         value={draft[field]}
         onChange={(e) => changeDraft(field, e.target.value)}
+        error={hasError}
+        helperText={helperText}
         fullWidth
       />
     );
@@ -148,18 +209,39 @@ export function NomineeDetails({ nominees, onChange, onNotify }: Readonly<Nomine
     key: field,
     header,
     width,
-    render: (value, _row, rowIndex) =>
-      editingIndex === rowIndex ? (
-        renderEditor(field)
-      ) : (
-        <Typography sx={{ fontSize: "11px", whiteSpace: "nowrap" }}>{displayText(field, String(value))}</Typography>
-      ),
+    render: (value, _row, rowIndex) => {
+      if (editingIndex === rowIndex) {
+        return renderEditor(field);
+      }
+      const rawValue = String(value ?? "").trim();
+      const rowErrors = Array.isArray(errors) ? errors[rowIndex] : undefined;
+      const fieldError =
+        rowErrors && typeof rowErrors === "object" && field in rowErrors ? rowErrors[field]?.message : undefined;
+      if (fieldError) {
+        return (
+          <Box>
+            {rawValue ? (
+              <Typography sx={{ fontSize: "11px", whiteSpace: "nowrap" }}>
+                {displayText(field, rawValue)}
+              </Typography>
+            ) : null}
+            <Typography sx={{ fontSize: "11px", color: "#d32f2f", whiteSpace: "nowrap", lineHeight: 1.2 }}>
+              {fieldError}
+            </Typography>
+          </Box>
+        );
+      }
+      return (
+        <Typography sx={{ fontSize: "11px", whiteSpace: "nowrap" }}>{displayText(field, rawValue)}</Typography>
+      );
+    },
   });
 
   const columns: Column<NomineeTableRow>[] = [
     {
       key: "actions",
       header: "Actions",
+      width: "80px",
       render: (_value, _row, rowIndex) =>
         editingIndex === rowIndex ? (
           <Box sx={{ display: "flex", gap: 0.5 }}>
@@ -210,14 +292,14 @@ export function NomineeDetails({ nominees, onChange, onNotify }: Readonly<Nomine
           </Box>
         ),
     },
-    fieldColumn("firstName", "First Name", "130px"),
-    fieldColumn("lastName", "Last Name", "130px"),
-    fieldColumn("dob", "DOB", "150px"),
-    fieldColumn("gender", "Gender", "120px"),
-    fieldColumn("proposerNomineeRelation", "Relationship", "140px"),
-    fieldColumn("percentage", "Share %", "100px"),
-    fieldColumn("accountNumber", "Account No.", "150px"),
-    fieldColumn("ifsc", "IFSC", "130px"),
+    fieldColumn("firstName", "First Name", "80px"),
+    fieldColumn("lastName", "Last Name", "80px"),
+    fieldColumn("dob", "DOB", "80px"),
+    fieldColumn("gender", "Gender", "60px"),
+    fieldColumn("proposerNomineeRelation", "Relationship", "90px"),
+    fieldColumn("percentage", "Share %", "70px"),
+    fieldColumn("accountNumber", "Account No.", "120px"),
+    fieldColumn("ifsc", "IFSC", "80px"),
   ];
 
   const tableData: NomineeTableRow[] = nominees.map((nominee) => ({ ...nominee, actions: "" }));
@@ -246,11 +328,7 @@ export function NomineeDetails({ nominees, onChange, onNotify }: Readonly<Nomine
           <Typography sx={{ fontSize: "12px", color: "#777" }}>No nominee details available</Typography>
         </Box>
       ) : (
-        <Box sx={{ overflowX: "auto" }}>
-          <Box sx={{ minWidth: 1180 }}>
-            <CustomTable columns={columns} data={tableData} />
-          </Box>
-        </Box>
+        <CustomTable columns={columns} data={tableData} />
       )}
     </Box>
   );
