@@ -15,7 +15,7 @@ export type MmtGrievanceFetchRequest = {
   applicationNo: string;
   lob: string;
   partyId?: string;
-  lifeNumber?: string;
+  lifeNumber: string;
   partyFilterComplete?: boolean;
 };
 
@@ -229,11 +229,11 @@ export function buildMmtGrievanceFetchRequest(
   const request: MmtGrievanceFetchRequest = {
     applicationNo: context.applicationNo,
     lob,
+    lifeNumber: context.lifeNumber ?? "",
     partyFilterComplete: true,
   };
 
   if (context.partyId) request.partyId = context.partyId;
-  if (context.lifeNumber) request.lifeNumber = context.lifeNumber;
   return request;
 }
 
