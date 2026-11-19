@@ -39,6 +39,8 @@ export type ClaimAuditProps = {
   columnHeaders?: Partial<Record<keyof ClaimAuditRow, string>>;
   /** Called when a row is validated (editable only). */
   onValidate?: (row: ClaimAuditRow) => void;
+  /** Ids of rows already validated; when given, the caller owns this state (it survives the table unmounting). */
+  validatedIds?: string[];
   /** Rows per page. */
   pageSize?: number;
   paginationDisabled?: boolean;
@@ -86,11 +88,13 @@ export function ClaimAudit({
   variant = "readonly",
   columnHeaders,
   onValidate,
+  validatedIds: validatedIdsProp,
   pageSize = 5,
   paginationDisabled = false,
 }: Readonly<ClaimAuditProps>) {
   const { page, setPage, pageCount, pageItems } = usePagination(rows, pageSize);
-  const [validatedIds, setValidatedIds] = useState<string[]>([]);
+  const [localValidatedIds, setValidatedIds] = useState<string[]>([]);
+  const validatedIds = validatedIdsProp ?? localValidatedIds;
 
   const baseColumns: Column<ClaimAuditRow>[] = defaultColumns.map((column) => ({
     ...column,

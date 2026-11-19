@@ -5,6 +5,7 @@ import { SpecialRemarks } from "@insurance-poc/common/special-remarks";
 import { UwGuidelines, type UwGuidelineRow } from "@insurance-poc/common/uw-guidelines";
 import { CustomBox, CustomDialog } from "@insurance-poc/ui";
 import type { GuwDialogSections } from "../../services/guwService";
+import { loadValidatedRowIds, markRowValidated } from "../../services/guwSectionValidationService";
 
 export type GuwSectionDialogKey =
   | "grievanceHistory"
@@ -22,6 +23,11 @@ export interface GuwSectionDialogsProps {
   notify: (message: string) => void;
   /** Claim Audit / Special Remarks / UW Guidelines can be validated or edited. Default true. */
   editable?: boolean;
+  /**
+   * Key (application / member) under which Claim Audit and Special Remarks "Validate" clicks are kept for the
+   * logged-in user. Must match the key the UW panel checks on Submit.
+   */
+  validationKey?: string;
 }
 
 /**
@@ -34,7 +40,14 @@ export function GuwSectionDialogs({
   onClose,
   notify,
   editable = true,
+  validationKey = "",
 }: Readonly<GuwSectionDialogsProps>) {
+  const [validatedClaimIds, setValidatedClaimIds] = useState<string[]>(() =>
+    loadValidatedRowIds(validationKey, "claimAudit"),
+  );
+  const [validatedRemarkIds, setValidatedRemarkIds] = useState<string[]>(() =>
+    loadValidatedRowIds(validationKey, "specialRemarks"),
+  );
   // Guidelines saved by the user; falls back to the API rows until then.
   const [savedGuidelines, setSavedGuidelines] = useState<UwGuidelineRow[] | null>(null);
   const variant = editable ? "editable" : "readonly";
@@ -68,7 +81,11 @@ export function GuwSectionDialogs({
             variant={variant}
             rows={claimAudit.rows}
             columnHeaders={claimAudit.columnHeaders}
-            onValidate={(row) => notify(`Claim ${row.policyNo} validated successfully`)}
+            validatedIds={validatedClaimIds}
+            onValidate={(row) => {
+              setValidatedClaimIds(markRowValidated(validationKey, "claimAudit", row.id));
+              notify(`Claim ${row.policyNo} validated successfully`);
+            }}
           />
         </CustomBox>
       </CustomDialog>
@@ -85,7 +102,11 @@ export function GuwSectionDialogs({
             variant={variant}
             rows={specialRemarks.rows}
             columnHeaders={specialRemarks.columnHeaders}
-            onValidate={() => notify("Special remark validated successfully")}
+            validatedIds={validatedRemarkIds}
+            onValidate={(row) => {
+              setValidatedRemarkIds(markRowValidated(validationKey, "specialRemarks", row.id));
+              notify("Special remark validated successfully");
+            }}
           />
         </CustomBox>
       </CustomDialog>

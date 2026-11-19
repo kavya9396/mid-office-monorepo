@@ -30,6 +30,8 @@ export interface GuwDecisionFormInput {
   createdBy: string;
   /** Decision code sent as `decision` and `decisionCode` (STD, BOR_STD, REJ, DC, POSTP, CO, EP, HOLD, APPROVER ...). */
   decision: string;
+  /** Decision Code picked from the `uw_decision_mapping` master; sent as `decisionCode` (falls back to `decision`). */
+  decisionCode?: string;
   uwRemarks: string;
   /** Multi-select Reasons of Borderline Standard / Reject / Decline / Postpone / Counter Offer / Extra Premium. */
   reasons: string[];
@@ -134,6 +136,40 @@ function toReasons(reasons: string[]): string | string[] {
 const RECONSIDER_DECISIONS = ["REJ", "DC", "POSTP"];
 const PRODUCT_DECISIONS = ["BOR_STD", "CO", "EP"];
 
+/** Decision Details table rows -> `products` entries (shared by `uw-decision` and the validation request). */
+export function buildGuwUwDecisionProducts(
+  applicationNo: string,
+  partyId: string,
+  createdBy: string,
+  rows: GuwDecisionRowInput[],
+): GuwUwDecisionProduct[] {
+  return rows.map((row, index) => ({
+    productLineId: index + 1,
+    partyId,
+    applicationNumber: applicationNo,
+    productCode: row.productCode,
+    productName: row.productName,
+    lineType: row.isRider ? "RIDER" : "BASE",
+    deciType: row.type,
+    bstdCode: orNull(row.bstdCode),
+    sa: toAmount(row.sa),
+    changedSa: toAmount(row.changedSa),
+    pt: toAmount(row.pt),
+    changedPt: toAmount(row.changedPt),
+    ppt: null,
+    changedPpt: null,
+    loadingClass: orNull(row.loadingClass),
+    loadingReason: orNull(row.loadingReason),
+    createdBy,
+    updatedBy: createdBy,
+  }));
+}
+
+/** Decisions that carry the Decision Details table (Borderline Standard / Counter Offer / Extra Premium). */
+export function hasGuwDecisionProducts(decision: string): boolean {
+  return PRODUCT_DECISIONS.includes(decision);
+}
+
 /**
  * Domain -> `uw-decision` DTO. Which fields are sent depends on the decision:
  * STD: base fields only. BOR_STD / CO / EP: reasons + products. REJ / DC / POSTP: reasons, recAllowed,
@@ -149,7 +185,7 @@ export function buildGuwUwDecisionRequest(input: GuwDecisionFormInput): GuwUwDec
     level: "member",
     screenType: input.screenType,
     decision,
-    decisionCode: decision,
+    decisionCode: input.decisionCode?.trim() || decision,
     uwRemarks: input.uwRemarks,
     createdBy: input.createdBy,
   };
@@ -159,26 +195,7 @@ export function buildGuwUwDecisionRequest(input: GuwDecisionFormInput): GuwUwDec
   }
 
   if (PRODUCT_DECISIONS.includes(decision)) {
-    request.products = input.rows.map((row, index) => ({
-      productLineId: index + 1,
-      partyId: input.partyId,
-      applicationNumber: input.applicationNo,
-      productCode: row.productCode,
-      productName: row.productName,
-      lineType: row.isRider ? "RIDER" : "BASE",
-      deciType: row.type,
-      bstdCode: orNull(row.bstdCode),
-      sa: toAmount(row.sa),
-      changedSa: toAmount(row.changedSa),
-      pt: toAmount(row.pt),
-      changedPt: toAmount(row.changedPt),
-      ppt: null,
-      changedPpt: null,
-      loadingClass: orNull(row.loadingClass),
-      loadingReason: orNull(row.loadingReason),
-      createdBy: input.createdBy,
-      updatedBy: input.createdBy,
-    }));
+    request.products = buildGuwUwDecisionProducts(input.applicationNo, input.partyId, input.createdBy, input.rows);
   }
 
   if (RECONSIDER_DECISIONS.includes(decision)) {
@@ -260,6 +277,8 @@ export interface GuwParallelDecisionRequest {
   partyId: string;
   action: GuwParallelDecisionAction;
   userId: string;
+  /** Raise Referral only: the Refer To values (master GUW_REF_TO) of the selected rows, e.g. ["IT", "HOD"]. */
+  refer_to?: string[];
 }
 
 export type GuwParallelDecisionBaseInput = Pick<GuwDecisionFormInput, "applicationNo" | "partyId" | "screenType"> & {
@@ -273,6 +292,7 @@ function toParallelDecisionRequest(
   base: GuwParallelDecisionBaseInput,
   action: GuwParallelDecisionAction,
   parallelDecision: GuwParallelDecisionItem[],
+  referTo?: string[],
 ): GuwParallelDecisionRequest {
   return {
     screenType: base.screenType,
@@ -281,8 +301,11 @@ function toParallelDecisionRequest(
     partyId: base.partyId,
     action,
     userId: base.userId,
+    ...(referTo ? { refer_to: referTo } : {}),
   };
 }
+
+const referToOf = (items: GuwParallelDecisionItem[]) => items.map((item) => item.referTo.referName);
 
 /**
  * Raise Referral: selected rows -> `parallel-decision` requests. `action` is one value per request, so
@@ -308,8 +331,10 @@ export function buildGuwReferralParallelDecisionRequests(
   const opinions = rows.filter((row) => OPINION_REFERRALS.includes(row.target)).map(toItem);
   const referrals = rows.filter((row) => !OPINION_REFERRALS.includes(row.target)).map(toItem);
   const requests: GuwParallelDecisionRequest[] = [];
-  if (opinions.length > 0) requests.push(toParallelDecisionRequest(base, "OPINION", opinions));
-  if (referrals.length > 0) requests.push(toParallelDecisionRequest(base, "RAISE_REFERRAL", referrals));
+  if (opinions.length > 0) requests.push(toParallelDecisionRequest(base, "OPINION", opinions, referToOf(opinions)));
+  if (referrals.length > 0) {
+    requests.push(toParallelDecisionRequest(base, "RAISE_REFERRAL", referrals, referToOf(referrals)));
+  }
   return requests;
 }
 

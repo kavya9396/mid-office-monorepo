@@ -30,6 +30,8 @@ export type SpecialRemarksProps = {
   columnHeaders?: Partial<Record<keyof SpecialRemarksRow, string>>;
   /** Called when a row is validated (editable only). */
   onValidate?: (row: SpecialRemarksRow) => void;
+  /** Ids of rows already validated; when given, the caller owns this state (it survives the table unmounting). */
+  validatedIds?: string[];
   /** Rows per page. */
   pageSize?: number;
   paginationDisabled?: boolean;
@@ -46,11 +48,13 @@ export function SpecialRemarks({
   variant = "readonly",
   columnHeaders,
   onValidate,
+  validatedIds: validatedIdsProp,
   pageSize = 5,
   paginationDisabled = false,
 }: Readonly<SpecialRemarksProps>) {
   const { page, setPage, pageCount, pageItems } = usePagination(rows, pageSize);
-  const [validatedIds, setValidatedIds] = useState<string[]>([]);
+  const [localValidatedIds, setValidatedIds] = useState<string[]>([]);
+  const validatedIds = validatedIdsProp ?? localValidatedIds;
 
   const baseColumns: Column<SpecialRemarksRow>[] = defaultColumns.map((column) => ({
     ...column,

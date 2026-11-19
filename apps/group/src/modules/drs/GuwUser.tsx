@@ -336,6 +336,10 @@ const GuwUser = () => {
               drsApplicationNo={page.record.applicationNo}
               partyId={page.record.partyId}
               storageKey={memberStorageKey}
+              requiredValidations={{
+                claimAuditRowIds: page.record.sections.claimAudit.rows.map((row) => row.id),
+                specialRemarksRowIds: page.record.sections.specialRemarks.rows.map((row) => row.id),
+              }}
               redirectUrl={postSubmitUrl}
               breOverallDecision={page.record.uwData?.breOverallDecision}
               breOverallRemarks={page.record.uwData?.breOverallRemarks}
@@ -494,6 +498,7 @@ const GuwUser = () => {
           open={sectionDialog}
           onClose={() => setSectionDialog(null)}
           notify={notify}
+          validationKey={memberStorageKey ?? applicationNo}
         />
       ) : null}
 

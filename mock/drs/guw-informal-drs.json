@@ -719,18 +719,18 @@
                             ],
                             "rows": [
                                 {
-                                    "policyNumber": "",
-                                    "productCode": "",
-                                    "claimKey": "",
-                                    "canonicalId": "",
-                                    "patientName": "",
-                                    "ailmentForCommunication": "",
-                                    "claimType": "",
-                                    "subtype": "",
-                                    "intimationDate": "",
-                                    "doa": "",
-                                    "dod": "",
-                                    "decisionStatus": ""
+                                    "policyNumber": "PL1",
+                                    "productCode": "PR123",
+                                    "claimKey": "CL123",
+                                    "canonicalId": "C1",
+                                    "patientName": "Abc",
+                                    "ailmentForCommunication": "test",
+                                    "claimType": "save",
+                                    "subtype": "sub",
+                                    "intimationDate": "12-11-2026",
+                                    "doa": "13-11-2026",
+                                    "dod": "15-11-2026",
+                                    "decisionStatus": "pending"
                                 }
                             ]
                         }
@@ -776,9 +776,9 @@
                             ],
                             "rows": [
                                 {
-                                    "comments": "",
-                                    "updatedDate": "",
-                                    "updatedBy": ""
+                                    "comments": "test",
+                                    "updatedDate": "122",
+                                    "updatedBy": "121"
                                 }
                             ]
                         }
