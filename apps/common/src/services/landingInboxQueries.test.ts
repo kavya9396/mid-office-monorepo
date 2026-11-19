@@ -14,10 +14,10 @@ const mockRoleListWire = {
 };
 
 describe("buildRoleListRequestBody", () => {
-  it("wraps businessType under request", async () => {
+  it("sends businessType at the top level", async () => {
     const { buildRoleListRequestBody } = await import("./landingInboxQueries");
-    expect(buildRoleListRequestBody("RETAIL")).toEqual({ request: { businessType: "RETAIL" } });
-    expect(buildRoleListRequestBody("GROUP")).toEqual({ request: { businessType: "GROUP" } });
+    expect(buildRoleListRequestBody("RETAIL")).toEqual({ businessType: "RETAIL" });
+    expect(buildRoleListRequestBody("GROUP")).toEqual({ businessType: "GROUP" });
   });
 });
 
@@ -114,7 +114,7 @@ describe("queryLandingRoleList", () => {
       businessLabel: "Group",
     });
 
-    expect(posted.body).toEqual({ request: { businessType: "GROUP" } });
+    expect(posted.body).toEqual({ businessType: "GROUP" });
     expect("data" in result).toBe(true);
   });
 
@@ -136,7 +136,7 @@ describe("queryLandingRoleList", () => {
         businessLabel: businessType === "GROUP" ? "Group" : "Retail",
       });
 
-      expect(posted.body).toEqual({ request: { businessType } });
+      expect(posted.body).toEqual({ businessType });
     }
   });
 });
