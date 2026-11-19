@@ -26,14 +26,18 @@ export function RetailAppLayout() {
   const normalizedPath = stripTrailingSlashes(location.pathname);
   const isInbox = normalizedPath.toLowerCase() === INBOX_PATH;
   const sessionAppNo = getDrsApplicationNo();
+  const sessionApplicationNo = sessionAppNo.length > 0 ? sessionAppNo : undefined;
   const sessionRole = getDrsRoleLabel();
   const role = isInbox ? undefined : readQueryValue(params.get("role")) ?? (sessionRole || undefined);
   const applicationNo = isInbox
     ? undefined
     : parseDrsApplicationNo(normalizedPath) ??
       readQueryValue(params.get("applicationNo")) ??
-      (sessionAppNo.length > 0 ? sessionAppNo : undefined);
+      sessionApplicationNo;
   const drsPath = applicationNo ? drsRoutePath(applicationNo) : undefined;
+  /** On the DRS financial / medical sub-pages, back returns to that application's DRS page. */
+  const isDrsSection = /\/drs\/(financial|medical)$/i.test(normalizedPath);
+  const backPath = isDrsSection ? drsPath : undefined;
 
   return (
     <Box
@@ -49,6 +53,7 @@ export function RetailAppLayout() {
         drsPath={drsPath}
         role={role}
         applicationNo={applicationNo}
+        backPath={backPath}
       />
       <Box component="main" sx={{ flex: 1, minWidth: 0, minHeight: 0, overflow: isInbox ? "hidden" : "auto" }}>
         <Outlet />

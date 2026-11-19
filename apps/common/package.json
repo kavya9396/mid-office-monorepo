@@ -134,6 +134,16 @@
       "import": "./src/components/LifeAssured/LifeAssured.tsx",
       "default": "./src/components/LifeAssured/LifeAssured.tsx"
     },
+    "./pivv-details": {
+      "types": "./src/components/PivvDetails.tsx",
+      "import": "./src/components/PivvDetails.tsx",
+      "default": "./src/components/PivvDetails.tsx"
+    },
+    "./decision-history": {
+      "types": "./src/components/DecisionHistory.tsx",
+      "import": "./src/components/DecisionHistory.tsx",
+      "default": "./src/components/DecisionHistory.tsx"
+    },
     "./decision-section": {
       "types": "./src/components/DecisionSection.tsx",
       "import": "./src/components/DecisionSection.tsx",

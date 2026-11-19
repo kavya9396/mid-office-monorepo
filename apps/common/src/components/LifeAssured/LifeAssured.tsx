@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Box, Typography } from "@mui/material";
 import { colors, CustomButton, CustomTabs, type TabItem } from "@insurance-poc/ui";
 import { DecisionSection, type DecisionOption } from "../DecisionSection";
@@ -89,6 +89,12 @@ export type LifeAssuredProps = {
   ) => void;
   /** Dropdown options for the edit dialog (masterData: gender, id_proof_type, resident_status). */
   editOptions?: Partial<EditApplicantOptions>;
+  /**
+   * Replaces the built-in edit dialog (for example the Retail CVT one, which has different fields).
+   * Called only while an applicant is being edited; `onClose` stops editing. When given, `onSaveEdit`,
+   * `editOptions` and the NSDL / PAN props are not used.
+   */
+  renderEditDialog?: (applicant: LifeAssuredApplicant, onClose: () => void) => ReactNode;
   /** NSDL PAN validation for the applicant being edited. Enables the PAN gate in the edit dialog. */
   onValidatePan?: (applicantId: string, input: PanValidationInput) => Promise<PanValidationResult>;
   /** Last NSDL result per applicant id, kept by the app so it survives closing and reopening the dialog. */
@@ -100,6 +106,8 @@ export type LifeAssuredProps = {
   hideProfileImage?: boolean;
   /** Tab set: `dvt` (default) or `guw` (Generic, eIA and Payment & Payout instead of Lifestyle, and no Edit button). */
   variant?: "dvt" | "guw";
+  /** Tabs to show, in this order. Overrides the tab set of `variant` when provided and not empty. */
+  tabs?: LifeAssuredTab[];
   /** When true, a decision section (remarks, decision, decision code) is shown at the end of each life assured. */
   showDecision?: boolean;
   /** When true, the required-field errors of every decision section are shown. */
@@ -114,7 +122,7 @@ export type LifeAssuredProps = {
 
 export type MemberDecisionValue = { remarks: string; decision: string };
 
-type ProfileTab =
+export type LifeAssuredTab =
   | "imageDetails"
   | "personalKyc"
   | "contactAddress"
@@ -125,25 +133,45 @@ type ProfileTab =
   | "eia"
   | "paymentPayout";
 
-const PROFILE_TABS: TabItem<ProfileTab>[] = [
-  { key: "imageDetails", label: "Image Details" },
-  { key: "personalKyc", label: "Personal & KYC" },
-  { key: "contactAddress", label: "Contact & Address" },
-  { key: "productDetails", label: "Product Details" },
-  { key: "nominee", label: "Nominee" },
-  { key: "lifestyle", label: "Lifestyle" },
-];
+const PROFILE_TAB_LABELS: Record<LifeAssuredTab, string> = {
+  imageDetails: "Image Details",
+  personalKyc: "Personal & KYC",
+  contactAddress: "Contact & Address",
+  productDetails: "Product Details",
+  nominee: "Nominee",
+  lifestyle: "Lifestyle",
+  generic: "Generic",
+  eia: "eIA",
+  paymentPayout: "Payment & Payout",
+};
 
-const GUW_PROFILE_TABS: TabItem<ProfileTab>[] = [
-  { key: "imageDetails", label: "Image Details" },
-  { key: "personalKyc", label: "Personal & KYC" },
-  { key: "contactAddress", label: "Contact & Address" },
-  { key: "nominee", label: "Nominee" },
-  { key: "generic", label: "Generic" },
-  { key: "productDetails", label: "Product Details" },
-  { key: "eia", label: "eIA" },
-  { key: "paymentPayout", label: "Payment & Payout" },
-];
+const toTabItems = (keys: LifeAssuredTab[]): TabItem<LifeAssuredTab>[] =>
+  keys.map((key) => ({ key, label: PROFILE_TAB_LABELS[key] }));
+
+const PROFILE_TABS = toTabItems([
+  "imageDetails",
+  "personalKyc",
+  "contactAddress",
+  "productDetails",
+  "nominee",
+  "lifestyle",
+]);
+
+const GUW_PROFILE_TABS = toTabItems([
+  "imageDetails",
+  "personalKyc",
+  "contactAddress",
+  "nominee",
+  "generic",
+  "productDetails",
+  "eia",
+  "paymentPayout",
+]);
+
+const resolveTabs = (tabs: LifeAssuredTab[] | undefined, variant: "dvt" | "guw"): TabItem<LifeAssuredTab>[] => {
+  if (tabs && tabs.length > 0) return toTabItems(tabs);
+  return variant === "guw" ? GUW_PROFILE_TABS : PROFILE_TABS;
+};
 
 type ApplicantProfileSectionProps = Omit<LifeAssuredProps, "applicants" | "onMemberDecisionChange"> & {
   applicant: LifeAssuredApplicant;
@@ -157,13 +185,15 @@ function ApplicantProfileSection({
   onViewFinancial,
   hideProfileImage = false,
   variant = "dvt",
+  tabs,
   showDecision = false,
   showDecisionErrors = false,
   decisionOptions,
   decisionCode,
   onDecisionChange,
 }: Readonly<ApplicantProfileSectionProps>) {
-  const [tab, setTab] = useState<ProfileTab>("imageDetails");
+  const tabItems = resolveTabs(tabs, variant);
+  const [tab, setTab] = useState<LifeAssuredTab>(tabItems[0]?.key ?? "imageDetails");
   const [memberDecision, setMemberDecision] = useState<MemberDecisionValue>({ remarks: "", decision: "" });
   const updateMemberDecision = (patch: Partial<MemberDecisionValue>) => {
     const next = { ...memberDecision, ...patch };
@@ -235,7 +265,7 @@ function ApplicantProfileSection({
             flexWrap: "wrap",
           }}
         >
-          <CustomTabs tabs={variant === "guw" ? GUW_PROFILE_TABS : PROFILE_TABS} value={tab} onChange={setTab} />
+          <CustomTabs tabs={tabItems} value={tab} onChange={setTab} />
           <Box sx={{ ml: "auto", display: "flex", alignItems: "center", gap: 0.5, flexShrink: 0 }}>
             {onEdit && (
               <CustomButton variant="outlined" onClick={() => onEdit(applicant.id)}>
@@ -284,6 +314,7 @@ export function LifeAssured({
   onEdit,
   onSaveEdit,
   editOptions,
+  renderEditDialog,
   onValidatePan,
   panStatusByApplicant,
   onPanStatusChange,
@@ -318,28 +349,32 @@ export function LifeAssured({
         />
       ))}
 
-      <EditApplicantDialog
-        open={Boolean(editingApplicant)}
-        onClose={() => setEditingId(null)}
-        initialValues={editingApplicant?.editValues}
-        initialNominees={editingApplicant?.editNominees}
-        initialRiders={editingApplicant?.editRiders}
-        initialLoan={editingApplicant?.editLoan}
-        options={editOptions}
-        onValidatePan={
-          onValidatePan && editingApplicant ? (input) => onValidatePan(editingApplicant.id, input) : undefined
-        }
-        panStatus={editingApplicant ? panStatusByApplicant?.[editingApplicant.id] : undefined}
-        onPanStatusChange={
-          onPanStatusChange && editingApplicant
-            ? (status) => onPanStatusChange(editingApplicant.id, status)
-            : undefined
-        }
-        onSave={(values, nominees, riders, loan) => {
-          if (editingApplicant) onSaveEdit?.(editingApplicant.id, values, nominees, riders, loan);
-          setEditingId(null);
-        }}
-      />
+      {renderEditDialog ? (
+        editingApplicant && renderEditDialog(editingApplicant, () => setEditingId(null))
+      ) : (
+        <EditApplicantDialog
+          open={Boolean(editingApplicant)}
+          onClose={() => setEditingId(null)}
+          initialValues={editingApplicant?.editValues}
+          initialNominees={editingApplicant?.editNominees}
+          initialRiders={editingApplicant?.editRiders}
+          initialLoan={editingApplicant?.editLoan}
+          options={editOptions}
+          onValidatePan={
+            onValidatePan && editingApplicant ? (input) => onValidatePan(editingApplicant.id, input) : undefined
+          }
+          panStatus={editingApplicant ? panStatusByApplicant?.[editingApplicant.id] : undefined}
+          onPanStatusChange={
+            onPanStatusChange && editingApplicant
+              ? (status) => onPanStatusChange(editingApplicant.id, status)
+              : undefined
+          }
+          onSave={(values, nominees, riders, loan) => {
+            if (editingApplicant) onSaveEdit?.(editingApplicant.id, values, nominees, riders, loan);
+            setEditingId(null);
+          }}
+        />
+      )}
     </Box>
   );
 }
