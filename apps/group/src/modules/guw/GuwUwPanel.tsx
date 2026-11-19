@@ -20,13 +20,24 @@ import {
 } from "@insurance-poc/ui";
 import { groupPaths, replaceUrl } from "@insurance-poc/routes";
 import { getDrsRoleType, getMasterList, getSessionUser } from "@insurance-poc/utils";
+import {
+  findPendingValidationMessage,
+  type GuwRequiredValidations,
+} from "../../services/guwSectionValidationService";
 import { useGetGuwUwDecisionMutation, useSaveGuwParallelDecisionMutation } from "../../services/drsApi";
 import {
   buildGuwCounterSignParallelDecisionRequest,
   buildGuwReferralParallelDecisionRequests,
+  buildGuwUwDecisionProducts,
   buildGuwUwDecisionRequest,
+  hasGuwDecisionProducts,
   GUW_UW_DECISION_SCREEN_TYPE,
 } from "../../services/guwDecisionService";
+import {
+  buildGuwUwDecisionMappingRequest,
+  fetchGuwDecisionCodeOptions,
+  type GuwDecisionCodeOption,
+} from "../../services/guwDecisionMappingService";
 import {
   clearGuwSubmittedDecision,
   saveGuwSubmittedDecision,
@@ -56,6 +67,11 @@ export interface GuwUwPanelProps {
   partyId?: string;
   /** Session key for the held decision; defaults to applicationNo (the summary page uses its own). */
   storageKey?: string;
+  /**
+   * Claim Audit / Special Remarks rows that must be validated (Validate button in their dialogs) before the main
+   * Submit is allowed. Validate clicks are read for the logged-in user under `storageKey ?? applicationNo`.
+   */
+  requiredValidations?: GuwRequiredValidations;
   /**
    * Case UW Decision code derived from the member decisions (member summary page). When it changes, the
    * dropdown follows it and any decision held for this panel is dropped. `undefined` = not derived.
@@ -117,6 +133,12 @@ interface SubmittedDecision {
   /** UW Guidelines rows from the validation API, with the justifications the user saved. */
   validationRows?: GuwSavedValidationRow[];
 }
+
+/** "XXE - Counter Offer with Exclusion" -> "XXE" (the code is the part before the first " - "). */
+const codeOfDecisionCodeText = (text: string) => text.split(" - ")[0].trim();
+
+/** Case UW Decisions that show the Decision Code dropdown (options from the `uw_decision_mapping` master). */
+const DECISION_CODE_DECISIONS = ["STD", "BOR_STD", "REJ", "DC", "POSTP", "CO", "EP"];
 
 // Case UW Decision options come from master data (misc / GUW_TERM_DESC). Three master codes differ from the
 // codes used by the decision rules, validation, saved decisions and the `uw-decision` API (BOR_STD, DC, POSTP),
@@ -249,19 +271,35 @@ const APPROVER_ASSIGNEE_OPTIONS = ["UW001", "UW002", "UW003"].map((id) => ({
   label: id,
 }));
 
-const REFERRAL_TYPE_OPTIONS = [
-  { value: "REF_IT", label: "IT" },
-  { value: "REF_REINS", label: "Reinsurer" },
-  { value: "REF_SR_UW", label: "Sr UW Opinion" },
-  { value: "REF_HOD", label: "HOD Opinion" },
-  { value: "REF_CMO", label: "HO CMO" },
-  { value: "REF_CMO_LOCAL", label: "CMO" },
-  { value: "REF_RISK", label: "Risk" },
-  { value: "REF_ACU", label: "Accuity" },
-  { value: "REF_CUW_CLM", label: "CUW Claim" },
-  { value: "REF_TELE_MER", label: "Tele MER" },
-  { value: "REF_VIDEO_MER", label: "Video MER" },
-];
+// Row code of each master `GUW_REF_TO` value (lower case). The row code drives the existing exclusive /
+// reason / assign / reinsurer rules, so only the Refer To text comes from the master.
+const REFERRAL_TARGET_BY_MASTER_VALUE: Record<string, string | undefined> = {
+  it: "REF_IT",
+  reinsurer: "REF_REINS",
+  "sr uw": "REF_SR_UW",
+  hod: "REF_HOD",
+  "ho cmo": "REF_CMO",
+  cmo: "REF_CMO_LOCAL",
+  risk: "REF_RISK",
+  accuity: "REF_ACU",
+  "cuw claim": "REF_CUW_CLM",
+  "tele mer": "REF_TELE_MER",
+  "video mer": "REF_VIDEO_MER",
+};
+
+/**
+ * Raise Referral "Refer To" rows from master `misc` type GUW_REF_TO (label = master value, in master order).
+ * Read at render time because the master data is only in session after login.
+ */
+const readReferralTypeOptions = () =>
+  readFirstAvailableMiscOptions(["GUW_REF_TO"]).flatMap((option) => {
+    const target = REFERRAL_TARGET_BY_MASTER_VALUE[option.value.trim().toLowerCase()];
+    if (!target) {
+      console.warn(`[GuwUwPanel] GUW_REF_TO value "${option.value}" has no referral row; skipped.`);
+      return [];
+    }
+    return [{ value: target, label: option.value }];
+  });
 
 // Assigned To is enabled only for these referral rows
 const ASSIGNABLE_REFERRALS = ["REF_SR_UW", "REF_HOD"];
@@ -409,13 +447,14 @@ function referralTargetsOf(rows: GuwValidationRow[]): string[] {
  * Among CMO / other rows the response order decides.
  */
 function pickReferralRow(targets: string[]): string | null {
+  const referralOptions = readReferralTypeOptions();
   let best: { priority: number; row: string } | null = null;
   for (const target of targets) {
     const key = target.toLowerCase();
     const exclusive = EXCLUSIVE_REFERRALS.find((e) => e.key === key);
     const option = exclusive
       ? undefined
-      : REFERRAL_TYPE_OPTIONS.find((o) => o.label.toLowerCase() === key);
+      : referralOptions.find((o) => o.label.toLowerCase() === key);
     const candidate = exclusive
       ? { priority: exclusive.priority, row: exclusive.row }
       : option
@@ -453,6 +492,7 @@ export function GuwUwPanel({
   drsApplicationNo = "",
   partyId = "",
   storageKey,
+  requiredValidations,
   derivedDecision,
   decisionReadOnly = false,
   redirectUrl = groupPaths.inbox,
@@ -506,9 +546,34 @@ export function GuwUwPanel({
   const [validation, setValidation] = useState<GuwValidationResult | null>(null);
   const [validationRows, setValidationRows] = useState<GuwSavedValidationRow[]>([]);
   const [validating, setValidating] = useState<boolean>(false);
-  const [successOpen, setSuccessOpen] = useState<boolean>(false);
   const [getUwDecision] = useGetGuwUwDecisionMutation();
   const [saveParallelDecision] = useSaveGuwParallelDecisionMutation();
+
+  // Decision Code dropdown: options come from the masters `uw_decision_mapping` API, loaded when a Case UW Decision is picked
+  const [decisionCodeOptions, setDecisionCodeOptions] = useState<GuwDecisionCodeOption[]>([]);
+  // The summary stores "<code> - <description>" for display; only the code is held here and sent to `uw-decision`
+  const [decisionCodeValue, setDecisionCodeValue] = useState<string>(() =>
+    codeOfDecisionCodeText(initialSubmittedDecision?.fields.find((f) => f.label === "Decision Code")?.value ?? ""),
+  );
+  const decisionCodeRequestRef = useRef(0);
+
+  const loadDecisionCodeOptions = async (caseDecisionCode: string, keepValue: string) => {
+    const requestId = decisionCodeRequestRef.current + 1;
+    decisionCodeRequestRef.current = requestId;
+    setDecisionCodeOptions([]);
+    setDecisionCodeValue("");
+    if (!buildGuwUwDecisionMappingRequest(caseDecisionCode)) return;
+    try {
+      const options = await fetchGuwDecisionCodeOptions(caseDecisionCode);
+      if (decisionCodeRequestRef.current !== requestId) return;
+      setDecisionCodeOptions(options);
+      if (options.some((o) => o.value === keepValue)) setDecisionCodeValue(keepValue);
+    } catch (reason: unknown) {
+      if (decisionCodeRequestRef.current !== requestId) return;
+      console.error("[GuwUwPanel] uw_decision_mapping failed:", reason);
+      notify("Unable to load Decision Codes. Please try again.", "error");
+    }
+  };
 
   // Snackbar states
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -544,7 +609,7 @@ export function GuwUwPanel({
     remarks: string;
     assignedTo: string;
   }[]>(() =>
-    REFERRAL_TYPE_OPTIONS.map((opt) => ({
+    readReferralTypeOptions().map((opt) => ({
       target: opt.value,
       label: opt.label,
       selected: false,
@@ -714,7 +779,8 @@ export function GuwUwPanel({
       if (rowAssignees) add("Assigned To", rowAssignees, true);
     }
     if (dialogDecision !== "REFERRAL" && effectiveDecision) {
-      add("Decision Code", effectiveDecision);
+      const decisionCodeLabel = decisionCodeOptions.find((o) => o.value === decisionCodeValue)?.label;
+      add("Decision Code", decisionCodeLabel ?? (decisionCodeValue || effectiveDecision));
     }
     if (effectiveDecision === "STD") {
       add("Smoker Flag", smokerFlag);
@@ -786,6 +852,11 @@ export function GuwUwPanel({
 
   const openDecisionDialog = (code: string) => {
     setDialogDecision(code);
+    // Decision Code options depend on the Case UW Decision; a code already saved for it stays selected
+    const savedDecisionCode = codeOfDecisionCodeText(
+      submittedDecision?.fields.find((f) => f.label === "Decision Code")?.value ?? "",
+    );
+    void loadDecisionCodeOptions(code, savedDecisionCode);
     setApproverBaseDecision("");
     setGuidelinesConfirmed(false);
     setDialogRemarks(remarks);
@@ -797,7 +868,6 @@ export function GuwUwPanel({
     // UW Guidelines are fetched again on Submit; earlier saved justifications are restored then
     setValidation(null);
     setValidationRows([]);
-    setSuccessOpen(false);
     if (code === "REFERRAL") {
       setReinsurerEditOpen(false);
     }
@@ -851,6 +921,10 @@ export function GuwUwPanel({
         notify("Please enter UW Remarks", "error");
         return;
       }
+      if (DECISION_CODE_DECISIONS.includes(effectiveDecision) && decisionCodeOptions.length > 0 && !decisionCodeValue) {
+        notify("Please select Decision Code", "error");
+        return;
+      }
     }
 
     if (effectiveDecision === "APPROVER") {
@@ -868,31 +942,70 @@ export function GuwUwPanel({
       }
     }
 
-    // Opened from UW Guidelines (validation already done): Counter Sign / Raise Referral is the final step
-    if (guidelinesConfirmed && ["APPROVER", "REFERRAL"].includes(effectiveDecision)) {
-      finalizeSubmit();
-      return;
-    }
+    // No API call here: the decision is held and the main Submit validates and submits it
+    saveAndClose();
+  };
 
+  /** Decision Details table rows as the `uw-decision` / validation requests need them. */
+  const decisionRowInputs = () =>
+    counterOfferRows.map((row) => ({
+      productName: row.productName,
+      productCode: DEFAULT_PRODUCTS.find((p) => p.name === row.productName)?.code ?? "",
+      isRider: row.isRider,
+      type: row.type,
+      bstdCode: row.bstdCode,
+      sa: row.sa,
+      changedSa: row.changedSa,
+      pt: row.pt,
+      changedPt: row.changedPt,
+      loadingClass: row.loadingClass,
+      loadingReason: row.loadingReason,
+    }));
+
+  // Main Submit: validation API first; `uw-decision` / `parallel-decision` only when nothing is left to resolve
+  const validateAndSubmit = async () => {
+    const requestApplicationNo = drsApplicationNo || applicationNo;
+    const userId = getSessionUser()?.username ?? "";
+    const validationRequest = toGuwValidationRequest(requestApplicationNo, {
+      partyId,
+      decision: selectedDecision,
+      // Raise Referral: the selected Refer To values, e.g. ["IT", "HOD"]
+      ...(dialogDecision === "REFERRAL"
+        ? { refer_to: referralRows.filter((r) => r.selected).map((r) => r.label) }
+        : {}),
+      // Decision Details table rows only for Borderline Standard / Counter Offer / Extra Premium
+      ...(hasGuwDecisionProducts(selectedDecision)
+        ? { products: buildGuwUwDecisionProducts(requestApplicationNo, partyId, userId, decisionRowInputs()) }
+        : {}),
+    });
+    console.log("[GuwUwPanel] validation request body:", validationRequest);
+
+    if (validating) return;
     setValidating(true);
     try {
-      const result = await validateGuwDecision(toGuwValidationRequest(applicationNo), caseDecision);
+      const result = await validateGuwDecision(validationRequest, selectedDecision);
       setValidation(result);
-
       if (result.success) {
-        // Save point: decision details are held and linked to the main Case UW Decision
-        setValidationRows([]);
-        saveDraft([]);
-        setDialogOpen(false);
-        setSuccessOpen(true);
+        await finalizeSubmit();
         return;
       }
 
-      // Rows start empty unless the user saved justifications for the same rows earlier
       const rows = mergeSavedRows(result.rows, submittedDecision?.validationRows);
       setValidationRows(rows);
-      saveDraft(rows);
+
+      // Already handled when the held decision is the Referral / Counter Sign the case needs and every
+      // guideline is justified; otherwise the UW Guidelines open so the user can resolve them
+      const requiresRouting = result.referralRequired || result.counterSignRequired;
+      const routed = !requiresRouting || ["REFERRAL", "APPROVER"].includes(dialogDecision);
+      if (routed && !hasBlockerAlert(rows) && areJustificationsComplete(rows)) {
+        await finalizeSubmit();
+        return;
+      }
+
+      // Open UW Guidelines so the user can justify / route the case, then submit again
+      setGuidelinesConfirmed(false);
       setDialogStep(2);
+      setDialogOpen(true);
     } catch {
       notify("Unable to validate the decision. Please try again.", "error");
     } finally {
@@ -911,6 +1024,14 @@ export function GuwUwPanel({
       decisionCode: caseDecision,
       remarks: dialogRemarks,
     });
+  };
+
+  // Popup "Save": hold the decision (no API call) and close the popup; the main Submit calls the APIs
+  const saveAndClose = () => {
+    // Guideline justifications saved earlier stay when the rows are not reloaded in this popup session
+    saveDraft(validationRows.length > 0 ? validationRows : (submittedDecision?.validationRows ?? []));
+    setDialogOpen(false);
+    notify("Decision saved. Click Submit to complete.", "success");
   };
 
   // Open Counter Sign / Raise Referral from UW Guidelines, keeping the guideline entries
@@ -965,13 +1086,7 @@ export function GuwUwPanel({
       return;
     }
 
-    finalizeSubmit();
-  };
-
-  // Success popup closed: continue with the final submit
-  const handleSuccessClose = () => {
-    setSuccessOpen(false);
-    finalizeSubmit();
+    saveAndClose();
   };
 
   const finalizeSubmit = async () => {
@@ -1019,6 +1134,8 @@ export function GuwUwPanel({
           createdBy: getSessionUser()?.username ?? "",
           // Counter Sign is saved as APPROVER (with reason / referTo / assignedTo), not as the base decision
           decision: effectiveDecision === "APPROVER" ? "APPROVER" : caseDecision,
+          // The Decision Code picked from the `uw_decision_mapping` master is sent as `decisionCode`
+          decisionCode: effectiveDecision === "APPROVER" ? undefined : decisionCodeValue,
           uwRemarks: dialogRemarks,
           reasons: subStdReason,
           holdReason,
@@ -1034,19 +1151,7 @@ export function GuwUwPanel({
             effectiveDecision === "APPROVER"
               ? { reason: approverReason, referTo: approverTarget, assignedTo: approverAssignedTo }
               : undefined,
-          rows: counterOfferRows.map((row) => ({
-            productName: row.productName,
-            productCode: DEFAULT_PRODUCTS.find((p) => p.name === row.productName)?.code ?? "",
-            isRider: row.isRider,
-            type: row.type,
-            bstdCode: row.bstdCode,
-            sa: row.sa,
-            changedSa: row.changedSa,
-            pt: row.pt,
-            changedPt: row.changedPt,
-            loadingClass: row.loadingClass,
-            loadingReason: row.loadingReason,
-          })),
+          rows: decisionRowInputs(),
         });
       console.log("[GuwUwPanel] uw-decision payload:", uwDecisionRequest);
       const response = await getUwDecision(uwDecisionRequest);
@@ -1071,7 +1176,7 @@ export function GuwUwPanel({
     setDialogOpen(false);
     notify("Decision submitted successfully", "success");
 
-    // Redirect (inbox, or member summary page for multi-life) after 700ms delay
+    // Inbox, or the member summary page for multi-life
     setTimeout(() => {
       replaceUrl(redirectUrl);
     }, 700);
@@ -1083,8 +1188,14 @@ export function GuwUwPanel({
       notify("Please select a decision and complete the decision details before submitting", "error");
       return;
     }
+    // Claim Audit / Special Remarks records must each be validated before uw-decision / parallel-decision
+    const pendingValidation = findPendingValidationMessage(storageKey ?? applicationNo, requiredValidations);
+    if (pendingValidation) {
+      notify(pendingValidation, "error");
+      return;
+    }
     console.log("[GuwUwPanel] main Submit clicked", { selectedDecision, dialogDecision, partyId });
-    void finalizeSubmit();
+    void validateAndSubmit();
   };
 
   const handleDialogClose = () => {
@@ -1560,7 +1671,7 @@ export function GuwUwPanel({
                     "&.Mui-disabled": { background: "#eadfd9", color: "#a79f9b" },
                   }}
                 >
-                  Confirm & Submit
+                  Save
                 </CustomButton>
               </Box>
             </Box>
@@ -1604,7 +1715,7 @@ export function GuwUwPanel({
               mt: "6px",
             }}
           >
-            {/* Dialog Decision select - hidden for Reinsurer Referral and for Raise Referral / Hold */}
+            {/* Dialog Decision select - hidden for Reinsurer Referral, Raise Referral and Hold; read-only for Counter Sign */}
             {effectiveDecision !== "REF_REINS" && !["REFERRAL", "HOLD"].includes(dialogDecision) && (
               <Box>
                 <Typography
@@ -1621,19 +1732,13 @@ export function GuwUwPanel({
                 <Box sx={{ display: "flex", alignItems: "center", gap: "8px" }}>
                   <Box sx={{ flex: 1, minWidth: 0 }}>
                     <CustomSelect
-                      value={
-                        dialogDecision === "APPROVER"
-                          ? approverBaseDecision || selectedDecision
-                          : dialogDecision
-                      }
-                      onChange={(val) => setDialogDecision(val)}
-                      options={
-                        dialogDecision === "APPROVER"
-                          ? mainSelectOptions
-                          : isActionDecision
-                            ? ACTION_DECISION_OPTIONS
-                            : DECISION_OPTIONS
-                      }
+                      value={dialogDecision}
+                      onChange={(val) => {
+                        setDialogDecision(val);
+                        // Decision Code options depend on the Case UW Decision: call the master API again
+                        void loadDecisionCodeOptions(val, "");
+                      }}
+                      options={isActionDecision ? ACTION_DECISION_OPTIONS : DECISION_OPTIONS}
                       disabled={isActionDecision}
                       placeholder="Select"
                       fullWidth
@@ -2140,7 +2245,7 @@ export function GuwUwPanel({
             )}
 
             {/* DECISION CODE - terminal decisions */}
-            {dialogDecision !== "REFERRAL" && ["STD", "BOR_STD", "REJ", "DC", "POSTP", "CO", "EP"].includes(effectiveDecision) && (
+            {dialogDecision !== "REFERRAL" && DECISION_CODE_DECISIONS.includes(effectiveDecision) && (
               <Box>
                 <Typography
                   component="span"
@@ -2153,7 +2258,13 @@ export function GuwUwPanel({
                 >
                   Decision Code
                 </Typography>
-                <CustomTextField value={effectiveDecision} disabled fullWidth />
+                <CustomSelect
+                  value={decisionCodeValue}
+                  onChange={setDecisionCodeValue}
+                  options={decisionCodeOptions}
+                  placeholder="Select"
+                  fullWidth
+                />
               </Box>
             )}
 
@@ -2281,14 +2392,17 @@ export function GuwUwPanel({
                       fontSize: "11px",
                     }}
                   >
-                    Reason
+                    Refer To
                   </Typography>
                   <CustomSelect
-                    value={approverReason}
-                    onChange={(val) => setApproverReason(val)}
-                    options={readApproverReasonOptions(approverTarget)}
-                    placeholder={approverTarget ? "Select Reason" : "Select Refer To first"}
-                    disabled={!approverTarget}
+                    value={approverTarget}
+                    onChange={(val) => {
+                      setApproverTarget(val);
+                      // Counter Sign reasons depend on HOD / Sr UW
+                      setApproverReason("");
+                    }}
+                    options={readReferToOptions()}
+                    placeholder="Select HOD or Sr UW"
                     fullWidth
                   />
                 </Box>
@@ -2303,17 +2417,14 @@ export function GuwUwPanel({
                       fontSize: "11px",
                     }}
                   >
-                    Refer To
+                    Reason
                   </Typography>
                   <CustomSelect
-                    value={approverTarget}
-                    onChange={(val) => {
-                      setApproverTarget(val);
-                      // Counter Sign reasons depend on HOD / Sr UW
-                      setApproverReason("");
-                    }}
-                    options={readReferToOptions()}
-                    placeholder="Select HOD or Sr UW"
+                    value={approverReason}
+                    onChange={(val) => setApproverReason(val)}
+                    options={readApproverReasonOptions(approverTarget)}
+                    placeholder={approverTarget ? "Select Reason" : "Select Refer To first"}
+                    disabled={!approverTarget}
                     fullWidth
                   />
                 </Box>
@@ -2769,7 +2880,7 @@ export function GuwUwPanel({
                 "&:hover": { background: "#c94f0d" },
               }}
             >
-              Submit
+              Save
             </CustomButton>
           </Box>
           </>
@@ -2783,40 +2894,6 @@ export function GuwUwPanel({
         onClose={() => setViewDialogOpen(false)}
         submittedDecision={submittedDecision}
       />
-
-      {/* Success popup: validation passed, shows the selected decision */}
-      <CustomDialog
-        open={successOpen}
-        onClose={handleSuccessClose}
-        title="Decision validated successfully"
-        maxWidth="xs"
-        fullWidth
-        showCloseIcon={false}
-      >
-        <Box sx={{ p: 1 }}>
-          <Typography
-            component="p"
-            sx={{ color: "#302a27", fontSize: "13px", fontWeight: 700, mb: 2 }}
-          >
-            Selected decision: {decisionLabel(caseDecision)}
-          </Typography>
-          <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-            <CustomButton
-              variant="contained"
-              onClick={handleSuccessClose}
-              sx={{
-                background: "#e45f14",
-                color: "#fff",
-                fontWeight: "bold",
-                px: 4,
-                "&:hover": { background: "#c94f0d" },
-              }}
-            >
-              OK
-            </CustomButton>
-          </Box>
-        </Box>
-      </CustomDialog>
 
       {/* Snackbar notification */}
       <CustomSnackbar

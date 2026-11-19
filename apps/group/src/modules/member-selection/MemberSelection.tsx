@@ -74,6 +74,9 @@ const TONE_PILL_STYLE: Record<number, { border: string; bg: string; color: strin
 /* ------------------------------------------------------------------ */
 const MEMBER_SELECTION_ROW_LABELS: Record<number, string> = { 1: "Product", 2: "Riders" };
 
+/* Member selection page: no Raise Referral / Counter Sign buttons (only the member DRS page has them) */
+const MEMBER_SELECTION_ACTION_OPTIONS = [{ value: "HOLD", label: "Hold" }];
+
 /* ------------------------------------------------------------------ */
 /* MemberSelection — common to GUW, HOD and Sr UW                       */
 /* ------------------------------------------------------------------ */
@@ -394,6 +397,7 @@ export function MemberSelection() {
         <GuwUwPanel
           applicationNo={applicationNo}
           storageKey={summaryStorageKey}
+          actionOptions={MEMBER_SELECTION_ACTION_OPTIONS}
           derivedDecision={derivedDecision}
           decisionReadOnly
           redirectUrl={groupPaths.inbox}

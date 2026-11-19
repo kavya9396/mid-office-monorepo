@@ -12,6 +12,7 @@ import {
 } from "../modules/drs/quickLinksData";
 import { mapRequirements, type RawRequirement } from "../modules/drs/requirementData";
 import { formatBreTimestamp, splitDiscrepancies } from "../modules/drs/breFormat";
+import type { GuwUwDecisionProduct } from "./guwDecisionService";
 import guwValidationMock from "../../../../mock/drs/guw-validation.json";
 
 /* ------------------------------------------------------------------ */
@@ -190,10 +191,20 @@ export interface GuwSavedValidationRow extends GuwValidationRow {
   justificationRemark: string;
 }
 
+export interface GuwValidationPartyDecision {
+  partyId: string;
+  decision: string;
+  /** Raise Referral only: the Refer To values (master GUW_REF_TO) of the selected rows, e.g. ["IT", "HOD"]. */
+  refer_to?: string[];
+  /** Decision Details table; only for Borderline Standard / Counter Offer / Extra Premium. */
+  products?: GuwUwDecisionProduct[];
+}
+
 export interface GuwValidationRequest {
   userId: string;
   role: string;
   applicationNo: string;
+  partyDecision: GuwValidationPartyDecision[];
 }
 
 export interface GuwSubmittedDecision {
@@ -849,6 +860,18 @@ export function clearGuwSubmittedDecision(applicationNo: string): void {
   notifyDecisionChanged();
 }
 
+/** Drops every held decision (all applications / members); used when a case is opened afresh from the inbox. */
+export function clearAllGuwSubmittedDecisions(): void {
+  if (typeof window === "undefined") return;
+  const prefix = submittedDecisionKey("");
+  const keys: string[] = [];
+  for (let i = 0; i < window.sessionStorage.length; i += 1) {
+    const key = window.sessionStorage.key(i);
+    if (key?.startsWith(prefix)) keys.push(key);
+  }
+  keys.forEach((key) => window.sessionStorage.removeItem(key));
+}
+
 /** DRS record of one member (`memberId`, e.g. "Life Assured 2"); the first member when omitted. */
 export async function fetchGuwDrs(
   applicationNo: string,
@@ -884,11 +907,15 @@ const VALIDATION_ROLE = "CUW";
 /** Order in which categories appear in the UW Guidelines table. */
 const CATEGORY_ORDER: GuwGuidelineCategory[] = ["justification", "checklist", "hardAlert", "softAlert"];
 
-export function toGuwValidationRequest(applicationNo: string): GuwValidationRequest {
+export function toGuwValidationRequest(
+  applicationNo: string,
+  partyDecision: GuwValidationPartyDecision,
+): GuwValidationRequest {
   return {
     userId: getSessionUser()?.username ?? "",
     role: VALIDATION_ROLE,
     applicationNo,
+    partyDecision: [partyDecision],
   };
 }
 

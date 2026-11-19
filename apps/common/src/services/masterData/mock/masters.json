@@ -7902,22 +7902,97 @@
         "miscMastId": "524",
         "type": "GUW_REF_SRUW_OP"
       },
-      {
-        "code": "1",
-        "description": "HOD",
-        "value": "HOD",
-        "isActive": "Y",
-        "miscMastId": "533",
-        "type": "GUW_REF_TO"
-      },
-      {
-        "code": "2",
-        "description": "Sr UW",
-        "value": "Sr UW",
-        "isActive": "Y",
-        "miscMastId": "534",
-        "type": "GUW_REF_TO"
-      },
+      
+
+  {
+    "code": "1",
+    "description": "IT",
+    "value": "IT",
+    "isActive": "Y",
+    "miscMastId": "533",
+    "type": "GUW_REF_TO"
+  },
+  {
+    "code": "2",
+    "description": "Reinsurer",
+    "value": "Reinsurer",
+    "isActive": "Y",
+    "miscMastId": "534",
+    "type": "GUW_REF_TO"
+  },
+  {
+    "code": "3",
+    "description": "HOD",
+    "value": "HOD",
+    "isActive": "Y",
+    "miscMastId": "535",
+    "type": "GUW_REF_TO"
+  },
+  {
+    "code": "4",
+    "description": "SR UW",
+    "value": "SR UW",
+    "isActive": "Y",
+    "miscMastId": "536",
+    "type": "GUW_REF_TO"
+  },
+  {
+    "code": "5",
+    "description": "CMO",
+    "value": "CMO",
+    "isActive": "Y",
+    "miscMastId": "537",
+    "type": "GUW_REF_TO"
+  },
+  {
+    "code": "6",
+    "description": "HO CMO",
+    "value": "HO CMO",
+    "isActive": "Y",
+    "miscMastId": "538",
+    "type": "GUW_REF_TO"
+  },
+  {
+    "code": "7",
+    "description": "Risk",
+    "value": "Risk",
+    "isActive": "Y",
+    "miscMastId": "539",
+    "type": "GUW_REF_TO"
+  },
+  {
+    "code": "8",
+    "description": "Accuity",
+    "value": "Accuity",
+    "isActive": "Y",
+    "miscMastId": "540",
+    "type": "GUW_REF_TO"
+  },
+  {
+    "code": "9",
+    "description": "CUW Claim",
+    "value": "CUW Claim",
+    "isActive": "Y",
+    "miscMastId": "541",
+    "type": "GUW_REF_TO"
+  },
+  {
+    "code": "10",
+    "description": "TELE MER",
+    "value": "TELE MER",
+    "isActive": "Y",
+    "miscMastId": "542",
+    "type": "GUW_REF_TO"
+  },
+  {
+    "code": "11",
+    "description": "VIDEO MER",
+    "value": "VIDEO MER",
+    "isActive": "Y",
+    "miscMastId": "543",
+    "type": "GUW_REF_TO"
+  }
+,
       {
         "code": "ADHR",
         "description": "Aadhaar - UID",
