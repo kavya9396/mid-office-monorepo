@@ -8386,6 +8386,174 @@
         "type": "MED_DOC_TABLE"
       },
       {
+        "code": "020.01",
+        "description": "2DECHO",
+        "value": "2decho",
+        "isActive": "Y",
+        "miscMastId": "9201",
+        "type": "CMO_SPEC_MED"
+      },
+      {
+        "code": "020.02",
+        "description": "BLOOD UREA and NITRO",
+        "value": "blood_urea_and_nitro",
+        "isActive": "Y",
+        "miscMastId": "9202",
+        "type": "CMO_SPEC_MED"
+      },
+      {
+        "code": "020.03",
+        "description": "CXR",
+        "value": "cxr",
+        "isActive": "Y",
+        "miscMastId": "9203",
+        "type": "CMO_SPEC_MED"
+      },
+      {
+        "code": "020.04",
+        "description": "DOBUTAMINE STRESS ECHOCARDIOGRAM",
+        "value": "dobutamine_stress_echocardiogram",
+        "isActive": "Y",
+        "miscMastId": "9204",
+        "type": "CMO_SPEC_MED"
+      },
+      {
+        "code": "020.05",
+        "description": "EXERCISE STRESS ECHOCARDIOGRAM",
+        "value": "exercise_stress_echocardiogram",
+        "isActive": "Y",
+        "miscMastId": "9205",
+        "type": "CMO_SPEC_MED"
+      },
+      {
+        "code": "020.06",
+        "description": "ECG",
+        "value": "ecg",
+        "isActive": "Y",
+        "miscMastId": "9206",
+        "type": "CMO_SPEC_MED"
+      },
+      {
+        "code": "020.07",
+        "description": "MAMMOGRAM",
+        "value": "mammogram",
+        "isActive": "Y",
+        "miscMastId": "9207",
+        "type": "CMO_SPEC_MED"
+      },
+      {
+        "code": "020.08",
+        "description": "PAP SMEAR",
+        "value": "pap_smear",
+        "isActive": "Y",
+        "miscMastId": "9208",
+        "type": "CMO_SPEC_MED"
+      },
+      {
+        "code": "020.09",
+        "description": "PFT",
+        "value": "pft",
+        "isActive": "Y",
+        "miscMastId": "9209",
+        "type": "CMO_SPEC_MED"
+      },
+      {
+        "code": "020.10",
+        "description": "STOOL TEST",
+        "value": "stool_test",
+        "isActive": "Y",
+        "miscMastId": "9210",
+        "type": "CMO_SPEC_MED"
+      },
+      {
+        "code": "020.11",
+        "description": "TMT",
+        "value": "tmt",
+        "isActive": "Y",
+        "miscMastId": "9211",
+        "type": "CMO_SPEC_MED"
+      },
+      {
+        "code": "020.12",
+        "description": "USG",
+        "value": "usg",
+        "isActive": "Y",
+        "miscMastId": "9212",
+        "type": "CMO_SPEC_MED"
+      },
+      {
+        "code": "020.13",
+        "description": "Fundoscopy Test",
+        "value": "fundoscopy_test",
+        "isActive": "Y",
+        "miscMastId": "9213",
+        "type": "CMO_SPEC_MED"
+      },
+      {
+        "code": "PERS_01",
+        "description": "Additional Report",
+        "value": "additional_report",
+        "isActive": "Y",
+        "miscMastId": "9301",
+        "type": "CMO_PERS_REP"
+      },
+      {
+        "code": "PERS_02",
+        "description": "Personal Medical Report",
+        "value": "personal_medical_report",
+        "isActive": "Y",
+        "miscMastId": "9302",
+        "type": "CMO_PERS_REP"
+      },
+      {
+        "code": "PERS_03",
+        "description": "Discharge Summary",
+        "value": "discharge_summary",
+        "isActive": "Y",
+        "miscMastId": "9303",
+        "type": "CMO_PERS_REP"
+      },
+      {
+        "code": "STD",
+        "description": "STD",
+        "value": "STD",
+        "isActive": "Y",
+        "miscMastId": "9401",
+        "type": "CMO_DEC"
+      },
+      {
+        "code": "SUB_STD",
+        "description": "Sub STD",
+        "value": "Sub STD",
+        "isActive": "Y",
+        "miscMastId": "9402",
+        "type": "CMO_DEC"
+      },
+      {
+        "code": "CANNOT_OPINE",
+        "description": "Cannot Opine",
+        "value": "Cannot Opine",
+        "isActive": "Y",
+        "miscMastId": "9403",
+        "type": "CMO_DEC"
+      },
+      {
+        "code": "REFER_2ND",
+        "description": "Refer to 2nd Opinion",
+        "value": "Refer to 2nd Opinion",
+        "isActive": "Y",
+        "miscMastId": "9404",
+        "type": "CMO_DEC"
+      },
+      {
+        "code": "DC_ERROR",
+        "description": "DC Error",
+        "value": "DC Error",
+        "isActive": "Y",
+        "miscMastId": "9405",
+        "type": "CMO_DEC"
+      },
+      {
         "code": "April",
         "description": "April",
         "value": "April",

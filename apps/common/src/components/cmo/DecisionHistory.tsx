@@ -12,7 +12,8 @@ import {
 } from "@insurance-poc/ui";
 
 import AddMedicalReportDialog from "./AddMedicalReportDialog";
-import { CMO_DECISIONS, type DecisionHistoryRow } from "./types";
+import { CMO_DECISION_MASTER_EMPTY_MESSAGE, getCmoDecisionOptions } from "./cmoDecisionOptions";
+import { type DecisionHistoryRow } from "./types";
 
 const SAMPLE_ROWS: DecisionHistoryRow[] = [
   {
@@ -91,6 +92,8 @@ const DecisionHistory = ({ rows, readOnly = false }: DecisionHistoryProps) => {
   const updateRow = (id: string, patch: Partial<DecisionHistoryRow>) => {
     setItems((current) => current.map((row) => (row.id === id ? { ...row, ...patch } : row)));
   };
+  const cmoDecisionOptions = getCmoDecisionOptions();
+  const missingCmoDecisions = cmoDecisionOptions.length === 0;
 
   const columns: Column<DecisionHistoryRow>[] = [
     { key: "fupCode", header: "FUP Code", width: "6%" },
@@ -123,10 +126,11 @@ const DecisionHistory = ({ rows, readOnly = false }: DecisionHistoryProps) => {
       render: (_value, row) => (
         <CustomSelect
           fullWidth
-          placeholder="Select decision"
-          disabled={readOnly}
+          placeholder={missingCmoDecisions ? CMO_DECISION_MASTER_EMPTY_MESSAGE : "Select decision"}
+          disabled={readOnly || missingCmoDecisions}
+          error={missingCmoDecisions}
           value={row.cmoDecision}
-          options={CMO_DECISIONS.map((decision) => ({ label: decision, value: decision }))}
+          options={cmoDecisionOptions}
           onChange={(value) => updateRow(row.id, { cmoDecision: value })}
         />
       ),

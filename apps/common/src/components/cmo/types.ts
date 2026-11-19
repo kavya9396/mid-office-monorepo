@@ -19,22 +19,3 @@ export type DecisionHistoryRow = {
   cmoDecision: string;
   remarksHistory: CmoRemarksHistoryEntry[];
 };
-
-export const CMO_DECISIONS = [
-  "STD",
-  "Sub STD",
-  "Cannot Opine",
-  "Refer to 2nd Opinion",
-  "DC Error",
-] as const;
-
-export const SPECIAL_MEDICAL_OPTIONS = [
-  "2D ECHO",
-  "CXR",
-  "ECG",
-  "TMT",
-  "CBC",
-  "Lipid Profile",
-] as const;
-
-export const ADDITIONAL_REPORT_OPTION = "Additional Report";
