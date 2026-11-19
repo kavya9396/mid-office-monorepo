@@ -20,10 +20,11 @@ import {
 } from "@insurance-poc/ui";
 import { groupPaths, replaceUrl } from "@insurance-poc/routes";
 import { getDrsRoleType, getMasterList, getSessionUser } from "@insurance-poc/utils";
-import { useGetGuwUwDecisionMutation } from "../../services/drsApi";
+import { useGetGuwUwDecisionMutation, useSaveGuwParallelDecisionMutation } from "../../services/drsApi";
 import {
+  buildGuwCounterSignParallelDecisionRequest,
+  buildGuwReferralParallelDecisionRequests,
   buildGuwUwDecisionRequest,
-  buildGuwUwReferralRequests,
   GUW_UW_DECISION_SCREEN_TYPE,
 } from "../../services/guwDecisionService";
 import {
@@ -507,6 +508,7 @@ export function GuwUwPanel({
   const [validating, setValidating] = useState<boolean>(false);
   const [successOpen, setSuccessOpen] = useState<boolean>(false);
   const [getUwDecision] = useGetGuwUwDecisionMutation();
+  const [saveParallelDecision] = useSaveGuwParallelDecisionMutation();
 
   // Snackbar states
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -977,21 +979,39 @@ export function GuwUwPanel({
     if (!partyId) {
       console.warn("[GuwUwPanel] uw-decision API not called: partyId is empty", { applicationNo, drsApplicationNo });
     }
-    if (partyId) {
-      // Raise Referral: one request per selected referral, sent together as an array
-      const isReferral = effectiveDecision === "REFERRAL";
-      const uwDecisionRequest = isReferral
-        ? buildGuwUwReferralRequests(
-            {
-              applicationNo: drsApplicationNo || applicationNo,
-              partyId,
-              roleType: getDrsRoleType(),
-              screenType: GUW_UW_DECISION_SCREEN_TYPE,
-              createdBy: getSessionUser()?.username ?? "",
-            },
-            referralRows.filter((r) => r.selected),
-          )
-        : buildGuwUwDecisionRequest({
+    if (partyId && ["REFERRAL", "APPROVER"].includes(effectiveDecision)) {
+      // Raise Referral (Opinion / Referral) and Counter Sign go through the `parallel-decision` API
+      const parallelBase = {
+        applicationNo: drsApplicationNo || applicationNo,
+        partyId,
+        screenType: GUW_UW_DECISION_SCREEN_TYPE,
+        userId: getSessionUser()?.username ?? "",
+      };
+      const parallelRequests =
+        effectiveDecision === "REFERRAL"
+          ? buildGuwReferralParallelDecisionRequests(
+              parallelBase,
+              referralRows.filter((r) => r.selected),
+            )
+          : [
+              buildGuwCounterSignParallelDecisionRequest(parallelBase, {
+                reason: approverReason,
+                referTo: approverTarget,
+                assignedTo: approverAssignedTo,
+                remarks: dialogRemarks,
+              }),
+            ];
+      for (const parallelRequest of parallelRequests) {
+        console.log("[GuwUwPanel] parallel-decision payload:", parallelRequest);
+        const response = await saveParallelDecision(parallelRequest);
+        if ("error" in response) {
+          console.error("[GuwUwPanel] parallel-decision failed:", response.error);
+          notify("Unable to submit the decision. Please try again.", "error");
+          return;
+        }
+      }
+    } else if (partyId) {
+      const uwDecisionRequest = buildGuwUwDecisionRequest({
           applicationNo: drsApplicationNo || applicationNo,
           partyId,
           roleType: getDrsRoleType(),

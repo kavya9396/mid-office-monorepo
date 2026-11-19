@@ -233,6 +233,105 @@ export function buildGuwUwReferralRequests(
   });
 }
 
+/** Action sent as `action` to the `parallel-decision` API. */
+export type GuwParallelDecisionAction = "OPINION" | "COUNTER_SIGN" | "RAISE_REFERRAL";
+
+/** One `parallelDecision` item: who the case is referred to and (optionally) who it is assigned to. */
+export interface GuwParallelDecisionItem {
+  referTo: {
+    referValue: string;
+    description: string;
+    referName: string;
+    remarks: string;
+    reason: string;
+  };
+  assignedTo?: {
+    name: string;
+    description: string;
+    value: string;
+  };
+}
+
+/** Request of the GUW `parallel-decision` API (`/api/v1/drs/parallel-decision`). */
+export interface GuwParallelDecisionRequest {
+  screenType: string;
+  parallelDecision: GuwParallelDecisionItem[];
+  appNo: string;
+  partyId: string;
+  action: GuwParallelDecisionAction;
+  userId: string;
+}
+
+export type GuwParallelDecisionBaseInput = Pick<GuwDecisionFormInput, "applicationNo" | "partyId" | "screenType"> & {
+  userId: string;
+};
+
+/** Referral rows whose Refer To is an opinion (Sr UW Opinion / HOD Opinion); every other row is a plain referral. */
+const OPINION_REFERRALS = ["REF_SR_UW", "REF_HOD"];
+
+function toParallelDecisionRequest(
+  base: GuwParallelDecisionBaseInput,
+  action: GuwParallelDecisionAction,
+  parallelDecision: GuwParallelDecisionItem[],
+): GuwParallelDecisionRequest {
+  return {
+    screenType: base.screenType,
+    parallelDecision,
+    appNo: base.applicationNo,
+    partyId: base.partyId,
+    action,
+    userId: base.userId,
+  };
+}
+
+/**
+ * Raise Referral: selected rows -> `parallel-decision` requests. `action` is one value per request, so
+ * Sr UW / HOD Opinion rows are sent as OPINION and the other rows as RAISE_REFERRAL (one request each, when present).
+ */
+export function buildGuwReferralParallelDecisionRequests(
+  base: GuwParallelDecisionBaseInput,
+  rows: (GuwReferralRowInput & { label: string })[],
+): GuwParallelDecisionRequest[] {
+  const toItem = (row: GuwReferralRowInput & { label: string }): GuwParallelDecisionItem => {
+    const assignedTo = row.assignedTo.trim();
+    return {
+      referTo: {
+        referValue: row.target,
+        description: row.label,
+        referName: row.label,
+        remarks: row.remarks.trim(),
+        reason: row.reason,
+      },
+      ...(assignedTo ? { assignedTo: { name: assignedTo, description: assignedTo, value: assignedTo } } : {}),
+    };
+  };
+  const opinions = rows.filter((row) => OPINION_REFERRALS.includes(row.target)).map(toItem);
+  const referrals = rows.filter((row) => !OPINION_REFERRALS.includes(row.target)).map(toItem);
+  const requests: GuwParallelDecisionRequest[] = [];
+  if (opinions.length > 0) requests.push(toParallelDecisionRequest(base, "OPINION", opinions));
+  if (referrals.length > 0) requests.push(toParallelDecisionRequest(base, "RAISE_REFERRAL", referrals));
+  return requests;
+}
+
+/** Counter Sign: Reason / Refer To / Assigned To / UW Remarks -> one `parallel-decision` request. */
+export function buildGuwCounterSignParallelDecisionRequest(
+  base: GuwParallelDecisionBaseInput,
+  input: { reason: string; referTo: string; assignedTo: string; remarks: string },
+): GuwParallelDecisionRequest {
+  return toParallelDecisionRequest(base, "COUNTER_SIGN", [
+    {
+      referTo: {
+        referValue: input.referTo,
+        description: input.referTo,
+        referName: input.referTo,
+        remarks: input.remarks.trim(),
+        reason: input.reason,
+      },
+      assignedTo: { name: input.assignedTo, description: input.assignedTo, value: input.assignedTo },
+    },
+  ]);
+}
+
 /** Fixed request value for the GUW screen. */
 export const GUW_UW_DECISION_SCREEN_TYPE = "GUW";
 

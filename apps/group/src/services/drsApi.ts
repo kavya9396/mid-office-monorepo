@@ -24,6 +24,7 @@ import guwSrUwDrsMock from "../../../../mock/drs/guw-sr-uw-drs.json";
 import guwUwDecisionMock from "../../../../mock/drs/guw-uw-decision.json";
 import {
   mapGuwUwDecisions,
+  type GuwParallelDecisionRequest,
   type GuwUwDecisionRequest,
   type GuwUwDecisionResult,
 } from "./guwDecisionService";
@@ -563,6 +564,30 @@ export const groupDrsApi = createApi({
         }
       },
     }),
+    /** Parallel decision (Opinion / Counter Sign / Raise Referral) for the GUW screen. */
+    saveGuwParallelDecision: build.mutation<unknown, GuwParallelDecisionRequest>({
+      async queryFn(arg, _api, _extra, baseQuery) {
+        console.log("[saveGuwParallelDecision] request payload:", arg);
+        if (useMock) return { data: null };
+        const parallelDecisionUrl = groupBusinessUrls.parallelDecision;
+        if (parallelDecisionUrl.length === 0) {
+          return { error: customError("Group parallel decision API is not configured.") };
+        }
+
+        const result = await baseQuery({
+          url: parallelDecisionUrl,
+          method: "POST",
+          body: arg,
+          headers: { accept: "*/*", "Content-Type": "application/json" },
+        });
+        if (result.error) {
+          console.log("[saveGuwParallelDecision] response error:", result.error);
+          return { error: result.error };
+        }
+        console.log("[saveGuwParallelDecision] response:", result.data);
+        return { data: result.data };
+      },
+    }),
     saveGroupDrsRequirements: build.mutation<RequirementItem[], SaveGroupDrsRequirementsArg>({
       async queryFn(arg, api, _extra, baseQuery) {
         const sessionUser = getSessionUser();
@@ -717,6 +742,7 @@ export const {
   useGetGroupDrsQuery,
   useGetGuwDrsPayloadQuery,
   useGetGuwUwDecisionMutation,
+  useSaveGuwParallelDecisionMutation,
   useSaveGroupDrsRequirementsMutation,
   useSaveGroupDrsApplicantMutation,
 } = groupDrsApi;
