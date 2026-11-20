@@ -24,7 +24,17 @@ import {
   findPendingValidationMessage,
   type GuwRequiredValidations,
 } from "../../services/guwSectionValidationService";
-import { useGetGuwUwDecisionMutation, useSaveGuwParallelDecisionMutation } from "../../services/drsApi";
+import {
+  useGetGuwUwDecisionMutation,
+  useGetUsersByRoleQuery,
+  useSaveGuwParallelDecisionMutation,
+} from "../../services/drsApi";
+import {
+  GUW_ASSIGNEE_ROLE,
+  assigneeRoleForReferTo,
+  assigneeRoleForReferralRow,
+  type GuwAssigneeOption,
+} from "../../services/guwAssigneeService";
 import {
   buildGuwCounterSignParallelDecisionRequest,
   buildGuwReferralParallelDecisionRequests,
@@ -228,7 +238,11 @@ const readLoadingReasonOptions = () => readFirstAvailableMiscOptions(["GUW_EP_LO
 
 const readHoldReasonOptions = () => readFirstAvailableMiscOptions(["GUW_HOLD_RSN"]);
 
-const readReferToOptions = () => readFirstAvailableMiscOptions(["GUW_REF_TO"]);
+// Counter Sign can only be referred to HOD or Sr UW
+const readReferToOptions = () =>
+  readFirstAvailableMiscOptions(["GUW_REF_TO"]).filter(
+    (option) => assigneeRoleForReferTo(option.value) !== "",
+  );
 
 // Counter Sign reasons depend on the selected Refer To (HOD / Sr UW)
 const APPROVER_REASON_TYPE_BY_TARGET: Record<string, string | undefined> = {
@@ -264,12 +278,6 @@ const ACTION_DECISION_OPTIONS = [
   { value: "HOLD", label: "Hold" },
   { value: "APPROVER", label: "Counter Sign" },
 ];
-
-// Placeholder assignee list (mock login user ids) until a user-lookup API is specified
-const APPROVER_ASSIGNEE_OPTIONS = ["UW001", "UW002", "UW003"].map((id) => ({
-  value: id,
-  label: id,
-}));
 
 // Row code of each master `GUW_REF_TO` value (lower case). The row code drives the existing exclusive /
 // reason / assign / reinsurer rules, so only the Refer To text comes from the master.
@@ -618,6 +626,20 @@ export function GuwUwPanel({
       assignedTo: "",
     }))
   );
+  // "Assigned To" users come from the users-by-role API; a role is fetched only once HOD / Sr UW is picked
+  const hodPicked =
+    referralRows.some((r) => r.target === "REF_HOD" && r.selected) ||
+    assigneeRoleForReferTo(approverTarget) === GUW_ASSIGNEE_ROLE.HOD;
+  const srUwPicked =
+    referralRows.some((r) => r.target === "REF_SR_UW" && r.selected) ||
+    assigneeRoleForReferTo(approverTarget) === GUW_ASSIGNEE_ROLE.SR_UW;
+  const hodUsers = useGetUsersByRoleQuery(GUW_ASSIGNEE_ROLE.HOD, { skip: !hodPicked });
+  const srUwUsers = useGetUsersByRoleQuery(GUW_ASSIGNEE_ROLE.SR_UW, { skip: !srUwPicked });
+  const assigneeOptionsForRole = (role: string): GuwAssigneeOption[] => {
+    if (role === GUW_ASSIGNEE_ROLE.HOD) return hodUsers.data ?? [];
+    if (role === GUW_ASSIGNEE_ROLE.SR_UW) return srUwUsers.data ?? [];
+    return [];
+  };
   const [reinsurerEditOpen, setReinsurerEditOpen] = useState<boolean>(false);
   const reinsurerSectionRef = useRef<HTMLDivElement | null>(null);
 
@@ -1950,15 +1972,16 @@ export function GuwUwPanel({
                                     return copy;
                                   });
                                 }}
-                                options={APPROVER_ASSIGNEE_OPTIONS}
+                                options={assigneeOptionsForRole(assigneeRoleForReferralRow(row.target))}
                                 disabled={!canAssign || !row.selected || isRowDisabled}
-                                placeholder="Select User ID"
+                                placeholder="Select User"
                                 fullWidth
                               />
                             </td>
                             <td style={{ padding: "6px 8px", border: "1px solid #ded9d6", textAlign: "center" }}>
                               <CustomButton
                                 variant={reinsurerEditOpen && isReinsurer ? "contained" : "outlined"}
+                                aria-label={isReinsurer && reinsurerEditOpen ? "Hide" : "Edit"}
                                 disabled={!row.selected || !isReinsurer}
                                 onClick={() => {
                                   if (isReinsurer && row.selected) {
@@ -1978,6 +2001,9 @@ export function GuwUwPanel({
                                   px: 1.5,
                                   minWidth: "60px",
                                   textTransform: "none",
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
                                   ...(isReinsurer && row.selected
                                     ? {
                                         background: reinsurerEditOpen ? "#e45f14" : "transparent",
@@ -1994,7 +2020,7 @@ export function GuwUwPanel({
                                       }),
                                 }}
                               >
-                                {isReinsurer && reinsurerEditOpen ? "Hide" : "Edit"}
+                                <EditIcon width={16} height={16} />
                               </CustomButton>
                             </td>
                           </tr>
@@ -2398,8 +2424,9 @@ export function GuwUwPanel({
                     value={approverTarget}
                     onChange={(val) => {
                       setApproverTarget(val);
-                      // Counter Sign reasons depend on HOD / Sr UW
+                      // Counter Sign reasons and assignees depend on HOD / Sr UW
                       setApproverReason("");
+                      setApproverAssignedTo("");
                     }}
                     options={readReferToOptions()}
                     placeholder="Select HOD or Sr UW"
@@ -2444,8 +2471,9 @@ export function GuwUwPanel({
                   <CustomSelect
                     value={approverAssignedTo}
                     onChange={(val) => setApproverAssignedTo(val)}
-                    options={APPROVER_ASSIGNEE_OPTIONS}
-                    placeholder="Select User ID"
+                    options={assigneeOptionsForRole(assigneeRoleForReferTo(approverTarget))}
+                    placeholder={approverTarget ? "Select User" : "Select Refer To first"}
+                    disabled={!approverTarget}
                     fullWidth
                   />
                 </Box>

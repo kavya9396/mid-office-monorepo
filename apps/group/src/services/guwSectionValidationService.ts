@@ -19,8 +19,10 @@ const SECTION_LABELS: Record<GuwValidationSection, string> = {
   specialRemarks: "Special Remarks",
 };
 
+const STORAGE_PREFIX = "guwSectionValidation:";
+
 const storageKeyOf = (key: string, section: GuwValidationSection) =>
-  `guwSectionValidation:${getSessionUser()?.username ?? ""}:${key}:${section}`;
+  `${STORAGE_PREFIX}${getSessionUser()?.username ?? ""}:${key}:${section}`;
 
 export function loadValidatedRowIds(key: string, section: GuwValidationSection): string[] {
   if (!key || typeof window === "undefined") return [];
@@ -32,6 +34,17 @@ export function loadValidatedRowIds(key: string, section: GuwValidationSection):
   } catch {
     return [];
   }
+}
+
+/** Drops every held Validate click (all applications / members / sections); a DRS opened from the inbox or member selection starts unvalidated. */
+export function clearAllValidatedRows(): void {
+  if (typeof window === "undefined") return;
+  const keys: string[] = [];
+  for (let i = 0; i < window.sessionStorage.length; i += 1) {
+    const key = window.sessionStorage.key(i);
+    if (key?.startsWith(STORAGE_PREFIX)) keys.push(key);
+  }
+  keys.forEach((key) => window.sessionStorage.removeItem(key));
 }
 
 /** Records one validated row and returns the updated list of validated ids. */

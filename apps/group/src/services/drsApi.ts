@@ -16,6 +16,7 @@ import {
   getSessionUser,
   groupBusinessUrls,
   useMock,
+  userUrls,
 } from "@insurance-poc/utils";
 import { getGroupDrsTaskConfig } from "../config/drsTaskConfig";
 import groupDrsMock from "../modules/drs/mock/groupDrs.json";
@@ -23,6 +24,7 @@ import guwDrsMock from "../../../../mock/drs/guw-informal-drs.json";
 import guwHodDrsMock from "../../../../mock/drs/guw-hod-drs.json";
 import guwSrUwDrsMock from "../../../../mock/drs/guw-sr-uw-drs.json";
 import guwUwDecisionMock from "../../../../mock/drs/guw-uw-decision.json";
+import usersByRoleMock from "../../../../mock/drs/users-by-role.json";
 import {
   mapGuwUwDecisions,
   type GuwParallelDecisionRequest,
@@ -31,6 +33,7 @@ import {
 } from "./guwDecisionService";
 import groupDrsApplicantSaveMock from "../modules/drs/mock/groupDrsApplicantSave.json";
 import { mapGroupDrsPayload, mapRawRequirementRows, type GroupDrsData } from "./drsService";
+import { mapUsersByRole, type GuwAssigneeOption } from "./guwAssigneeService";
 
 export type GroupDrsQueryArg =
   | string
@@ -591,6 +594,24 @@ export const groupDrsApi = createApi({
         }
       },
     }),
+    /** Users of a role (HOD / Sr UW) for the "Assigned To" dropdowns; `roleName` is the last path segment. */
+    getUsersByRole: build.query<GuwAssigneeOption[], string>({
+      async queryFn(roleName, _api, _extra, baseQuery) {
+        if (useMock) return { data: mapUsersByRole(usersByRoleMock) };
+        const baseUrl = userUrls.usersByRole;
+        if (baseUrl.length === 0) {
+          return { error: customError("Users by role API is not configured.") };
+        }
+
+        const result = await baseQuery({
+          url: `${baseUrl}/${encodeURIComponent(roleName)}`,
+          method: "GET",
+          headers: { accept: "*/*" },
+        });
+        if (result.error) return { error: result.error };
+        return { data: mapUsersByRole(result.data) };
+      },
+    }),
     /** Parallel decision (Opinion / Counter Sign / Raise Referral) for the GUW screen. */
     saveGuwParallelDecision: build.mutation<unknown, GuwParallelDecisionRequest>({
       async queryFn(arg, _api, _extra, baseQuery) {
@@ -769,6 +790,7 @@ export const {
   useGetGroupDrsQuery,
   useGetGuwDrsPayloadQuery,
   useGetGuwUwDecisionMutation,
+  useGetUsersByRoleQuery,
   useSaveGuwParallelDecisionMutation,
   useSaveGroupDrsRequirementsMutation,
   useSaveGroupDrsApplicantMutation,

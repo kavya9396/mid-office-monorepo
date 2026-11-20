@@ -9,4 +9,5 @@ export {
   nsdlUrls,
   isApigeeMode,
   useMock,
+  userUrls,
 } from "./appConfig";

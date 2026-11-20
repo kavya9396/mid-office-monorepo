@@ -233,11 +233,22 @@ function ApplicantProfileSection({
             py: 0.5,
             borderBottom: `1px solid ${colors.borderAccent}`,
             flexWrap: "wrap",
+            justifyContent: variant === "guw" ? "center" : undefined,
           }}
         >
           <CustomTabs tabs={variant === "guw" ? GUW_PROFILE_TABS : PROFILE_TABS} value={tab} onChange={setTab} />
-          <Box sx={{ ml: "auto", display: "flex", alignItems: "center", gap: 0.5, flexShrink: 0 }}>
-            {onEdit && (
+          {/* Empty when no action handlers are passed (the GUW dialog passes none); hidden so its auto margin does not push the tabs off-centre */}
+          <Box
+            sx={{
+              ml: "auto",
+              display: "flex",
+              alignItems: "center",
+              gap: 0.5,
+              flexShrink: 0,
+              "&:empty": { display: "none" },
+            }}
+          >
+            {onEdit && variant !== "guw" && (
               <CustomButton variant="outlined" onClick={() => onEdit(applicant.id)}>
                 Edit
               </CustomButton>

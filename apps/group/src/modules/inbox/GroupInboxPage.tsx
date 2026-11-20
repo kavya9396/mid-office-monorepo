@@ -8,6 +8,7 @@ import {
   useSaveGroupPoolColumnsMutation,
 } from "../../services/inboxApi";
 import { clearAllGuwSubmittedDecisions } from "../../services/guwService";
+import { clearAllValidatedRows } from "../../services/guwSectionValidationService";
 
 function readQueryError(error: unknown): string {
   if (typeof error === "object" && error !== null) {
@@ -27,6 +28,8 @@ export function GroupInboxPage() {
     clearInboxNavigationLoading();
     // A case opened from the inbox starts without a decision unless the DRS payload carries one
     clearAllGuwSubmittedDecisions();
+    // Claim Audit / Special Remarks must be validated again before every submit
+    clearAllValidatedRows();
   }, []);
 
   const inbox = useGetGroupInboxQuery();

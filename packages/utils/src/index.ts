@@ -9,6 +9,7 @@ export {
   mmtGrievanceUrls,
   nsdlUrls,
   useMock,
+  userUrls,
 } from "./config";
 export {
   clearMasterData,
