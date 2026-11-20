@@ -1,0 +1,308 @@
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import { createApi } from "@reduxjs/toolkit/query/react";
+import type { RequirementItem } from "@insurance-poc/common/requirement-mgmt";
+import {
+  absoluteApiBaseUrl,
+  createBusinessBaseQuery,
+  getDrsRoleType,
+  getSessionBusinessType,
+  getSessionUser,
+  retailBusinessUrls,
+  useMock,
+} from "@insurance-poc/utils";
+import { getRetailDrsTaskConfig } from "../config/drsTaskConfig";
+import retailDrsMock from "../modules/drs/mock/retailDrs.json";
+import type { CvtEditApplicantValues } from "../modules/drs/CvtEditApplicantDialog";
+import { mapRawRequirementRows, mapRetailDrsPayload, type RetailDrsData } from "./drsService";
+
+export type RetailDrsQueryArg = {
+  applicationNo: string;
+  roleType?: string;
+  screenType?: string;
+  businessType?: string;
+};
+
+export type SaveRetailDrsRequirementsArg = {
+  applicationNo: string;
+  requirements: RequirementItem[];
+  roleType?: string;
+  lob?: string;
+  userId?: string;
+  queryArg: RetailDrsQueryArg;
+};
+
+export type SaveRetailDrsApplicantArg = {
+  applicationNo: string;
+  applicantId: string;
+  partyId?: string;
+  memberType?: string;
+  values: CvtEditApplicantValues;
+  initialValues?: CvtEditApplicantValues;
+  roleType?: string;
+  screenType?: string;
+  businessType?: string;
+  userId?: string;
+  queryArg: RetailDrsQueryArg;
+};
+
+type KeyValueField = { key: string; label: string; value: string };
+
+type FieldMapping = {
+  key: string;
+  label: string;
+  field: keyof CvtEditApplicantValues;
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function readError(reason: unknown): string {
+  return reason instanceof Error ? reason.message : "Unable to load the Retail DRS.";
+}
+
+function customError(error: string): FetchBaseQueryError {
+  return { status: "CUSTOM_ERROR", error };
+}
+
+/** DRS fetch request body. `roleType` / `screenType` / `businessType` come from `drsTaskConfig` unless passed explicitly. */
+function buildDrsRequestBody(arg: RetailDrsQueryArg) {
+  const taskConfig = getRetailDrsTaskConfig(arg.roleType ?? getDrsRoleType());
+  return {
+    applicationNo: arg.applicationNo,
+    roleType: arg.roleType || taskConfig.roleType,
+    screenType: arg.screenType || taskConfig.screenType,
+    businessType: arg.businessType || taskConfig.businessType,
+  };
+}
+
+export const toRequirementRequestItem = (item: RequirementItem) => {
+  const isNumericId =
+    typeof item.id === "number" ||
+    (typeof item.id === "string" && !item.id.startsWith("req-") && Number.isFinite(Number(item.id)) && Number(item.id) > 0);
+
+  const payload: Record<string, unknown> = {
+    status: item.status || "Pending",
+    profile: item.profile || "",
+    fupCode: item.fupCode || "",
+    category: item.category || "",
+    subCategory: item.subCategory || "",
+    document: item.document || "",
+    extraRemarks: item.extraRemarks || "",
+  };
+
+  if (isNumericId) payload.requirementId = Number(item.id);
+  if (item.team) payload.team = item.team;
+  if (item.reason) payload.reason = item.reason;
+  if (item.description) payload.description = item.description;
+  if (item.ocrStatus) payload.ocrStatus = item.ocrStatus;
+
+  return payload;
+};
+
+const PERSONAL_KYC_MAPPINGS: FieldMapping[] = [
+  { key: "proposerSummary.dob", label: "Date Of Birth", field: "dob" },
+  { key: "proposerSummary.gender", label: "Gender", field: "gender" },
+  { key: "proposerSummary.residentStatus", label: "Resident Status", field: "residentialStatus" },
+  { key: "kycDetails.panNumber", label: "Pan Number", field: "panNumber" },
+  { key: "kycDetails.isPanValid", label: "Pan Flag", field: "panFlag" },
+  { key: "kycDetails.pranNo", label: "Pran Number", field: "pranNumber" },
+  { key: "kycDetails.dobDocument", label: "Dob Document", field: "ageProof" },
+  { key: "kycDetails.genderDocument", label: "Gender Document", field: "identityProof" },
+  { key: "kycDetails.pincodeDocument", label: "Pincode Document", field: "addressProof" },
+];
+
+const ADDRESS_MAPPINGS: Array<FieldMapping & { groupLabel: string }> = [
+  {
+    groupLabel: "Communication Address",
+    key: "address.communication.pinCode",
+    label: "Pincode",
+    field: "communicationPincode",
+  },
+  {
+    groupLabel: "Permanent Address",
+    key: "address.permanent.pinCode",
+    label: "Pincode",
+    field: "permanentPincode",
+  },
+];
+
+const toCleanString = (value?: string): string => (value === undefined ? "" : value.trim());
+
+const isChanged = (arg: SaveRetailDrsApplicantArg, field: keyof CvtEditApplicantValues): boolean =>
+  toCleanString(arg.values[field]) !== toCleanString(arg.initialValues?.[field]);
+
+/** Only the edited fields are sent, each with the `key` the DRS response uses for it. */
+export function buildRetailApplicantSavePayload(arg: SaveRetailDrsApplicantArg) {
+  const taskConfig = getRetailDrsTaskConfig(arg.roleType ?? getDrsRoleType());
+  const userId = arg.userId ?? getSessionUser()?.username ?? "cvt.user";
+
+  const personalFields: KeyValueField[] = PERSONAL_KYC_MAPPINGS.filter((mapping) => isChanged(arg, mapping.field)).map(
+    (mapping) => ({ key: mapping.key, label: mapping.label, value: arg.values[mapping.field] }),
+  );
+  const addressGroups = ADDRESS_MAPPINGS.filter((mapping) => isChanged(arg, mapping.field)).map((mapping) => ({
+    label: mapping.groupLabel,
+    value: [{ key: mapping.key, label: mapping.label, value: arg.values[mapping.field] }],
+  }));
+
+  const applicantProfileValue: Record<string, unknown> = {};
+  if (personalFields.length > 0) applicantProfileValue.personal_kyc = { groups: [personalFields] };
+  if (addressGroups.length > 0) applicantProfileValue.contact_and_address = { value: addressGroups };
+
+  const keysSent = [
+    ...personalFields.map((field) => field.key),
+    ...addressGroups.flatMap((group) => group.value.map((field) => field.key)),
+  ];
+
+  const payload = {
+    applicationNo: arg.applicationNo,
+    userId,
+    roleType: arg.roleType ?? taskConfig.roleType,
+    screenType: arg.screenType ?? taskConfig.screenType,
+    businessType: arg.businessType ?? getSessionBusinessType() ?? taskConfig.businessType,
+    data: {
+      membersDetails: [
+        {
+          memberType: arg.memberType ?? arg.applicantId,
+          partyId: arg.partyId ?? "",
+          sections: [{ name: "applicantProfile", value: applicantProfileValue }],
+        },
+      ],
+    },
+  };
+
+  return { payload, keysSent };
+}
+
+export const retailDrsApi = createApi({
+  reducerPath: "retailDrsApi",
+  baseQuery: createBusinessBaseQuery(absoluteApiBaseUrl),
+  endpoints: (build) => ({
+    getRetailDrs: build.query<RetailDrsData, RetailDrsQueryArg>({
+      async queryFn(arg, _api, _extra, baseQuery) {
+        if (useMock) {
+          return { data: mapRetailDrsPayload(retailDrsMock) };
+        }
+        const drsDataUrl = retailBusinessUrls.drsData;
+        if (drsDataUrl.length === 0) {
+          return { error: customError("Retail DRS data API is not configured.") };
+        }
+
+        const result = await baseQuery({
+          url: drsDataUrl,
+          method: "POST",
+          body: buildDrsRequestBody(arg),
+          headers: { accept: "*/*", "Content-Type": "application/json" },
+        });
+        if (result.error) return { error: result.error };
+
+        try {
+          return { data: mapRetailDrsPayload(result.data) };
+        } catch (reason: unknown) {
+          return { error: customError(readError(reason)) };
+        }
+      },
+    }),
+    saveRetailDrsRequirements: build.mutation<RequirementItem[], SaveRetailDrsRequirementsArg>({
+      async queryFn(arg, api, _extra, baseQuery) {
+        const taskConfig = getRetailDrsTaskConfig(arg.roleType ?? getDrsRoleType());
+        const body = {
+          applicationNo: arg.applicationNo,
+          lob: arg.lob ?? "R",
+          userId: arg.userId ?? getSessionUser()?.username ?? "cvt.user",
+          roleType: arg.roleType ?? taskConfig.roleType,
+          sections: ["requirementManagement"],
+          data: {
+            requirementManagement: arg.requirements.map(toRequirementRequestItem),
+          },
+        };
+
+        const applyToCache = (updated: RequirementItem[]): RequirementItem[] => {
+          api.dispatch(
+            retailDrsApi.util.updateQueryData("getRetailDrs", arg.queryArg, (draft) => {
+              draft.requirements = updated;
+            }),
+          );
+          return updated;
+        };
+
+        if (useMock) return { data: applyToCache(arg.requirements) };
+
+        const drsDataUrl = retailBusinessUrls.drsData;
+        if (drsDataUrl.length === 0) {
+          return { error: customError("Retail DRS data API is not configured.") };
+        }
+
+        const result = await baseQuery({
+          url: drsDataUrl,
+          method: "PUT",
+          body,
+          headers: { accept: "*/*", "Content-Type": "application/json" },
+        });
+        if (result.error) return { error: result.error };
+
+        // The save response carries the rows in the `requirementManagement` entry of `commonSection`.
+        const response = isRecord(result.data) ? result.data : null;
+        const responseData = isRecord(response?.data) ? response.data : response;
+        const sections = Array.isArray(responseData?.commonSection) ? responseData.commonSection : [];
+        const requirementSection = sections.find((s) => isRecord(s) && s.name === "requirementManagement");
+        return { data: applyToCache(mapRawRequirementRows(requirementSection)) };
+      },
+    }),
+    saveRetailDrsApplicant: build.mutation<unknown, SaveRetailDrsApplicantArg>({
+      async queryFn(arg, api, _extra, baseQuery) {
+        const { payload: body, keysSent } = buildRetailApplicantSavePayload(arg);
+        console.log("[saveRetailDrsApplicant] Keys sent in request payload:", keysSent);
+
+        /** Shows the saved dialog values straight away, without waiting for a full response. */
+        const patchEditValues = () => {
+          api.dispatch(
+            retailDrsApi.util.updateQueryData("getRetailDrs", arg.queryArg, (draft) => {
+              draft.editValues[arg.applicantId] = arg.values;
+            }),
+          );
+        };
+
+        if (useMock) {
+          patchEditValues();
+          return { data: null };
+        }
+
+        const drsDataUrl = retailBusinessUrls.drsData;
+        if (drsDataUrl.length === 0) {
+          return { error: customError("Retail DRS data API is not configured.") };
+        }
+
+        const result = await baseQuery({
+          url: drsDataUrl,
+          method: "PUT",
+          body,
+          headers: { accept: "*/*", "Content-Type": "application/json" },
+        });
+        if (result.error) return { error: result.error };
+
+        try {
+          const mapped = mapRetailDrsPayload(result.data);
+          api.dispatch(
+            retailDrsApi.util.updateQueryData("getRetailDrs", arg.queryArg, (draft) => {
+              draft.cardDetails = mapped.cardDetails;
+              draft.breDecision = mapped.breDecision;
+              draft.requirements = mapped.requirements;
+              draft.applicants = mapped.applicants;
+              draft.editValues = mapped.editValues;
+            }),
+          );
+        } catch {
+          patchEditValues();
+        }
+        return { data: result.data };
+      },
+    }),
+  }),
+});
+
+export const {
+  useGetRetailDrsQuery,
+  useSaveRetailDrsRequirementsMutation,
+  useSaveRetailDrsApplicantMutation,
+} = retailDrsApi;

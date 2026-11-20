@@ -1,4 +1,9 @@
+import type { DetailAttribute, DetailTable } from "@insurance-poc/common/detail-card";
+import type { LifeAssuredApplicant } from "@insurance-poc/common/life-assured";
+import type { RequirementItem } from "@insurance-poc/common/requirement-mgmt";
 import retailMock from "../../../../mock/drs/retail-drs.json";
+import { mapCvtApplicants } from "../modules/drs/cvtApplicantData";
+import type { CvtEditApplicantValues } from "../modules/drs/CvtEditApplicantDialog";
 
 export interface DrsRecord {
   applicationNo: string;
@@ -27,4 +32,212 @@ export async function fetchRetailDrsRecord(
   return retailMock.records.find(
     (record) => record.applicationNo === applicationNo,
   );
+}
+
+export type CardDetail = {
+  /** Card title as sent by the API (e.g. "Application Detail"). */
+  type: string;
+  attributes: DetailAttribute[];
+  expandedAttributes: DetailAttribute[];
+  tables: DetailTable[];
+};
+
+export type BreRow = {
+  id: string;
+  label: string;
+  initial: string;
+  final: string;
+};
+
+export type BreDecision = {
+  /** Column headers of the BRE comparison table. */
+  headers: { label: string; initial: string; final: string };
+  rows: BreRow[];
+  /** Values of the "decision" row, shown in the BRE decision bar. */
+  initialDecision: string;
+  decision: string;
+};
+
+export type RetailDrsData = {
+  applicationNo: string;
+  cardDetails: CardDetail[];
+  breDecision: BreDecision;
+  requirements: RequirementItem[];
+  applicants: LifeAssuredApplicant[];
+  /** Edit Applicant dialog initial values per applicant id. */
+  editValues: Record<string, CvtEditApplicantValues>;
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function readText(value: unknown): string {
+  if (typeof value === "string") return value;
+  if (typeof value === "number") return String(value);
+  return "";
+}
+
+function invalidResponse(): Error {
+  return new Error("Retail DRS response is not in the expected format.");
+}
+
+function readAttributes(value: unknown): DetailAttribute[] {
+  if (!Array.isArray(value)) return [];
+  return value.map((item) => {
+    if (!isRecord(item) || typeof item.name !== "string") return { name: "", value: "-" };
+    const val = readText(item.value).trim();
+    return { name: item.name, value: val.length > 0 ? val : "-" };
+  });
+}
+
+function readTables(value: unknown): DetailTable[] {
+  if (!Array.isArray(value)) return [];
+  return value.map((item) => {
+    if (!isRecord(item) || typeof item.name !== "string" || !Array.isArray(item.columns)) {
+      return { name: "", columns: [], rows: [] };
+    }
+    if (!item.columns.every((column) => typeof column === "string")) return { name: "", columns: [], rows: [] };
+    const columns: string[] = item.columns;
+    if (!Array.isArray(item.rows)) return { name: item.name, columns, rows: [] };
+
+    const rows = item.rows.map((row) => {
+      if (!isRecord(row)) return {};
+      const cells: Record<string, string> = {};
+      for (const column of columns) cells[column] = readText(row[column]).trim();
+      return cells;
+    });
+    return { name: item.name, columns, rows };
+  });
+}
+
+function readCards(value: unknown): CardDetail[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter(isRecord).flatMap((item) =>
+    typeof item.type === "string"
+      ? [
+          {
+            type: item.type,
+            attributes: readAttributes(item.attributes),
+            expandedAttributes: readAttributes(item.expandedAttributes),
+            tables: readTables(item.tables),
+          },
+        ]
+      : [],
+  );
+}
+
+/** Finds an entry by name inside `commonSection`. */
+function findSection(sections: unknown, name: string): Record<string, unknown> | null {
+  if (!Array.isArray(sections)) throw invalidResponse();
+  return sections.find((s): s is Record<string, unknown> => isRecord(s) && s.name === name) ?? null;
+}
+
+const BRE_DECISION_ROW_ID = "decision";
+
+/** BRE cell values are strings, except "decision" which is a list of codes. */
+function readBreText(value: unknown): string {
+  if (Array.isArray(value)) {
+    return value
+      .map(readText)
+      .filter((item) => item !== "")
+      .join(", ");
+  }
+  return readText(value);
+}
+
+function readBreHeader(columns: unknown, key: string, fallback: string): string {
+  if (!Array.isArray(columns)) return fallback;
+  const column = columns.find((item) => isRecord(item) && item.key === key);
+  return isRecord(column) && typeof column.header === "string" ? column.header : fallback;
+}
+
+function readBre(section: Record<string, unknown> | null): BreDecision {
+  const value = section?.value;
+  if (!isRecord(value) || !Array.isArray(value.rows)) throw invalidResponse();
+
+  const rows = value.rows.map((row): BreRow => {
+    if (!isRecord(row)) throw invalidResponse();
+    return {
+      id: readText(row.id),
+      label: readText(row.label),
+      initial: readBreText(row.initial),
+      final: readBreText(row.final),
+    };
+  });
+  const decisionRow = rows.find((row) => row.id === BRE_DECISION_ROW_ID);
+
+  return {
+    headers: {
+      label: readBreHeader(value.columns, "label", "BRE"),
+      initial: readBreHeader(value.columns, "initial", "Initial BRE"),
+      final: readBreHeader(value.columns, "final", "Final BRE"),
+    },
+    rows,
+    initialDecision: decisionRow?.initial ?? "",
+    decision: decisionRow?.final ?? "",
+  };
+}
+
+const normaliseStatus = (status: string): string => {
+  const value = status.trim().toUpperCase();
+  if (value === "PENDING") return "Pending";
+  if (value === "WAIVE" || value === "WAIVED") return "Waived";
+  if (value === "ACCEPT" || value === "ACCEPTED") return "Accept";
+  if (value === "REJECT" || value === "REJECTED") return "Reject";
+  if (value === "CANCELLED" || value === "CANCEL") return "Cancelled";
+  if (value === "RECEIVED") return "Received";
+  const trimmed = status.trim();
+  return trimmed.length > 0 ? trimmed.charAt(0).toUpperCase() + trimmed.slice(1) : "";
+};
+
+function extractRequirementRows(rowsOrSection: unknown): unknown[] {
+  if (Array.isArray(rowsOrSection)) return rowsOrSection;
+  if (isRecord(rowsOrSection)) {
+    if (Array.isArray(rowsOrSection.rows)) return rowsOrSection.rows;
+    if (Array.isArray(rowsOrSection.requirementManagement)) return rowsOrSection.requirementManagement;
+  }
+  return [];
+}
+
+/** Requirement rows parser handling either an array or an object with `.rows`. */
+export function mapRawRequirementRows(rowsOrSection: unknown): RequirementItem[] {
+  return extractRequirementRows(rowsOrSection).map((row, index) => {
+    const source = isRecord(row) ? row : {};
+    return {
+      id: typeof source.requirementId === "number" ? source.requirementId : index + 1,
+      status: normaliseStatus(readText(source.status)),
+      ocrStatus: readText(source.ocrStatus),
+      team: readText(source.team),
+      profile: readText(source.profile),
+      category: readText(source.category),
+      subCategory: readText(source.subCategory),
+      document: readText(source.document),
+      reason: readText(source.reason),
+      fupCode: readText(source.fupCode),
+      extraRemarks: readText(source.extraRemarks),
+      description: readText(source.description),
+    };
+  });
+}
+
+export function mapRetailDrsPayload(value: unknown): RetailDrsData {
+  if (!isRecord(value)) throw invalidResponse();
+  const data = isRecord(value.data) ? value.data : value;
+
+  const applicationNo = readText(data.applicationNo).trim();
+  if (applicationNo.length === 0) throw invalidResponse();
+
+  const membersDetails = Array.isArray(data.membersDetails) ? data.membersDetails : [];
+  const primaryMember = membersDetails.find(isRecord) ?? null;
+  const { applicants, editValues } = mapCvtApplicants(membersDetails);
+
+  return {
+    applicationNo,
+    cardDetails: readCards(primaryMember?.cardDetails ?? data.cardDetails),
+    breDecision: readBre(findSection(data.commonSection, "latestBreDecision")),
+    requirements: mapRawRequirementRows(findSection(data.commonSection, "requirementManagement")),
+    applicants,
+    editValues,
+  };
 }
