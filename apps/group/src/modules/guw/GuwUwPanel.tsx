@@ -52,13 +52,13 @@ import {
   clearGuwSubmittedDecision,
   saveGuwSubmittedDecision,
   toGuwValidationRequest,
-  validateGuwDecision,
   type GuwGuidelineCategory,
   type GuwSavedValidationRow,
   type GuwSubmittedDecision,
   type GuwValidationResult,
   type GuwValidationRow,
 } from "../../services/guwService";
+import { useValidateGuwDecisionMutation } from "../../services/dvtValidationApi";
 
 export interface GuwUwSummaryField {
   label: string;
@@ -554,6 +554,7 @@ export function GuwUwPanel({
   const [validation, setValidation] = useState<GuwValidationResult | null>(null);
   const [validationRows, setValidationRows] = useState<GuwSavedValidationRow[]>([]);
   const [validating, setValidating] = useState<boolean>(false);
+  const [validateGuwDecision] = useValidateGuwDecisionMutation();
   const [getUwDecision] = useGetGuwUwDecisionMutation();
   const [saveParallelDecision] = useSaveGuwParallelDecisionMutation();
 
@@ -1005,7 +1006,7 @@ export function GuwUwPanel({
     if (validating) return;
     setValidating(true);
     try {
-      const result = await validateGuwDecision(validationRequest, selectedDecision);
+      const result = await validateGuwDecision(validationRequest).unwrap();
       setValidation(result);
       if (result.success) {
         await finalizeSubmit();

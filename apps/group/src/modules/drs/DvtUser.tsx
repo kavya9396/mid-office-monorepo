@@ -341,7 +341,7 @@ const DvtUser = () => {
         applicationNo: appNo,
         partyDecision: applicants.map((applicant) => ({
           partyId: applicant.partyId ?? "",
-          dvtDecision: memberDecisions[applicant.id]?.decision ?? "",
+          decision: memberDecisions[applicant.id]?.decision ?? "",
         })),
       }).unwrap();
       const rows: ValidationRow[] = validation.partyValidations.flatMap((party) =>
