@@ -135,6 +135,12 @@ export const retailBusinessUrls = {
   get drsData(): string {
     return configuredUrl(import.meta.env.VITE_RETAIL_DRS_DATA_API);
   },
+  get financialFetch(): string {
+    return configuredUrl(import.meta.env.VITE_RETAIL_FINANCIAL_FETCH_API);
+  },
+  get financialSave(): string {
+    return configuredUrl(import.meta.env.VITE_RETAIL_FINANCIAL_SAVE_API);
+  },
 };
 
 /** NSDL external-event-service URLs from .env. Empty when unset — mock mode skips them. */

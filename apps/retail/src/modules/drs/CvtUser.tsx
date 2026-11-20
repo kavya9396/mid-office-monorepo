@@ -47,6 +47,11 @@ import {
   useSaveRetailDrsApplicantMutation,
   useSaveRetailDrsRequirementsMutation,
 } from "../../services/drsApi";
+import {
+  useGetRetailFinancialDetailsQuery,
+  useSaveRetailFinancialMutation,
+} from "../../services/financialApi";
+import { RETAIL_FINANCIAL_ACTIONS_CONFIG } from "../config/financialActions.config";
 import { CvtEditApplicantDialog } from "./CvtEditApplicantDialog";
 import { requirementStatusOrder, requirementStatusVariants } from "./requirementData";
 
@@ -143,6 +148,14 @@ const CvtUser = () => {
     // Always hit the DRS API when the screen mounts instead of serving the cached result.
     refetchOnMountOrArgChange: true,
   });
+  const applicants = drs.data?.applicants ?? [];
+  const selectedApplicant = applicants.find((applicant) => applicant.id === currentApplicantId) ?? applicants[0];
+  const activePartyId = selectedApplicant?.partyId ?? "";
+  const financialQuery = useGetRetailFinancialDetailsQuery(
+    { applicationNumber: applicationNo, partyId: activePartyId },
+    { skip: !isFinancialRoute || !applicationNo || !activePartyId },
+  );
+  const [saveFinancial] = useSaveRetailFinancialMutation();
   const [saveRetailDrsRequirements] = useSaveRetailDrsRequirementsMutation();
   const [saveRetailDrsApplicant] = useSaveRetailDrsApplicantMutation();
   const [completeRetailTask, completeRetailTaskState] = useCompleteRetailTaskMutation();
@@ -250,8 +263,7 @@ const CvtUser = () => {
     );
   }
 
-  const { cardDetails, breDecision, requirements, applicants, editValues } = drs.data;
-  const selectedApplicant = applicants.find((applicant) => applicant.id === currentApplicantId) ?? applicants[0];
+  const { cardDetails, breDecision, requirements, editValues } = drs.data;
   const applicantOptions = applicants.map((applicant) => ({ key: applicant.id, label: applicant.label }));
 
   const handleSaveEditApplicant = async (applicantId: string, values: Parameters<typeof saveRetailDrsApplicant>[0]["values"]) => {
@@ -313,11 +325,18 @@ const CvtUser = () => {
     return (
       <Financial
         applicationNumber={applicationNo}
+        partyId={selectedApplicant?.partyId}
         summary={detailCards}
-        applicants={applicantOptions}
+        applicants={applicantOptions.map((option) => ({
+          ...option,
+          partyId: applicants.find((applicant) => applicant.id === option.key)?.partyId,
+        }))}
         initialApplicantKey={selectedApplicant?.id}
+        sections={financialQuery.data}
+        actions={RETAIL_FINANCIAL_ACTIONS_CONFIG.cvt}
         onApplicantChange={handleFinancialApplicantChange}
         onBack={closeSubPage}
+        onSaveSection={(saveRequest) => saveFinancial(saveRequest).unwrap()}
         onSubmit={(payload) => console.log("Submit financial", payload)}
       />
     );
