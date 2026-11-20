@@ -8242,6 +8242,54 @@
         "type": "DVT_TERM_DESC"
       },
       {
+        "code": "ACC",
+        "description": "Accept",
+        "value": "Accept",
+        "isActive": "Y",
+        "miscMastId": "82",
+        "type": "CVT_TERM_DESC"
+      },
+      {
+        "code": "AMR",
+        "description": "Raise Requirements",
+        "value": "Raise Requirements",
+        "isActive": "Y",
+        "miscMastId": "82",
+        "type": "CVT_TERM_DESC"
+      },
+      {
+        "code": "RFR",
+        "description": "Refer to Risk",
+        "value": "Refer to Risk",
+        "isActive": "Y",
+        "miscMastId": "82",
+        "type": "CVT_TERM_DESC"
+      },
+      {
+        "code": "RIT",
+        "description": "Refer to IT",
+        "value": "Refer to IT",
+        "isActive": "Y",
+        "miscMastId": "82",
+        "type": "CVT_TERM_DESC"
+      },
+      {
+        "code": "RPV",
+        "description": "Reraise PIVV",
+        "value": "Reraise PIVV",
+        "isActive": "Y",
+        "miscMastId": "82",
+        "type": "CVT_TERM_DESC"
+      },
+      {
+        "code": "RCU",
+        "description": "Refer to CUW",
+        "value": "Refer to CUW",
+        "isActive": "Y",
+        "miscMastId": "82",
+        "type": "CVT_TERM_DESC"
+      },
+      {
         "code": "MEDIASSIST",
         "description": "MediAssist",
         "value": "MediAssist",

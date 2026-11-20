@@ -34,6 +34,7 @@ import { ValidationList, type ValidationRow } from "@insurance-poc/common/valida
 import {
   hasPendingPanPendcode,
   LifeAssured,
+  type LifeAssuredTab,
   PAN_INVALID_SUBMIT_BLOCKED_MESSAGE,
   type LifeAssuredApplicant,
   type PanStatus,
@@ -91,6 +92,16 @@ const readApplicantId = (state: unknown): string | undefined => {
   const { applicantId } = state as ApplicantRouteState;
   return typeof applicantId === "string" && applicantId.trim().length > 0 ? applicantId.trim() : undefined;
 };
+
+/** Life assured profile tabs shown on the DVT DRS. */
+const DVT_LIFE_ASSURED_TABS: LifeAssuredTab[] = [
+  "imageDetails",
+  "personalKyc",
+  "contactAddress",
+  "productDetails",
+  "nominee",
+  "lifestyle",
+];
 
 /** DVT decision dropdown options from the post-login master data (`misc` list, type `DVT_TERM_DESC`). */
 const readDvtDecisionOptions = () =>
@@ -602,6 +613,7 @@ const DvtUser = () => {
 
       <LifeAssured
         applicants={applicants}
+        tabs={DVT_LIFE_ASSURED_TABS}
         editOptions={readEditOptions()}
         onEdit={handleApplicantAction("Edit")}
         onSaveEdit={handleSaveEditApplicant}

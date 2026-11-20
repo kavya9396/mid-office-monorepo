@@ -8,6 +8,7 @@ export {
   masterUrls,
   mmtGrievanceUrls,
   nsdlUrls,
+  retailBusinessUrls,
   useMock,
   userUrls,
 } from "./config";

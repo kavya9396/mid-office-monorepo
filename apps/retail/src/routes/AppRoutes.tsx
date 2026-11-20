@@ -34,6 +34,8 @@ export function AppRoutes() {
           <Route index element={<Navigate to="/inbox" replace />} />
           <Route path="/inbox" element={<RetailInboxPage />} />
           <Route path="/app/:applicationNo/drs" element={<RetailDrsPage />} />
+          <Route path="/app/:applicationNo/drs/financial" element={<RetailDrsPage />} />
+          <Route path="/app/:applicationNo/drs/medical" element={<RetailDrsPage />} />
           <Route path="/drs" element={<LegacyDrsRedirect />} />
           <Route path="/previous-policy" element={<RetailPreviousPolicyPage />} />
           <Route path="/open-tasks" element={<RetailOpenTasksPage />} />
