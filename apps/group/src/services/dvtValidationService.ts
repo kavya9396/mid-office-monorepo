@@ -1,6 +1,6 @@
 export type DvtPartyDecision = {
   partyId: string;
-  dvtDecision: string;
+  decision: string;
 };
 
 export type DvtValidationRequest = {

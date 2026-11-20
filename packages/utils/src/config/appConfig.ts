@@ -91,6 +91,13 @@ export const masterUrls = {
   },
 };
 
+/** IAM user lookup. Empty when unset — mock mode skips it. `usersByRole` is the URL up to `/by-role`; append `/{roleName}`. */
+export const userUrls = {
+  get usersByRole(): string {
+    return configuredUrl(import.meta.env.VITE_USERS_BY_ROLE_API);
+  },
+};
+
 /** BRE wrapper orchestrator (shared Retail / Group retrigger). */
 export const breUrls = {
   get retrigger(): string {

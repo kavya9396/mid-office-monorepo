@@ -13,6 +13,7 @@ interface ImportMetaEnv {
   readonly VITE_AUTH_RESET_PASSWORD_API?: string;
   readonly VITE_AUTH_CHANGE_PASSWORD_API?: string;
   readonly VITE_AUTH_LOGOUT_API?: string;
+  readonly VITE_USERS_BY_ROLE_API?: string;
   readonly VITE_AUTH_BASIC_USERNAME?: string;
   readonly VITE_AUTH_BASIC_PASSWORD?: string;
   readonly VITE_LANDING_SERVICE?: string;

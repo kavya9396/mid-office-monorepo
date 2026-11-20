@@ -7,20 +7,26 @@ import {
   useMock,
 } from "@insurance-poc/utils";
 import dvtValidationMock from "../../../../mock/drs/dvt-validation.json";
+import guwValidationMock from "../../../../mock/drs/guw-validation.json";
 import {
   readDvtValidationResponse,
   type DvtValidationRequest,
   type DvtValidationResult,
 } from "./dvtValidationService";
+import {
+  fromGuwValidationResponse,
+  type GuwValidationRequest,
+  type GuwValidationResult,
+} from "./guwService";
 
 /**
  * Decision code that fails validation in mock mode (the example in the API contract). When any party sends it,
  * the mock file is returned as-is; otherwise no party has validations.
  */
-const MOCK_FAILING_DECISION = "AMR";
+const DVT_MOCK_FAILING_DECISION = "AMR";
 
 function readError(reason: unknown): string {
-  return reason instanceof Error ? reason.message : "Unable to validate the DVT decision.";
+  return reason instanceof Error ? reason.message : "Unable to validate the decision.";
 }
 
 function customError(error: string): FetchBaseQueryError {
@@ -36,7 +42,7 @@ export const groupDvtValidationApi = createApi({
         if (useMock) {
           try {
             const template = readDvtValidationResponse(dvtValidationMock);
-            const fails = request.partyDecision.some((party) => party.dvtDecision === MOCK_FAILING_DECISION);
+            const fails = request.partyDecision.some((party) => party.decision === DVT_MOCK_FAILING_DECISION);
             return fails ? { data: template } : { data: { ...template, status: "Success", partyValidations: [] } };
           } catch (reason: unknown) {
             return { error: customError(readError(reason)) };
@@ -66,7 +72,47 @@ export const groupDvtValidationApi = createApi({
         }
       },
     }),
+
+    validateGuwDecision: build.mutation<GuwValidationResult, GuwValidationRequest>({
+      async queryFn(request, _api, _extra, baseQuery) {
+        if (useMock) {
+          try {
+            const fixtures = guwValidationMock as Record<string, unknown>;
+            const decisionCode = request.partyDecision[0]?.decision ?? "";
+            const dto = fixtures[decisionCode] ?? fixtures["default"];
+            const result = fromGuwValidationResponse(dto);
+            return { data: { ...result, applicationNo: request.applicationNo } };
+          } catch (reason: unknown) {
+            return { error: customError(readError(reason)) };
+          }
+        }
+
+        const validationUrl = groupBusinessUrls.dvtValidation;
+        if (validationUrl.length === 0) {
+          return { error: customError("Group GUW validation API is not configured.") };
+        }
+
+        const result = await baseQuery({
+          url: validationUrl,
+          method: "POST",
+          body: request,
+          headers: {
+            accept: "*/*",
+            "Content-Type": "application/json",
+            "X-Correlation-Id": crypto.randomUUID(),
+          },
+        });
+        if (result.error) return { error: result.error };
+
+        try {
+          const mapped = fromGuwValidationResponse(result.data);
+          return { data: { ...mapped, applicationNo: request.applicationNo } };
+        } catch (reason: unknown) {
+          return { error: customError(readError(reason)) };
+        }
+      },
+    }),
   }),
 });
 
-export const { useFetchDvtValidationMutation } = groupDvtValidationApi;
+export const { useFetchDvtValidationMutation, useValidateGuwDecisionMutation } = groupDvtValidationApi;

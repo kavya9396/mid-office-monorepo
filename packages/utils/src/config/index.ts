@@ -10,4 +10,5 @@ export {
   retailBusinessUrls,
   isApigeeMode,
   useMock,
+  userUrls,
 } from "./appConfig";

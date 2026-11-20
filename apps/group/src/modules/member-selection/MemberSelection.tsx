@@ -23,6 +23,7 @@ import {
   type GuwMemberSummary,
   type GuwSubmittedDecision,
 } from "../../services/guwService";
+import { clearAllValidatedRows } from "../../services/guwSectionValidationService";
 import { deriveCaseUwDecision } from "../../services/guwCaseDecisionRules";
 import { referralConfigForRoleType, referralDecisionTone } from "../../services/referralUwService";
 import { DecisionSection } from "@insurance-poc/common/decision-section";
@@ -161,6 +162,8 @@ export function MemberSelection() {
   }, [members, memberDecisions]);
 
   const persistMemberAndOpenDrs = (memberId: string, memberCount: number) => {
+    // Claim Audit / Special Remarks must be validated again before every submit
+    clearAllValidatedRows();
     setDrsOpenContext({
       applicationNo,
       roleType,
@@ -174,6 +177,7 @@ export function MemberSelection() {
   /** If only one member, skip selection and go straight to DRS. */
   useEffect(() => {
     if (members?.length !== 1) return;
+    clearAllValidatedRows();
     setDrsOpenContext({
       applicationNo,
       roleType,

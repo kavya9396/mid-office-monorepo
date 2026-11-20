@@ -72,7 +72,7 @@ import { useValidateNsdlPanMutation } from "../../services/nsdlApi";
 import { createNsdlPanValidateRequest, resolveNsdlOutcome } from "../../services/nsdlService";
 import { GROUP_FINANCIAL_ACTIONS_CONFIG } from "../config/financialActions.config";
 import { GROUP_QUICK_LINKS_CONFIG } from "../config/quickLinks.config";
-import { buildQuickLinkItems } from "./guwQuickLinks";
+import { buildQuickLinkItems, withProposalFormLink } from "./guwQuickLinks";
 
 const CARD_TITLES: Record<CardType, string> = {
   APPLICATION: "Application Detail",
@@ -341,7 +341,7 @@ const DvtUser = () => {
         applicationNo: appNo,
         partyDecision: applicants.map((applicant) => ({
           partyId: applicant.partyId ?? "",
-          dvtDecision: memberDecisions[applicant.id]?.decision ?? "",
+          decision: memberDecisions[applicant.id]?.decision ?? "",
         })),
       }).unwrap();
       const rows: ValidationRow[] = validation.partyValidations.flatMap((party) =>
@@ -530,7 +530,11 @@ const DvtUser = () => {
       {detailCards}
 
       <QuickLinksModule
-        items={buildQuickLinkItems(quickLinksConfig.items, (message) => setSnackbarMessage(message), ["applicant-profile"])}
+        items={buildQuickLinkItems(
+          withProposalFormLink(quickLinksConfig.items, drs.data.quickLinks.proposalFormLink),
+          (message) => setSnackbarMessage(message),
+          ["applicant-profile"],
+        )}
         applicationNo={applicationNo}
         roleType={getDrsRoleLabel() || params.get("role")?.trim() || quickLinksConfig.defaultRoleType}
         onNavigate={(path) => navigate(path)}
