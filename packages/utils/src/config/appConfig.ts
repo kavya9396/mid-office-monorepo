@@ -148,6 +148,9 @@ export const retailBusinessUrls = {
   get financialSave(): string {
     return configuredUrl(import.meta.env.VITE_RETAIL_FINANCIAL_SAVE_API);
   },
+  get cvtValidation(): string {
+    return configuredUrl(import.meta.env.VITE_RETAIL_CVT_VALIDATION_API);
+  },
 };
 
 /** NSDL external-event-service URLs from .env. Empty when unset — mock mode skips them. */

@@ -18,6 +18,7 @@ import {
   getDrsRoleLabel,
   getDrsRoleType,
   getMasterList,
+  getSessionUser,
   readApiErrorMessage,
   setBreRetriggerCount,
 } from "@insurance-poc/utils";
@@ -33,6 +34,7 @@ import {
 } from "@insurance-poc/common/decision-bar";
 import { DetailCard } from "@insurance-poc/common/detail-card";
 import { DecisionSection, type DecisionSubmitPayload } from "@insurance-poc/common/decision-section";
+import { ValidationList, type ValidationRow } from "@insurance-poc/common/validation-list";
 import { LifeAssured, type LifeAssuredTab } from "@insurance-poc/common/life-assured";
 import {
   RequirementMgmt,
@@ -42,6 +44,7 @@ import {
 import { getRetailDrsTaskConfig } from "../../config/drsTaskConfig";
 import { useRetriggerRetailBreMutation } from "../../services/breRetriggerApi";
 import { useCompleteRetailTaskMutation } from "../../services/completeTaskApi";
+import { useFetchCvtValidationMutation } from "../../services/cvtValidationApi";
 import {
   useGetRetailDrsQuery,
   useSaveRetailDrsApplicantMutation,
@@ -159,6 +162,8 @@ const CvtUser = () => {
   const [saveRetailDrsRequirements] = useSaveRetailDrsRequirementsMutation();
   const [saveRetailDrsApplicant] = useSaveRetailDrsApplicantMutation();
   const [completeRetailTask, completeRetailTaskState] = useCompleteRetailTaskMutation();
+  const [fetchCvtValidation, fetchCvtValidationState] = useFetchCvtValidationMutation();
+  const [validationRows, setValidationRows] = useState<ValidationRow[]>([]);
   const [retriggerRetailBre, retriggerRetailBreState] = useRetriggerRetailBreMutation();
 
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
@@ -220,6 +225,33 @@ const CvtUser = () => {
     }
     if (applicationNo.length === 0) {
       setSnackbarMessage("Application number is missing.");
+      return;
+    }
+    // Validation API first; the complete-task API is called only when it returns no validations.
+    try {
+      const validation = await fetchCvtValidation({
+        userId: getSessionUser()?.username ?? "",
+        role: "CVT",
+        applicationNo,
+        partyDecision: applicants.map((applicant) => ({
+          partyId: applicant.partyId ?? "",
+          decision: payload.decision,
+        })),
+      }).unwrap();
+      const rows: ValidationRow[] = validation.partyValidations.flatMap((party) =>
+        party.validations.map((item) => ({
+          memberType: party.memberType,
+          reason: item.reason,
+          remarks: item.remarks,
+        })),
+      );
+      if (rows.length > 0) {
+        setValidationRows(rows);
+        return;
+      }
+    } catch (reason: unknown) {
+      const apiMessage = readApiErrorMessage(reason);
+      setSnackbarMessage(apiMessage.length > 0 ? apiMessage : "Unable to validate the CVT decision.");
       return;
     }
     try {
@@ -474,8 +506,25 @@ const CvtUser = () => {
         onDecisionChange={setDecision}
         onRemarksChange={setRemarks}
         onSubmit={handleDecisionSubmit}
-        isSubmitting={completeRetailTaskState.isLoading}
+        isSubmitting={fetchCvtValidationState.isLoading || completeRetailTaskState.isLoading}
       />
+
+      <CustomDialog
+        open={validationRows.length > 0}
+        onClose={() => setValidationRows([])}
+        title={
+          <CustomTypography
+            component="span"
+            sx={{ fontSize: 16, fontWeight: 700 }}
+          >
+            Validations
+          </CustomTypography>
+        }
+        maxWidth="md"
+        fullWidth
+      >
+        <ValidationList rows={validationRows} />
+      </CustomDialog>
 
       <CustomSnackbar
         open={Boolean(snackbarMessage)}

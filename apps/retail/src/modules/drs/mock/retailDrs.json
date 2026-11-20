@@ -362,7 +362,7 @@
                     },
                     {
                       "label": "PRAN Number Verification",
-                      "value": "Verified"
+                      "value": "Yes"
                     },
                     {
                       "key": "kycDetails.panNumber",
@@ -372,7 +372,7 @@
                     {
                       "key": "kycDetails.isPanValid",
                       "label": "PAN Flag",
-                      "value": "Verified"
+                      "value": "Yes"
                     },
                     { "label": "PAN Aadhar Seeding Status", "value": "Y" },
                     {
