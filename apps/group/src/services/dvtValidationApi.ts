@@ -77,10 +77,8 @@ export const groupDvtValidationApi = createApi({
       async queryFn(request, _api, _extra, baseQuery) {
         if (useMock) {
           try {
-            const fixtures = guwValidationMock as Record<string, unknown>;
-            const decisionCode = request.partyDecision[0]?.decision ?? "";
-            const dto = fixtures[decisionCode] ?? fixtures["default"];
-            const result = fromGuwValidationResponse(dto);
+            // Mock = the API response as-is for every decision; edit guw-validation.json to try other outcomes
+            const result = fromGuwValidationResponse(guwValidationMock);
             return { data: { ...result, applicationNo: request.applicationNo } };
           } catch (reason: unknown) {
             return { error: customError(readError(reason)) };

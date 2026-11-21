@@ -399,7 +399,9 @@ export function MemberSelection() {
       {/* GUW: Case UW Decision - same functionality as the member DRS page; final submit goes to the inbox */}
       {!referralConfig && record && (
         <GuwUwPanel
+          products={record.products}
           applicationNo={applicationNo}
+          caseType={record.caseType}
           storageKey={summaryStorageKey}
           actionOptions={MEMBER_SELECTION_ACTION_OPTIONS}
           derivedDecision={derivedDecision}

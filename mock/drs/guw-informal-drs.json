@@ -5,6 +5,7 @@
         "screenType": "GUW_INFORMAL",
         "businessType": "GROUP",
         "roleType": "GUW_TASK",
+        "caseType":"Medical",
         "commonSection": [
             {
                 "name": "latestBreDecision",
@@ -1516,7 +1517,18 @@
                                         "riderDetails": [
                                             {
                                                 "riderCode": "",
-                                                "riderName": "",
+                                                "riderName": "ADB",
+                                                "riderSubType": "",
+                                                "faceValue": "",
+                                                "mortalityClass": "",
+                                                "uwMortalityClassBase": "",
+                                                "sumAssured": "",
+                                                "rating": "",
+                                                "sarConsideration": "",
+                                                "clientRole": ""
+                                            },{
+                                                "riderCode": "",
+                                                "riderName": "Rider 2",
                                                 "riderSubType": "",
                                                 "faceValue": "",
                                                 "mortalityClass": "",

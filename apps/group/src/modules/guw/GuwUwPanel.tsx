@@ -19,6 +19,7 @@ import {
   TaskIcon,
 } from "@insurance-poc/ui";
 import { groupPaths, replaceUrl } from "@insurance-poc/routes";
+import { ValidationList } from "@insurance-poc/common/validation-list";
 import { getDrsRoleType, getMasterList, getSessionUser } from "@insurance-poc/utils";
 import {
   findPendingValidationMessage,
@@ -53,6 +54,8 @@ import {
   saveGuwSubmittedDecision,
   toGuwValidationRequest,
   type GuwGuidelineCategory,
+  type GuwPartyValidationRow,
+  type GuwProductDetail,
   type GuwSavedValidationRow,
   type GuwSubmittedDecision,
   type GuwValidationResult,
@@ -66,10 +69,14 @@ export interface GuwUwSummaryField {
 }
 
 export interface GuwUwPanelProps {
+  /** Member's `product_details` rows; the Decision Details table and the `productCode` sent to the APIs come from here. */
+  products?: GuwProductDetail[];
   /** Used to hold the submitted decision (and UW guidelines) in the browser session. */
   applicationNo?: string;
   /** Application number of the DRS API response; sent to the `uw-decision` API (falls back to `applicationNo`). */
   drsApplicationNo?: string;
+  /** DRS `caseType`; sent as `dataEntry` to the `uw_decision_mapping` master when loading Decision Codes. */
+  caseType?: string;
   /**
    * Member's `partyId`. When set (member-level DRS), submitting a decision saves it through the
    * `uw-decision` API. Omit on the case-level summary.
@@ -496,8 +503,10 @@ function GuidelineCategoryIcon({ category }: Readonly<{ category: GuwGuidelineCa
 }
 
 export function GuwUwPanel({
+  products,
   applicationNo = "",
   drsApplicationNo = "",
+  caseType = "",
   partyId = "",
   storageKey,
   requiredValidations,
@@ -554,6 +563,8 @@ export function GuwUwPanel({
   const [validation, setValidation] = useState<GuwValidationResult | null>(null);
   const [validationRows, setValidationRows] = useState<GuwSavedValidationRow[]>([]);
   const [validating, setValidating] = useState<boolean>(false);
+  // Party-level failures of the validation API; the Validations modal is open while this is not empty
+  const [partyValidationRows, setPartyValidationRows] = useState<GuwPartyValidationRow[]>([]);
   const [validateGuwDecision] = useValidateGuwDecisionMutation();
   const [getUwDecision] = useGetGuwUwDecisionMutation();
   const [saveParallelDecision] = useSaveGuwParallelDecisionMutation();
@@ -571,9 +582,9 @@ export function GuwUwPanel({
     decisionCodeRequestRef.current = requestId;
     setDecisionCodeOptions([]);
     setDecisionCodeValue("");
-    if (!buildGuwUwDecisionMappingRequest(caseDecisionCode)) return;
+    if (!buildGuwUwDecisionMappingRequest(caseDecisionCode, caseType)) return;
     try {
-      const options = await fetchGuwDecisionCodeOptions(caseDecisionCode);
+      const options = await fetchGuwDecisionCodeOptions(caseDecisionCode, caseType);
       if (decisionCodeRequestRef.current !== requestId) return;
       setDecisionCodeOptions(options);
       if (options.some((o) => o.value === keepValue)) setDecisionCodeValue(keepValue);
@@ -712,6 +723,9 @@ export function GuwUwPanel({
 
   const effectiveDecision = dialogDecision;
 
+  // Products of the member's `product_details`; the built-in list is only a fallback when the payload has none
+  const productList: GuwProductDetail[] = products && products.length > 0 ? products : DEFAULT_PRODUCTS;
+
   // Initialize Counter Offer rows when dialog decision turns to CO, BOR_STD, or EP
   useEffect(() => {
     if (keepCounterOfferRowsRef.current) {
@@ -720,7 +734,7 @@ export function GuwUwPanel({
     }
     if (["CO", "BOR_STD", "EP"].includes(effectiveDecision)) {
       setCounterOfferRows(
-        DEFAULT_PRODUCTS.map((prod, idx) => ({
+        productList.map((prod, idx) => ({
           id: `dd-${idx}`,
           productName: prod.name,
           isRider: prod.isRider,
@@ -973,7 +987,7 @@ export function GuwUwPanel({
   const decisionRowInputs = () =>
     counterOfferRows.map((row) => ({
       productName: row.productName,
-      productCode: DEFAULT_PRODUCTS.find((p) => p.name === row.productName)?.code ?? "",
+      productCode: productList.find((p) => p.name === row.productName)?.code ?? "",
       isRider: row.isRider,
       type: row.type,
       bstdCode: row.bstdCode,
@@ -1008,8 +1022,19 @@ export function GuwUwPanel({
     try {
       const result = await validateGuwDecision(validationRequest).unwrap();
       setValidation(result);
+
+      // Same as DVT: any validation returned by the API opens the Validations modal and blocks the submit
+      if (result.partyValidations.length > 0) {
+        setPartyValidationRows(result.partyValidations);
+        return;
+      }
       if (result.success) {
         await finalizeSubmit();
+        return;
+      }
+      // Failure without anything to resolve: the decision cannot be submitted
+      if (result.rows.length === 0) {
+        notify("Validation failed. The decision cannot be submitted.", "error");
         return;
       }
 
@@ -1029,7 +1054,9 @@ export function GuwUwPanel({
       setGuidelinesConfirmed(false);
       setDialogStep(2);
       setDialogOpen(true);
-    } catch {
+    } catch (reason: unknown) {
+      // Validation service failed: nothing is submitted and the page stays as it is
+      console.error("[GuwUwPanel] validation failed:", reason);
       notify("Unable to validate the decision. Please try again.", "error");
     } finally {
       setValidating(false);
@@ -1257,7 +1284,7 @@ export function GuwUwPanel({
 
         // Handle dynamic triggers
         if (field === "productName") {
-          const defaultProd = DEFAULT_PRODUCTS.find((p) => p.name === value);
+          const defaultProd = productList.find((p) => p.name === value);
           updated.isRider = defaultProd ? defaultProd.isRider : false;
           updated.sa = defaultProd ? defaultProd.sa : "—";
           updated.pt = defaultProd ? defaultProd.pt : "—";
@@ -2704,7 +2731,7 @@ export function GuwUwPanel({
                               <CustomSelect
                                 value={row.productName}
                                 onChange={(val) => handleRowFieldChange(row.id, "productName", val)}
-                                options={DEFAULT_PRODUCTS.map((dp) => ({ value: dp.name, label: dp.name }))}
+                                options={productList.map((dp) => ({ value: dp.name, label: dp.name }))}
                                 placeholder="Select product"
                                 fullWidth
                               />
@@ -2915,6 +2942,21 @@ export function GuwUwPanel({
           </>
           )}
         </Box>
+      </CustomDialog>
+
+      {/* Validations returned by the validation API (same modal as DVT); Submit stays blocked until it succeeds */}
+      <CustomDialog
+        open={partyValidationRows.length > 0}
+        onClose={() => setPartyValidationRows([])}
+        title={
+          <Typography component="span" sx={{ fontSize: 16, fontWeight: 700 }}>
+            Validations
+          </Typography>
+        }
+        maxWidth="md"
+        fullWidth
+      >
+        <ValidationList rows={partyValidationRows} />
       </CustomDialog>
 
       {/* Read-only view of the submitted decision */}

@@ -30,9 +30,6 @@ const DECISION_TYPE_CODE_BY_CASE_DECISION: Readonly<Record<string, string | unde
   EP: "XRT",
 };
 
-/** `dataEntry` sent with the request. */
-export const GUW_DECISION_MAPPING_DATA_ENTRY = "Medical";
-
 interface DecisionMappingRow {
   decisionCode: string;
   decisionDescriptionCode: string;
@@ -47,13 +44,20 @@ function readText(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
-/** Domain request for a Case UW Decision code; `null` when that decision has no Decision Code list. */
-export function buildGuwUwDecisionMappingRequest(caseDecision: string): GuwUwDecisionMappingRequest | null {
+/**
+ * Domain request for a Case UW Decision code; `dataEntry` is the DRS `caseType`.
+ * `null` when that decision has no Decision Code list or the DRS has no `caseType`.
+ */
+export function buildGuwUwDecisionMappingRequest(
+  caseDecision: string,
+  caseType: string,
+): GuwUwDecisionMappingRequest | null {
   const decisionTypeCode = DECISION_TYPE_CODE_BY_CASE_DECISION[caseDecision];
-  if (!decisionTypeCode) return null;
+  const dataEntry = caseType.trim();
+  if (!decisionTypeCode || dataEntry.length === 0) return null;
   return {
     types: ["uw_decision_mapping"],
-    uwDecisionMapping: { decisionTypeCode, dataEntry: GUW_DECISION_MAPPING_DATA_ENTRY },
+    uwDecisionMapping: { decisionTypeCode, dataEntry },
   };
 }
 
@@ -99,8 +103,11 @@ function mockResponse(request: GuwUwDecisionMappingRequest): unknown {
  * POST `VITE_MASTERS_API` for the Decision Code options of a Case UW Decision.
  * Returns `[]` (no call) when the decision has no Decision Code list.
  */
-export async function fetchGuwDecisionCodeOptions(caseDecision: string): Promise<GuwDecisionCodeOption[]> {
-  const request = buildGuwUwDecisionMappingRequest(caseDecision);
+export async function fetchGuwDecisionCodeOptions(
+  caseDecision: string,
+  caseType: string,
+): Promise<GuwDecisionCodeOption[]> {
+  const request = buildGuwUwDecisionMappingRequest(caseDecision, caseType);
   if (!request) return [];
   console.log("[guwDecisionMapping] request payload:", request);
 

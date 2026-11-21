@@ -1,4 +1,4 @@
-import { getDrsRoleType, getSessionUser } from "@insurance-poc/utils";
+import { formatIndianCurrency, getDrsRoleType, getSessionUser } from "@insurance-poc/utils";
 import type { Column } from "@insurance-poc/ui";
 import type { RiskCardData, RiskCardField } from "@insurance-poc/common/risk-cards";
 import type { RequirementItem } from "@insurance-poc/common/requirement-mgmt";
@@ -13,6 +13,7 @@ import {
 import { mapRequirements, type RawRequirement } from "../modules/drs/requirementData";
 import { formatBreTimestamp, splitDiscrepancies } from "../modules/drs/breFormat";
 import type { GuwUwDecisionProduct } from "./guwDecisionService";
+import { readDvtValidationResponse } from "./dvtValidationService";
 import guwValidationMock from "../../../../mock/drs/guw-validation.json";
 
 /* ------------------------------------------------------------------ */
@@ -175,6 +176,13 @@ export interface GuwValidationRow {
   justificationOptions: GuwJustificationOption[];
 }
 
+/** One party-level validation failure (`partyValidations[].validations[]`), shown in the Validations modal. */
+export interface GuwPartyValidationRow {
+  memberType: string;
+  reason: string;
+  remarks: string;
+}
+
 export interface GuwValidationResult {
   applicationNo: string;
   correlationId: string;
@@ -183,6 +191,8 @@ export interface GuwValidationResult {
   counterSignRequired: boolean;
   /** Justification rows first, then checklist, hard alerts and soft alerts. */
   rows: GuwValidationRow[];
+  /** Party-level failures (same shape as the DVT validation API); any entry stops the submit. */
+  partyValidations: GuwPartyValidationRow[];
 }
 
 /** A validation row together with what the user saved for it. */
@@ -227,6 +237,20 @@ export interface GuwUwData {
   submittedDecision?: GuwSubmittedDecision;
 }
 
+/** One `product_details.value.rows[]` entry of the member's applicant profile (Decision Details products). */
+export interface GuwProductDetail {
+  /** `productCode`, sent as `productCode` in the validation / `uw-decision` requests. */
+  code: string;
+  /** `productName` */
+  name: string;
+  /** `productType` other than "base" */
+  isRider: boolean;
+  /** `sumAssured`, formatted for display ("—" when absent). */
+  sa: string;
+  /** `term`, "—" when absent. */
+  pt: string;
+}
+
 export interface GuwDrsRecord {
   applicationNo: string;
   /** `partyId` of the member (`subSections[applicantProfile]`); "" when the payload has none. */
@@ -235,6 +259,8 @@ export interface GuwDrsRecord {
   lifeNumber: string;
   /** Envelope `transactionId`; "" when absent. */
   transactionId: string;
+  /** `data.caseType` of the DRS payload (e.g. "Medical"); sent as `dataEntry` to the `uw_decision_mapping` master. "" when absent. */
+  caseType: string;
 
   applicantName: string;
   applicationLabel: string;
@@ -252,6 +278,8 @@ export interface GuwDrsRecord {
   memberTypes: string[];
   /** `data.subSections[]` mapped for the Quick Links dialogs. */
   quickLinks: QuickLinksSubSections;
+  /** `subSections[applicantProfile].product_details.value.rows[]` of the member. */
+  products: GuwProductDetail[];
 }
 
 /* ------------------------------------------------------------------ */
@@ -750,12 +778,51 @@ export function mapGuwDrsPayload(payload: unknown, memberId?: string): GuwDrsRec
   const applicantProfile = recordOf(
     recordList(data.subSections).find((s) => s.name === "applicantProfile")?.value,
   );
+  const baseProducts: GuwProductDetail[] = recordList(
+    recordOf(recordOf(applicantProfile.product_details).value).rows,
+  ).map((r) => {
+    const amount = str(r.sumAssured).trim();
+    const term = str(r.term).trim();
+    return {
+      code: str(r.productCode),
+      name: str(r.productName),
+      isRider: str(r.productType).trim().toLowerCase() !== "base",
+      sa: amount ? formatIndianCurrency(amount) : "—",
+      pt: term || "—",
+    };
+  });
+  // Riders: `previousPolicies.members[].ipru[].riderDetails[]` (members is an object or a list)
+  const previousPolicies = recordOf(
+    recordList(data.subSections).find((s) => s.name === "previousPolicies")?.value,
+  );
+  const policyMembers = Array.isArray(previousPolicies.members)
+    ? recordList(previousPolicies.members)
+    : [recordOf(previousPolicies.members)];
+  const riderProducts: GuwProductDetail[] = policyMembers
+    .flatMap((member) => recordList(member.ipru))
+    .flatMap((policy) => recordList(policy.riderDetails))
+    .filter((r) => str(r.riderName).trim() !== "")
+    .map((r) => {
+      const amount = str(r.sumAssured).trim();
+      return {
+        code: str(r.riderCode),
+        name: str(r.riderName).trim(),
+        isRider: true,
+        sa: amount ? formatIndianCurrency(amount) : "—",
+        pt: "—",
+      };
+    });
+  const products: GuwProductDetail[] = [
+    ...baseProducts,
+    ...riderProducts.filter((rider) => !baseProducts.some((base) => base.name === rider.name)),
+  ];
 
   return {
     applicationNo,
     partyId: str(applicantProfile.partyId),
     lifeNumber: str(applicantProfile.lifeNumber),
     transactionId: str(root.transactionId),
+    caseType: str(root.caseType),
     applicantName,
     applicationLabel: `App No. - ${applicationNo}`,
     rowDetails,
@@ -775,6 +842,7 @@ export function mapGuwDrsPayload(payload: unknown, memberId?: string): GuwDrsRec
       ...mapMembersQuickLinks(root.membersDetails),
       raiseGrievance: mapRaiseGrievance(data.subSections),
     },
+    products,
     uwData: {
       breOverallDecision: fieldValue(caseDecisionFields, "BRE Overall Decision"),
       breOverallRemarks: fieldValue(caseDecisionFields, "BRE Overall Remarks"),
@@ -901,8 +969,8 @@ export async function fetchGuwDrs(
 /* Decision validation (mock until the real endpoint is available)       */
 /* ------------------------------------------------------------------ */
 
-/** Role sent with the validation request; replace once a role source is defined. */
-const VALIDATION_ROLE = "CUW";
+/** Role sent with the GUW decision-validation request. */
+const VALIDATION_ROLE = "GUW";
 
 /** Order in which categories appear in the UW Guidelines table. */
 const CATEGORY_ORDER: GuwGuidelineCategory[] = ["justification", "checklist", "hardAlert", "softAlert"];
@@ -957,13 +1025,22 @@ export function fromGuwValidationResponse(dto: unknown): GuwValidationResult {
     ...mapAlertRows(src.HardAlert, "hardAlert"),
     ...mapAlertRows(src.SoftAlert, "softAlert"),
   ].sort((a, b) => CATEGORY_ORDER.indexOf(a.category) - CATEGORY_ORDER.indexOf(b.category));
+  // Same `partyValidations` contract and reader as the DVT validation API
+  const partyValidations = readDvtValidationResponse(src).partyValidations.flatMap((party) =>
+    party.validations.map((item) => ({
+      memberType: party.memberType,
+      reason: item.reason,
+      remarks: item.remarks,
+    })),
+  );
   return {
     applicationNo: str(src.applicationNo),
     correlationId: str(src.correlationId),
-    success: src.status === "SUCCESS",
+    success: str(src.status).toUpperCase() === "SUCCESS",
     referralRequired: src.referralReqd === "Y",
     counterSignRequired: src.counterSignReqd === "Y",
     rows,
+    partyValidations,
   };
 }
 
