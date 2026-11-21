@@ -3,7 +3,9 @@ import { authApi } from "@insurance-poc/common/auth-api";
 import { authReducer, sessionExpired } from "@insurance-poc/utils";
 import { retailBreRetriggerApi } from "../services/breRetriggerApi";
 import { retailCompleteTaskApi } from "../services/completeTaskApi";
+import { retailCvtValidationApi } from "../services/cvtValidationApi";
 import { retailDrsApi } from "../services/drsApi";
+import { retailFinancialApi } from "../services/financialApi";
 import { retailInboxApi } from "../services/inboxApi";
 
 const listenerMiddleware = createListenerMiddleware();
@@ -15,6 +17,8 @@ listenerMiddleware.startListening({
     listenerApi.dispatch(retailCompleteTaskApi.util.resetApiState());
     listenerApi.dispatch(retailDrsApi.util.resetApiState());
     listenerApi.dispatch(retailBreRetriggerApi.util.resetApiState());
+    listenerApi.dispatch(retailFinancialApi.util.resetApiState());
+    listenerApi.dispatch(retailCvtValidationApi.util.resetApiState());
   },
 });
 
@@ -26,6 +30,8 @@ export const store = configureStore({
     [retailCompleteTaskApi.reducerPath]: retailCompleteTaskApi.reducer,
     [retailDrsApi.reducerPath]: retailDrsApi.reducer,
     [retailBreRetriggerApi.reducerPath]: retailBreRetriggerApi.reducer,
+    [retailFinancialApi.reducerPath]: retailFinancialApi.reducer,
+    [retailCvtValidationApi.reducerPath]: retailCvtValidationApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
@@ -36,6 +42,8 @@ export const store = configureStore({
         retailCompleteTaskApi.middleware,
         retailDrsApi.middleware,
         retailBreRetriggerApi.middleware,
+        retailFinancialApi.middleware,
+        retailCvtValidationApi.middleware,
       ),
 });
 

@@ -266,7 +266,7 @@ function ApplicantProfileSection({
             justifyContent: variant === "guw" ? "center" : undefined,
           }}
         >
-          <CustomTabs tabs={variant === "guw" ? GUW_PROFILE_TABS : PROFILE_TABS} value={tab} onChange={setTab} />
+          <CustomTabs tabs={tabItems} value={tab} onChange={setTab} />
           {/* Empty when no action handlers are passed (the GUW dialog passes none); hidden so its auto margin does not push the tabs off-centre */}
           <Box
             sx={{
