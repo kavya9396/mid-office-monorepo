@@ -332,8 +332,10 @@ const GuwUser = () => {
 
             {/* UW panel: BRE overall decision + case UW decision */}
             <GuwUwPanel
+              products={page.record.products}
               applicationNo={applicationNo}
               drsApplicationNo={page.record.applicationNo}
+              caseType={page.record.caseType}
               partyId={page.record.partyId}
               storageKey={memberStorageKey}
               requiredValidations={{
