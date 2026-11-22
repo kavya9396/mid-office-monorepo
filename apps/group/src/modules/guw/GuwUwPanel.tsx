@@ -24,7 +24,7 @@ import { getDrsRoleType, getMasterList, getSessionUser } from "@insurance-poc/ut
 import {
   findPendingValidationMessage,
   type GuwRequiredValidations,
-} from "../../services/guwSectionValidationService";
+} from "../../services/drsService";
 import {
   useGetGuwUwDecisionMutation,
   useGetUsersByRoleQuery,
@@ -34,21 +34,19 @@ import {
   GUW_ASSIGNEE_ROLE,
   assigneeRoleForReferTo,
   assigneeRoleForReferralRow,
-  type GuwAssigneeOption,
-} from "../../services/guwAssigneeService";
-import {
   buildGuwCounterSignParallelDecisionRequest,
   buildGuwReferralParallelDecisionRequests,
   buildGuwUwDecisionProducts,
   buildGuwUwDecisionRequest,
   hasGuwDecisionProducts,
   GUW_UW_DECISION_SCREEN_TYPE,
-} from "../../services/guwDecisionService";
+  type GuwAssigneeOption,
+} from "../../services/drsService";
 import {
   buildGuwUwDecisionMappingRequest,
   fetchGuwDecisionCodeOptions,
   type GuwDecisionCodeOption,
-} from "../../services/guwDecisionMappingService";
+} from "../../services/drsService";
 import {
   clearGuwSubmittedDecision,
   saveGuwSubmittedDecision,
@@ -60,7 +58,7 @@ import {
   type GuwSubmittedDecision,
   type GuwValidationResult,
   type GuwValidationRow,
-} from "../../services/guwService";
+} from "../../services/drsService";
 import { useValidateGuwDecisionMutation } from "../../services/dvtValidationApi";
 
 export interface GuwUwSummaryField {
@@ -253,12 +251,12 @@ const readReferToOptions = () =>
 
 // Counter Sign reasons depend on the selected Refer To (HOD / Sr UW)
 const APPROVER_REASON_TYPE_BY_TARGET: Record<string, string | undefined> = {
-  HOD: "GUW_REF_HOD_CS",
-  "Sr UW": "GUW_REF_SRUW_CS",
+  hod: "GUW_REF_HOD_CS",
+  "sr uw": "GUW_REF_SRUW_CS",
 };
 
 const readApproverReasonOptions = (target: string) => {
-  const type = APPROVER_REASON_TYPE_BY_TARGET[target];
+  const type = APPROVER_REASON_TYPE_BY_TARGET[target.trim().toLowerCase()];
   return type ? readFirstAvailableMiscOptions([type]) : [];
 };
 
@@ -288,11 +286,12 @@ const ACTION_DECISION_OPTIONS = [
 
 // Row code of each master `GUW_REF_TO` value (lower case). The row code drives the existing exclusive /
 // reason / assign / reinsurer rules, so only the Refer To text comes from the master.
+// Plain "HOD" / "SR UW" are Counter Sign values only; Raise Referral uses the "... Opinion" values.
 const REFERRAL_TARGET_BY_MASTER_VALUE: Record<string, string | undefined> = {
   it: "REF_IT",
   reinsurer: "REF_REINS",
-  "sr uw": "REF_SR_UW",
-  hod: "REF_HOD",
+  "sr uw opinion": "REF_SR_UW",
+  "hod opinion": "REF_HOD",
   "ho cmo": "REF_CMO",
   cmo: "REF_CMO_LOCAL",
   risk: "REF_RISK",
@@ -308,6 +307,7 @@ const REFERRAL_TARGET_BY_MASTER_VALUE: Record<string, string | undefined> = {
  */
 const readReferralTypeOptions = () =>
   readFirstAvailableMiscOptions(["GUW_REF_TO"]).flatMap((option) => {
+    if (assigneeRoleForReferTo(option.value) !== "") return [];
     const target = REFERRAL_TARGET_BY_MASTER_VALUE[option.value.trim().toLowerCase()];
     if (!target) {
       console.warn(`[GuwUwPanel] GUW_REF_TO value "${option.value}" has no referral row; skipped.`);

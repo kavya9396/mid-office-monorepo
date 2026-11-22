@@ -22,10 +22,10 @@ import {
   type GuwDrsRecord,
   type GuwMemberSummary,
   type GuwSubmittedDecision,
-} from "../../services/guwService";
-import { clearAllValidatedRows } from "../../services/guwSectionValidationService";
-import { deriveCaseUwDecision } from "../../services/guwCaseDecisionRules";
-import { referralConfigForRoleType, referralDecisionTone } from "../../services/referralUwService";
+} from "../../services/drsService";
+import { clearAllValidatedRows } from "../../services/drsService";
+import { deriveCaseUwDecision } from "../../services/drsService";
+import { referralConfigForRoleType, referralDecisionTone } from "../../services/drsService";
 import { DecisionSection } from "@insurance-poc/common/decision-section";
 import { GuwDecisionDetailsDialog, GuwUwPanel } from "../guw/GuwUwPanel";
 
@@ -147,7 +147,7 @@ export function MemberSelection() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- loadMemberDecisions only depends on applicationNo and members
   }, [applicationNo, members]);
 
-  // Derive the Case UW Decision from the member decisions (logic lives in guwCaseDecisionRules.ts)
+  // Derive the Case UW Decision from the member decisions (logic lives in drsService.ts)
   useEffect(() => {
     let active = true;
     void deriveCaseUwDecision(

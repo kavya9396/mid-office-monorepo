@@ -1,5 +1,5 @@
 import { CustomBox, CustomTypography } from "@insurance-poc/ui";
-import type { GuwSdtRow as GuwSdtRowData } from "../../services/guwService";
+import type { GuwSdtRow as GuwSdtRowData } from "../../services/drsService";
 
 /* ------------------------------------------------------------------
  * GuwSdtRow — Financial Decision / Medical Decision read-only labels

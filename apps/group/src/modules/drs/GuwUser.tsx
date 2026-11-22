@@ -51,7 +51,7 @@ import {
   guwMemberDecisionKey,
   loadGuwSubmittedDecision,
   type GuwDrsRecord,
-} from "../../services/guwService";
+} from "../../services/drsService";
 import { useSaveGroupDrsRequirementsMutation } from "../../services/drsApi";
 import {
   useGetGroupFinancialDetailsQuery,

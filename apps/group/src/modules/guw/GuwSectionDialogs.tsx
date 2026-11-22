@@ -4,8 +4,8 @@ import { GrievanceHistory } from "@insurance-poc/common/grievance-history";
 import { SpecialRemarks } from "@insurance-poc/common/special-remarks";
 import { UwGuidelines, type UwGuidelineRow } from "@insurance-poc/common/uw-guidelines";
 import { CustomBox, CustomDialog } from "@insurance-poc/ui";
-import type { GuwDialogSections } from "../../services/guwService";
-import { loadValidatedRowIds, markRowValidated } from "../../services/guwSectionValidationService";
+import type { GuwDialogSections } from "../../services/drsService";
+import { loadValidatedRowIds, markRowValidated } from "../../services/drsService";
 
 export type GuwSectionDialogKey =
   | "grievanceHistory"

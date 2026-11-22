@@ -25,15 +25,18 @@ import guwHodDrsMock from "../../../../mock/drs/guw-hod-drs.json";
 import guwSrUwDrsMock from "../../../../mock/drs/guw-sr-uw-drs.json";
 import guwUwDecisionMock from "../../../../mock/drs/guw-uw-decision.json";
 import usersByRoleMock from "../../../../mock/drs/users-by-role.json";
+import groupDrsApplicantSaveMock from "../modules/drs/mock/groupDrsApplicantSave.json";
 import {
+  mapGroupDrsPayload,
   mapGuwUwDecisions,
+  mapRawRequirementRows,
+  mapUsersByRole,
+  type GroupDrsData,
+  type GuwAssigneeOption,
   type GuwParallelDecisionRequest,
   type GuwUwDecisionRequest,
   type GuwUwDecisionResult,
-} from "./guwDecisionService";
-import groupDrsApplicantSaveMock from "../modules/drs/mock/groupDrsApplicantSave.json";
-import { mapGroupDrsPayload, mapRawRequirementRows, type GroupDrsData } from "./drsService";
-import { mapUsersByRole, type GuwAssigneeOption } from "./guwAssigneeService";
+} from "./drsService";
 
 export type GroupDrsQueryArg =
   | string
@@ -533,7 +536,7 @@ export const groupDrsApi = createApi({
         }
       },
     }),
-    /** Raw DRS payload for GUW / HOD / Sr UW; mapped by `guwService` (same request body as DVT). */
+    /** Raw DRS payload for GUW / HOD / Sr UW; mapped by `drsService` (same request body as DVT). */
     getGuwDrsPayload: build.query<unknown, GroupDrsQueryArg>({
       async queryFn(arg, _api, _extra, baseQuery) {
         if (useMock) {
