@@ -7,6 +7,23 @@
 /** Template for a mandatory field, for example `requiredMessage("PAN No")` -> "PAN No is required". */
 export const requiredMessage = (label: string) => `${label} is required`;
 
+/** Formats a text field can be restricted to (patterns live in `fieldFormat.ts`). */
+export type FieldFormat = "numeric" | "alphabets" | "alphanumeric" | "pan";
+
+/** Message for a value that does not match the field's format, for example `formatMessage("Height", "numeric")` -> "Height should be numeric". */
+export const formatMessage = (label: string, format: FieldFormat) => {
+  switch (format) {
+    case "numeric":
+      return `${label} should be numeric`;
+    case "alphabets":
+      return `${label} should contain only alphabets`;
+    case "alphanumeric":
+      return `${label} should be alphanumeric`;
+    case "pan":
+      return `${label} should be in the format ABCDE1234F`;
+  }
+};
+
 /** Save was clicked while the PAN is not validated (`isPanValid` is not YES). */
 export const PAN_NOT_VALIDATED_MESSAGE = "Please validate PAN with NSDL before saving";
 

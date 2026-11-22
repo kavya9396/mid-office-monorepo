@@ -114,7 +114,6 @@ const EMPTY_VALUES: EditFormValues = {
   emailId: "",
   height: "",
   weight: "",
-  lifestyleHabits: "",
   annualIncome: "",
   applicantStatus: "",
   loan: EMPTY_LOAN,
@@ -150,7 +149,6 @@ const PROFILE_FIELDS: FieldConfig[] = [
   { name: "emailId", label: "Email ID" },
   { name: "height", label: "Height" },
   { name: "weight", label: "Weight" },
-  { name: "lifestyleHabits", label: "Lifestyle Habits" },
   { name: "annualIncome", label: "Annual Income" },
   { name: "applicantStatus", label: "Applicant Status", select: "applicantStatus" },
 ];

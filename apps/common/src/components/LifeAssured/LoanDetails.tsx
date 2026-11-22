@@ -3,20 +3,21 @@ import { z } from "zod";
 import { Box, Typography } from "@mui/material";
 import { Calendar, CustomTextField } from "@insurance-poc/ui";
 import { requiredMessage } from "./editApplicant.messages";
+import { requiredFormat } from "./fieldFormat";
 
 const required = (label: string) => z.string().trim().min(1, requiredMessage(label));
 
 // All Base & Loan fields are mandatory
 export const loanSchema = z.object({
-  baseSumAssured: required("Base Sum Assured"),
-  loanAmount: required("Loan Amount"),
+  baseSumAssured: requiredFormat("Base Sum Assured", "numeric"),
+  loanAmount: requiredFormat("Loan Amount", "numeric"),
   /** YYYY-MM-DD */
   loanDisbursementDate: required("Loan Disbursement Date"),
-  loanShare: required("Loan Share"),
-  loanTerm: required("Loan Term"),
-  policyTerm: required("Policy Term"),
-  masterCode: required("Master Code"),
-  loanAccountNumber: required("Loan Account Number"),
+  loanShare: requiredFormat("Loan Share", "numeric"),
+  loanTerm: requiredFormat("Loan Term", "numeric"),
+  policyTerm: requiredFormat("Policy Term", "numeric"),
+  masterCode: requiredFormat("Master Code", "alphanumeric"),
+  loanAccountNumber: requiredFormat("Loan Account Number", "alphanumeric"),
 });
 
 export type LoanEditValues = z.infer<typeof loanSchema>;

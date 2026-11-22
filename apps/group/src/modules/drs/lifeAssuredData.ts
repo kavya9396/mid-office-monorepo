@@ -150,7 +150,21 @@ const CONTACT_LABELS = [
   "Negative Pincode",
 ] as const;
 
-const LIFESTYLE_LABELS = ["Height", "Weight", "Other Medical History"] as const;
+const LIFESTYLE_LABELS = [
+  "Height",
+  "Weight",
+  "BMI",
+  "Smoker",
+  "Alcohol",
+  "Any Narcotics Question ticked Positive",
+  "Is Occupation Hazardous?",
+  "Any Medical Question ticked Positive",
+  "Is Family Medical History?",
+  "Family Medical History Details",
+  "Illness Impairment",
+  "Illness Impairment Details",
+  "Other Medical History",
+] as const;
 
 const normalizeLabel = (label: string) =>
   label.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -282,7 +296,6 @@ type EditValuesSource = {
   contactDetails: FieldData[];
   financialAndProfession: FieldData[];
   health: FieldData[];
-  lifestyleHabits: string;
 };
 
 const readEditValues = (source: EditValuesSource): Partial<EditApplicantValues> => {
@@ -302,7 +315,6 @@ const readEditValues = (source: EditValuesSource): Partial<EditApplicantValues> 
     emailId: fieldValue(source.contactDetails, "Email Id"),
     height: fieldValue(source.health, "Height"),
     weight: fieldValue(source.health, "Weight"),
-    lifestyleHabits: source.lifestyleHabits,
     annualIncome: fieldValue(source.financialAndProfession, "Annual Income"),
     applicantStatus:
       toMasterCode("misc", rawApplicantStatus, "applicant_status") ||
@@ -351,7 +363,6 @@ const toApplicant = (member: JsonRecord, total: number, riders: RiderEditRow[]):
 
   const contactAndAddress = asRecord(member.contact_and_address).value;
   const healthInformation = findByLabel(asRecord(member.medical_and_lifestyle).value, "Health Information");
-  const lifestyleHabits = findByLabel(asRecord(member.medical_and_lifestyle).value, "Lifestyle Habits");
 
   const nomineeRows = readNomineeRows(member.nominee, "Nominee Details");
   const appointeeRows = readNomineeRows(member.nominee, "Appointee Details");
@@ -378,7 +389,7 @@ const toApplicant = (member: JsonRecord, total: number, riders: RiderEditRow[]):
     firstName: str(row.firstName),
     lastName: str(row.lastName),
     dob: str(row.dob).slice(0, 10),
-    gender: str(row.gender),
+    gender: toMasterCode("gender", str(row.gender)),
     proposerNomineeRelation: str(row.proposerNomineeRelation) || str(row.relationship),
     percentage: str(row.share),
     accountNumber: str(row.accountNumber),
@@ -419,15 +430,14 @@ const toApplicant = (member: JsonRecord, total: number, riders: RiderEditRow[]):
       contactDetails,
       financialAndProfession: readFields(asRecord(member.financial_and_profession).value),
       health: readFields(healthInformation?.value),
-      lifestyleHabits: str(lifestyleHabits?.value),
     }),
     editNominees,
     editRiders: riders,
     editLoan: readLoan(member.base_and_loan_details),
-    lifestyleFields: [
-      ...readFixedFields(healthInformation?.value, LIFESTYLE_LABELS),
-      { label: "Lifestyle Habits", value: text(lifestyleHabits?.value) },
-    ],
+    lifestyleFields: readFixedFields(healthInformation?.value, LIFESTYLE_LABELS).map((field) => ({
+      ...field,
+      value: str(field.value).trim() === "" ? "-" : field.value,
+    })),
     genericFields: readNestedFields(member.generic),
     eiaFields: readNestedFields(member.eia),
     paymentDetails: readFields(findByLabel(asRecord(member.payment_and_payout).value, "Payment Details")?.value),
