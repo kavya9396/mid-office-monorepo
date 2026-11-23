@@ -7935,21 +7935,6 @@
     "isActive": "Y",
     "miscMastId": "536",
     "type": "GUW_REF_TO"
-  },{
-    "code": "3",
-    "description": "HOD",
-    "value": "HOD",
-    "isActive": "Y",
-    "miscMastId": "535",
-    "type": "GUW_REF_TO"
-  },
-  {
-    "code": "4",
-    "description": "SR UW",
-    "value": "SR UW",
-    "isActive": "Y",
-    "miscMastId": "536",
-    "type": "GUW_REF_TO"
   },
   {
     "code": "5",
@@ -8006,6 +7991,22 @@
     "isActive": "Y",
     "miscMastId": "543",
     "type": "GUW_REF_TO"
+  },
+  {
+    "code": "1",
+    "description": "HOD",
+    "value": "HOD",
+    "isActive": "Y",
+    "miscMastId": "544",
+    "type": "GUW_CS"
+  },
+  {
+    "code": "2",
+    "description": "SR UW",
+    "value": "SR UW",
+    "isActive": "Y",
+    "miscMastId": "545",
+    "type": "GUW_CS"
   }
 ,
       {

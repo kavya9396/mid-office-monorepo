@@ -20,7 +20,7 @@ import {
 } from "@insurance-poc/ui";
 import { groupPaths, replaceUrl } from "@insurance-poc/routes";
 import { ValidationList } from "@insurance-poc/common/validation-list";
-import { getDrsRoleType, getMasterList, getSessionUser } from "@insurance-poc/utils";
+import { getDrsRoleType, getDrsTaskIds, getMasterList, getSessionUser } from "@insurance-poc/utils";
 import {
   findPendingValidationMessage,
   type GuwRequiredValidations,
@@ -243,16 +243,22 @@ const readLoadingReasonOptions = () => readFirstAvailableMiscOptions(["GUW_EP_LO
 
 const readHoldReasonOptions = () => readFirstAvailableMiscOptions(["GUW_HOLD_RSN"]);
 
-// Counter Sign can only be referred to HOD or Sr UW
-const readReferToOptions = () =>
-  readFirstAvailableMiscOptions(["GUW_REF_TO"]).filter(
+// Counter Sign Refer To options from master data (GUW_CS from misc master, fallback to GUW_REF_TO)
+const readReferToOptions = () => {
+  const csOptions = readFirstAvailableMiscOptions(["GUW_CS"]);
+  if (csOptions.length > 0) return csOptions;
+  return readFirstAvailableMiscOptions(["GUW_REF_TO"]).filter(
     (option) => assigneeRoleForReferTo(option.value) !== "",
   );
+};
 
 // Counter Sign reasons depend on the selected Refer To (HOD / Sr UW)
 const APPROVER_REASON_TYPE_BY_TARGET: Record<string, string | undefined> = {
   hod: "GUW_REF_HOD_CS",
   "sr uw": "GUW_REF_SRUW_CS",
+  sruw: "GUW_REF_SRUW_CS",
+  sr_uw: "GUW_REF_SRUW_CS",
+  "senior uw": "GUW_REF_SRUW_CS",
 };
 
 const readApproverReasonOptions = (target: string) => {
@@ -319,6 +325,9 @@ const readReferralTypeOptions = () =>
 // Assigned To is enabled only for these referral rows
 const ASSIGNABLE_REFERRALS = ["REF_SR_UW", "REF_HOD"];
 
+// Referrals whose Reason dropdown is disabled
+const DISABLED_REASON_REFERRALS = ["REF_ACU", "REF_CUW_CLM"];
+
 // Referral reason options per referral row come from these master `misc` types.
 // REF_VIDEO_MER has no master type yet, so it keeps its static list.
 const REFERRAL_REASON_MASTER_TYPES: Record<string, string | undefined> = {
@@ -329,8 +338,6 @@ const REFERRAL_REASON_MASTER_TYPES: Record<string, string | undefined> = {
   REF_CMO: "GUW_HO_CMO_RSN",
   REF_CMO_LOCAL: "GUW_CMO_RSN",
   REF_RISK: "GUW_REF_RSK",
-  REF_ACU: "GUW_REF_ACC",
-  REF_CUW_CLM: "GUW_REF_CUW_CLAIM",
   REF_TELE_MER: "GUW_TELE_MER_RSN",
 };
 
@@ -339,9 +346,11 @@ const REFERRAL_STATIC_REASON_OPTIONS: Record<string, string[] | undefined> = {
 };
 
 const hasReferralReasonOptions = (target: string) =>
-  REFERRAL_REASON_MASTER_TYPES[target] !== undefined || REFERRAL_STATIC_REASON_OPTIONS[target] !== undefined;
+  !DISABLED_REASON_REFERRALS.includes(target) &&
+  (REFERRAL_REASON_MASTER_TYPES[target] !== undefined || REFERRAL_STATIC_REASON_OPTIONS[target] !== undefined);
 
 const readReferralReasonOptions = (target: string) => {
+  if (DISABLED_REASON_REFERRALS.includes(target)) return [];
   const type = REFERRAL_REASON_MASTER_TYPES[target];
   if (type) return readFirstAvailableMiscOptions([type]);
   return (REFERRAL_STATIC_REASON_OPTIONS[target] ?? []).map((text) => ({ value: text, label: text }));
@@ -561,7 +570,9 @@ export function GuwUwPanel({
   // Dialog multi-step & decision-validation (UW Guidelines) states
   const [dialogStep, setDialogStep] = useState<number>(1);
   const [validation, setValidation] = useState<GuwValidationResult | null>(null);
-  const [validationRows, setValidationRows] = useState<GuwSavedValidationRow[]>([]);
+  const [validationRows, setValidationRows] = useState<GuwSavedValidationRow[]>(
+    () => initialSubmittedDecision?.validationRows ?? [],
+  );
   const [validating, setValidating] = useState<boolean>(false);
   // Party-level failures of the validation API; the Validations modal is open while this is not empty
   const [partyValidationRows, setPartyValidationRows] = useState<GuwPartyValidationRow[]>([]);
@@ -610,17 +621,32 @@ export function GuwUwPanel({
   const [smokerFlag, setSmokerFlag] = useState<string>(
     () => initialSubmittedDecision?.fields.find((f) => f.label === "Smoker Flag")?.value ?? "",
   );
-  const [subStdReason, setSubStdReason] = useState<string[]>([]);
-  const [postponementPeriod, setPostponementPeriod] = useState<string>("");
-  const [holdReason, setHoldReason] = useState<string>("");
+  const [subStdReason, setSubStdReason] = useState<string[]>(() => {
+    const raw = initialSubmittedDecision?.fields.find((f) => f.label === "Reasons")?.value;
+    return raw ? raw.split(", ").map((r) => r.trim()).filter(Boolean) : [];
+  });
+  const [postponementPeriod, setPostponementPeriod] = useState<string>(
+    () => initialSubmittedDecision?.fields.find((f) => f.label === "Postponement Period")?.value ?? "",
+  );
+  const [holdReason, setHoldReason] = useState<string>(
+    () => initialSubmittedDecision?.fields.find((f) => f.label === "Hold Reasons")?.value ?? "",
+  );
 
   // Approver states
-  const [approverTarget, setApproverTarget] = useState<string>(""); // HOD or Sr UW
-  const [approverReason, setApproverReason] = useState<string>("");
-  const [approverAssignedTo, setApproverAssignedTo] = useState<string>("");
+  const [approverTarget, setApproverTarget] = useState<string>(
+    () => initialSubmittedDecision?.fields.find((f) => f.label === "Refer To")?.value ?? "",
+  );
+  const [approverReason, setApproverReason] = useState<string>(
+    () => initialSubmittedDecision?.fields.find((f) => f.label === "Reason")?.value ?? "",
+  );
+  const [approverAssignedTo, setApproverAssignedTo] = useState<string>(
+    () => initialSubmittedDecision?.fields.find((f) => f.label === "Assigned To")?.value ?? "",
+  );
 
   // Referral states
-  const [referralReason, setReferralReason] = useState<string>("");
+  const [referralReason, setReferralReason] = useState<string>(
+    () => initialSubmittedDecision?.fields.find((f) => f.label === "Referral Reason")?.value ?? "",
+  );
   const [referralRows, setReferralRows] = useState<{
     target: string;
     label: string;
@@ -628,16 +654,21 @@ export function GuwUwPanel({
     reason: string;
     remarks: string;
     assignedTo: string;
-  }[]>(() =>
-    readReferralTypeOptions().map((opt) => ({
+  }[]>(() => {
+    const savedReferrals = initialSubmittedDecision?.fields.find((f) => f.label === "Refer To")?.value;
+    const names = savedReferrals ? savedReferrals.split(",").map((s) => s.trim().toLowerCase()) : [];
+    const savedReason = initialSubmittedDecision?.fields.find((f) => f.label === "Referral Reason")?.value ?? "";
+    const savedRemarks = initialSubmittedDecision?.fields.find((f) => f.label === "Referral Remarks")?.value ?? "";
+    const savedAssigned = initialSubmittedDecision?.fields.find((f) => f.label === "Assigned To")?.value ?? "";
+    return readReferralTypeOptions().map((opt) => ({
       target: opt.value,
       label: opt.label,
-      selected: false,
-      reason: "",
-      remarks: "",
-      assignedTo: "",
-    }))
-  );
+      selected: names.includes(opt.label.toLowerCase()) || names.includes(opt.value.toLowerCase()),
+      reason: savedReason,
+      remarks: savedRemarks,
+      assignedTo: savedAssigned,
+    }));
+  });
   // "Assigned To" users come from the users-by-role API; a role is fetched only once HOD / Sr UW is picked
   const hodPicked =
     referralRows.some((r) => r.target === "REF_HOD" && r.selected) ||
@@ -887,27 +918,113 @@ export function GuwUwPanel({
     };
   };
 
+  const resetDecisionFields = () => {
+    setDialogRemarks("");
+    setSubStdReason([]);
+    setPostponementPeriod("");
+    setHoldReason("");
+    setApproverTarget("");
+    setApproverReason("");
+    setApproverAssignedTo("");
+    setReferralReason("");
+    setReferralRows(
+      readReferralTypeOptions().map((opt) => ({
+        target: opt.value,
+        label: opt.label,
+        selected: false,
+        reason: "",
+        remarks: "",
+        assignedTo: "",
+      })),
+    );
+    setReconsiderPossible("");
+    setReconsiderAfter("");
+    setReconsiderReqType("");
+    setReconsiderReqTypeOther("");
+    setReconsiderReqDetails("");
+    setSmokerFlag("");
+    setDecisionCodeValue("");
+    setReinsurerUwNames(["", ""]);
+    setReinsurerDocChecks(REFERRAL_DOCUMENTS.map(() => reinsurerRows.map(() => false)));
+    if (["CO", "BOR_STD", "EP"].includes(effectiveDecision)) {
+      setCounterOfferRows(
+        productList.map((prod, idx) => ({
+          id: `dd-${idx}`,
+          productName: prod.name,
+          isRider: prod.isRider,
+          type: "",
+          bstdCode: "",
+          sa: prod.sa,
+          changedSa: "",
+          pt: prod.pt,
+          changedPt: "",
+          loadingClass: "",
+          loadingReason: "",
+        })),
+      );
+    } else {
+      setCounterOfferRows([]);
+    }
+  };
+
   const openDecisionDialog = (code: string) => {
     setDialogDecision(code);
-    // Decision Code options depend on the Case UW Decision; a code already saved for it stays selected
-    const savedDecisionCode = codeOfDecisionCodeText(
-      submittedDecision?.fields.find((f) => f.label === "Decision Code")?.value ?? "",
-    );
-    void loadDecisionCodeOptions(code, savedDecisionCode);
     setApproverBaseDecision("");
     setGuidelinesConfirmed(false);
-    setDialogRemarks(remarks);
     setDialogStep(1);
-    const prevSmoker = submittedDecision?.fields.find((f) => f.label === "Smoker Flag")?.value;
-    if (prevSmoker) {
-      setSmokerFlag(prevSmoker);
-    }
-    // UW Guidelines are fetched again on Submit; earlier saved justifications are restored then
     setValidation(null);
-    setValidationRows([]);
     if (code === "REFERRAL") {
       setReinsurerEditOpen(false);
     }
+
+    const isCurrentSubmitted = submittedDecision && selectedDecision === code;
+    if (isCurrentSubmitted) {
+      if (submittedDecision.validationRows && submittedDecision.validationRows.length > 0) {
+        setValidationRows(submittedDecision.validationRows.map((r) => ({ ...r })));
+      } else {
+        setValidationRows([]);
+      }
+      const savedDecisionCode = codeOfDecisionCodeText(
+        submittedDecision.fields.find((f) => f.label === "Decision Code")?.value ?? "",
+      );
+      void loadDecisionCodeOptions(code, savedDecisionCode);
+      setDialogRemarks(submittedDecision.remarks ?? remarks);
+      const prevSmoker = submittedDecision.fields.find((f) => f.label === "Smoker Flag")?.value;
+      if (prevSmoker) setSmokerFlag(prevSmoker);
+      const prevReasons = submittedDecision.fields.find((f) => f.label === "Reasons")?.value;
+      if (prevReasons) setSubStdReason(prevReasons.split(", ").map((r) => r.trim()).filter(Boolean));
+      const prevHold = submittedDecision.fields.find((f) => f.label === "Hold Reasons")?.value;
+      if (prevHold) setHoldReason(prevHold);
+      const prevPostp = submittedDecision.fields.find((f) => f.label === "Postponement Period")?.value;
+      if (prevPostp) setPostponementPeriod(prevPostp);
+      const prevReconsider = submittedDecision.reconsiderationFields?.find((f) => f.label === "Reconsideration Possible?")?.value;
+      if (prevReconsider === "Yes" || prevReconsider === "No") setReconsiderPossible(prevReconsider);
+      const prevReqDetails = submittedDecision.reconsiderationFields?.find((f) => f.label === "Requirement Details")?.value;
+      if (prevReqDetails) setReconsiderReqDetails(prevReqDetails);
+      const prevAfter = submittedDecision.reconsiderationFields?.find((f) => f.label === "Reconsider After")?.value;
+      if (prevAfter) setReconsiderAfter(prevAfter);
+      const prevReqType = submittedDecision.reconsiderationFields?.find((f) => f.label === "Requirement Type")?.value;
+      if (prevReqType) setReconsiderReqType(prevReqType);
+      const prevReqOther = submittedDecision.reconsiderationFields?.find((f) => f.label === "Other Requirement Type")?.value;
+      if (prevReqOther) setReconsiderReqTypeOther(prevReqOther);
+      const prevReferTo = submittedDecision.fields.find((f) => f.label === "Refer To")?.value;
+      if (prevReferTo) setApproverTarget(prevReferTo);
+      const prevReason = submittedDecision.fields.find((f) => f.label === "Reason")?.value;
+      if (prevReason) setApproverReason(prevReason);
+      const prevAssigned = submittedDecision.fields.find((f) => f.label === "Assigned To")?.value;
+      if (prevAssigned) setApproverAssignedTo(prevAssigned);
+      if (submittedDecision.counterOfferRows && submittedDecision.counterOfferRows.length > 0) {
+        setCounterOfferRows(submittedDecision.counterOfferRows.map((r) => ({ ...r })));
+      }
+      if (submittedDecision.reinsurerRows && submittedDecision.reinsurerRows.length > 0) {
+        setReinsurerUwNames(submittedDecision.reinsurerRows.map((r) => r.uwName));
+      }
+    } else {
+      setValidationRows([]);
+      resetDecisionFields();
+      void loadDecisionCodeOptions(code, "");
+    }
+
     setDialogOpen(true);
   };
 
@@ -918,6 +1035,7 @@ export function GuwUwPanel({
       setSubmittedDecision(null);
       setRemarks("");
       setSmokerFlag("");
+      resetDecisionFields();
       clearGuwSubmittedDecision(storageKey ?? applicationNo);
       onDecisionSubmit("", "");
       return;
@@ -936,6 +1054,19 @@ export function GuwUwPanel({
       const selectedReferrals = referralRows.filter((r) => r.selected);
       if (selectedReferrals.length === 0) {
         notify("Please select at least one referral", "error");
+        return;
+      }
+      const mandatoryRef = validation?.mandatoryReferTo;
+      if (
+        mandatoryRef &&
+        !selectedReferrals.some(
+          (r) =>
+            r.target === mandatoryRef ||
+            r.target.toLowerCase() === mandatoryRef.toLowerCase() ||
+            (mandatoryRef === "REF_CMO" && r.target === "REF_CMO"),
+        )
+      ) {
+        notify(`Referral to ${mandatoryRef} is mandatory for this decision.`, "error");
         return;
       }
       // Sr UW / HOD Opinion: Reason, Remarks and Assigned To are mandatory
@@ -1023,37 +1154,40 @@ export function GuwUwPanel({
       const result = await validateGuwDecision(validationRequest).unwrap();
       setValidation(result);
 
-      // Same as DVT: any validation returned by the API opens the Validations modal and blocks the submit
-      if (result.partyValidations.length > 0) {
-        setPartyValidationRows(result.partyValidations);
-        return;
-      }
       if (result.success) {
         await finalizeSubmit();
         return;
       }
+
+      // If validation returns rows (either from partyValidations or justifications/alerts)
+      if (result.rows.length > 0) {
+        const rows = mergeSavedRows(result.rows, submittedDecision?.validationRows);
+        setValidationRows(rows);
+
+        // Already handled when the held decision is the Referral / Counter Sign the case needs and every
+        // guideline is justified; otherwise the UW Guidelines open so the user can resolve them
+        const requiresRouting =
+          result.referralRequired || result.counterSignRequired || Boolean(result.mandatoryReferTo);
+        const routed = !requiresRouting || ["REFERRAL", "APPROVER"].includes(dialogDecision);
+        if (routed && !hasBlockerAlert(rows) && areJustificationsComplete(rows)) {
+          await finalizeSubmit();
+          return;
+        }
+
+        // Open UW Guidelines so the user can justify / route the case, then submit again
+        setGuidelinesConfirmed(false);
+        setDialogStep(2);
+        setDialogOpen(true);
+        return;
+      }
+
+      if (result.partyValidations.length > 0) {
+        setPartyValidationRows(result.partyValidations);
+        return;
+      }
+
       // Failure without anything to resolve: the decision cannot be submitted
-      if (result.rows.length === 0) {
-        notify("Validation failed. The decision cannot be submitted.", "error");
-        return;
-      }
-
-      const rows = mergeSavedRows(result.rows, submittedDecision?.validationRows);
-      setValidationRows(rows);
-
-      // Already handled when the held decision is the Referral / Counter Sign the case needs and every
-      // guideline is justified; otherwise the UW Guidelines open so the user can resolve them
-      const requiresRouting = result.referralRequired || result.counterSignRequired;
-      const routed = !requiresRouting || ["REFERRAL", "APPROVER"].includes(dialogDecision);
-      if (routed && !hasBlockerAlert(rows) && areJustificationsComplete(rows)) {
-        await finalizeSubmit();
-        return;
-      }
-
-      // Open UW Guidelines so the user can justify / route the case, then submit again
-      setGuidelinesConfirmed(false);
-      setDialogStep(2);
-      setDialogOpen(true);
+      notify("Validation failed. The decision cannot be submitted.", "error");
     } catch (reason: unknown) {
       // Validation service failed: nothing is submitted and the page stays as it is
       console.error("[GuwUwPanel] validation failed:", reason);
@@ -1091,10 +1225,24 @@ export function GuwUwPanel({
     keepCounterOfferRowsRef.current = true;
     setDialogDecision(code);
     if (code === "REFERRAL") {
-      // Only one referral row is pre-selected (CMO / other, then Sr UW, HOD, Reinsurer)
-      const picked = pickReferralRow(referralTargetsOf(validationRows));
-      setReferralRows((prev) => prev.map((r) => ({ ...r, selected: r.target === picked })));
-      setReinsurerEditOpen(picked === "REF_REINS");
+      const mandatoryRef = validation?.mandatoryReferTo;
+      if (mandatoryRef) {
+        setReferralRows((prev) =>
+          prev.map((r) => ({
+            ...r,
+            selected:
+              r.target === mandatoryRef ||
+              r.target.toLowerCase() === mandatoryRef.toLowerCase() ||
+              (mandatoryRef === "REF_CMO" && r.target === "REF_CMO"),
+          })),
+        );
+        setReinsurerEditOpen(mandatoryRef === "REF_REINS");
+      } else {
+        // Only one referral row is pre-selected (CMO / other, then Sr UW, HOD, Reinsurer)
+        const picked = pickReferralRow(referralTargetsOf(validationRows));
+        setReferralRows((prev) => prev.map((r) => ({ ...r, selected: r.target === picked })));
+        setReinsurerEditOpen(picked === "REF_REINS");
+      }
     }
     setDialogStep(1);
   };
@@ -1123,7 +1271,8 @@ export function GuwUwPanel({
     }
 
     // Referral always takes priority over counter sign; final submit happens from that screen.
-    const nextAction = validation?.referralRequired
+    const mandatoryRef = validation?.mandatoryReferTo;
+    const nextAction = validation?.referralRequired || Boolean(mandatoryRef)
       ? "REFERRAL"
       : validation?.counterSignRequired
         ? "APPROVER"
@@ -1146,11 +1295,14 @@ export function GuwUwPanel({
     }
     if (partyId && ["REFERRAL", "APPROVER"].includes(effectiveDecision)) {
       // Raise Referral (Opinion / Referral) and Counter Sign go through the `parallel-decision` API
+      const { taskId, instanceId } = getDrsTaskIds();
       const parallelBase = {
         applicationNo: drsApplicationNo || applicationNo,
         partyId,
         screenType: GUW_UW_DECISION_SCREEN_TYPE,
         userId: getSessionUser()?.username ?? "",
+        taskId,
+        instanceId,
       };
       const parallelRequests =
         effectiveDecision === "REFERRAL"
@@ -1176,12 +1328,15 @@ export function GuwUwPanel({
         }
       }
     } else if (partyId) {
+      const { taskId, instanceId } = getDrsTaskIds();
       const uwDecisionRequest = buildGuwUwDecisionRequest({
           applicationNo: drsApplicationNo || applicationNo,
           partyId,
           roleType: getDrsRoleType(),
           screenType: GUW_UW_DECISION_SCREEN_TYPE,
           createdBy: getSessionUser()?.username ?? "",
+          taskId,
+          instanceId,
           // Counter Sign is saved as APPROVER (with reason / referTo / assignedTo), not as the base decision
           decision: effectiveDecision === "APPROVER" ? "APPROVER" : caseDecision,
           // The Decision Code picked from the `uw_decision_mapping` master is sent as `decisionCode`
@@ -1785,6 +1940,7 @@ export function GuwUwPanel({
                       value={dialogDecision}
                       onChange={(val) => {
                         setDialogDecision(val);
+                        resetDecisionFields();
                         // Decision Code options depend on the Case UW Decision: call the master API again
                         void loadDecisionCodeOptions(val, "");
                       }}
@@ -1894,6 +2050,8 @@ export function GuwUwPanel({
                           (row.target === "REF_VIDEO_MER" && isTeleMerSelected) ||
                           (row.target === "REF_TELE_MER" && isVideoMerSelected);
                         const canAssign = ASSIGNABLE_REFERRALS.includes(row.target);
+                        const isReasonDisabled =
+                          !row.selected || isRowDisabled || DISABLED_REASON_REFERRALS.includes(row.target);
                         const reasonOptions = readReferralReasonOptions(row.target);
 
                         return (
@@ -1960,7 +2118,7 @@ export function GuwUwPanel({
                             </td>
                             <td style={{ padding: "6px 8px", border: "1px solid #ded9d6" }}>
                               <CustomSelect
-                                value={row.reason}
+                                value={DISABLED_REASON_REFERRALS.includes(row.target) ? "" : row.reason}
                                 onChange={(val) => {
                                   setReferralRows((prev) => {
                                     const copy = [...prev];
@@ -1968,9 +2126,9 @@ export function GuwUwPanel({
                                     return copy;
                                   });
                                 }}
-                                options={reasonOptions}
-                                disabled={!row.selected || isRowDisabled}
-                                placeholder="Select reason"
+                                options={isReasonDisabled ? [] : reasonOptions}
+                                disabled={isReasonDisabled}
+                                placeholder={DISABLED_REASON_REFERRALS.includes(row.target) ? "-" : "Select reason"}
                                 fullWidth
                               />
                             </td>

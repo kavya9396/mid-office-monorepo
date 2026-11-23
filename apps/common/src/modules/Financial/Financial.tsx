@@ -1555,6 +1555,9 @@ export function Financial({
                 : FINANCIAL_MESSAGES.sectionSaved(section.title)),
             severity: failed ? "error" : "success",
           });
+          if (!failed) {
+            window.location.reload();
+          }
           return !failed;
         }
       } catch (reason: unknown) {
@@ -1568,6 +1571,7 @@ export function Financial({
         message: FINANCIAL_MESSAGES.sectionSaved(section.title),
         severity: "success",
       });
+      window.location.reload();
       return true;
     },
     [

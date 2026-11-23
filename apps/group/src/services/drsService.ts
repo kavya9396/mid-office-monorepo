@@ -2,6 +2,7 @@ import {
   applyBusinessApiAuthHeaders,
   formatIndianCurrency,
   getDrsRoleType,
+  getDrsTaskIds,
   getSessionUser,
   getToken,
   masterUrls,
@@ -380,6 +381,8 @@ export interface GuwDecisionFormInput {
   roleType: string;
   screenType: string;
   createdBy: string;
+  taskId?: string;
+  instanceId?: string;
   /** Decision code sent as `decision` and `decisionCode` (STD, BOR_STD, REJ, DC, POSTP, CO, EP, HOLD, APPROVER ...). */
   decision: string;
   /** Decision Code picked from the `uw_decision_mapping` master; sent as `decisionCode` (falls back to `decision`). */
@@ -436,6 +439,8 @@ export interface GuwUwDecisionRequest {
   decision: string;
   decisionCode: string;
   uwRemarks: string;
+  taskId?: string;
+  instanceId?: string;
   reasons?: string | string[];
   recAllowed?: string;
   reconsiderAfter?: string;
@@ -531,6 +536,9 @@ export function hasGuwDecisionProducts(decision: string): boolean {
  */
 export function buildGuwUwDecisionRequest(input: GuwDecisionFormInput): GuwUwDecisionRequest {
   const { decision } = input;
+  const taskIds = getDrsTaskIds();
+  const taskId = input.taskId?.trim() || taskIds.taskId;
+  const instanceId = input.instanceId?.trim() || taskIds.instanceId;
   const request: GuwUwDecisionRequest = {
     applicationNo: input.applicationNo,
     partyId: input.partyId,
@@ -542,6 +550,8 @@ export function buildGuwUwDecisionRequest(input: GuwDecisionFormInput): GuwUwDec
     decisionCode: input.decisionCode?.trim() || decision,
     uwRemarks: input.uwRemarks,
     createdBy: input.createdBy,
+    ...(taskId ? { taskId } : {}),
+    ...(instanceId ? { instanceId } : {}),
   };
 
   if (PRODUCT_DECISIONS.includes(decision) || RECONSIDER_DECISIONS.includes(decision)) {
@@ -574,7 +584,10 @@ export function buildGuwUwDecisionRequest(input: GuwDecisionFormInput): GuwUwDec
 }
 
 /** Base fields shared by every referral request (the per-row fields are added by the caller). */
-export type GuwReferralBaseInput = Pick<GuwDecisionFormInput, "applicationNo" | "partyId" | "roleType" | "screenType" | "createdBy">;
+export type GuwReferralBaseInput = Pick<
+  GuwDecisionFormInput,
+  "applicationNo" | "partyId" | "roleType" | "screenType" | "createdBy" | "taskId" | "instanceId"
+>;
 
 /**
  * Raise Referral: one `uw-decision` request per selected referral row, sent together as an array.
@@ -584,6 +597,9 @@ export function buildGuwUwReferralRequests(
   base: GuwReferralBaseInput,
   rows: GuwReferralRowInput[],
 ): GuwUwDecisionRequest[] {
+  const taskIds = getDrsTaskIds();
+  const taskId = base.taskId?.trim() || taskIds.taskId;
+  const instanceId = base.instanceId?.trim() || taskIds.instanceId;
   return rows.map((row) => {
     const request: GuwUwDecisionRequest = {
       applicationNo: base.applicationNo,
@@ -598,6 +614,8 @@ export function buildGuwUwReferralRequests(
       reason: row.reason,
       referTo: row.target,
       createdBy: base.createdBy,
+      ...(taskId ? { taskId } : {}),
+      ...(instanceId ? { instanceId } : {}),
     };
     const assignedTo = row.assignedTo.trim();
     if (assignedTo) request.assignedTo = assignedTo;
@@ -633,12 +651,16 @@ export interface GuwParallelDecisionRequest {
   partyId: string;
   action: GuwParallelDecisionAction;
   userId: string;
+  taskId?: string;
+  instanceId?: string;
   /** Raise Referral only: the Refer To values (master GUW_REF_TO) of the selected rows, e.g. ["IT", "HOD"]. */
   refer_to?: string[];
 }
 
 export type GuwParallelDecisionBaseInput = Pick<GuwDecisionFormInput, "applicationNo" | "partyId" | "screenType"> & {
   userId: string;
+  taskId?: string;
+  instanceId?: string;
 };
 
 /** Referral rows whose Refer To is an opinion (Sr UW Opinion / HOD Opinion); every other row is a plain referral. */
@@ -650,6 +672,9 @@ function toParallelDecisionRequest(
   parallelDecision: GuwParallelDecisionItem[],
   referTo?: string[],
 ): GuwParallelDecisionRequest {
+  const taskIds = getDrsTaskIds();
+  const taskId = base.taskId?.trim() || taskIds.taskId;
+  const instanceId = base.instanceId?.trim() || taskIds.instanceId;
   return {
     screenType: base.screenType,
     lob: GUW_LOB,
@@ -658,6 +683,8 @@ function toParallelDecisionRequest(
     partyId: base.partyId,
     action,
     userId: base.userId,
+    ...(taskId ? { taskId } : {}),
+    ...(instanceId ? { instanceId } : {}),
     ...(referTo ? { refer_to: referTo } : {}),
   };
 }
@@ -776,9 +803,9 @@ export const GUW_ASSIGNEE_ROLE = {
 
 /** Role whose users are listed for a Counter Sign "Refer To" value ("HOD" / "Sr UW"); "" when none. */
 export function assigneeRoleForReferTo(referTo: string): string {
-  const key = referTo.trim().toLowerCase();
+  const key = referTo.trim().toLowerCase().replace(/\s+/g, " ");
   if (key === "hod") return GUW_ASSIGNEE_ROLE.HOD;
-  if (key === "sr uw") return GUW_ASSIGNEE_ROLE.SR_UW;
+  if (key === "sr uw" || key === "sruw" || key === "sr_uw" || key === "senior uw") return GUW_ASSIGNEE_ROLE.SR_UW;
   return "";
 }
 
@@ -975,6 +1002,7 @@ export interface GuwValidationResult {
   success: boolean;
   referralRequired: boolean;
   counterSignRequired: boolean;
+  mandatoryReferTo?: string;
   /** Justification rows first, then checklist, hard alerts and soft alerts. */
   rows: GuwValidationRow[];
   /** Party-level failures (same shape as the DVT validation API); any entry stops the submit. */
@@ -1541,6 +1569,12 @@ export function mapGuwDrsPayload(payload: unknown, memberId?: string): GuwDrsRec
   };
 
   const caseDecisionFields = recordOf(findSectionValue(sections, "caseUwDecision")).fields;
+  const caseDecisionVal =
+    fieldValue(caseDecisionFields, "Case UW Decision") ||
+    fieldValue(caseDecisionFields, "Decision");
+  const caseRemarksVal =
+    fieldValue(caseDecisionFields, "Case UW Remarks") ||
+    fieldValue(caseDecisionFields, "Remarks");
 
   const applicantProfile = recordOf(
     recordList(data.subSections).find((s) => s.name === "applicantProfile")?.value,
@@ -1607,6 +1641,36 @@ export function mapGuwDrsPayload(payload: unknown, memberId?: string): GuwDrsRec
     uwData: {
       breOverallDecision: fieldValue(caseDecisionFields, "BRE Overall Decision"),
       breOverallRemarks: fieldValue(caseDecisionFields, "BRE Overall Remarks"),
+      ...(caseDecisionVal
+        ? {
+            submittedDecision: {
+              decisionCode: GUW_DECISION_CODE_BY_LABEL[caseDecisionVal.toLowerCase()] ?? caseDecisionVal,
+              remarks: caseRemarksVal,
+              fields: [
+                { label: "Case UW Decision", value: caseDecisionVal },
+                ...(caseRemarksVal ? [{ label: "Remarks", value: caseRemarksVal, wide: true }] : []),
+              ],
+              reconsiderationFields: [],
+              counterOfferRows: [],
+              showBstdColumn: false,
+              reinsurerRows: [],
+              documentRows: [],
+              guidelines: [],
+              validationRows: dialogSections.uwGuidelines.rows.map((r, i) => ({
+                validationId: String(i + 1),
+                category: "justification" as const,
+                reason: r.reason,
+                remark: r.remark,
+                systemAction: r.systemAction,
+                selectedReasonCode: r.justificationReason,
+                justificationRemark: r.justificationRemark,
+                justificationOptions: (
+                  dialogSections.uwGuidelines.justificationReasons ?? DEFAULT_JUSTIFICATION_REASONS
+                ).map((t) => ({ code: t, text: t })),
+              })),
+            },
+          }
+        : {}),
     },
   };
 }
@@ -1710,12 +1774,40 @@ export async function fetchGuwDrs(
   const payload = await loadGuwPayload(applicationNo, roleType);
   if (!payload) return null;
   const record = mapGuwDrsPayload(payload, memberId);
-  const submittedDecision = loadGuwSubmittedDecision(applicationNo) ?? undefined;
+  const sessionDecision = loadGuwSubmittedDecision(applicationNo) ?? undefined;
+  const submittedDecision = sessionDecision ?? record.uwData?.submittedDecision ?? undefined;
   const resolvedAppNo = record.applicationNo || applicationNo;
+
+  let updatedDialogSections = record.sections;
+  let updatedSdtRow = record.sdtRow;
+  if (submittedDecision?.validationRows && submittedDecision.validationRows.length > 0) {
+    if (updatedDialogSections.uwGuidelines.rows.length === 0) {
+      updatedDialogSections = {
+        ...updatedDialogSections,
+        uwGuidelines: {
+          ...updatedDialogSections.uwGuidelines,
+          rows: submittedDecision.validationRows.map((r) => ({
+            reason: r.reason,
+            remark: r.remark,
+            systemAction: r.systemAction,
+            justificationReason: r.selectedReasonCode || "",
+            justificationRemark: r.justificationRemark || "",
+          })),
+        },
+      };
+      updatedSdtRow = {
+        ...updatedSdtRow,
+        uwGuidelinesCount: submittedDecision.validationRows.length,
+      };
+    }
+  }
+
   return {
     ...record,
     applicationNo: resolvedAppNo,
     applicationLabel: `App No. - ${resolvedAppNo}`,
+    sections: updatedDialogSections,
+    sdtRow: updatedSdtRow,
     uwData: submittedDecision
       ? {
           breOverallDecision: record.uwData?.breOverallDecision ?? "",
@@ -1777,15 +1869,89 @@ function mapAlertRows(v: unknown, category: "hardAlert" | "softAlert"): GuwValid
   }));
 }
 
+const DEFAULT_JUSTIFICATION_REASONS = [
+  "Requirement waived",
+  "Document pending",
+  "Financial assessment",
+  "Medical assessment",
+  "Counter signing",
+  "Other",
+];
+
+const GUW_DECISION_CODE_BY_LABEL: Record<string, string> = {
+  standard: "STD",
+  "counter offer": "CO",
+  decline: "DC",
+  reject: "REJ",
+  postpone: "POSTP",
+  hold: "HOLD",
+  "extra premium": "EP",
+  "borderline standard": "BOR_STD",
+  "refer to hod": "REF_HOD",
+  "refer to sr.uw": "REF_SR_UW",
+  "refer to ho cmo": "REF_CMO",
+  "refer to cmo": "REF_CMO",
+  "refer to reinsurer": "REF_REINS",
+  "refer to it": "REF_IT",
+  "refer to risk": "REF_RISK",
+  "refer to accuity": "REF_ACU",
+  "refer to cuw claim audit": "REF_CUW_CLM",
+  "refer to tele mer": "REF_TELE_MER",
+  "refer to video mer": "REF_VIDEO_MER",
+  "refer to dvt": "REF_DVT",
+  "counter sign": "APPROVER",
+  "raise referral": "REFERRAL",
+};
+
 /** DTO -> domain. Unknown fields are dropped; missing lists become empty. */
 export function fromGuwValidationResponse(dto: unknown): GuwValidationResult {
   const src = isRecord(dto) ? dto : {};
+
+  // Extract guidelines and mandatory referral from `partyValidations`
+  const partyGuidelineRows: GuwValidationRow[] = [];
+  const partyValidationsRaw = recordList(src.partyValidations);
+  let mandatoryReferTo: string | undefined = undefined;
+
+  for (const party of partyValidationsRaw) {
+    const refTo = str(party.referTo);
+    if (refTo && !mandatoryReferTo) {
+      mandatoryReferTo = refTo;
+    }
+    const partyValidationsList = recordList(party.validations);
+    for (const item of partyValidationsList) {
+      const action = str(item.action);
+      partyGuidelineRows.push({
+        validationId: str(item.validationId),
+        category: "justification",
+        reason: str(item.reason),
+        remark: str(item.remarks),
+        systemAction: action,
+        justificationOptions: DEFAULT_JUSTIFICATION_REASONS.map((text) => ({
+          code: text,
+          text,
+        })),
+      });
+      if (action.startsWith("REF_") && !mandatoryReferTo) {
+        mandatoryReferTo = action;
+      }
+    }
+  }
+
   const rows = [
+    ...partyGuidelineRows,
     ...mapOptionRows(src.justifications, "justification"),
     ...mapOptionRows(src.checklist, "checklist"),
     ...mapAlertRows(src.HardAlert, "hardAlert"),
     ...mapAlertRows(src.SoftAlert, "softAlert"),
   ].sort((a, b) => CATEGORY_ORDER.indexOf(a.category) - CATEGORY_ORDER.indexOf(b.category));
+
+  const hasReferralAction =
+    Boolean(mandatoryReferTo) ||
+    rows.some((r) => r.systemAction.startsWith("REF_") || /^refer to /i.test(r.systemAction));
+  const hasCounterSignAction =
+    mandatoryReferTo === "REFER_TO_CS" ||
+    rows.some((r) => r.systemAction === "REFER_TO_CS" || /counter sign/i.test(r.systemAction));
+
   // Same `partyValidations` contract and reader as the DVT validation API
   const partyValidations = readDvtValidationResponse(src).partyValidations.flatMap((party) =>
     party.validations.map((item) => ({
@@ -1794,12 +1960,14 @@ export function fromGuwValidationResponse(dto: unknown): GuwValidationResult {
       remarks: item.remarks,
     })),
   );
+
   return {
     applicationNo: str(src.applicationNo),
     correlationId: str(src.correlationId),
     success: str(src.status).toUpperCase() === "SUCCESS",
-    referralRequired: src.referralReqd === "Y",
-    counterSignRequired: src.counterSignReqd === "Y",
+    referralRequired: src.referralReqd === "Y" || hasReferralAction,
+    counterSignRequired: src.counterSignReqd === "Y" || hasCounterSignAction,
+    mandatoryReferTo,
     rows,
     partyValidations,
   };
