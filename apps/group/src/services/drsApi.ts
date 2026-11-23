@@ -9,12 +9,12 @@ import type {
 } from "@insurance-poc/common/life-assured";
 import {
   absoluteApiBaseUrl,
+  buildAuthServiceGetHeaders,
   createBusinessBaseQuery,
   getDrsRoleType,
   getMasterList,
   getSessionBusinessType,
   getSessionUser,
-  getToken,
   groupBusinessUrls,
   useMock,
   userUrls,
@@ -612,10 +612,11 @@ export const groupDrsApi = createApi({
           return { error: customError("Users by role API is not configured.") };
         }
 
-        const token = getToken()?.trim() ?? "";
-        const headers: Record<string, string> = { accept: "*/*" };
-        if (token.length > 0) {
-          headers["X-APIGEE-TOKEN"] = token;
+        let headers: Record<string, string>;
+        try {
+          headers = buildAuthServiceGetHeaders();
+        } catch (reason: unknown) {
+          return { error: customError(readError(reason)) };
         }
 
         const result = await baseQuery({

@@ -488,11 +488,6 @@ function orNull(value: string): string | null {
   return text.length > 0 ? text : null;
 }
 
-/** One reason is sent as text, several as a list. */
-function toReasons(reasons: string[]): string | string[] {
-  return reasons.length === 1 ? reasons[0] : reasons;
-}
-
 const RECONSIDER_DECISIONS = ["REJ", "DC", "POSTP"];
 const PRODUCT_DECISIONS = ["BOR_STD", "CO", "EP"];
 
@@ -559,7 +554,8 @@ export function buildGuwUwDecisionRequest(input: GuwDecisionFormInput): GuwUwDec
   };
 
   if (PRODUCT_DECISIONS.includes(decision) || RECONSIDER_DECISIONS.includes(decision)) {
-    if (input.reasons.length > 0) request.reasons = toReasons(input.reasons);
+    // Always sent as a list, even when only one reason is selected
+    if (input.reasons.length > 0) request.reasons = input.reasons;
   }
 
   if (PRODUCT_DECISIONS.includes(decision)) {

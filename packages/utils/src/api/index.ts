@@ -1,6 +1,7 @@
 export { apigeeBasicAuthorization, apigeeGatewayAuthorization } from "./apigeeBasicAuth";
 export {
   applyBusinessApiAuthHeaders,
+  buildAuthServiceGetHeaders,
   buildJsonAuthPostHeaders,
   buildLoginAuthHeaders,
 } from "./httpAuthHeaders";
