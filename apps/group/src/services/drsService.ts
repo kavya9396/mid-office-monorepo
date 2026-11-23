@@ -1,9 +1,17 @@
+import type { BannerRowDetail } from "@insurance-poc/common/applicant-banner";
 import type { DetailAttribute, DetailTable } from "@insurance-poc/common/detail-card";
+import {
+  grievanceColumns,
+  type GrievanceHistoryRow,
+} from "@insurance-poc/common/grievance-history";
 import type { LifeAssuredApplicant, RiderEditRow } from "@insurance-poc/common/life-assured";
 import type { RequirementItem } from "@insurance-poc/common/requirement-mgmt";
+import type { Column } from "@insurance-poc/ui";
+import { formatDateTime } from "@insurance-poc/utils";
 import { mapApplicants } from "../modules/drs/lifeAssuredData";
 import { mapMembersQuickLinks, type QuickLinksSubSections } from "../modules/drs/quickLinksData";
 import { mapRequirements, type RawRequirement } from "../modules/drs/requirementData";
+import type { MmtGrievanceMemberContext } from "./mmtGrievanceService";
 
 export type CardType = "APPLICATION" | "SOURCE" | "GROUP" | "RISK";
 
@@ -47,6 +55,19 @@ export type GroupDrsData = {
   memberTypes: string[];
   /** Quick Link pages (previous policy, open tasks, audit trail, risk details). */
   quickLinks: QuickLinksSubSections;
+  /** Banner rows from the primary member (`membersDetails[].rowDetails`). */
+  rowDetails: BannerRowDetail[];
+  applicantName: string;
+  grievanceHistoryTitle: string;
+  tpaGrievanceTitle: string;
+  grievanceHistoryColumns: Column<GrievanceHistoryRow>[];
+  tpaGrievanceColumns: Column<GrievanceHistoryRow>[];
+  grievanceHistory: GrievanceHistoryRow[];
+  tpaGrievanceDetails: GrievanceHistoryRow[];
+  /** `membersDetails[].subSections` applicant profile, with member-level fallback. */
+  subSections: { partyId: string; lifeNumber: string };
+  /** Party context sent to the MMT grievance fetch and save APIs. */
+  memberContext: MmtGrievanceMemberContext;
 };
 
 // `cardDetails[].type` as sent by the API -> internal card type
@@ -289,6 +310,110 @@ function readMemberTypes(membersDetails: unknown): string[] {
   );
 }
 
+const GRIEVANCE_ROW_KEYS: (keyof GrievanceHistoryRow)[] = [
+  "userName",
+  "fupCode",
+  "profile",
+  "grievanceRemarks",
+  "tpaRemark",
+  "raisedDate",
+  "updatedDate",
+  "raisedBy",
+  "updatedBy",
+];
+
+const GRIEVANCE_ROW_ALIASES: Record<keyof GrievanceHistoryRow, string[]> = {
+  userName: ["userName", "user", "raisedBy", "raisedRole", "User Name"],
+  fupCode: ["fupCode", "FUP Code"],
+  profile: ["profile", "Profile"],
+  grievanceRemarks: ["grievanceRemarks", "userRemarks", "grievanceRaisedRemark", "Grievance Raised Remark"],
+  tpaRemark: ["tpaRemark", "tpaRemarks", "TPA Remarks"],
+  raisedDate: ["raisedDate", "grievanceRaisedDate", "Grievance Raised Date"],
+  updatedDate: ["updatedDate", "Updated Date"],
+  raisedBy: ["raisedBy", "Raised by"],
+  updatedBy: ["updatedBy", "Updated by"],
+};
+
+function findNamedSection(sections: unknown, name: string): Record<string, unknown> | null {
+  if (!Array.isArray(sections)) return null;
+  return sections.find((section): section is Record<string, unknown> => isRecord(section) && section.name === name) ?? null;
+}
+
+function headerText(column: unknown): string {
+  return isRecord(column) ? readText(column.label) : readText(column);
+}
+
+function buildGrievanceColumns(sectionValue: unknown): Column<GrievanceHistoryRow>[] {
+  const section = isRecord(sectionValue) ? sectionValue : {};
+  const labels = Array.isArray(section.columns) ? section.columns.map((column) => headerText(column)) : [];
+  const defaults = new Map(grievanceColumns.map((column) => [column.key, column]));
+  return GRIEVANCE_ROW_KEYS.map((key, index) => {
+    const fallback = defaults.get(key);
+    return {
+      key,
+      header: labels[index] || fallback?.header || key,
+      width: fallback?.width,
+    };
+  });
+}
+
+function rowField(row: Record<string, unknown>, keys: string[]): string {
+  for (const key of keys) {
+    if (key in row && readText(row[key]).trim().length > 0) return readText(row[key]).trim();
+  }
+  return "";
+}
+
+function formatGrievanceDate(value: string): string {
+  if (value.length === 0) return "";
+  const formatted = formatDateTime(value);
+  return formatted.length > 0 ? formatted : value;
+}
+
+function mapGrievanceRows(section: Record<string, unknown> | null): GrievanceHistoryRow[] {
+  const value = section?.value;
+  const rows = isRecord(value) && Array.isArray(value.rows) ? value.rows : [];
+  return rows.filter(isRecord).map((row) => ({
+    userName: rowField(row, GRIEVANCE_ROW_ALIASES.userName),
+    fupCode: rowField(row, GRIEVANCE_ROW_ALIASES.fupCode),
+    profile: rowField(row, GRIEVANCE_ROW_ALIASES.profile),
+    grievanceRemarks: rowField(row, GRIEVANCE_ROW_ALIASES.grievanceRemarks),
+    tpaRemark: rowField(row, GRIEVANCE_ROW_ALIASES.tpaRemark),
+    raisedDate: formatGrievanceDate(rowField(row, GRIEVANCE_ROW_ALIASES.raisedDate)),
+    updatedDate: formatGrievanceDate(rowField(row, GRIEVANCE_ROW_ALIASES.updatedDate)),
+    raisedBy: rowField(row, GRIEVANCE_ROW_ALIASES.raisedBy),
+    updatedBy: rowField(row, GRIEVANCE_ROW_ALIASES.updatedBy) || "-",
+  }));
+}
+
+function mapRowDetails(rowDetails: unknown): BannerRowDetail[] {
+  if (!Array.isArray(rowDetails)) return [];
+  return rowDetails.filter(isRecord).map((row, index) => ({
+    id: typeof row.id === "number" || typeof row.id === "string" ? row.id : index,
+    fields: Array.isArray(row.fields)
+      ? row.fields
+          .filter(isRecord)
+          .map((field) => ({ name: readText(field.name), value: readText(field.value) }))
+      : [],
+  }));
+}
+
+function fieldValue(fields: BannerRowDetail["fields"] | undefined, name: string): string {
+  return readText(fields?.find((field) => field.name === name)?.value).trim();
+}
+
+function mapApplicantSubSection(member: Record<string, unknown> | null): { partyId: string; lifeNumber: string } {
+  const subSections = member?.subSections;
+  const profileSection = Array.isArray(subSections)
+    ? subSections.filter(isRecord).find((entry) => entry.name === "applicantProfile")
+    : null;
+  const value = isRecord(profileSection?.value) ? profileSection.value : null;
+  return {
+    partyId: readText(value?.partyId).trim() || readText(member?.partyId).trim(),
+    lifeNumber: readText(value?.lifeNumber).trim() || readText(member?.lifeNumber).trim(),
+  };
+}
+
 export function mapGroupDrsPayload(value: unknown): GroupDrsData {
   if (!isRecord(value)) throw invalidResponse();
   const data = isRecord(value.data) ? value.data : value;
@@ -300,6 +425,11 @@ export function mapGroupDrsPayload(value: unknown): GroupDrsData {
   const membersDetails = Array.isArray(data.membersDetails) ? data.membersDetails : [];
   const primaryMember = membersDetails.find(isRecord) ?? null;
   const cardDetailsRaw = primaryMember?.cardDetails ?? data.cardDetails;
+  const rowDetails = mapRowDetails(primaryMember?.rowDetails);
+  const nameRow = rowDetails.find((row) => row.id === 0);
+  const historySection = findNamedSection(sections, "grievanceHistory");
+  const tpaSection = findNamedSection(sections, "tpaGrievanceDetails");
+  const subSections = mapApplicantSubSection(primaryMember);
 
   return {
     applicationNo,
@@ -317,5 +447,20 @@ export function mapGroupDrsPayload(value: unknown): GroupDrsData {
     }),
     memberTypes: readMemberTypes(data.membersDetails),
     quickLinks: mapMembersQuickLinks(data.membersDetails),
+    rowDetails,
+    applicantName: fieldValue(nameRow?.fields, "Name"),
+    grievanceHistoryTitle: readText(historySection?.label).trim() || "Grievance History",
+    tpaGrievanceTitle: readText(tpaSection?.label).trim() || "TPA Grievance Details",
+    grievanceHistoryColumns: buildGrievanceColumns(historySection?.value),
+    tpaGrievanceColumns: buildGrievanceColumns(tpaSection?.value),
+    grievanceHistory: mapGrievanceRows(historySection),
+    tpaGrievanceDetails: mapGrievanceRows(tpaSection),
+    subSections,
+    memberContext: {
+      applicationNo,
+      partyId: subSections.partyId.length > 0 ? subSections.partyId : undefined,
+      lifeNumber: subSections.lifeNumber.length > 0 ? subSections.lifeNumber : undefined,
+      transactionId: readText(data.transactionId).trim() || null,
+    },
   };
 }

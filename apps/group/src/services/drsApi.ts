@@ -748,6 +748,16 @@ export const groupDrsApi = createApi({
             draft.applicants = mapped.applicants;
             draft.memberTypes = mapped.memberTypes;
             draft.quickLinks = mapped.quickLinks;
+            draft.rowDetails = mapped.rowDetails;
+            draft.applicantName = mapped.applicantName;
+            draft.grievanceHistoryTitle = mapped.grievanceHistoryTitle;
+            draft.tpaGrievanceTitle = mapped.tpaGrievanceTitle;
+            draft.grievanceHistoryColumns = mapped.grievanceHistoryColumns;
+            draft.tpaGrievanceColumns = mapped.tpaGrievanceColumns;
+            draft.grievanceHistory = mapped.grievanceHistory;
+            draft.tpaGrievanceDetails = mapped.tpaGrievanceDetails;
+            draft.subSections = mapped.subSections;
+            draft.memberContext = mapped.memberContext;
           };
 
           if (arg.queryArg) {

@@ -82,9 +82,18 @@
         "value": {
           "code": "RJ",
           "columns": [
-            { "key": "label", "header": "BRE" },
-            { "key": "initial", "header": "Initial BRE" },
-            { "key": "final", "header": "Final BRE" }
+            {
+              "key": "label",
+              "header": "BRE"
+            },
+            {
+              "key": "initial",
+              "header": "Initial BRE"
+            },
+            {
+              "key": "final",
+              "header": "Final BRE"
+            }
           ],
           "rows": [
             {
@@ -96,8 +105,12 @@
             {
               "id": "decision",
               "label": "BRE Decision",
-              "initial": ["STP"],
-              "final": ["RJ"]
+              "initial": [
+                "STP"
+              ],
+              "final": [
+                "RJ"
+              ]
             },
             {
               "id": "remarks",
@@ -118,6 +131,78 @@
               "final": "16/11/2026, 1113hrs"
             }
           ]
+        }
+      },
+      {
+        "name": "grievanceHistory",
+        "label": "Grievance History",
+        "value": {
+          "columns": [
+            {
+              "label": "User Name"
+            },
+            {
+              "label": "FUP Code"
+            },
+            {
+              "label": "Profile"
+            },
+            {
+              "label": "Grievance Raised Remark"
+            },
+            {
+              "label": "TPA Remarks"
+            },
+            {
+              "label": "Grievance Raised Date"
+            },
+            {
+              "label": "Updated Date"
+            },
+            {
+              "label": "Raised by"
+            },
+            {
+              "label": "Updated by"
+            }
+          ],
+          "rows": []
+        }
+      },
+      {
+        "name": "tpaGrievanceDetails",
+        "label": "TPA Grievance Details",
+        "value": {
+          "columns": [
+            {
+              "label": "User Name"
+            },
+            {
+              "label": "FUP Code"
+            },
+            {
+              "label": "Profile"
+            },
+            {
+              "label": "Grievance Raised Remark"
+            },
+            {
+              "label": "TPA Remarks"
+            },
+            {
+              "label": "Grievance Raised Date"
+            },
+            {
+              "label": "Updated Date"
+            },
+            {
+              "label": "Raised by"
+            },
+            {
+              "label": "Updated by"
+            }
+          ],
+          "rows": []
         }
       }
     ],
@@ -152,23 +237,63 @@
                 "name": "Product Name - Code",
                 "value": "ICICI PRU SUPER PROTECT CREDIT - GP1"
               },
-              { "name": "Channel", "value": "" },
-              { "name": "Sum Assured", "value": "2210000" },
-              { "name": "MPH Name", "value": "" },
-              { "name": "TI Rider - SA", "value": "" },
-              { "name": "ADBR SA", "value": "100000" },
-              { "name": "CI Rider SA", "value": "" },
-              { "name": "TFESA", "value": "" },
-              { "name": "TRSA", "value": "0" },
-              { "name": "TSA", "value": "" },
-              { "name": "TPSA", "value": "" },
-              { "name": "TFSA", "value": "Infinity" },
-              { "name": "TMSA", "value": "" }
+              {
+                "name": "Channel",
+                "value": ""
+              },
+              {
+                "name": "Sum Assured",
+                "value": "2210000"
+              },
+              {
+                "name": "MPH Name",
+                "value": ""
+              },
+              {
+                "name": "TI Rider - SA",
+                "value": ""
+              },
+              {
+                "name": "ADBR SA",
+                "value": "100000"
+              },
+              {
+                "name": "CI Rider SA",
+                "value": ""
+              },
+              {
+                "name": "TFESA",
+                "value": ""
+              },
+              {
+                "name": "TRSA",
+                "value": "0"
+              },
+              {
+                "name": "TSA",
+                "value": ""
+              },
+              {
+                "name": "TPSA",
+                "value": ""
+              },
+              {
+                "name": "TFSA",
+                "value": "Infinity"
+              },
+              {
+                "name": "TMSA",
+                "value": ""
+              }
             ],
             "tables": [
               {
                 "name": "Rider Details",
-                "columns": ["Rider", "Rider Code", "Sum Assured"],
+                "columns": [
+                  "Rider",
+                  "Rider Code",
+                  "Sum Assured"
+                ],
                 "rows": [
                   {
                     "Rider": "Rider 1",
@@ -182,10 +307,22 @@
           {
             "type": "Source Detail",
             "attributes": [
-              { "name": "Call ID", "value": "" },
-              { "name": "Policy No.", "value": "" },
-              { "name": "Agent Name / Code", "value": "01434799" },
-              { "name": "Customer Type", "value": "" }
+              {
+                "name": "Call ID",
+                "value": ""
+              },
+              {
+                "name": "Policy No.",
+                "value": ""
+              },
+              {
+                "name": "Agent Name / Code",
+                "value": "01434799"
+              },
+              {
+                "name": "Customer Type",
+                "value": ""
+              }
             ],
             "expandedAttributes": [
               {
@@ -272,13 +409,121 @@
               }
             ],
             "expandedAttributes": [
-              { "name": "Accuity Risk Indicator", "value": "" },
-              { "name": "Adverse IIB match", "value": "" },
-              { "name": "Risk Flag", "value": "" },
-              { "name": "High Risk Category", "value": "" },
-              { "name": "Source", "value": "25JU" }
+              {
+                "name": "Accuity Risk Indicator",
+                "value": ""
+              },
+              {
+                "name": "Adverse IIB match",
+                "value": ""
+              },
+              {
+                "name": "Risk Flag",
+                "value": ""
+              },
+              {
+                "name": "High Risk Category",
+                "value": ""
+              },
+              {
+                "name": "Source",
+                "value": "25JU"
+              }
             ],
             "tables": []
+          }
+        ],
+        "rowDetails": [
+          {
+            "id": 0,
+            "fields": [
+              {
+                "name": "Name",
+                "value": "Rudra Prakash Sangha"
+              },
+              {
+                "name": "App No.",
+                "value": "OB90377122"
+              },
+              {
+                "name": "Member",
+                "value": "Life Assured 1"
+              },
+              {
+                "name": "Marital status",
+                "value": "Married"
+              },
+              {
+                "name": "Gender",
+                "value": "Male"
+              },
+              {
+                "name": "Age",
+                "value": "40"
+              },
+              {
+                "name": "Education",
+                "value": "Graduate"
+              },
+              {
+                "name": "Occupation",
+                "value": "Salaried"
+              },
+              {
+                "name": "Organisation",
+                "value": "3I INFOTECH"
+              },
+              {
+                "name": "Declared income",
+                "value": "1000000"
+              },
+              {
+                "name": "City, State",
+                "value": "Pune, Maharashtra"
+              },
+              {
+                "name": "Residence Status",
+                "value": "Indian"
+              },
+              {
+                "name": "Residing Country",
+                "value": "India"
+              }
+            ]
+          },
+          {
+            "id": 1,
+            "fields": [
+              {
+                "name": "Product Name - Product Code",
+                "value": "ICICI Pru GIFT Pro"
+              },
+              {
+                "name": "Channel",
+                "value": "Agency"
+              },
+              {
+                "name": "Sum Assured",
+                "value": "₹10,68,000"
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "fields": [
+              {
+                "name": "WOP - SA",
+                "value": "₹15,00,000"
+              },
+              {
+                "name": "BTBB - SA",
+                "value": "₹25,00,000"
+              },
+              {
+                "name": "TI Rider - SA",
+                "value": "₹25,00,000"
+              }
+            ]
           }
         ],
         "sections": [
@@ -330,29 +575,68 @@
                       "label": "Date of Birth",
                       "value": "1988-08-09"
                     },
-                    { "label": "Age", "value": "38" },
+                    {
+                      "label": "Age",
+                      "value": "38"
+                    },
                     {
                       "key": "proposerSummary.gender",
                       "label": "Gender",
                       "value": "Male"
                     },
-                    { "label": "Marital Status", "value": "" },
-                    { "label": "Nationality", "value": "India" },
-                    { "label": "Country of Residence", "value": "India" },
-                    { "label": "Education", "value": "Graduate" },
+                    {
+                      "label": "Marital Status",
+                      "value": ""
+                    },
+                    {
+                      "label": "Nationality",
+                      "value": "India"
+                    },
+                    {
+                      "label": "Country of Residence",
+                      "value": "India"
+                    },
+                    {
+                      "label": "Education",
+                      "value": "Graduate"
+                    },
                     {
                       "key": "proposerSummary.residentStatus",
                       "label": "Resident Status",
                       "value": "Indian Resident"
                     },
-                    { "label": "Designation", "value": "Manager" },
-                    { "label": "Disabled", "value": "" },
-                    { "label": "Percentage Of Impairment", "value": "" },
-                    { "label": "Type Of Impairment", "value": "" },
-                    { "label": "UDID Number", "value": "UDID-98765" },
-                    { "label": "UDS Link", "value": "" },
-                    { "label": "City of Resident", "value": "THANE" },
-                    { "label": "State of Resident", "value": "Maharashtra" }
+                    {
+                      "label": "Designation",
+                      "value": "Manager"
+                    },
+                    {
+                      "label": "Disabled",
+                      "value": ""
+                    },
+                    {
+                      "label": "Percentage Of Impairment",
+                      "value": ""
+                    },
+                    {
+                      "label": "Type Of Impairment",
+                      "value": ""
+                    },
+                    {
+                      "label": "UDID Number",
+                      "value": "UDID-98765"
+                    },
+                    {
+                      "label": "UDS Link",
+                      "value": ""
+                    },
+                    {
+                      "label": "City of Resident",
+                      "value": "THANE"
+                    },
+                    {
+                      "label": "State of Resident",
+                      "value": "Maharashtra"
+                    }
                   ],
                   [
                     {
@@ -374,7 +658,10 @@
                       "label": "PAN Flag",
                       "value": "Verified"
                     },
-                    { "label": "PAN Aadhar Seeding Status", "value": "Y" },
+                    {
+                      "label": "PAN Aadhar Seeding Status",
+                      "value": "Y"
+                    },
                     {
                       "key": "kycDetails.genderDocument",
                       "label": "Identity Proof Type",
@@ -384,7 +671,10 @@
                       "label": "Identity Proof Expiry Date",
                       "value": "2099-12-31T00:00"
                     },
-                    { "label": "Identity Proof Number", "value": "AAAAA1111A" },
+                    {
+                      "label": "Identity Proof Number",
+                      "value": "AAAAA1111A"
+                    },
                     {
                       "key": "kycDetails.dobDocument",
                       "label": "Age Proof",
@@ -395,10 +685,22 @@
                       "label": "Address Proof",
                       "value": "Aadhaar - UID"
                     },
-                    { "label": "Income Proof", "value": "Aadhaar - UID" },
-                    { "label": "CKYC Number", "value": "NA" },
-                    { "label": "PEP", "value": "No" },
-                    { "label": "Criminal Proceedings", "value": "No" }
+                    {
+                      "label": "Income Proof",
+                      "value": "Aadhaar - UID"
+                    },
+                    {
+                      "label": "CKYC Number",
+                      "value": "NA"
+                    },
+                    {
+                      "label": "PEP",
+                      "value": "No"
+                    },
+                    {
+                      "label": "Criminal Proceedings",
+                      "value": "No"
+                    }
                   ]
                 ]
               },
@@ -567,6 +869,15 @@
                   }
                 ]
               }
+            }
+          }
+        ],
+        "subSections": [
+          {
+            "name": "applicantProfile",
+            "value": {
+              "partyId": "3202e174-2338-4970-a7e8-253831e31274",
+              "lifeNumber": "01"
             }
           }
         ]

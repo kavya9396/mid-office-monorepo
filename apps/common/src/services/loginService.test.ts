@@ -257,6 +257,7 @@ describe("login module", () => {
       expect(readString(posted.body, "username")).toBe(encodeBase64("UW001"));
       expect(readString(posted.body, "password")).toBe(encodeBase64("secret"));
       expect(readString(posted.body, "businessType")).toBe("RETAIL");
+      expect(posted.body.encryptedRequest).toBeUndefined();
     });
 
     it("encrypts login and sends Authorization when apigee mode is on", async () => {
@@ -312,6 +313,118 @@ describe("login module", () => {
       expect(readString(decrypted, "username")).toBe(encodeBase64("UW001"));
       expect(readString(decrypted, "password")).toBe(encodeBase64("secret"));
       expect(readString(decrypted, "businessType")).toBe("RETAIL");
+    });
+
+    it("does not decrypt an encrypted body when the apigee flag is off", async () => {
+      authMode.useMock = false;
+      vi.useRealTimers();
+      vi.stubEnv("VITE_USE_APIGEE", "false");
+      vi.stubEnv("VITE_CLIENT_ID", "12345678901234567890123456789012");
+      const { encryptPayload } = await import("@insurance-poc/utils");
+      const envelope = {
+        response_code: 200,
+        error: false,
+        message: "Login successful",
+        data: {
+          token: "access-token",
+          refreshToken: "refresh-token",
+          sessionId: "session-id",
+          username: "UW001",
+          displayName: "Retail Underwriter",
+          firstLogin: false,
+          mustChangePassword: false,
+          lastLoginAt: "2026-10-06T14:10:20",
+          roles: [],
+        },
+      };
+      const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+        jsonResponse({
+          statusCode: "200",
+          encryptedResponse: await encryptPayload(envelope),
+        }),
+      );
+      vi.stubGlobal("fetch", fetchMock);
+      const { fetchLogin } = await loadLogin();
+      const { encodeBase64 } = await import("@insurance-poc/utils");
+
+      const result = await fetchLogin({
+        userId: "UW001",
+        password: "secret",
+        businessType: "RETAIL",
+      });
+
+      expect(result.status).toBe("FAILURE");
+      if (result.status === "SUCCESS") {
+        throw new Error(result.message);
+      }
+      expect(result.user).toBeNull();
+      const posted = postedRequest(fetchMock);
+      expect(posted.body.encryptedRequest).toBeUndefined();
+      expect(posted.headers.get("Authorization")).toBeNull();
+      expect(posted.headers.get("X-Apigee-Authorization")).toBe(
+        `Basic ${btoa(`${BASIC_USER}:${BASIC_PASSWORD}`)}`,
+      );
+      expect(readString(posted.body, "username")).toBe(encodeBase64("UW001"));
+      expect(readString(posted.body, "password")).toBe(encodeBase64("secret"));
+    });
+
+    it("signs in from the decrypted payload, not the encrypted wrapper", async () => {
+      authMode.useMock = false;
+      vi.useRealTimers();
+      vi.stubEnv("VITE_USE_APIGEE", "true");
+      vi.stubEnv("VITE_APIGEE_BASIC_USERNAME", "apigee-user");
+      vi.stubEnv("VITE_APIGEE_BASIC_PASSWORD", "apigee-secret");
+      vi.stubEnv("VITE_CLIENT_ID", "12345678901234567890123456789012");
+      const { decryptPayload, encryptPayload } = await import("@insurance-poc/utils");
+      const innerToken = "decrypted-access-token";
+      const envelope = {
+        response_code: 200,
+        error: false,
+        message: "Login successful",
+        data: {
+          token: innerToken,
+          refreshToken: "decrypted-refresh-token",
+          sessionId: "decrypted-session",
+          username: "decrypted-user",
+          displayName: "Decrypted User",
+          firstLogin: false,
+          mustChangePassword: false,
+          lastLoginAt: "2026-11-20T10:00:00",
+          roles: ["MMT_TASK"],
+          authorizedBusinessTypes: ["RETAIL"],
+        },
+      };
+      const ciphertext = (await encryptPayload(envelope)).replace(/(.{40})/g, "$1\n");
+      expect(ciphertext.includes("\n")).toBe(true);
+      await expect(decryptPayload(ciphertext)).rejects.toThrow(
+        "Encrypted payload must be standard Base64 ciphertext.",
+      );
+
+      const wrapper = { statusCode: "200", encryptedResponse: ciphertext };
+      const wrapperText = JSON.stringify(wrapper);
+      expect(wrapperText.includes(innerToken)).toBe(false);
+      expect(wrapperText.includes("decrypted-user")).toBe(false);
+
+      const decrypted = await decryptPayload<Record<string, unknown>>(ciphertext.replace(/\s+/g, ""));
+      const decryptedData = asRecord(decrypted.data);
+      expect(readString(decryptedData, "token")).toBe(innerToken);
+
+      vi.stubGlobal("fetch", vi.fn<typeof fetch>().mockResolvedValue(jsonResponse(wrapper)));
+      const { fetchLogin } = await loadLogin();
+      const result = await fetchLogin({
+        userId: "UW001",
+        password: "secret",
+        businessType: "RETAIL",
+      });
+
+      expectSuccess(result);
+      expect(result.message).toBe("Login successful");
+      expect(result.accessToken).toBe(innerToken);
+      expect(result.refreshToken).toBe("decrypted-refresh-token");
+      expect(result.sessionId).toBe("decrypted-session");
+      expect(result.user.username).toBe("decrypted-user");
+      expect(result.user.displayName).toBe("Decrypted User");
+      expect(result.user.roles).toEqual(["MMT_TASK"]);
     });
 
     it("posts the login business type selected on the form", async () => {

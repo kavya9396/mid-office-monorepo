@@ -4,6 +4,7 @@ import { authReducer, sessionExpired } from "@insurance-poc/utils";
 import { retailBreRetriggerApi } from "../services/breRetriggerApi";
 import { retailCompleteTaskApi } from "../services/completeTaskApi";
 import { retailDrsApi } from "../services/drsApi";
+import { retailMmtGrievanceApi } from "../services/mmtGrievanceService";
 import { retailInboxApi } from "../services/inboxApi";
 
 const listenerMiddleware = createListenerMiddleware();
@@ -14,6 +15,7 @@ listenerMiddleware.startListening({
     listenerApi.dispatch(retailInboxApi.util.resetApiState());
     listenerApi.dispatch(retailCompleteTaskApi.util.resetApiState());
     listenerApi.dispatch(retailDrsApi.util.resetApiState());
+    listenerApi.dispatch(retailMmtGrievanceApi.util.resetApiState());
     listenerApi.dispatch(retailBreRetriggerApi.util.resetApiState());
   },
 });
@@ -25,6 +27,7 @@ export const store = configureStore({
     [retailInboxApi.reducerPath]: retailInboxApi.reducer,
     [retailCompleteTaskApi.reducerPath]: retailCompleteTaskApi.reducer,
     [retailDrsApi.reducerPath]: retailDrsApi.reducer,
+    [retailMmtGrievanceApi.reducerPath]: retailMmtGrievanceApi.reducer,
     [retailBreRetriggerApi.reducerPath]: retailBreRetriggerApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
@@ -35,6 +38,7 @@ export const store = configureStore({
         retailInboxApi.middleware,
         retailCompleteTaskApi.middleware,
         retailDrsApi.middleware,
+        retailMmtGrievanceApi.middleware,
         retailBreRetriggerApi.middleware,
       ),
 });
