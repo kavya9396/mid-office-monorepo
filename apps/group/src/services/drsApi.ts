@@ -14,6 +14,7 @@ import {
   getMasterList,
   getSessionBusinessType,
   getSessionUser,
+  getToken,
   groupBusinessUrls,
   useMock,
   userUrls,
@@ -605,10 +606,16 @@ export const groupDrsApi = createApi({
           return { error: customError("Users by role API is not configured.") };
         }
 
+        const token = getToken()?.trim() ?? "";
+        const headers: Record<string, string> = { accept: "*/*" };
+        if (token.length > 0) {
+          headers["X-APIGEE-TOKEN"] = token;
+        }
+
         const result = await baseQuery({
           url: `${baseUrl}/${encodeURIComponent(roleName)}`,
           method: "GET",
-          headers: { accept: "*/*" },
+          headers,
         });
         if (result.error) return { error: result.error };
         return { data: mapUsersByRole(result.data) };
