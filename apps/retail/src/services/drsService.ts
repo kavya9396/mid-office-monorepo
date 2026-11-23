@@ -153,9 +153,9 @@ function readCards(value: unknown): CardDetail[] {
   );
 }
 
-/** Finds an entry by name inside `commonSection`. */
+/** Finds an entry by name. A missing section list means that section was not sent. */
 function findSection(sections: unknown, name: string): Record<string, unknown> | null {
-  if (!Array.isArray(sections)) throw invalidResponse();
+  if (!Array.isArray(sections)) return null;
   return sections.find((s): s is Record<string, unknown> => isRecord(s) && s.name === name) ?? null;
 }
 
@@ -180,16 +180,23 @@ function readBreHeader(columns: unknown, key: string, fallback: string): string 
 
 function readBre(section: Record<string, unknown> | null): BreDecision {
   const value = section?.value;
-  if (!isRecord(value) || !Array.isArray(value.rows)) throw invalidResponse();
-
-  const rows = value.rows.map((row): BreRow => {
-    if (!isRecord(row)) throw invalidResponse();
+  if (!isRecord(value) || !Array.isArray(value.rows)) {
     return {
+      headers: { label: "BRE", initial: "Initial BRE", final: "Final BRE" },
+      rows: [],
+      initialDecision: "",
+      decision: "",
+    };
+  }
+
+  const rows = value.rows.flatMap((row): BreRow[] => {
+    if (!isRecord(row)) return [];
+    return [{
       id: readText(row.id),
       label: readText(row.label),
       initial: readBreText(row.initial),
       final: readBreText(row.final),
-    };
+    }];
   });
   const decisionRow = rows.find((row) => row.id === BRE_DECISION_ROW_ID);
 
