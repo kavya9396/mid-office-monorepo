@@ -27,6 +27,7 @@ import {
   type Column,
 } from "@insurance-poc/ui";
 import {
+  buildFinancialDocumentOptions,
   buildFinancialMonthOptions,
   buildFinancialYesNoOptions,
   FINANCIAL_DATE_FORMAT,
@@ -35,7 +36,6 @@ import {
   FINANCIAL_LOCKED_FIELDS,
   FINANCIAL_MESSAGES,
   FINANCIAL_MONTHLY_INCOME_LAYOUTS,
-  FINANCIAL_NON_REVIEWABLE_SECTION_KEYS,
   FINANCIAL_SECTIONS,
   FINANCIAL_STATEMENT_LAYOUTS,
   FINANCIAL_TABLE_LAYOUTS,
@@ -61,6 +61,7 @@ import {
   type FinancialSaveRequest,
   type FinancialSaveResponse,
 } from "./financialSavePayload";
+import { retriggerBre } from "../../services/breRetrigger";
 
 export * from "./financial.config";
 export * from "./financialSavePayload";
@@ -1431,7 +1432,9 @@ export function Financial({
   }, [activeSectionKey]);
 
   const dialogSection = useMemo(
-    () => sections.find((section) => section.key === dialogKey),
+    () =>
+      sections.find((section) => section.key === dialogKey) ??
+      FINANCIAL_SECTIONS.find((section) => section.key === dialogKey),
     [sections, dialogKey],
   );
 
@@ -1478,7 +1481,9 @@ export function Financial({
   /** Validates every field of a section against its schema and shows the errors; true when valid. */
   const validateSection = useCallback(
     (sectionKey: string) => {
-      const section = sections.find((item) => item.key === sectionKey);
+      const section =
+        sections.find((item) => item.key === sectionKey) ??
+        FINANCIAL_SECTIONS.find((item) => item.key === sectionKey);
       if (!section) return true;
       let valid = true;
       const check = (id: string, label: string) => {
@@ -1587,7 +1592,9 @@ export function Financial({
   const handleSave = useCallback(
     async (sectionKey: string) => {
       if (!validateSection(sectionKey)) return;
-      const targetSection = sections.find((section) => section.key === sectionKey);
+      const targetSection =
+        sections.find((section) => section.key === sectionKey) ??
+        FINANCIAL_SECTIONS.find((section) => section.key === sectionKey);
       if (!targetSection) {
         stopEditing(sectionKey, false);
         return;
@@ -1626,17 +1633,27 @@ export function Financial({
     onApplicantChange?.(applicantKey);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // A section still in edit mode has not been saved (Save and Reset both leave edit mode).
     if (Object.values(editingRef.current).some(Boolean)) {
       setSnackbar({ message: FINANCIAL_MESSAGES.unsavedChanges, severity: "warning" });
       return;
     }
-    onSubmit?.({
-      applicantKey: activeApplicantKey,
-      values: store.snapshot(),
-      reviews,
-    });
+
+    if (applicationNumber) {
+      try {
+        const result = await retriggerBre(applicationNumber, { eventName: "FE" });
+        if ("error" in result && result.error) {
+          setSnackbar({ message: result.error, severity: "error" });
+          return;
+        }
+      } catch {
+        setSnackbar({ message: "Unable to retrigger BRE.", severity: "error" });
+        return;
+      }
+    }
+
+    onSubmit?.({ applicantKey: activeApplicantKey });
     setSnackbar({ message: FINANCIAL_MESSAGES.submitted, severity: "success" });
   };
 
@@ -1648,17 +1665,10 @@ export function Financial({
     const visible = activeApplicant ? [activeApplicant] : applicants;
     return visible.map(({ key, label }) => ({ key, label }));
   }, [activeApplicant, applicants]);
-  /** Only sections with Edit/Save or Agree buttons can be opened from the dropdown. */
+  /** Master data documents (`FIN_DOC_TABLE`) filtered by documents already present in sections / table_of_finance_documents. */
   const editableOptions = useMemo(
-    () =>
-      sections
-        .filter(
-          (section) =>
-            !FINANCIAL_NON_REVIEWABLE_SECTION_KEYS.includes(section.key) &&
-            resolveFinancialActionMode(section.key, actions) !== "readOnly",
-        )
-        .map((section) => ({ label: section.title, value: section.key })),
-    [sections, actions],
+    () => buildFinancialDocumentOptions(sections),
+    [sections],
   );
   return (
     <StoreContext.Provider value={store}>

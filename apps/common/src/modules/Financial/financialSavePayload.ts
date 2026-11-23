@@ -1,3 +1,4 @@
+import { getSessionUser } from "@insurance-poc/utils";
 import type { FinancialSection } from "./financial.config";
 
 /**
@@ -518,6 +519,23 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+function extractOptionalId<K extends string>(
+  raw: Record<string, unknown>,
+  key: K,
+): { [P in K]?: number } {
+  const val = raw[key];
+  if (typeof val === "number" && !Number.isNaN(val)) {
+    return { [key]: val } as { [P in K]?: number };
+  }
+  if (typeof val === "string" && val.trim().length > 0) {
+    const num = Number(val.trim());
+    if (!Number.isNaN(num)) {
+      return { [key]: num } as { [P in K]?: number };
+    }
+  }
+  return {};
+}
+
 /* ------------------------------------------------------------------ */
 /* Document builder logic                                             */
 /* ------------------------------------------------------------------ */
@@ -532,7 +550,7 @@ export function buildDocumentPayload(
   switch (sectionKey) {
     case "appointment_letter": {
       return {
-        apptDtlId: (raw.apptDtlId as number | undefined) ?? 4,
+        ...extractOptionalId(raw, "apptDtlId"),
         grossSalaryPa: parseNumber(getVal(values, section, "Gross Salary PA") || getVal(values, section, "CTC")),
         companyName: getVal(values, section, "Name of the Company") || null,
         partyName: getVal(values, section, "Name of the Employee") || null,
@@ -550,7 +568,7 @@ export function buildDocumentPayload(
           getVal(values, section, `Month ${p}`);
         return {
           periodMonth: p,
-          commissionDtlId: (rawM.commissionDtlId as number | undefined) ?? (p === 1 ? 10 : p === 2 ? 11 : p === 3 ? 12 : p === 4 ? 23 : p === 5 ? 24 : 25),
+          ...extractOptionalId(rawM, "commissionDtlId"),
           commissionAmount: parseNumber(amountStr),
         };
       });
@@ -580,7 +598,7 @@ export function buildDocumentPayload(
 
     case "credit_card": {
       return {
-        ccDtlId: (raw.ccDtlId as number | undefined) ?? 4,
+        ...extractOptionalId(raw, "ccDtlId"),
         nameMatchInd: yesNoToYN(getVal(values, section, "Is Credit card statement in the name of LA", "Credit card statement in the name of LA")),
         isDefaulter: yesNoToYN(getVal(values, section, "Is LA Defaulter in the Payment", "LA Defaulter in the Payment")),
         cardType: getVal(values, section, "Type of Card") || null,
@@ -592,7 +610,7 @@ export function buildDocumentPayload(
 
     case "fixed_deposit_receipt": {
       return {
-        fdDtlId: (raw.fdDtlId as number | undefined) ?? 4,
+        ...extractOptionalId(raw, "fdDtlId"),
         nameMatchInd: yesNoToYN(getVal(values, section, "Is Fixed Deposit Receipt in the name of LA")),
         isMatured: yesNoToYN(getVal(values, section, "Is Fixed Deposit Receipts matured")),
         amountInvested: parseNumber(getVal(values, section, "Amount Invested")),
@@ -607,7 +625,7 @@ export function buildDocumentPayload(
         const suffix = y === 1 ? "" : ` Year ${y}`;
         return {
           assessmentYear: getVal(values, section, `Assessment Year${suffix}`) || getVal(values, section, `Assessment${suffix}`) || (y === 1 ? "AY 23-24" : y === 2 ? "AY 24-25" : "AY 25-26"),
-          form16DtlId: (rawY.form16DtlId as number | undefined) ?? (y === 1 ? 12 : y === 2 ? 13 : 14),
+          ...extractOptionalId(rawY, "form16DtlId"),
           grossSalaryPa: parseNumber(getVal(values, section, `Gross Salary PA${suffix}`)),
           companyName: getVal(values, section, `Company Name${suffix}`) || null,
           panNumber: getVal(values, section, `Life Assured Pan No${suffix}`, `Life Assured PAN No${suffix}`, `Pan Number${suffix}`, `PAN Number${suffix}`) || null,
@@ -627,7 +645,7 @@ export function buildDocumentPayload(
         const suffix = y === 1 ? "" : ` Year ${y}`;
         return {
           assessmentYear: getVal(values, section, `Assessment Year${suffix}`) || (y === 1 ? "AY 23-24" : y === 2 ? "AY 24-25" : "AY 25-26"),
-          form16aDtlId: (rawY.form16aDtlId as number | undefined) ?? (y === 1 ? 20 : y === 2 ? 7 : 8),
+          ...extractOptionalId(rawY, "form16aDtlId"),
           netReceiptPa: parseNumber(getVal(values, section, `Net Receipt pa${suffix}`)),
         };
       });
@@ -644,7 +662,7 @@ export function buildDocumentPayload(
         }));
         return {
           periodMonth: m,
-          formJDtlId: (rawM.formJDtlId as number | undefined) ?? (m === 1 ? 10 : m === 2 ? 11 : 12),
+          ...extractOptionalId(rawM, "formJDtlId"),
           receipts,
         };
       });
@@ -656,7 +674,7 @@ export function buildDocumentPayload(
 
     case "govt_bonds": {
       return {
-        govtBondDtlId: (raw.govtBondDtlId as number | undefined) ?? 4,
+        ...extractOptionalId(raw, "govtBondDtlId"),
         nameMatchInd: yesNoToYN(getVal(values, section, "Is Bond Certification in the name of LA")),
         isMatured: yesNoToYN(getVal(values, section, "Is Bond Certificate matured")),
         amountInvested: parseNumber(getVal(values, section, "Amount Invested or Maturity Value")),
@@ -673,7 +691,7 @@ export function buildDocumentPayload(
           assessmentYear: getVal(values, section, `Assessment Year${suffix}`) || (y === 1 ? "AY 23-24" : y === 2 ? "AY 24-25" : "AY 25-26"),
           metricIds: isRecord(rawY.metricIds) ? (rawY.metricIds as ItrNonIndividualYearEntry["metricIds"]) : undefined,
           ackNumber: getVal(values, section, `ITR Acknowledgement Number${suffix}`) || null,
-          itrFilingDt: formatDateToISO((rawY.itrFilingDt as string | undefined) ?? (y === 1 ? "2024-09-30" : y === 2 ? "2025-09-30" : "2026-06-20")),
+          itrFilingDt: formatDateToISO(getVal(values, section, `Date of Filling ITR${suffix}`) || (rawY.itrFilingDt as string | undefined)),
           pfDeduction: parseNumber(rawY.pfDeduction ?? 0),
           panBarcodeMatchInd: yesNoToYN(getVal(values, section, `Pan Number Matched with Barcode Number${suffix}`)),
           incomeFromSalary: parseNumber(getVal(values, section, `Income from Salary${suffix}`)),
@@ -686,7 +704,7 @@ export function buildDocumentPayload(
         };
       });
       return {
-        itrDtlId: (raw.itrDtlId as number | undefined) ?? 9,
+        ...extractOptionalId(raw, "itrDtlId"),
         orgName: getVal(values, section, "Name of Organisation/Firm") || null,
         panNumber: getVal(values, section, "Permanent Account Number") || null,
         years,
@@ -716,7 +734,7 @@ export function buildDocumentPayload(
         };
       });
       return {
-        itrDtlId: (raw.itrDtlId as number | undefined) ?? 8,
+        ...extractOptionalId(raw, "itrDtlId"),
         orgName: getVal(values, section, "Name of Organisation/Firm") || null,
         panNumber: getVal(values, section, "Permanent Account Number") || null,
         nameMatchInd: yesNoToYN(getVal(values, section, "Is Life Assured Name Same?")),
@@ -726,7 +744,7 @@ export function buildDocumentPayload(
 
     case "loan_statement": {
       return {
-        loanStmtDtlId: (raw.loanStmtDtlId as number | undefined) ?? 4,
+        ...extractOptionalId(raw, "loanStmtDtlId"),
         nameMatchInd: yesNoToYN(getVal(values, section, "Is Loan Statements in the name of LA", "Loan Statements in the name of LA")),
         isDefaulter: yesNoToYN(getVal(values, section, "Is LA Defaulter in the Payment", "LA Defaulter in the Payment")),
         monthlyEmi: parseNumber(getVal(values, section, "Monthly EMI as per Schedule")),
@@ -736,7 +754,7 @@ export function buildDocumentPayload(
 
     case "mutual_fund": {
       return {
-        mfDtlId: (raw.mfDtlId as number | undefined) ?? 4,
+        ...extractOptionalId(raw, "mfDtlId"),
         nameMatchInd: yesNoToYN(getVal(values, section, "Is Mutual Fund Statement in the name of LA")),
         latestMarketValue: parseNumber(getVal(values, section, "Latest Market Value (as per NAV) in Statement")),
         incomeEarned: parseNumber(getVal(values, section, "Income Earned")),
@@ -745,7 +763,7 @@ export function buildDocumentPayload(
 
     case "pension_statement": {
       return {
-        pensionDtlId: (raw.pensionDtlId as number | undefined) ?? 4,
+        ...extractOptionalId(raw, "pensionDtlId"),
         totalMonthlyPension: parseNumber(getVal(values, section, "Total Monthly Pension")),
       } satisfies PensionStatementSavePayload;
     }
@@ -770,7 +788,7 @@ export function buildDocumentPayload(
         };
       });
       return {
-        pnlDtlId: (raw.pnlDtlId as number | undefined) ?? 4,
+        ...extractOptionalId(raw, "pnlDtlId"),
         orgName: getVal(values, section, "Name of Organization/Firm") || null,
         years,
       } satisfies ProfitAndLossSavePayload;
@@ -778,7 +796,7 @@ export function buildDocumentPayload(
 
     case "property_purchase": {
       return {
-        propPurchDtlId: (raw.propPurchDtlId as number | undefined) ?? 4,
+        ...extractOptionalId(raw, "propPurchDtlId"),
         isPurchasedByLa: yesNoToYN(getVal(values, section, "Is Property purchased by LA")),
         purchasePrice: parseNumber(getVal(values, section, "Purchase Price")),
         financialYearOfPurchase: getVal(values, section, "Financial Year of Purchase") || null,
@@ -788,7 +806,7 @@ export function buildDocumentPayload(
 
     case "property_valuation": {
       return {
-        propValDtlId: (raw.propValDtlId as number | undefined) ?? 4,
+        ...extractOptionalId(raw, "propValDtlId"),
         nameMatchInd: yesNoToYN(getVal(values, section, "Is Property Valuation Report in the name of LA")),
         estimatedMarketValue: parseNumber(getVal(values, section, "Estimated Market Value of Property (as per report)")),
       } satisfies PropertyValuationSavePayload;
@@ -796,14 +814,14 @@ export function buildDocumentPayload(
 
     case "salary_certificate": {
       return {
-        salCertDtlId: (raw.salCertDtlId as number | undefined) ?? 4,
+        ...extractOptionalId(raw, "salCertDtlId"),
         grossSalaryPa: parseNumber(getVal(values, section, "Gross Salary PA")),
       } satisfies SalaryCertificateSavePayload;
     }
 
     case "salary_revision_letter": {
       return {
-        salRevDtlId: (raw.salRevDtlId as number | undefined) ?? 4,
+        ...extractOptionalId(raw, "salRevDtlId"),
         grossSalaryPa: parseNumber(getVal(values, section, "Gross Salary PA")),
       } satisfies SalaryRevisionLetterSavePayload;
     }
@@ -815,7 +833,7 @@ export function buildDocumentPayload(
         const salaryVal = getVal(values, section, `Gross Salary Pm${m}`) || getVal(values, section, `Gross Salary Pm ${m}`);
         return {
           periodMonth: m,
-          salarySlipDtlId: (rawM.salarySlipDtlId as number | undefined) ?? (m === 1 ? 10 : m === 2 ? 11 : m === 3 ? 12 : m === 4 ? 24 : m === 5 ? 25 : 26),
+          ...extractOptionalId(rawM, "salarySlipDtlId"),
           monthlyGrossSalary: parseNumber(salaryVal),
         };
       });
@@ -835,7 +853,7 @@ export function buildDocumentPayload(
         const rawM = isRecord(rawMonths[m - 1]) ? rawMonths[m - 1] : {};
         return {
           periodMonth: m,
-          bankStmtDtlId: (rawM.bankStmtDtlId as number | undefined) ?? (18 + m),
+          ...extractOptionalId(rawM, "bankStmtDtlId"),
           closingBalance: parseNumber(getVal(values, section, `Monthly Closing Bal ${m}`)),
         };
       });
@@ -855,7 +873,7 @@ export function buildDocumentPayload(
 
     case "stock_holding": {
       return {
-        stockDtlId: (raw.stockDtlId as number | undefined) ?? 4,
+        ...extractOptionalId(raw, "stockDtlId"),
         nameMatchInd: yesNoToYN(getVal(values, section, "Is Stock Holding Stmt in name of LA/his Business")),
         estimatedMarketValue: parseNumber(getVal(values, section, "Gross Total Market Value as per the Stmt")),
         incomeEarned: parseNumber(getVal(values, section, "Income Earned")),
@@ -864,7 +882,7 @@ export function buildDocumentPayload(
 
     case "vehicle_ownership": {
       return {
-        vehicleDtlId: (raw.vehicleDtlId as number | undefined) ?? 4,
+        ...extractOptionalId(raw, "vehicleDtlId"),
         isRegNameLa: yesNoToYN(getVal(values, section, "Is Registration Papers in the name of LA")),
         isInvoiceNameLa: yesNoToYN(getVal(values, section, "Is Purchase invoices in the name of LA")),
         purchasePrice: parseNumber(getVal(values, section, "Purchase Price")),
@@ -874,7 +892,7 @@ export function buildDocumentPayload(
 
     case "vahan": {
       return {
-        vahanDtlId: (raw.vahanDtlId as number | undefined) ?? 4,
+        ...extractOptionalId(raw, "vahanDtlId"),
         isRegNameLa: yesNoToYN(getVal(values, section, "Is Registration Papers in the Name of LA")),
         isInvoiceNameLa: yesNoToYN(getVal(values, section, "Is Purchase Invoices in the Name of LA")),
         carRcNumber: getVal(values, section, "Car RC Number") || null,
@@ -888,7 +906,7 @@ export function buildDocumentPayload(
         const rawM = isRecord(rawMonths[m - 1]) ? rawMonths[m - 1] : {};
         return {
           periodMonth: m,
-          sipDtlId: (rawM.sipDtlId as number | undefined) ?? (18 + m),
+          ...extractOptionalId(rawM, "sipDtlId"),
           sipAmount: parseNumber(getVal(values, section, `SIP of Month ${m}`)),
         };
       });
@@ -906,7 +924,7 @@ export function buildDocumentPayload(
         const suffix = y === 1 ? "" : ` Year ${y}`;
         return {
           assessmentYear: getVal(values, section, `Assessment Year${suffix}`) || (y === 1 ? "AY 22-23" : y === 2 ? "AY 23-24" : y === 3 ? "AY 24-25" : "AY 25-26"),
-          gstIncomeDtlId: (rawY.gstIncomeDtlId as number | undefined) ?? (15 + y),
+          ...extractOptionalId(rawY, "gstIncomeDtlId"),
           grossSales: parseNumber(getVal(values, section, `Gross Sales${suffix}`)),
           grossPurchases: parseNumber(getVal(values, section, `Gross Purchases${suffix}`)),
           profitAfterGst: parseNumber(getVal(values, section, `Profit After GST${suffix}`)),
@@ -925,7 +943,7 @@ export function buildDocumentPayload(
           getVal(values, section, `Net Salary Credited PM ${m}`);
         return {
           periodMonth: m,
-          bankSalCrDtlId: (rawM.bankSalCrDtlId as number | undefined) ?? (18 + m),
+          ...extractOptionalId(rawM, "bankSalCrDtlId"),
           netSalaryCredited: parseNumber(netSal),
         };
       });
@@ -943,7 +961,7 @@ export function buildDocumentPayload(
 
     case "epf_basic": {
       return {
-        epfDtlId: (raw.epfDtlId as number | undefined) ?? 28,
+        ...extractOptionalId(raw, "epfDtlId"),
         orgName: getVal(values, section, "Latest Organization Name") || null,
         isOrgNameSame: yesNoToYN(getVal(values, section, "Is Organization Name Same?")),
         income: parseNumber(getVal(values, section, "Income")),
@@ -959,7 +977,7 @@ export function buildDocumentPayload(
           getVal(values, section, `Month ${m}`);
         return {
           periodMonth: m,
-          epfDtlId: (rawM.epfDtlId as number | undefined) ?? (21 + m),
+          ...extractOptionalId(rawM, "epfDtlId"),
           pfContribution: parseNumber(contrib),
         };
       });
@@ -972,7 +990,7 @@ export function buildDocumentPayload(
 
     case "employee_id_card": {
       return {
-        empIdCardDtlId: (raw.empIdCardDtlId as number | undefined) ?? 1,
+        ...extractOptionalId(raw, "empIdCardDtlId"),
         companyName: getVal(values, section, "Name of the company") || null,
         employeeName: getVal(values, section, "Name of the employee") || null,
         employeeNumber: getVal(values, section, "Employee number") || null,
@@ -983,7 +1001,7 @@ export function buildDocumentPayload(
     case "decision":
     case "bre_financial_decision": {
       return {
-        decisionDtlId: (raw.decisionDtlId as number | undefined) ?? 1,
+        ...extractOptionalId(raw, "decisionDtlId"),
         verifiedIncomeDoc: (raw.verifiedIncomeDoc as string | undefined) ?? "salary_slips",
         verifiedIncome: parseNumber(getVal(values, section, "Verified Income")),
         justification: (raw.justification as string | undefined) ?? "Income verified from submitted documents",
@@ -1045,18 +1063,19 @@ export interface BuildFinancialSaveRequestOptions {
 export function buildFinancialSaveRequest({
   applicationNumber,
   partyId,
-  createdBy = "ui-user",
-  updatedBy = "ui-user-2",
+  createdBy,
+  updatedBy,
   section,
   values,
 }: BuildFinancialSaveRequestOptions): FinancialSaveRequest {
+  const sessionUsername = getSessionUser()?.username?.trim() || "";
   const docPayload = buildDocumentPayload(section.key, section, values);
 
   const request: FinancialSaveRequest = {
     applicationNumber,
     partyId,
-    createdBy,
-    updatedBy,
+    createdBy: createdBy ?? sessionUsername,
+    updatedBy: updatedBy ?? sessionUsername,
     documents: {
       [section.key]: docPayload,
     },
