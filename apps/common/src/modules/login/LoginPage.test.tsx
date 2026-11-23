@@ -231,14 +231,15 @@ describe("LoginPage", () => {
     expect(await screen.findByText("Password reset")).toBeInTheDocument();
   });
 
-  it("blocks inbox navigation when master data load fails", async () => {
+  it("does not block inbox navigation when master data load fails", async () => {
     auth.login.mockReturnValue(loginSuccess());
     masters.fetchAndStoreMasterData.mockRejectedValue(new Error("Master data unavailable"));
     renderAuth(<LoginPage />);
     const user = await fillValidLogin();
     await user.click(screen.getByRole("button", { name: "Log In" }));
 
-    expect(await screen.findByText("Master data unavailable")).toBeInTheDocument();
-    expect(routes.assignUrl).not.toHaveBeenCalled();
+    await waitFor(() => {
+      expect(routes.assignUrl).toHaveBeenCalledWith("/retail/inbox");
+    });
   });
 });

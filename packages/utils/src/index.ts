@@ -28,6 +28,7 @@ export {
   getRefreshToken,
   getSessionBusinessType,
   getSessionId,
+  getSessionRoles,
   getSessionUser,
   getToken,
   clearFirstLoginChangePending,

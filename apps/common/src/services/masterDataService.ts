@@ -5,7 +5,7 @@ import {
   setMasterData,
   useMock,
 } from "@insurance-poc/utils";
-import { buildMastersRequestUrl } from "./masterData/buildMasterQuery";
+import { buildMasterTypesPayload } from "./masterData/buildMasterQuery";
 import type { MasterDataPayload, MasterListEntry } from "./masterData/masterDataTypes";
 import { MASTER_DATA_TYPES } from "./masterData/masterTypesConfig";
 import mastersMock from "./masterData/mock/masters.json";
@@ -94,14 +94,19 @@ async function realFetchMasterData(): Promise<MasterDataPayload> {
     throw new Error("Sign in before loading master data.");
   }
 
-  const requestUrl = buildMastersRequestUrl(url, MASTER_DATA_TYPES);
+  const requestBody = buildMasterTypesPayload(MASTER_DATA_TYPES);
   const headers = new Headers();
   headers.set("Accept", "application/json");
+  headers.set("Content-Type", "application/json");
   applyBusinessApiAuthHeaders(headers);
 
   let response: Response;
   try {
-    response = await fetch(requestUrl, { method: "GET", headers });
+    response = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(requestBody),
+    });
   } catch (reason: unknown) {
     const detail = reason instanceof Error ? reason.message : "Network error";
     throw new Error(`Unable to reach the master data API (${detail}).`);
