@@ -42,6 +42,22 @@ export function buildJsonAuthPostHeaders(bearerToken?: string): HeadersInit {
   return headers;
 }
 
+/**
+ * Auth-service GET calls (e.g. users by role, `VITE_USERS_BY_ROLE_API`).
+ * Same headers as logout: mid-office `X-Apigee-Authorization: Basic` plus the session `Authorization: Bearer`.
+ */
+export function buildAuthServiceGetHeaders(bearerToken?: string): Record<string, string> {
+  const headers: Record<string, string> = {
+    accept: JSON_AUTH_HEADERS.accept,
+    "X-Apigee-Authorization": apigeeBasicAuthorization(),
+  };
+  const authorization = normalizeBearerToken(bearerToken ?? getToken() ?? undefined);
+  if (authorization.length > 0) {
+    headers.Authorization = authorization;
+  }
+  return headers;
+}
+
 /** Session Bearer only. Business APIs do not send the Apigee Basic credential. */
 export function applyBusinessApiAuthHeaders(headers: Headers): void {
   const token = getToken()?.trim() ?? "";

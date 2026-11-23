@@ -16,6 +16,7 @@ export {
   getLastLoginAt,
   getRefreshToken,
   getSessionId,
+  getSessionRoles,
   getSessionUser,
   getToken,
   hasSession,

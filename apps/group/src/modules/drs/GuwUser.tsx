@@ -264,7 +264,7 @@ const GuwUser = () => {
                 actions={GROUP_FINANCIAL_ACTIONS_CONFIG.guw}
                 onBack={closeFinancial}
                 onSaveSection={(saveRequest) => saveFinancial(saveRequest).unwrap()}
-                onSubmit={(payload) => console.log("Submit financial", payload)}
+                onSubmit={closeFinancial}
               />
             ) : (
             <>
@@ -501,6 +501,12 @@ const GuwUser = () => {
           onClose={() => setSectionDialog(null)}
           notify={notify}
           validationKey={memberStorageKey ?? applicationNo}
+          grievanceContext={{
+            applicationNo: page.record.applicationNo || applicationNo,
+            partyId: page.record.partyId,
+            lifeNumber: page.record.lifeNumber,
+            transactionId: page.record.transactionId,
+          }}
         />
       ) : null}
 

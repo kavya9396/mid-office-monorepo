@@ -416,6 +416,12 @@ export function ReferralDrsPage({ config }: Readonly<ReferralDrsPageProps>) {
           open={sectionDialog}
           onClose={() => setSectionDialog(null)}
           notify={notify}
+          grievanceContext={{
+            applicationNo: page.record.applicationNo || applicationNo,
+            partyId: page.record.partyId,
+            lifeNumber: page.record.lifeNumber,
+            transactionId: page.record.transactionId,
+          }}
         />
       ) : null}
 
