@@ -380,6 +380,7 @@ export interface GuwDecisionFormInput {
   partyId: string;
   roleType: string;
   screenType: string;
+  userId?: string;
   createdBy: string;
   taskId?: string;
   instanceId?: string;
@@ -439,6 +440,7 @@ export interface GuwUwDecisionRequest {
   decision: string;
   decisionCode: string;
   uwRemarks: string;
+  userId?: string;
   taskId?: string;
   instanceId?: string;
   reasons?: string | string[];
@@ -484,11 +486,6 @@ function toAmount(value: string): string | null {
 function orNull(value: string): string | null {
   const text = value.trim();
   return text.length > 0 ? text : null;
-}
-
-/** One reason is sent as text, several as a list. */
-function toReasons(reasons: string[]): string | string[] {
-  return reasons.length === 1 ? reasons[0] : reasons;
 }
 
 const RECONSIDER_DECISIONS = ["REJ", "DC", "POSTP"];
@@ -539,6 +536,7 @@ export function buildGuwUwDecisionRequest(input: GuwDecisionFormInput): GuwUwDec
   const taskIds = getDrsTaskIds();
   const taskId = input.taskId?.trim() || taskIds.taskId;
   const instanceId = input.instanceId?.trim() || taskIds.instanceId;
+  const userId = input.userId?.trim() || input.createdBy?.trim() || getSessionUser()?.username || "";
   const request: GuwUwDecisionRequest = {
     applicationNo: input.applicationNo,
     partyId: input.partyId,
@@ -549,13 +547,15 @@ export function buildGuwUwDecisionRequest(input: GuwDecisionFormInput): GuwUwDec
     decision,
     decisionCode: input.decisionCode?.trim() || decision,
     uwRemarks: input.uwRemarks,
+    userId,
     createdBy: input.createdBy,
     ...(taskId ? { taskId } : {}),
     ...(instanceId ? { instanceId } : {}),
   };
 
   if (PRODUCT_DECISIONS.includes(decision) || RECONSIDER_DECISIONS.includes(decision)) {
-    if (input.reasons.length > 0) request.reasons = toReasons(input.reasons);
+    // Always sent as a list, even when only one reason is selected
+    if (input.reasons.length > 0) request.reasons = input.reasons;
   }
 
   if (PRODUCT_DECISIONS.includes(decision)) {
@@ -587,7 +587,9 @@ export function buildGuwUwDecisionRequest(input: GuwDecisionFormInput): GuwUwDec
 export type GuwReferralBaseInput = Pick<
   GuwDecisionFormInput,
   "applicationNo" | "partyId" | "roleType" | "screenType" | "createdBy" | "taskId" | "instanceId"
->;
+> & {
+  userId?: string;
+};
 
 /**
  * Raise Referral: one `uw-decision` request per selected referral row, sent together as an array.
@@ -600,6 +602,7 @@ export function buildGuwUwReferralRequests(
   const taskIds = getDrsTaskIds();
   const taskId = base.taskId?.trim() || taskIds.taskId;
   const instanceId = base.instanceId?.trim() || taskIds.instanceId;
+  const userId = base.userId?.trim() || base.createdBy?.trim() || getSessionUser()?.username || "";
   return rows.map((row) => {
     const request: GuwUwDecisionRequest = {
       applicationNo: base.applicationNo,
@@ -613,6 +616,7 @@ export function buildGuwUwReferralRequests(
       uwRemarks: row.remarks.trim(),
       reason: row.reason,
       referTo: row.target,
+      userId,
       createdBy: base.createdBy,
       ...(taskId ? { taskId } : {}),
       ...(instanceId ? { instanceId } : {}),
@@ -675,6 +679,7 @@ function toParallelDecisionRequest(
   const taskIds = getDrsTaskIds();
   const taskId = base.taskId?.trim() || taskIds.taskId;
   const instanceId = base.instanceId?.trim() || taskIds.instanceId;
+  const userId = base.userId?.trim() || getSessionUser()?.username || "";
   return {
     screenType: base.screenType,
     lob: GUW_LOB,
@@ -682,7 +687,7 @@ function toParallelDecisionRequest(
     appNo: base.applicationNo,
     partyId: base.partyId,
     action,
-    userId: base.userId,
+    userId,
     ...(taskId ? { taskId } : {}),
     ...(instanceId ? { instanceId } : {}),
     ...(referTo ? { refer_to: referTo } : {}),

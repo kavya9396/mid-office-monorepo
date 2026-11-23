@@ -76,6 +76,7 @@ export {
   apigeeBasicAuthorization,
   apigeeGatewayAuthorization,
   applyBusinessApiAuthHeaders,
+  buildAuthServiceGetHeaders,
   buildJsonAuthPostHeaders,
   buildLoginAuthHeaders,
   createBusinessBaseQuery,

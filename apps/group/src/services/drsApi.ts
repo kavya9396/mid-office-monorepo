@@ -9,12 +9,12 @@ import type {
 } from "@insurance-poc/common/life-assured";
 import {
   absoluteApiBaseUrl,
+  buildAuthServiceGetHeaders,
   createBusinessBaseQuery,
   getDrsRoleType,
   getMasterList,
   getSessionBusinessType,
   getSessionUser,
-  getToken,
   groupBusinessUrls,
   useMock,
   userUrls,
@@ -568,7 +568,13 @@ export const groupDrsApi = createApi({
      */
     getGuwUwDecision: build.mutation<GuwUwDecisionResult[], GuwUwDecisionRequest | GuwUwDecisionRequest[]>({
       async queryFn(arg, _api, _extra, baseQuery) {
-        console.log("[getGuwUwDecision] request payload:", arg);
+        const sessionUser = getSessionUser();
+        const fallbackUserId = sessionUser?.username ?? "";
+        const payload = Array.isArray(arg)
+          ? arg.map((item) => ({ ...item, userId: item.userId?.trim() || item.createdBy?.trim() || fallbackUserId }))
+          : { ...arg, userId: arg.userId?.trim() || arg.createdBy?.trim() || fallbackUserId };
+
+        console.log("[getGuwUwDecision] request payload:", payload);
         if (useMock) {
           console.log("[getGuwUwDecision] response (mock):", guwUwDecisionMock);
           return { data: mapGuwUwDecisions(guwUwDecisionMock) };
@@ -581,7 +587,7 @@ export const groupDrsApi = createApi({
         const result = await baseQuery({
           url: uwDecisionUrl,
           method: "POST",
-          body: arg,
+          body: payload,
           headers: { accept: "*/*", "Content-Type": "application/json" },
         });
         if (result.error) {
@@ -606,10 +612,11 @@ export const groupDrsApi = createApi({
           return { error: customError("Users by role API is not configured.") };
         }
 
-        const token = getToken()?.trim() ?? "";
-        const headers: Record<string, string> = { accept: "*/*" };
-        if (token.length > 0) {
-          headers["X-APIGEE-TOKEN"] = token;
+        let headers: Record<string, string>;
+        try {
+          headers = buildAuthServiceGetHeaders();
+        } catch (reason: unknown) {
+          return { error: customError(readError(reason)) };
         }
 
         const result = await baseQuery({
@@ -624,7 +631,14 @@ export const groupDrsApi = createApi({
     /** Parallel decision (Opinion / Counter Sign / Raise Referral) for the GUW screen. */
     saveGuwParallelDecision: build.mutation<unknown, GuwParallelDecisionRequest>({
       async queryFn(arg, _api, _extra, baseQuery) {
-        console.log("[saveGuwParallelDecision] request payload:", arg);
+        const sessionUser = getSessionUser();
+        const fallbackUserId = sessionUser?.username ?? "";
+        const payload: GuwParallelDecisionRequest = {
+          ...arg,
+          userId: arg.userId?.trim() || fallbackUserId,
+        };
+
+        console.log("[saveGuwParallelDecision] request payload:", payload);
         if (useMock) return { data: null };
         const parallelDecisionUrl = groupBusinessUrls.parallelDecision;
         if (parallelDecisionUrl.length === 0) {
@@ -634,7 +648,7 @@ export const groupDrsApi = createApi({
         const result = await baseQuery({
           url: parallelDecisionUrl,
           method: "POST",
-          body: arg,
+          body: payload,
           headers: { accept: "*/*", "Content-Type": "application/json" },
         });
         if (result.error) {

@@ -1329,12 +1329,14 @@ export function GuwUwPanel({
       }
     } else if (partyId) {
       const { taskId, instanceId } = getDrsTaskIds();
+      const currentUsername = getSessionUser()?.username ?? "";
       const uwDecisionRequest = buildGuwUwDecisionRequest({
           applicationNo: drsApplicationNo || applicationNo,
           partyId,
           roleType: getDrsRoleType(),
           screenType: GUW_UW_DECISION_SCREEN_TYPE,
-          createdBy: getSessionUser()?.username ?? "",
+          userId: currentUsername,
+          createdBy: currentUsername,
           taskId,
           instanceId,
           // Counter Sign is saved as APPROVER (with reason / referTo / assignedTo), not as the base decision
