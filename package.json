@@ -23,7 +23,7 @@
       "esbuild"
     ]
   },
-  "dependencies": {
-    "pnpm": "^12.21.0"
-  }
+    "dependencies": {
+     "pnpm": "^12.21.0"
+   }
 }
