@@ -261,7 +261,7 @@ const DvtUser = () => {
 
   const goToInbox = () => {
     clearBreRetriggerCount();
-    navigate("/inbox", { replace: true });
+    void navigate("/inbox", { replace: true });
   };
 
   useEffect(() => {
@@ -270,16 +270,20 @@ const DvtUser = () => {
   }, [applicationNo]);
 
   const openFinancial = (applicantId: string) => {
-    navigate({ pathname: financialPath, search }, { state: { applicantId } satisfies ApplicantRouteState });
+    void navigate({ pathname: financialPath, search }, { state: { applicantId } satisfies ApplicantRouteState });
   };
-  const closeFinancial = () => navigate({ pathname: drsBasePath, search });
+  const closeFinancial = () => {
+    void navigate({ pathname: drsBasePath, search });
+  };
   const openMedical = (applicantId: string) => {
-    navigate({ pathname: medicalPath, search }, { state: { applicantId } satisfies ApplicantRouteState });
+    void navigate({ pathname: medicalPath, search }, { state: { applicantId } satisfies ApplicantRouteState });
   };
-  const closeMedical = () => navigate({ pathname: drsBasePath, search });
+  const closeMedical = () => {
+    void navigate({ pathname: drsBasePath, search });
+  };
 
   const handleFinancialApplicantChange = (applicantKey: string) => {
-    navigate(
+    void navigate(
       { pathname: financialPath, search },
       { replace: true, state: { applicantId: applicantKey } satisfies ApplicantRouteState },
     );
@@ -486,7 +490,7 @@ const DvtUser = () => {
         onApplicantChange={handleFinancialApplicantChange}
         onBack={closeFinancial}
         onSaveSection={(saveRequest) => saveFinancial(saveRequest).unwrap()}
-        onSubmit={(payload) => console.log("Submit financial", payload)}
+        onSubmit={closeFinancial}
       />
     );
   }
@@ -537,7 +541,9 @@ const DvtUser = () => {
         )}
         applicationNo={applicationNo}
         roleType={getDrsRoleLabel() || params.get("role")?.trim() || quickLinksConfig.defaultRoleType}
-        onNavigate={(path) => navigate(path)}
+        onNavigate={(path) => {
+          void navigate(path);
+        }}
         onNotify={(message) => setSnackbarMessage(message)}
         dialogItemIds={["applicant-profile"]}
         onDialogItemClick={() => setApplicantProfileOpen(true)}

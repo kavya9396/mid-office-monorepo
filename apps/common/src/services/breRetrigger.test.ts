@@ -4,6 +4,7 @@ import {
   buildBreRetriggerRequestBody,
   mapBreRetriggerOutput,
   readBreOutputFromResponse,
+  retriggerBre,
   type BreRetriggerBaseQuery,
 } from "./breRetrigger";
 import breRetriggerMock from "./mock/breRetrigger.json";
@@ -18,7 +19,7 @@ describe("BRE retrigger", () => {
     vi.resetModules();
   });
 
-  it("builds group and retail request bodies from business type", () => {
+  it("builds group, retail and FE request bodies from business type and override", () => {
     expect(buildBreRetriggerRequestBody("OS40385478", "GROUP")).toEqual({
       eventName: "BRE-GROUP",
       applicationNumber: "OS40385478",
@@ -26,6 +27,11 @@ describe("BRE retrigger", () => {
     });
     expect(buildBreRetriggerRequestBody("OS31229864", "RETAIL")).toEqual({
       eventName: "BRE-RETAIL",
+      applicationNumber: "OS31229864",
+      lob: "R",
+    });
+    expect(buildBreRetriggerRequestBody("OS31229864", "RETAIL", "FE")).toEqual({
+      eventName: "FE",
       applicationNumber: "OS31229864",
       lob: "R",
     });
@@ -121,5 +127,14 @@ describe("BRE retrigger", () => {
 
     expect(Date.now() - started).toBeLessThan(50);
     expect(getBreRetriggerCount()).toBeNull();
+  });
+
+  it("calls retriggerBre in mock mode with eventName FE", async () => {
+    vi.stubEnv("VITE_USE_MOCK", "true");
+    const result = await retriggerBre("OS31229864", { eventName: "FE", businessType: "RETAIL" });
+    expect("data" in result).toBe(true);
+    if ("data" in result) {
+      expect(result.data.barDecision).toBe("Non-STP");
+    }
   });
 });

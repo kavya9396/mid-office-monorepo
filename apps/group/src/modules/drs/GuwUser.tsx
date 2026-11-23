@@ -264,7 +264,7 @@ const GuwUser = () => {
                 actions={GROUP_FINANCIAL_ACTIONS_CONFIG.guw}
                 onBack={closeFinancial}
                 onSaveSection={(saveRequest) => saveFinancial(saveRequest).unwrap()}
-                onSubmit={(payload) => console.log("Submit financial", payload)}
+                onSubmit={closeFinancial}
               />
             ) : (
             <>
