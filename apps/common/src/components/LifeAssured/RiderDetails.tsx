@@ -15,14 +15,15 @@ import {
 } from "@insurance-poc/ui";
 import { dangerButtonSx, iconButtonSx } from "./NomineeDetails";
 import { FILL_ALL_RIDER_FIELDS_MESSAGE, requiredMessage } from "./editApplicant.messages";
+import { requiredFormat } from "./fieldFormat";
 
 const required = (label: string) => z.string().trim().min(1, requiredMessage(label));
 
 // All Rider fields are mandatory (same as Nominee)
 export const riderSchema = z.object({
   riderName: required("Rider Name"),
-  sumAssured: required("Rider Sum Assured"),
-  riderTerm: required("Rider Term"),
+  sumAssured: requiredFormat("Rider Sum Assured", "numeric"),
+  riderTerm: requiredFormat("Rider Term", "numeric"),
 });
 
 export type RiderEditRow = z.infer<typeof riderSchema>;

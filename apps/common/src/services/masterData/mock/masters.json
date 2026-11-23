@@ -7922,6 +7922,21 @@
   },
   {
     "code": "3",
+    "description": "HOD Opinion",
+    "value": "HOD Opinion",
+    "isActive": "Y",
+    "miscMastId": "535",
+    "type": "GUW_REF_TO"
+  },
+  {
+    "code": "4",
+    "description": "SR UW Opinion",
+    "value": "SR UW Opinion",
+    "isActive": "Y",
+    "miscMastId": "536",
+    "type": "GUW_REF_TO"
+  },{
+    "code": "3",
     "description": "HOD",
     "value": "HOD",
     "isActive": "Y",

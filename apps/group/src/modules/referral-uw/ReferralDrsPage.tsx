@@ -31,12 +31,12 @@ import { useRetriggerGroupBreMutation } from "../../services/breRetriggerApi";
 import { formatBreTimestamp, splitDiscrepancies } from "../drs/breFormat";
 import { GuwSdtRow } from "../guw/GuwSdtRow";
 import { GuwSectionDialogs, type GuwSectionDialogKey } from "../guw/GuwSectionDialogs";
-import { fetchGuwDrs, type GuwDrsRecord } from "../../services/guwService";
+import { fetchGuwDrs, type GuwDrsRecord } from "../../services/drsService";
 import {
   fetchReferralDecisionHistory,
   type ReferralDecisionHistoryRow,
   type ReferralRoleConfig,
-} from "../../services/referralUwService";
+} from "../../services/drsService";
 import { DecisionSection } from "@insurance-poc/common/decision-section";
 import { REFERRAL_PROFILE_IMAGE_URL } from "./profileImage";
 

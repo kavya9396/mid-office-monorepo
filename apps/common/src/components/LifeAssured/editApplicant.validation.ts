@@ -2,6 +2,7 @@ import { z } from "zod";
 import { loanSchema } from "./LoanDetails";
 import { nomineeSchema } from "./NomineeDetails";
 import { RAISE_PAN_PENDCODE_MESSAGE, requiredMessage } from "./editApplicant.messages";
+import { requiredFormat } from "./fieldFormat";
  
 /**
  * Every validation rule of the Edit Applicant dialog lives in this file
@@ -19,9 +20,9 @@ export const editApplicantSchema = z.object({
   dob: required("Birthdate"),
   gender: required("Gender"),
   zipCode: required("Zip Code"),
-  mobileNo: required("Mobile No"),
+  mobileNo: requiredFormat("Mobile No", "numeric"),
   immigrationStatus: required("Immigration Status"),
-  panNumber: required("PAN No"),
+  panNumber: requiredFormat("PAN No", "pan"),
   isPanValid: required("Is PAN Valid"),
   aadharSeedingStatus: required("Aadhar Seeding Status"),
   nsdlNameMatching: required("Is NSDL Name Matching"),
@@ -29,10 +30,9 @@ export const editApplicantSchema = z.object({
   nsdlTab: z.string(),
   // All Edit Profile fields are mandatory
   emailId: required("Email ID"),
-  height: required("Height"),
-  weight: required("Weight"),
-  lifestyleHabits: required("Lifestyle Habits"),
-  annualIncome: required("Annual Income"),
+  height: requiredFormat("Height", "numeric"),
+  weight: requiredFormat("Weight", "numeric"),
+  annualIncome: requiredFormat("Annual Income", "numeric"),
   applicantStatus: required("Applicant Status"),
 });
  

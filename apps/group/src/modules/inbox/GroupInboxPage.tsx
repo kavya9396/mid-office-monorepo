@@ -7,8 +7,8 @@ import {
   useLazyFetchGroupPoolColumnsQuery,
   useSaveGroupPoolColumnsMutation,
 } from "../../services/inboxApi";
-import { clearAllGuwSubmittedDecisions } from "../../services/guwService";
-import { clearAllValidatedRows } from "../../services/guwSectionValidationService";
+import { clearAllGuwSubmittedDecisions } from "../../services/drsService";
+import { clearAllValidatedRows } from "../../services/drsService";
 
 function readQueryError(error: unknown): string {
   if (typeof error === "object" && error !== null) {

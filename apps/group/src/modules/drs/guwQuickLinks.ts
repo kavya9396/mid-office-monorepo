@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import type { QuickLinkItem } from "@insurance-poc/common/quick-links";
 import { getDrsApplicationNo, getDrsMemberId, getDrsRoleType } from "@insurance-poc/utils";
-import { fetchGuwDrs } from "../../services/guwService";
+import { fetchGuwDrs } from "../../services/drsService";
 import { useGetGroupDrsQuery } from "../../services/drsApi";
 import type { QuickLinksSubSections } from "./quickLinksData";
 

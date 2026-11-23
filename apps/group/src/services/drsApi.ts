@@ -25,15 +25,18 @@ import guwHodDrsMock from "../../../../mock/drs/guw-hod-drs.json";
 import guwSrUwDrsMock from "../../../../mock/drs/guw-sr-uw-drs.json";
 import guwUwDecisionMock from "../../../../mock/drs/guw-uw-decision.json";
 import usersByRoleMock from "../../../../mock/drs/users-by-role.json";
+import groupDrsApplicantSaveMock from "../modules/drs/mock/groupDrsApplicantSave.json";
 import {
+  mapGroupDrsPayload,
   mapGuwUwDecisions,
+  mapRawRequirementRows,
+  mapUsersByRole,
+  type GroupDrsData,
+  type GuwAssigneeOption,
   type GuwParallelDecisionRequest,
   type GuwUwDecisionRequest,
   type GuwUwDecisionResult,
-} from "./guwDecisionService";
-import groupDrsApplicantSaveMock from "../modules/drs/mock/groupDrsApplicantSave.json";
-import { mapGroupDrsPayload, mapRawRequirementRows, type GroupDrsData } from "./drsService";
-import { mapUsersByRole, type GuwAssigneeOption } from "./guwAssigneeService";
+} from "./drsService";
 
 export type GroupDrsQueryArg =
   | string
@@ -310,11 +313,6 @@ function buildMedicalLifestyleSection(
     groups.push({ label: "Health Information", value: healthFields });
   }
 
-  if (isFieldChanged(values.lifestyleHabits, initialValues?.lifestyleHabits, hasScope)) {
-    groups.push({ label: "Lifestyle Habits", value: values.lifestyleHabits ?? "" });
-    keys.push("personalDetails.lifestyleHabits");
-  }
-
   return {
     section: groups.length > 0 ? { value: groups } : undefined,
     keys,
@@ -452,11 +450,16 @@ function updateFieldValues(
   }
 }
 
+/** Master code -> description for display ("M" -> "Male"); unknown values are kept as they are. */
+function genderDescription(code: string): string {
+  return getMasterList("gender").find((entry) => entry.code === code)?.description ?? code;
+}
+
 function toNomineeDisplayRows(nominees: NomineeEditRow[]) {
   return nominees.map((n) => ({
     nomineeName: `${n.firstName} ${n.lastName}`.trim(),
     nomineeDOB: n.dob,
-    gender: n.gender,
+    gender: genderDescription(n.gender),
     relationship: n.proposerNomineeRelation,
     sharePercentage: Number(n.percentage) || 0,
     isLASame: "",
@@ -496,7 +499,6 @@ function updateApplicantInGroupDrsDraft(draft: GroupDrsData, arg: SaveGroupDrsAp
   updateFieldValues(applicant.lifestyleFields, {
     height: arg.values.height,
     weight: arg.values.weight,
-    "lifestyle habits": arg.values.lifestyleHabits,
   });
 
   if (arg.nominees?.length > 0) {
@@ -533,7 +535,7 @@ export const groupDrsApi = createApi({
         }
       },
     }),
-    /** Raw DRS payload for GUW / HOD / Sr UW; mapped by `guwService` (same request body as DVT). */
+    /** Raw DRS payload for GUW / HOD / Sr UW; mapped by `drsService` (same request body as DVT). */
     getGuwDrsPayload: build.query<unknown, GroupDrsQueryArg>({
       async queryFn(arg, _api, _extra, baseQuery) {
         if (useMock) {

@@ -17,7 +17,7 @@ import {
   fromGuwValidationResponse,
   type GuwValidationRequest,
   type GuwValidationResult,
-} from "./guwService";
+} from "./drsService";
 
 /**
  * Decision code that fails validation in mock mode (the example in the API contract). When any party sends it,
