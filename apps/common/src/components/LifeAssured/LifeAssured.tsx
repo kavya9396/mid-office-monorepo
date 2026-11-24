@@ -22,8 +22,12 @@ import { Lifestyle } from "./Applicant Profile/Lifestyle";
 import { FieldCard } from "./Applicant Profile/Fields";
 import { PaymentPayout } from "./Applicant Profile/Payment & Payout";
 
-export { hasPendingPanPendcode } from "./editApplicant.validation";
-export { PAN_INVALID_SUBMIT_BLOCKED_MESSAGE } from "./editApplicant.messages";
+export { buildNsdlNotice, hasPendingPanPendcode } from "./editApplicant.validation";
+export {
+  PAN_API_FAILED_MESSAGE,
+  PAN_INVALID_SUBMIT_BLOCKED_MESSAGE,
+  PAN_VALIDATION_FAILED_MESSAGE,
+} from "./editApplicant.messages";
 
 export type {
   FieldData,

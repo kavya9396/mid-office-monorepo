@@ -9,8 +9,17 @@ import {
   CustomSnackbar,
   CustomTextField,
   CustomTypography,
+  CustomTable,
+  type Column,
 } from "@insurance-poc/ui";
 import { getMasterList, RegexPatterns } from "@insurance-poc/utils";
+import {
+  buildNsdlNotice,
+  PAN_API_FAILED_MESSAGE,
+  PAN_VALIDATION_FAILED_MESSAGE,
+  type PanValidationInput,
+  type PanValidationResult,
+} from "@insurance-poc/common/life-assured";
 
 export type CvtEditApplicantValues = {
   dob: string;
@@ -41,6 +50,8 @@ export type CvtEditApplicantDialogProps = {
   onClose: () => void;
   initialValues: CvtEditApplicantValues;
   onSave: (values: CvtEditApplicantValues) => void;
+  /** NSDL PAN validation call behind the Revalidate PAN button. */
+  onValidatePan?: (input: PanValidationInput) => Promise<PanValidationResult>;
 };
 
 const MISC_PROOF_TYPE = {
@@ -168,6 +179,21 @@ const validate = (values: CvtEditApplicantValues): FieldErrors => {
 
 type Notice = { message: string; severity: "success" | "error" | "warning" | "info" };
 
+const PAN_REVALIDATE_BEFORE_SAVE_MESSAGE = "Please revalidate PAN before saving";
+
+const isPanFlagNo = (flag: string): boolean => ["no", "n"].includes(flag.trim().toLowerCase());
+
+/** One edited field shown in the Save confirmation popup. */
+type ChangeRow = { field: string; oldValue: string; newValue: string };
+
+type PendingSave = { values: CvtEditApplicantValues; rows: ChangeRow[] };
+
+const CHANGE_COLUMNS: Column<ChangeRow>[] = [
+  { key: "field", header: "Field Name", width: "34%" },
+  { key: "oldValue", header: "Old Value" },
+  { key: "newValue", header: "New Value" },
+];
+
 /**
  * Edit dialog of the Retail CVT DRS (fields from `cvt-drs-prototype.html`): Personal & KYC and
  * Contact & Address. Plugged into `LifeAssured` through `renderEditDialog`. UI only: Save hands the
@@ -177,6 +203,7 @@ export function CvtEditApplicantDialog({
   onClose,
   initialValues,
   onSave,
+  onValidatePan,
 }: Readonly<CvtEditApplicantDialogProps>) {
   const options = useMemo<CvtEditApplicantOptions>(
     () => ({
@@ -191,6 +218,8 @@ export function CvtEditApplicantDialog({
   const [values, setValues] = useState<CvtEditApplicantValues>(initialValues);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [notice, setNotice] = useState<Notice | null>(null);
+  const [pendingSave, setPendingSave] = useState<PendingSave | null>(null);
+  const [validatingPan, setValidatingPan] = useState(false);
 
   const clearError = (key: FieldKey) =>
     setErrors((current) => {
@@ -210,7 +239,7 @@ export function CvtEditApplicantDialog({
         const changed =
           next.panNumber.trim().toUpperCase() !== initialValues.panNumber.trim().toUpperCase() ||
           next.dob !== initialValues.dob;
-        next.panFlag = changed ? "Non-Verified" : initialValues.panFlag;
+        next.panFlag = changed ? "No" : initialValues.panFlag;
       }
       return next;
     });
@@ -222,7 +251,23 @@ export function CvtEditApplicantDialog({
     values.panNumber.trim().toUpperCase() === initialValues.panNumber.trim().toUpperCase() &&
     values.dob === initialValues.dob;
 
-  const handleRevalidatePan = () => {
+  /** Applies an NSDL result: the PAN flag follows `panValid`, the notice shows the API message. */
+  const applyPanResult = (result: PanValidationResult) => {
+    if (result.apiFailed) {
+      setValues((current) => ({ ...current, panFlag: "No" }));
+      setNotice({ message: PAN_API_FAILED_MESSAGE, severity: "info" });
+      return;
+    }
+    if (result.panValid !== undefined) {
+      const flag = result.panValid ? "Yes" : "No";
+      setValues((current) => ({ ...current, panFlag: flag }));
+    }
+    const apiMessage = result.message.trim() || (result.panValid === true ? "" : PAN_VALIDATION_FAILED_MESSAGE);
+    const text = buildNsdlNotice(apiMessage, result.raisePendcode);
+    if (text) setNotice({ message: text, severity: result.panValid === true ? "success" : "error" });
+  };
+
+  const handleRevalidatePan = async () => {
     const pan = values.panNumber.trim().toUpperCase();
     if (!pan) {
       setErrors((current) => ({ ...current, panNumber: "PAN Number is required" }));
@@ -234,15 +279,59 @@ export function CvtEditApplicantDialog({
       setNotice({ message: "Please enter a valid PAN Number", severity: "warning" });
       return;
     }
+    if (!values.dob) {
+      setErrors((current) => ({ ...current, dob: "DOB is required" }));
+      setNotice({ message: "Please enter DOB before revalidation", severity: "warning" });
+      return;
+    }
     clearError("panNumber");
-    setNotice({ message: "PAN is ready for revalidation", severity: "info" });
+    if (!onValidatePan) return;
+
+    setValidatingPan(true);
+    try {
+      applyPanResult(await onValidatePan({ panNumber: pan, dob: values.dob }));
+    } finally {
+      setValidatingPan(false);
+    }
+  };
+
+  /** Selects show the option label instead of the stored master code; empty values show "-". */
+  const toDisplayValue = (field: FieldDef, value: string): string => {
+    const text = value.trim();
+    if (!text) return "-";
+    if (!field.select) return text;
+    return options[field.select].find((option) => option.value === text)?.label ?? text;
   };
 
   const handleSave = () => {
+    // PAN flag "No" means the PAN is not validated: revalidate it before anything else is checked or saved.
+    if (isPanFlagNo(values.panFlag)) {
+      setNotice({ message: PAN_REVALIDATE_BEFORE_SAVE_MESSAGE, severity: "warning" });
+      return;
+    }
+
     const nextErrors = validate(values);
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
-    onSave({ ...values, panNumber: values.panNumber.trim().toUpperCase() });
+
+    const nextValues = { ...values, panNumber: values.panNumber.trim().toUpperCase() };
+    const rows = [...PERSONAL_KYC_FIELDS, ...CONTACT_ADDRESS_FIELDS]
+      .filter((field) => nextValues[field.key].trim() !== initialValues[field.key].trim())
+      .map((field) => ({
+        field: field.label,
+        oldValue: toDisplayValue(field, initialValues[field.key]),
+        newValue: toDisplayValue(field, nextValues[field.key]),
+      }));
+    if (rows.length === 0) {
+      setNotice({ message: "No changes to save", severity: "info" });
+      return;
+    }
+    setPendingSave({ values: nextValues, rows });
+  };
+
+  const handleConfirmSave = () => {
+    if (!pendingSave) return;
+    onSave(pendingSave.values);
   };
 
   const renderField = (field: FieldDef) => {
@@ -309,8 +398,8 @@ export function CvtEditApplicantDialog({
             <CustomButton
               type="button"
               variant="outlined"
-              onClick={handleRevalidatePan}
-              disabled={panUnchangedAndVerified}
+              onClick={() => void handleRevalidatePan()}
+              disabled={panUnchangedAndVerified || validatingPan}
               sx={{ px: 4, borderRadius: "50px" }}
             >
               Revalidate PAN
@@ -331,9 +420,43 @@ export function CvtEditApplicantDialog({
 
           <CustomBox>
             <CustomTypography sx={sectionTitleSx}>Contact & Address</CustomTypography>
-            <CustomBox sx={gridSx(2)}>{CONTACT_ADDRESS_FIELDS.map(renderField)}</CustomBox>
+            <CustomBox sx={gridSx(1)}>{CONTACT_ADDRESS_FIELDS.map(renderField)}</CustomBox>
           </CustomBox>
         </CustomBox>
+      </CustomDialog>
+
+      <CustomDialog
+        open={pendingSave !== null}
+        onClose={() => setPendingSave(null)}
+        maxWidth="sm"
+        fullWidth
+        title={
+          <CustomTypography component="span" sx={{ fontSize: 14, fontWeight: 700 }}>
+            CONFIRM CHANGES
+          </CustomTypography>
+        }
+        actionsSx={{ justifyContent: "center", pb: 2 }}
+        actions={
+          <>
+            <CustomButton
+              type="button"
+              variant="outlined"
+              onClick={() => setPendingSave(null)}
+              sx={{ px: 4, borderRadius: "50px" }}
+            >
+              Cancel
+            </CustomButton>
+            <CustomButton onClick={handleConfirmSave} sx={{ px: 4, borderRadius: "50px" }}>
+              Confirm
+            </CustomButton>
+          </>
+        }
+      >
+        <CustomTable<ChangeRow>
+          columns={CHANGE_COLUMNS}
+          data={pendingSave?.rows ?? []}
+          getRowId={(row) => row.field}
+        />
       </CustomDialog>
 
       <CustomSnackbar
