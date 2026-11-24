@@ -43,6 +43,9 @@ interface ImportMetaEnv {
   readonly VITE_RETAIL_FINANCIAL_SAVE_API?: string;
   readonly VITE_RETAIL_CVT_VALIDATION_API?: string;
   readonly VITE_RETAIL_UW_DECISION_FETCH_API?: string;
+  readonly VITE_RETAIL_UW_DECISION_API?: string;
+  readonly VITE_RETAIL_PARALLEL_DECISION_API?: string;
+  readonly VITE_RETAIL_CLAIM_AUDIT_LIST_API?: string;
   readonly VITE_MMT_GRIEVANCE_FETCH_API?: string;
   readonly VITE_MMT_GRIEVANCE_SAVE_API?: string;
   readonly VITE_EXTERNAL_EVENT_SERVICE?: string;

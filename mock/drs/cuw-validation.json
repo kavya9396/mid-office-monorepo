@@ -1,0 +1,32 @@
+{
+  "applicationNo": "OS30418326",
+  "correlationId": "40d3d92c-29d3-4943-94ca-046b33c2d93a",
+  "status": "Failure",
+  "partyValidations": [
+    {
+      "partyId": "fea5ae74-32fa-487f-b854-dbe1f33d8999",
+      "memberType": "lifeassured1",
+      "referTo": "REF_CMO",
+      "validations": [
+        {
+          "validationId": 217,
+          "reason": "EMR Capping",
+          "remarks": "Please Decline case - Substandard life",
+          "action": null
+        },
+        {
+          "validationId": 237,
+          "reason": "Life Assured gender is Transgender",
+          "remarks": "Life Assured gender is Transgender, kindly take Reinsurer approval",
+          "action": "REF_REINS"
+        },
+        {
+          "validationId": 238,
+          "reason": "Life Assured gender is Transgender",
+          "remarks": "Life Assured gender is Transgender, kindly take CMO Opinion",
+          "action": "REF_CMO"
+        }
+      ]
+    }
+  ]
+}

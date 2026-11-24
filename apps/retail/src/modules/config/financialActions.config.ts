@@ -1,6 +1,6 @@
 import type { FinancialActionsConfig } from "@insurance-poc/common/financial";
 
-export type RetailFinancialScreen = "cvt" | "cptNmr";
+export type RetailFinancialScreen = "cvt" | "cptNmr" | "cuw";
 
 /**
  * Which sections and buttons each Retail screen shows on the Financial page.
@@ -29,6 +29,12 @@ export const RETAIL_FINANCIAL_ACTIONS_CONFIG: Record<
       "decision", // Decision
     ],
     defaultMode: "edit",
+    sectionModes: {},
+  },
+  // Same as Group GUW: every section shown, with Edit / Reset / Save and Agree.
+  cuw: {
+    hiddenSectionKeys: [],
+    defaultMode: "editAndReview",
     sectionModes: {},
   },
 };

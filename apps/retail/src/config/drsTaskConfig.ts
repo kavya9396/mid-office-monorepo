@@ -4,7 +4,29 @@ export interface RetailDrsTaskConfig {
   businessType: string;
 }
 
+const HOD_TASK_CONFIG: RetailDrsTaskConfig = {
+  roleType: "HOD_TASK",
+  screenType: "CUW",
+  businessType: "RETAIL",
+};
+
+const SR_UW_TASK_CONFIG: RetailDrsTaskConfig = {
+  roleType: "SR_UW_TASK",
+  screenType: "CUW",
+  businessType: "RETAIL",
+};
+
 export const RETAIL_DRS_TASK_CONFIG: Record<string, RetailDrsTaskConfig> = {
+  CUW_TASK: {
+    roleType: "CUW_TASK",
+    screenType: "CUW",
+    businessType: "RETAIL",
+  },
+  // HOD / Sr UW return the same DRS response as CUW.
+  HOD_TASK: HOD_TASK_CONFIG,
+  HOD: HOD_TASK_CONFIG,
+  SR_UW_TASK: SR_UW_TASK_CONFIG,
+  SR_UW: SR_UW_TASK_CONFIG,
   CVT_TASK: {
     roleType: "CVT_TASK",
     screenType: "CVT",
