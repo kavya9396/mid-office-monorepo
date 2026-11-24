@@ -5,8 +5,10 @@ import { retailBreRetriggerApi } from "../services/breRetriggerApi";
 import { retailCompleteTaskApi } from "../services/completeTaskApi";
 import { retailCvtValidationApi } from "../services/cvtValidationApi";
 import { retailDrsApi } from "../services/drsApi";
+import { retailMmtGrievanceApi } from "../services/mmtGrievanceService";
 import { retailFinancialApi } from "../services/financialApi";
 import { retailInboxApi } from "../services/inboxApi";
+import { retailNsdlApi } from "../services/nsdlApi";
 
 const listenerMiddleware = createListenerMiddleware();
 
@@ -16,9 +18,11 @@ listenerMiddleware.startListening({
     listenerApi.dispatch(retailInboxApi.util.resetApiState());
     listenerApi.dispatch(retailCompleteTaskApi.util.resetApiState());
     listenerApi.dispatch(retailDrsApi.util.resetApiState());
+    listenerApi.dispatch(retailMmtGrievanceApi.util.resetApiState());
     listenerApi.dispatch(retailBreRetriggerApi.util.resetApiState());
     listenerApi.dispatch(retailFinancialApi.util.resetApiState());
     listenerApi.dispatch(retailCvtValidationApi.util.resetApiState());
+    listenerApi.dispatch(retailNsdlApi.util.resetApiState());
   },
 });
 
@@ -29,9 +33,11 @@ export const store = configureStore({
     [retailInboxApi.reducerPath]: retailInboxApi.reducer,
     [retailCompleteTaskApi.reducerPath]: retailCompleteTaskApi.reducer,
     [retailDrsApi.reducerPath]: retailDrsApi.reducer,
+    [retailMmtGrievanceApi.reducerPath]: retailMmtGrievanceApi.reducer,
     [retailBreRetriggerApi.reducerPath]: retailBreRetriggerApi.reducer,
     [retailFinancialApi.reducerPath]: retailFinancialApi.reducer,
     [retailCvtValidationApi.reducerPath]: retailCvtValidationApi.reducer,
+    [retailNsdlApi.reducerPath]: retailNsdlApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
@@ -41,9 +47,11 @@ export const store = configureStore({
         retailInboxApi.middleware,
         retailCompleteTaskApi.middleware,
         retailDrsApi.middleware,
+        retailMmtGrievanceApi.middleware,
         retailBreRetriggerApi.middleware,
         retailFinancialApi.middleware,
         retailCvtValidationApi.middleware,
+        retailNsdlApi.middleware,
       ),
 });
 

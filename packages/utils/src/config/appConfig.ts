@@ -132,11 +132,17 @@ export const groupBusinessUrls = {
   get uwDecision(): string {
     return configuredUrl(import.meta.env.VITE_GROUP_UW_DECISION_API);
   },
+  get uwDecisionFetch(): string {
+    return configuredUrl(import.meta.env.VITE_GROUP_UW_DECISION_FETCH_API);
+  },
   get parallelDecision(): string {
     return configuredUrl(import.meta.env.VITE_GROUP_PARALLEL_DECISION_API);
   },
   get dvtValidation(): string {
     return configuredUrl(import.meta.env.VITE_GROUP_DVT_VALIDATION_API);
+  },
+  get claimAuditList(): string {
+    return configuredUrl(import.meta.env.VITE_GROUP_CLAIM_AUDIT_LIST_API);
   },
   get financialFetch(): string {
     return configuredUrl(import.meta.env.VITE_GROUP_FINANCIAL_FETCH_API);
@@ -159,6 +165,9 @@ export const retailBusinessUrls = {
   },
   get cvtValidation(): string {
     return configuredUrl(import.meta.env.VITE_RETAIL_CVT_VALIDATION_API);
+  },
+  get uwDecisionFetch(): string {
+    return configuredUrl(import.meta.env.VITE_RETAIL_UW_DECISION_FETCH_API);
   },
 };
 

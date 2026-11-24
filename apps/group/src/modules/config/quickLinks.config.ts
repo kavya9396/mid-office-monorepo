@@ -5,7 +5,7 @@ export interface ScreenQuickLinksConfig {
   defaultRoleType: string;
 }
 
-export type GroupQuickLinksScreen = "dvt" | "guw" | "preIssuanceDvt";
+export type GroupQuickLinksScreen = "dvt" | "guw" | "dptNmr" | "dptMr" | "preIssuanceDvt";
 
 /** Which quick links each Group screen shows. Every link opens as a new page. */
 export const GROUP_QUICK_LINKS_CONFIG: Record<
@@ -20,15 +20,6 @@ export const GROUP_QUICK_LINKS_CONFIG: Record<
       { id: "audit-trail", label: "Audit Trail" },
     ],
     defaultRoleType: "DVT User",
-  },
-  preIssuanceDvt: {
-    items: [
-      { id: "proposal-documents", label: "Proposal Form & Documents" },
-      { id: "previous-policies", label: "Previous Policy" },
-      { id: "open-tasks", label: "Open Task" },
-      { id: "audit-trail", label: "Audit Trail" },
-    ],
-    defaultRoleType: "Pre Issuance DVT User",
   },
   guw: {
     items: [

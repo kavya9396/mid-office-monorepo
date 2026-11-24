@@ -25,7 +25,7 @@ import {
 import { Financial } from "@insurance-poc/common/financial";
 import { Medical } from "@insurance-poc/common/medical";
 import { QuickLinksModule, type QuickLinkItem } from "@insurance-poc/common/quick-links";
-import { DecisionHistory, type DecisionHistoryRow } from "@insurance-poc/common/decision-history";
+import { DecisionHistory } from "@insurance-poc/common/decision-history";
 import { PivvDetails } from "@insurance-poc/common/pivv-details";
 import {
   DecisionBar,
@@ -33,10 +33,15 @@ import {
   type ComparisonRow,
 } from "@insurance-poc/common/decision-bar";
 import { ApplicantBanner, type RowDetailsOptions } from "@insurance-poc/common/applicant-banner";
-import { DetailCard } from "@insurance-poc/common/detail-card";
 import { DecisionSection, type DecisionSubmitPayload } from "@insurance-poc/common/decision-section";
 import { ValidationList, type ValidationRow } from "@insurance-poc/common/validation-list";
-import { LifeAssured, type LifeAssuredTab } from "@insurance-poc/common/life-assured";
+import {
+  hasPendingPanPendcode,
+  LifeAssured,
+  type LifeAssuredTab,
+  type PanValidationInput,
+  type PanValidationResult,
+} from "@insurance-poc/common/life-assured";
 import {
   RequirementMgmt,
   isNewRequirement,
@@ -48,9 +53,12 @@ import { useCompleteRetailTaskMutation } from "../../services/completeTaskApi";
 import { useFetchCvtValidationMutation } from "../../services/cvtValidationApi";
 import {
   useGetRetailDrsQuery,
+  useGetRetailUwDecisionHistoryQuery,
   useSaveRetailDrsApplicantMutation,
   useSaveRetailDrsRequirementsMutation,
 } from "../../services/drsApi";
+import { useValidateNsdlPanMutation } from "../../services/nsdlApi";
+import { createNsdlPanValidateRequest, resolveNsdlOutcome } from "../../services/nsdlService";
 import {
   useGetRetailFinancialDetailsQuery,
   useSaveRetailFinancialMutation,
@@ -63,16 +71,6 @@ import { requirementStatusOrder, requirementStatusVariants } from "./requirement
 const CVT_BANNER_OPTIONS: RowDetailsOptions = {
   rowLabels: { 2: "Riders" },
 };
-
-/** Decision History rows. Static until the DRS response provides them (prototype data in cvt-drs-prototype.html). */
-const CVT_DECISION_HISTORY: DecisionHistoryRow[] = [
-  {
-    date: "28 Sept 2026, 01:31:11 pm",
-    userName: "Priya Sharma",
-    userRole: "CVT",
-    remarks: "Applicant details reviewed and forwarded for decision.",
-  },
-];
 
 /** Quick links shown on the CVT DRS. Open Tasks and Audit Trail open their page; the other only notifies. */
 const CVT_QUICK_LINKS: QuickLinkItem[] = [
@@ -144,6 +142,11 @@ const CvtUser = () => {
     // Always hit the DRS API when the screen mounts instead of serving the cached result.
     refetchOnMountOrArgChange: true,
   });
+  // Decision History: `uw-decision/fetch` on page load
+  const decisionHistoryQuery = useGetRetailUwDecisionHistoryQuery(
+    { applicationNumber: applicationNo },
+    { skip: applicationNo.length === 0 },
+  );
   const applicants = drs.data?.applicants ?? [];
   const selectedApplicant = applicants.find((applicant) => applicant.id === currentApplicantId) ?? applicants[0];
   const activePartyId = selectedApplicant?.partyId ?? "";
@@ -154,6 +157,7 @@ const CvtUser = () => {
   const [saveFinancial] = useSaveRetailFinancialMutation();
   const [saveRetailDrsRequirements] = useSaveRetailDrsRequirementsMutation();
   const [saveRetailDrsApplicant] = useSaveRetailDrsApplicantMutation();
+  const [validateNsdlPan] = useValidateNsdlPanMutation();
   const [completeRetailTask, completeRetailTaskState] = useCompleteRetailTaskMutation();
   const [fetchCvtValidation, fetchCvtValidationState] = useFetchCvtValidationMutation();
   const [validationRows, setValidationRows] = useState<ValidationRow[]>([]);
@@ -288,7 +292,7 @@ const CvtUser = () => {
     );
   }
 
-  const { cardDetails, rowDetails, breDecision, requirements, pivvDetails, editValues } = drs.data;
+  const { rowDetails, breDecision, requirements, pivvDetails, editValues } = drs.data;
   const applicantOptions = applicants.map((applicant) => ({ key: applicant.id, label: applicant.label }));
 
   const handleSaveEditApplicant = async (applicantId: string, values: Parameters<typeof saveRetailDrsApplicant>[0]["values"]) => {
@@ -312,6 +316,37 @@ const CvtUser = () => {
     }
   };
 
+  const handleValidatePan = async (applicantId: string, input: PanValidationInput): Promise<PanValidationResult> => {
+    const applicant = applicants.find((item) => item.id === applicantId);
+    const applicantName = applicant?.personalFields.find((field) => field.label === "Applicant Name")?.value;
+    const request = createNsdlPanValidateRequest({
+      applicationNumber: applicationNo,
+      pan: input.panNumber,
+      name: applicantName === null || applicantName === undefined ? "" : String(applicantName),
+      dob: input.dob,
+      fatherName: "",
+    });
+    const response = await validateNsdlPan(request);
+    // A failed call is an API error: the message is the API's, or the error text.
+    const result =
+      "data" in response && response.data
+        ? response.data
+        : {
+            apiSuccess: false,
+            panValid: false,
+            message: readApiErrorMessage(response.error),
+            matches: { nameMatching: false, dobMatching: false, aadharSeeding: false },
+          };
+    const outcome = resolveNsdlOutcome(result, hasPendingPanPendcode(requirements));
+    return {
+      apiFailed: !result.apiSuccess,
+      message: result.message,
+      matches: result.matches,
+      panValid: outcome === "apiErrorShowMessage" ? undefined : outcome === "success",
+      raisePendcode: outcome === "apiErrorRaisePendcode",
+    };
+  };
+
   const openFinancial = (applicantId: string) => {
     void navigate({ pathname: financialPath, search }, { state: { applicantId } satisfies ApplicantRouteState });
   };
@@ -328,24 +363,12 @@ const CvtUser = () => {
     );
   };
 
-  const detailCards = (
-    <CustomBox
-      sx={{
-        display: "grid",
-        gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-        gap: 2,
-      }}
-    >
-      {cardDetails.map((card) => (
-        <DetailCard
-          key={card.type}
-          title={card.type}
-          attributes={card.attributes}
-          expandedAttributes={card.expandedAttributes}
-          tables={card.tables}
-        />
-      ))}
-    </CustomBox>
+  const applicantBanner = (
+    <ApplicantBanner
+      applicationNo={applicationNo}
+      rowDetails={rowDetails}
+      rowDetailsOptions={CVT_BANNER_OPTIONS}
+    />
   );
 
   if (isFinancialRoute) {
@@ -353,7 +376,7 @@ const CvtUser = () => {
       <Financial
         applicationNumber={applicationNo}
         partyId={selectedApplicant?.partyId}
-        summary={detailCards}
+        summary={applicantBanner}
         applicants={applicantOptions.map((option) => ({
           ...option,
           partyId: applicants.find((applicant) => applicant.id === option.key)?.partyId,
@@ -372,7 +395,7 @@ const CvtUser = () => {
   if (isMedicalRoute) {
     return (
       <Medical
-        summary={detailCards}
+        summary={applicantBanner}
         applicants={applicantOptions}
         initialApplicantKey={selectedApplicant?.id}
         onBack={closeSubPage}
@@ -412,11 +435,7 @@ const CvtUser = () => {
     >
       {retriggerRetailBreState.isLoading && <CustomLoader message="Retriggering BRE" fullScreen />}
 
-      <ApplicantBanner
-        applicationNo={applicationNo}
-        rowDetails={rowDetails}
-        rowDetailsOptions={CVT_BANNER_OPTIONS}
-      />
+      {applicantBanner}
 
       <QuickLinksModule
         items={CVT_QUICK_LINKS}
@@ -488,6 +507,7 @@ const CvtUser = () => {
                 void handleSaveEditApplicant(applicant.id, values);
                 onClose();
               }}
+              onValidatePan={(input) => handleValidatePan(applicant.id, input)}
             />
           );
         }}
@@ -495,7 +515,7 @@ const CvtUser = () => {
 
       <PivvDetails rows={pivvDetails} />
 
-      <DecisionHistory rows={CVT_DECISION_HISTORY} />
+      <DecisionHistory rows={decisionHistoryQuery.data ?? []} />
 
       <DecisionSection
         ariaLabel="CVT Decision"

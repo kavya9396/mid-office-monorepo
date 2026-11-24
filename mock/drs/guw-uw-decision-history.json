@@ -1,0 +1,18 @@
+[
+  {
+    "uwDecisionId": 101,
+    "level": "application",
+    "screenType": "GUW",
+    "applicationNumber": "OB90222471",
+    "roleType": "GUW_TASK",
+    "decision": "Refer To",
+    "decisionCode": "REFERRAL",
+    "uwRemarks": "Case referred for HOD review due to the overall risk assessment.",
+    "reasons": "Overall risk assessment",
+    "smokerStatus": "Non-Smoker",
+    "createdAt": "2026-09-08T11:15:48",
+    "createdBy": "UW001",
+    "updatedAt": "2026-09-08T11:15:48",
+    "updatedBy": "UW001"
+  }
+]

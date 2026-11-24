@@ -1,8 +1,10 @@
 import {
   applyBusinessApiAuthHeaders,
+  formatDateTime,
   formatIndianCurrency,
   getDrsRoleType,
   getDrsTaskIds,
+  getMasterList,
   getSessionUser,
   getToken,
   masterUrls,
@@ -10,6 +12,7 @@ import {
 } from "@insurance-poc/utils";
 import type { Column } from "@insurance-poc/ui";
 import type { DetailAttribute, DetailTable } from "@insurance-poc/common/detail-card";
+import { grievanceColumns } from "@insurance-poc/common/grievance-history";
 import type { LifeAssuredApplicant, RiderEditRow } from "@insurance-poc/common/life-assured";
 import type { RequirementItem } from "@insurance-poc/common/requirement-mgmt";
 import type { RiskCardData, RiskCardField } from "@insurance-poc/common/risk-cards";
@@ -23,6 +26,7 @@ import {
   type QuickLinksSubSections,
 } from "../modules/drs/quickLinksData";
 import { mapRequirements, type RawRequirement } from "../modules/drs/requirementData";
+import type { MmtGrievanceMemberContext } from "./mmtGrievanceService";
 import { formatBreTimestamp, splitDiscrepancies } from "../modules/drs/breFormat";
 import { readDvtValidationResponse } from "./dvtValidationService";
 import guwValidationMock from "../../../../mock/drs/guw-validation.json";
@@ -70,6 +74,19 @@ export type GroupDrsData = {
   memberTypes: string[];
   /** Quick Link pages (previous policy, open tasks, audit trail, risk details). */
   quickLinks: QuickLinksSubSections;
+  /** Banner rows from the primary member (`membersDetails[].rowDetails`). */
+  rowDetails: BannerRowDetail[];
+  applicantName: string;
+  grievanceHistoryTitle: string;
+  tpaGrievanceTitle: string;
+  grievanceHistoryColumns: Column<GrievanceHistoryRow>[];
+  tpaGrievanceColumns: Column<GrievanceHistoryRow>[];
+  grievanceHistory: GrievanceHistoryRow[];
+  tpaGrievanceDetails: GrievanceHistoryRow[];
+  /** `membersDetails[].subSections` applicant profile, with member-level fallback. */
+  subSections: { partyId: string; lifeNumber: string };
+  /** Party context sent to the MMT grievance fetch and save APIs. */
+  memberContext: MmtGrievanceMemberContext;
 };
 
 // `cardDetails[].type` as sent by the API -> internal card type
@@ -160,9 +177,9 @@ function readCards(value: unknown): CardDetail[] {
     }));
 }
 
-/** Finds an entry by name inside the data.sections array. */
+/** Finds an entry by name. A missing section list means that section was not sent. */
 function findSection(sections: unknown, name: string): Record<string, unknown> | null {
-  if (!Array.isArray(sections)) throw invalidResponse();
+  if (!Array.isArray(sections)) return null;
   return sections.find((s): s is Record<string, unknown> => isRecord(s) && s.name === name) ?? null;
 }
 
@@ -187,16 +204,23 @@ function readBreHeader(columns: unknown, key: string, fallback: string): string 
 
 function readBre(section: Record<string, unknown> | null): BreDecision {
   const value = section?.value;
-  if (!isRecord(value) || !Array.isArray(value.rows)) throw invalidResponse();
-
-  const rows = value.rows.map((row): BreRow => {
-    if (!isRecord(row)) throw invalidResponse();
+  if (!isRecord(value) || !Array.isArray(value.rows)) {
     return {
+      headers: { label: "BRE", initial: "Initial BRE", final: "Final BRE" },
+      rows: [],
+      initialDecision: "",
+      decision: "",
+    };
+  }
+
+  const rows = value.rows.flatMap((row): BreRow[] => {
+    if (!isRecord(row)) return [];
+    return [{
       id: readText(row.id),
       label: readText(row.label),
       initial: readBreText(row.initial),
       final: readBreText(row.final),
-    };
+    }];
   });
   const decisionRow = rows.find((row) => row.id === BRE_DECISION_ROW_ID);
 
@@ -230,6 +254,8 @@ function extractRequirementRows(rowsOrSection: unknown): unknown[] {
   if (isRecord(rowsOrSection)) {
     if (Array.isArray(rowsOrSection.rows)) return rowsOrSection.rows;
     if (Array.isArray(rowsOrSection.requirementManagement)) return rowsOrSection.requirementManagement;
+    // GUW / HOD / Sr UW payloads keep the rows under the section's `value` (same as the GUW fetch mapper).
+    if (isRecord(rowsOrSection.value) && Array.isArray(rowsOrSection.value.rows)) return rowsOrSection.value.rows;
   }
   return [];
 }
@@ -297,8 +323,7 @@ function readRiders(cardDetails: unknown): RiderEditRow[] {
 
 function readApplicantMembers(section: Record<string, unknown> | null): unknown[] {
   const members = section?.value;
-  if (!Array.isArray(members)) throw invalidResponse();
-  return members;
+  return Array.isArray(members) ? members : [];
 }
 
 export function readMemberTypes(membersDetails: unknown): string[] {
@@ -312,6 +337,90 @@ export function readMemberTypes(membersDetails: unknown): string[] {
   );
 }
 
+const GRIEVANCE_ROW_KEYS: (keyof GrievanceHistoryRow)[] = [
+  "userName",
+  "fupCode",
+  "profile",
+  "grievanceRemarks",
+  "tpaRemark",
+  "raisedDate",
+  "updatedDate",
+  "raisedBy",
+  "updatedBy",
+];
+
+const GRIEVANCE_ROW_ALIASES: Record<keyof GrievanceHistoryRow, string[]> = {
+  userName: ["userName", "user", "raisedBy", "raisedRole", "User Name"],
+  fupCode: ["fupCode", "FUP Code"],
+  profile: ["profile", "Profile"],
+  grievanceRemarks: ["grievanceRemarks", "userRemarks", "grievanceRaisedRemark", "Grievance Raised Remark"],
+  tpaRemark: ["tpaRemark", "tpaRemarks", "TPA Remarks"],
+  raisedDate: ["raisedDate", "grievanceRaisedDate", "Grievance Raised Date"],
+  updatedDate: ["updatedDate", "Updated Date"],
+  raisedBy: ["raisedBy", "Raised by"],
+  updatedBy: ["updatedBy", "Updated by"],
+};
+
+function findNamedSection(sections: unknown, name: string): Record<string, unknown> | null {
+  if (!Array.isArray(sections)) return null;
+  return sections.find((section): section is Record<string, unknown> => isRecord(section) && section.name === name) ?? null;
+}
+
+function buildGrievanceColumns(sectionValue: unknown): Column<GrievanceHistoryRow>[] {
+  const section = isRecord(sectionValue) ? sectionValue : {};
+  const labels = Array.isArray(section.columns) ? section.columns.map((column) => headerText(column)) : [];
+  const defaults = new Map(grievanceColumns.map((column) => [column.key, column]));
+  return GRIEVANCE_ROW_KEYS.map((key, index) => {
+    const fallback = defaults.get(key);
+    return {
+      key,
+      header: labels[index] || fallback?.header || key,
+      width: fallback?.width,
+    };
+  });
+}
+
+function rowField(row: Record<string, unknown>, keys: string[]): string {
+  for (const key of keys) {
+    if (key in row && readText(row[key]).trim().length > 0) return readText(row[key]).trim();
+  }
+  return "";
+}
+
+function formatGrievanceDate(value: string): string {
+  if (value.length === 0) return "";
+  const formatted = formatDateTime(value);
+  return formatted.length > 0 ? formatted : value;
+}
+
+function mapGrievanceRows(section: Record<string, unknown> | null): GrievanceHistoryRow[] {
+  const value = section?.value;
+  const rows = isRecord(value) && Array.isArray(value.rows) ? value.rows : [];
+  return rows.filter(isRecord).map((row) => ({
+    userName: rowField(row, GRIEVANCE_ROW_ALIASES.userName),
+    fupCode: rowField(row, GRIEVANCE_ROW_ALIASES.fupCode),
+    profile: rowField(row, GRIEVANCE_ROW_ALIASES.profile),
+    grievanceRemarks: rowField(row, GRIEVANCE_ROW_ALIASES.grievanceRemarks),
+    tpaRemark: rowField(row, GRIEVANCE_ROW_ALIASES.tpaRemark),
+    raisedDate: formatGrievanceDate(rowField(row, GRIEVANCE_ROW_ALIASES.raisedDate)),
+    updatedDate: formatGrievanceDate(rowField(row, GRIEVANCE_ROW_ALIASES.updatedDate)),
+    raisedBy: rowField(row, GRIEVANCE_ROW_ALIASES.raisedBy),
+    updatedBy: rowField(row, GRIEVANCE_ROW_ALIASES.updatedBy) || "-",
+  }));
+}
+
+function mapApplicantSubSection(member: Record<string, unknown> | null): { partyId: string; lifeNumber: string } {
+  const subSections = member?.subSections;
+  const profileSection = Array.isArray(subSections)
+    ? subSections.filter(isRecord).find((entry) => entry.name === "applicantProfile")
+    : null;
+  const value = isRecord(profileSection?.value) ? profileSection.value : null;
+  return {
+    partyId: readText(value?.partyId).trim() || readText(member?.partyId).trim(),
+    lifeNumber: readText(value?.lifeNumber).trim() || readText(member?.lifeNumber).trim(),
+  };
+}
+
 export function mapGroupDrsPayload(value: unknown): GroupDrsData {
   if (!isRecord(value)) throw invalidResponse();
   const data = isRecord(value.data) ? value.data : value;
@@ -323,6 +432,11 @@ export function mapGroupDrsPayload(value: unknown): GroupDrsData {
   const membersDetails = Array.isArray(data.membersDetails) ? data.membersDetails : [];
   const primaryMember = membersDetails.find(isRecord) ?? null;
   const cardDetailsRaw = primaryMember?.cardDetails ?? data.cardDetails;
+  const rowDetails = mapRowDetails(primaryMember?.rowDetails);
+  const nameRow = rowDetails.find((row) => row.id === 0);
+  const historySection = findNamedSection(sections, "grievanceHistory");
+  const tpaSection = findNamedSection(sections, "tpaGrievanceDetails");
+  const subSections = mapApplicantSubSection(primaryMember);
 
   return {
     applicationNo,
@@ -340,6 +454,21 @@ export function mapGroupDrsPayload(value: unknown): GroupDrsData {
     }),
     memberTypes: readMemberTypes(data.membersDetails),
     quickLinks: mapMembersQuickLinks(data.membersDetails),
+    rowDetails,
+    applicantName: fieldValue(nameRow?.fields, "Name"),
+    grievanceHistoryTitle: readText(historySection?.label).trim() || "Grievance History",
+    tpaGrievanceTitle: readText(tpaSection?.label).trim() || "TPA Grievance Details",
+    grievanceHistoryColumns: buildGrievanceColumns(historySection?.value),
+    tpaGrievanceColumns: buildGrievanceColumns(tpaSection?.value),
+    grievanceHistory: mapGrievanceRows(historySection),
+    tpaGrievanceDetails: mapGrievanceRows(tpaSection),
+    subSections,
+    memberContext: {
+      applicationNo,
+      partyId: subSections.partyId.length > 0 ? subSections.partyId : undefined,
+      lifeNumber: subSections.lifeNumber.length > 0 ? subSections.lifeNumber : undefined,
+      transactionId: readText(data.transactionId).trim() || null,
+    },
   };
 }
 
@@ -372,7 +501,10 @@ export interface GuwReferralRowInput {
   target: string;
   reason: string;
   remarks: string;
+  /** Selected user's full name; sent as `assignedTo.name` in the `parallel-decision` request. */
   assignedTo: string;
+  /** Selected user's NTID; sent as `assignedTo.value` in the `parallel-decision` request. */
+  assignedToNtid?: string;
 }
 
 export interface GuwDecisionFormInput {
@@ -654,11 +786,15 @@ export interface GuwParallelDecisionRequest {
   appNo: string;
   partyId: string;
   action: GuwParallelDecisionAction;
+  /** Always sent, always an empty string. */
+  decision: "";
+  /** Always sent, always a single space. */
+  remarks: " ";
   userId: string;
   taskId?: string;
   instanceId?: string;
-  /** Raise Referral only: the Refer To values (master GUW_REF_TO) of the selected rows, e.g. ["IT", "HOD"]. */
-  refer_to?: string[];
+  // Extra top-level object, not sent. Raise Referral only: the Refer To values (master GUW_REF_TO) of the selected rows.
+  // refer_to?: string[];
 }
 
 export type GuwParallelDecisionBaseInput = Pick<GuwDecisionFormInput, "applicationNo" | "partyId" | "screenType"> & {
@@ -674,7 +810,7 @@ function toParallelDecisionRequest(
   base: GuwParallelDecisionBaseInput,
   action: GuwParallelDecisionAction,
   parallelDecision: GuwParallelDecisionItem[],
-  referTo?: string[],
+  // referTo?: string[],
 ): GuwParallelDecisionRequest {
   const taskIds = getDrsTaskIds();
   const taskId = base.taskId?.trim() || taskIds.taskId;
@@ -687,14 +823,16 @@ function toParallelDecisionRequest(
     appNo: base.applicationNo,
     partyId: base.partyId,
     action,
+    decision: "",
+    remarks: " ",
     userId,
     ...(taskId ? { taskId } : {}),
     ...(instanceId ? { instanceId } : {}),
-    ...(referTo ? { refer_to: referTo } : {}),
+    // ...(referTo ? { refer_to: referTo } : {}),
   };
 }
 
-const referToOf = (items: GuwParallelDecisionItem[]) => items.map((item) => item.referTo.referName);
+// const referToOf = (items: GuwParallelDecisionItem[]) => items.map((item) => item.referTo.referName);
 
 /**
  * Raise Referral: selected rows -> `parallel-decision` requests. `action` is one value per request, so
@@ -706,6 +844,7 @@ export function buildGuwReferralParallelDecisionRequests(
 ): GuwParallelDecisionRequest[] {
   const toItem = (row: GuwReferralRowInput & { label: string }): GuwParallelDecisionItem => {
     const assignedTo = row.assignedTo.trim();
+    const ntid = row.assignedToNtid?.trim() ?? "";
     return {
       referTo: {
         referValue: row.target,
@@ -714,15 +853,15 @@ export function buildGuwReferralParallelDecisionRequests(
         remarks: row.remarks.trim(),
         reason: row.reason,
       },
-      ...(assignedTo ? { assignedTo: { name: assignedTo, description: assignedTo, value: assignedTo } } : {}),
+      ...(assignedTo ? { assignedTo: { name: assignedTo, description: assignedTo, value: ntid } } : {}),
     };
   };
   const opinions = rows.filter((row) => OPINION_REFERRALS.includes(row.target)).map(toItem);
   const referrals = rows.filter((row) => !OPINION_REFERRALS.includes(row.target)).map(toItem);
   const requests: GuwParallelDecisionRequest[] = [];
-  if (opinions.length > 0) requests.push(toParallelDecisionRequest(base, "OPINION", opinions, referToOf(opinions)));
+  if (opinions.length > 0) requests.push(toParallelDecisionRequest(base, "OPINION", opinions));
   if (referrals.length > 0) {
-    requests.push(toParallelDecisionRequest(base, "RAISE_REFERRAL", referrals, referToOf(referrals)));
+    requests.push(toParallelDecisionRequest(base, "RAISE_REFERRAL", referrals));
   }
   return requests;
 }
@@ -730,7 +869,7 @@ export function buildGuwReferralParallelDecisionRequests(
 /** Counter Sign: Reason / Refer To / Assigned To / UW Remarks -> one `parallel-decision` request. */
 export function buildGuwCounterSignParallelDecisionRequest(
   base: GuwParallelDecisionBaseInput,
-  input: { reason: string; referTo: string; assignedTo: string; remarks: string },
+  input: { reason: string; referTo: string; assignedTo: string; assignedToNtid?: string; remarks: string },
 ): GuwParallelDecisionRequest {
   return toParallelDecisionRequest(base, "COUNTER_SIGN", [
     {
@@ -741,7 +880,7 @@ export function buildGuwCounterSignParallelDecisionRequest(
         remarks: input.remarks.trim(),
         reason: input.reason,
       },
-      assignedTo: { name: input.assignedTo, description: input.assignedTo, value: input.assignedTo },
+      assignedTo: { name: input.assignedTo, description: input.assignedTo, value: input.assignedToNtid?.trim() ?? "" },
     },
   ]);
 }
@@ -798,6 +937,8 @@ export function mapGuwUwDecision(payload: unknown): GuwUwDecisionResult {
 export interface GuwAssigneeOption {
   value: string;
   label: string;
+  /** The user's NTID (`users[].ntid`); sent as `assignedTo.value` in the `parallel-decision` request. */
+  ntid: string;
 }
 
 /** `roleName` path value sent to the users-by-role API. */
@@ -822,13 +963,14 @@ export function assigneeRoleForReferralRow(target: string): string {
 }
 
 
-/** Maps the users-by-role response (`data.users[].fullName`) to dropdown options. */
+/** Maps the users-by-role response (`data.users[].fullName` / `ntid`) to dropdown options. */
 export function mapUsersByRole(payload: unknown): GuwAssigneeOption[] {
   const data = isRecord(payload) && isRecord(payload.data) ? payload.data : null;
   const users = Array.isArray(data?.users) ? data.users : [];
   return users.flatMap((user) => {
     const fullName = isRecord(user) && typeof user.fullName === "string" ? user.fullName.trim() : "";
-    return fullName ? [{ value: fullName, label: fullName }] : [];
+    const ntid = isRecord(user) && typeof user.ntid === "string" ? user.ntid.trim() : "";
+    return fullName ? [{ value: fullName, label: fullName, ntid }] : [];
   });
 }
 
@@ -1093,6 +1235,8 @@ export interface GuwDrsRecord {
   sections: GuwDialogSections;
   uwData?: GuwUwData;
   requirements: RequirementItem[];
+  /** `data.commonSection` / `data.membersDetails` exactly as returned; sent back when requirements are saved. */
+  drsData: { commonSection: unknown; membersDetails: unknown };
   /** Distinct `membersDetails[].memberType` values; options for the requirement "Profile" field. */
   memberTypes: string[];
   /** `data.subSections[]` mapped for the Quick Links dialogs. */
@@ -1372,7 +1516,7 @@ function mapClaimAuditSection(value: unknown): GuwClaimAuditSection {
     rows: recordList(section.rows)
       .filter(hasValues)
       .map((r, index) => ({
-        id: str(r.id) || String(index + 1),
+        id: str(r.id) || str(r.claimId) || String(index + 1),
         policyNo: str(r.policyNumber),
         productCode: str(r.productCode),
         claimKey: str(r.claimKey),
@@ -1387,6 +1531,20 @@ function mapClaimAuditSection(value: unknown): GuwClaimAuditSection {
         status: str(r.decisionStatus),
       })),
   };
+}
+
+/**
+ * Rows of the claim-audit list API, using the same row keys as the DRS `claimAudit.rows`.
+ * Accepts `{ data: { rows } }`, `{ data: [...] }`, `{ rows }` or a bare array; titles / headers stay from `fallback`.
+ */
+export function mapClaimAuditListPayload(
+  payload: unknown,
+  fallback: GuwClaimAuditSection,
+): GuwClaimAuditSection {
+  const root = recordOf(payload);
+  const body = root.data ?? payload;
+  const list = Array.isArray(body) ? body : recordOf(body).rows;
+  return { ...fallback, rows: mapClaimAuditSection({ rows: list }).rows };
 }
 
 /** Column order of `specialRemarks.columns`. */
@@ -1637,6 +1795,7 @@ export function mapGuwDrsPayload(payload: unknown, memberId?: string): GuwDrsRec
     breData: mapBreData(findSectionValue(commonSection, "latestBreDecision"), rawReqs),
     sections: dialogSections,
     requirements,
+    drsData: { commonSection: root.commonSection, membersDetails: root.membersDetails },
     memberTypes: readMemberTypes(root.membersDetails),
     quickLinks: {
       ...mapMembersQuickLinks(root.membersDetails),
@@ -2433,13 +2592,29 @@ export interface ReferralRoleConfig {
   label: string;
   /** `roleType` values (upper-case) the inbox sends for this role. */
   roleTypes: string[];
+  /** Master `misc` type holding the decision dropdown options of this role. */
+  decisionMasterType: string;
+  /** Used only when the master data has no active entries for `decisionMasterType`. */
   decisionOptions: string[];
+}
+
+/** Decision dropdown options of a role from the post-login master data (`misc` list); falls back to the static list. */
+export function readReferralDecisionOptions(
+  config: ReferralRoleConfig,
+): { label: string; value: string }[] {
+  const fromMaster = getMasterList("misc", config.decisionMasterType)
+    .filter((entry) => entry.isActive === "Y")
+    .map((entry) => ({ label: entry.value ?? entry.description, value: entry.code }));
+  return fromMaster.length > 0
+    ? fromMaster
+    : config.decisionOptions.map((option) => ({ label: option, value: option }));
 }
 
 export const HOD_CONFIG: ReferralRoleConfig = {
   role: "HOD",
   label: "HOD",
   roleTypes: ["HOD", "HOD_TASK"],
+  decisionMasterType: "HOD_TERM_DEC",
   decisionOptions: ["Agree", "Disagree", "Refer to HO CMO", "Refer back to last UW", "Refer to IT"],
 };
 
@@ -2447,6 +2622,7 @@ export const SR_UW_CONFIG: ReferralRoleConfig = {
   role: "SR_UW",
   label: "Sr UW",
   roleTypes: ["SR_UW", "SR_UW_TASK"],
+  decisionMasterType: "SRUW_TERM_DEC",
   decisionOptions: [
     "Agree",
     "Disagree",
@@ -2481,27 +2657,37 @@ export interface ReferralDecisionHistoryRow {
   referralRemarks: string;
 }
 
-// Mock rows until the real endpoint is available.
-const DECISION_HISTORY_MOCK: ReferralDecisionHistoryRow[] = [
-  {
-    userName: "Ananya Sharma",
-    userRole: "Sr. UW",
-    firstUwDecision: "Standard",
-    firstUwRemarks: "Case referred for HOD review due to the overall risk assessment.",
-    date: "08 Sep 2026, 11:15:48 am",
-    financialDecision: "Standard",
-    medicalDecision: "Standard",
-    smokerStatus: "Non-Smoker",
-    referralReason: "Overall risk assessment",
-    referralRemarks: "Referred for HOD review.",
-  },
-];
+/** First non-empty text among the given response fields. */
+function firstText(source: Record<string, unknown>, keys: string[]): string {
+  for (const key of keys) {
+    const text = readText(source[key]).trim();
+    if (text) return text;
+  }
+  return "";
+}
 
-export async function fetchReferralDecisionHistory(
-  _applicationNo: string,
-): Promise<ReferralDecisionHistoryRow[]> {
-  await wait(150);
-  return DECISION_HISTORY_MOCK.map((row) => ({ ...row }));
+/**
+ * `uw-decision/fetch` response -> Underwriting Decision History rows. Accepts a bare list, `{ data: [...] }`
+ * or `{ data: { ... } }` (one decision). Rows with no values at all are dropped.
+ */
+export function mapReferralDecisionHistory(payload: unknown): ReferralDecisionHistoryRow[] {
+  const root = isRecord(payload) && "data" in payload ? payload.data : payload;
+  const list = Array.isArray(root) ? root : isRecord(root) ? [root] : [];
+  return list
+    .filter(isRecord)
+    .map((row) => ({
+      userName: firstText(row, ["userName", "createdBy", "updatedBy"]),
+      userRole: firstText(row, ["userRole", "roleType"]),
+      firstUwDecision: firstText(row, ["decision", "caseUwDecision"]),
+      firstUwRemarks: firstText(row, ["uwRemarks", "remarks"]),
+      date: formatDateTime(firstText(row, ["createdAt", "updatedAt", "date"])),
+      financialDecision: firstText(row, ["financialDecision"]),
+      medicalDecision: firstText(row, ["medicalDecision"]),
+      smokerStatus: firstText(row, ["smokerStatus"]),
+      referralReason: firstText(row, ["referralReason", "reasons"]),
+      referralRemarks: firstText(row, ["referralRemarks"]),
+    }))
+    .filter((row) => Object.values(row).some((value) => value !== ""));
 }
 
 export type ReferralDecisionTone = "decline" | "standard" | "refer" | "default";

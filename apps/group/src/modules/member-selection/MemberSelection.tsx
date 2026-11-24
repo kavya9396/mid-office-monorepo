@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import { CustomButton, EyeIcon } from "@insurance-poc/ui";
+import { CustomButton, CustomSnackbar, EyeIcon } from "@insurance-poc/ui";
 import { drsRoutePath, groupPaths, replaceUrl } from "@insurance-poc/routes";
 import {
   getDrsApplicationNo,
@@ -25,7 +25,12 @@ import {
 } from "../../services/drsService";
 import { clearAllValidatedRows } from "../../services/drsService";
 import { deriveCaseUwDecision } from "../../services/drsService";
-import { referralConfigForRoleType, referralDecisionTone } from "../../services/drsService";
+import {
+  readReferralDecisionOptions,
+  referralConfigForRoleType,
+  referralDecisionTone,
+} from "../../services/drsService";
+import { useReferralCompleteTask } from "../referral-uw/useReferralCompleteTask";
 import { DecisionSection } from "@insurance-poc/common/decision-section";
 import { GuwDecisionDetailsDialog, GuwUwPanel } from "../guw/GuwUwPanel";
 
@@ -95,6 +100,8 @@ export function MemberSelection() {
   const roleType = getDrsRoleType() || params.get("roleType")?.trim() || "";
   const role = getDrsRoleLabel() || params.get("role")?.trim() || "";
   const referralConfig = referralConfigForRoleType(roleType);
+  const [submitMessage, setSubmitMessage] = useState("");
+  const referralCompleteTask = useReferralCompleteTask(applicationNo, setSubmitMessage);
   // HOD / Sr UW also open the DRS route; GroupDrsPage picks the referral screen from the session roleType
   const drsPath = drsRoutePath(applicationNo);
 
@@ -387,11 +394,20 @@ export function MemberSelection() {
             ariaLabel={`${referralConfig.label} Decision`}
             remarksLabel={`${referralConfig.label} Remarks`}
             decisionLabel={`${referralConfig.label} Decision`}
-            decisionOptions={referralConfig.decisionOptions}
-            onSubmit={() => {
-              // Submit API handler to be wired
-              replaceUrl(groupPaths.inbox);
+            decisionOptions={readReferralDecisionOptions(referralConfig)}
+            isSubmitting={referralCompleteTask.isSubmitting}
+            onSubmit={(payload) => {
+              void referralCompleteTask.submit(payload).then((done) => {
+                if (done) replaceUrl(groupPaths.inbox);
+              });
             }}
+          />
+          <CustomSnackbar
+            open={submitMessage.length > 0}
+            message={submitMessage}
+            severity="info"
+            onClose={() => setSubmitMessage("")}
+            autoHideDuration={2000}
           />
         </Box>
       )}

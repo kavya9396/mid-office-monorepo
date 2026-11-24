@@ -50,9 +50,14 @@ import {
   fetchGuwDrs,
   guwMemberDecisionKey,
   loadGuwSubmittedDecision,
+  mapClaimAuditListPayload,
+  type GuwClaimAuditSection,
   type GuwDrsRecord,
 } from "../../services/drsService";
-import { useSaveGroupDrsRequirementsMutation } from "../../services/drsApi";
+import {
+  useLazyGetGuwClaimAuditListQuery,
+  useSaveGroupDrsRequirementsMutation,
+} from "../../services/drsApi";
 import {
   useGetGroupFinancialDetailsQuery,
   useSaveGroupFinancialMutation,
@@ -106,6 +111,7 @@ const GuwUser = () => {
   const memberStorageKey = isMultiLife ? guwMemberDecisionKey(applicationNo, memberId) : undefined;
   const drsTaskConfig = getGroupDrsTaskConfig(roleType);
   const [saveGroupDrsRequirements] = useSaveGroupDrsRequirementsMutation();
+  const [fetchClaimAuditList] = useLazyGetGuwClaimAuditListQuery();
   const [retriggerGroupBre, retriggerGroupBreState] = useRetriggerGroupBreMutation();
   const [saveFinancial] = useSaveGroupFinancialMutation();
 
@@ -119,6 +125,8 @@ const GuwUser = () => {
   );
 
   const [sectionDialog, setSectionDialog] = useState<GuwSectionDialogKey | null>(null);
+  // Claim Audit rows from the claim-audit list API; null = use the rows that came with the DRS.
+  const [claimAuditOverride, setClaimAuditOverride] = useState<GuwClaimAuditSection | null>(null);
   const [breDetailOpen, setBreDetailOpen] = useState(false);
   const [breRetriggerFinals, setBreRetriggerFinals] = useState<BreRetriggerFinalOverrides>({});
   const [breRetriggerBarDecision, setBreRetriggerBarDecision] = useState<string | null>(null);
@@ -132,6 +140,22 @@ const GuwUser = () => {
   const notify = (message: string) => {
     setSnackbarMessage(message);
     setSnackbarOpen(true);
+  };
+
+  const handleClaimAuditClick = async (record: GuwDrsRecord) => {
+    const partyId = record.partyId;
+    const appNo = record.applicationNo || applicationNo;
+    try {
+      const payload = await fetchClaimAuditList({
+        applicationNumber: appNo,
+        partyId,
+      }).unwrap();
+      setClaimAuditOverride(mapClaimAuditListPayload(payload, record.sections.claimAudit));
+      setSectionDialog("claimAudit");
+    } catch (reason: unknown) {
+      const message = readApiErrorMessage(reason);
+      notify(message.length > 0 ? message : "Unable to load Claim Audit.");
+    }
   };
 
   const openCardPage = (card: RiskCardData) =>
@@ -186,6 +210,9 @@ const GuwUser = () => {
         roleType: drsTaskConfig.roleType,
         lob: "G",
         requirements: updatedRequirements,
+        ...(page.kind === "ready"
+          ? { drsData: page.record.drsData, caseType: page.record.caseType }
+          : {}),
       }).unwrap();
       setPage((prev) =>
         prev.kind === "ready"
@@ -202,6 +229,10 @@ const GuwUser = () => {
     setBreRetriggerFinals({});
     setBreRetriggerBarDecision(null);
   }, [applicationNo]);
+
+  useEffect(() => {
+    setClaimAuditOverride(null);
+  }, [applicationNo, memberId]);
 
   useEffect(() => {
     if (!applicationNo) {
@@ -322,7 +353,7 @@ const GuwUser = () => {
                   <GuwSdtRow
                     data={page.record.sdtRow}
                     onGrievanceHistory={() => setSectionDialog("grievanceHistory")}
-                    onClaimAudit={() => setSectionDialog("claimAudit")}
+                    onClaimAudit={() => void handleClaimAuditClick(page.record)}
                     onUwGuidelines={() => setSectionDialog("uwGuidelines")}
                     onSpecialRemarks={() => setSectionDialog("specialRemarks")}
                   />
@@ -339,7 +370,9 @@ const GuwUser = () => {
               partyId={page.record.partyId}
               storageKey={memberStorageKey}
               requiredValidations={{
-                claimAuditRowIds: page.record.sections.claimAudit.rows.map((row) => row.id),
+                claimAuditRowIds: (claimAuditOverride ?? page.record.sections.claimAudit).rows.map(
+                  (row) => row.id,
+                ),
                 specialRemarksRowIds: page.record.sections.specialRemarks.rows.map((row) => row.id),
               }}
               redirectUrl={postSubmitUrl}
@@ -496,7 +529,11 @@ const GuwUser = () => {
 
       {page.kind === "ready" ? (
         <GuwSectionDialogs
-          sections={page.record.sections}
+          sections={
+            claimAuditOverride
+              ? { ...page.record.sections, claimAudit: claimAuditOverride }
+              : page.record.sections
+          }
           open={sectionDialog}
           onClose={() => setSectionDialog(null)}
           notify={notify}

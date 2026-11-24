@@ -4,23 +4,16 @@ import type { GrievanceHistoryRow } from "@insurance-poc/common/grievance-histor
 import {
   absoluteApiBaseUrl,
   createBusinessBaseQuery,
-  getDrsRoleType,
-  groupBusinessUrls,
   mmtGrievanceUrls,
   useMock,
 } from "@insurance-poc/utils";
-import { getGroupDrsTaskConfig } from "../config/drsTaskConfig";
-import mmtDrsMock from "../modules/drs/mock/mmt-drs.json";
 import mmtGrievanceFetchMock from "../modules/drs/mock/mmt-grievance-fetch.json";
-import type { GroupDrsQueryArg } from "./drsApi";
 import {
   buildMmtGrievanceFetchRequest,
   buildMmtGrievanceSaveRequest,
   isGrievanceApiFailure,
-  mapMmtDrsShell,
   mapMmtGrievanceFetchPayload,
   readGrievanceApiMessage,
-  type MmtDrsShell,
   type MmtGrievanceMemberContext,
   type MmtGrievanceSaveRequest,
   type MmtGrievanceTables,
@@ -43,59 +36,11 @@ export type MmtGrievanceSaveArg = {
   rows: GrievanceHistoryRow[];
 };
 
-/** MMT-only APIs. DRS POST uses the same body shape as `groupDrsApi.getGroupDrs` (see DvtUser). */
+/** Grievance fetch and save. The MMT screen loads its DRS shell from `groupDrsApi`. */
 export const mmtGrievanceApi = createApi({
   reducerPath: "mmtGrievanceApi",
   baseQuery: createBusinessBaseQuery(absoluteApiBaseUrl),
   endpoints: (build) => ({
-    getMmtDrs: build.query<MmtDrsShell, GroupDrsQueryArg>({
-      async queryFn(arg, _api, _extra, baseQuery) {
-        const applicationNo = typeof arg === "string" ? arg : arg.applicationNo;
-        const taskType =
-          typeof arg === "string" ? getDrsRoleType() : (arg.taskType ?? arg.roleType ?? getDrsRoleType());
-        const taskConfig = getGroupDrsTaskConfig(taskType);
-
-        if (useMock) {
-          const shell = mapMmtDrsShell(mmtDrsMock, applicationNo);
-          if (!shell) return { error: customError("MMT DRS mock is not available.") };
-          return { data: shell };
-        }
-
-        const drsDataUrl = groupBusinessUrls.drsData;
-        if (drsDataUrl.length === 0) {
-          return { error: customError("Group DRS data API is not configured.") };
-        }
-
-        const sessionRoleType = getDrsRoleType().trim();
-        const body = {
-          applicationNo,
-          roleType:
-            sessionRoleType ||
-            (typeof arg !== "string" && arg.roleType) ||
-            taskConfig.roleType,
-          screenType: "MMT",
-          businessType: (typeof arg !== "string" && arg.businessType) || taskConfig.businessType,
-        };
-
-        const result = await baseQuery({
-          url: drsDataUrl,
-          method: "POST",
-          body,
-          headers: { accept: "*/*", "Content-Type": "application/json" },
-        });
-        if (result.error) return { error: result.error };
-
-        try {
-          const shell = mapMmtDrsShell(result.data, applicationNo);
-          if (!shell) {
-            return { error: customError("MMT DRS response is not in the expected format.") };
-          }
-          return { data: shell };
-        } catch (reason: unknown) {
-          return { error: customError(readError(reason)) };
-        }
-      },
-    }),
     getMmtGrievances: build.query<MmtGrievanceTables, MmtGrievanceMemberContext>({
       async queryFn(context, _api, _extra, baseQuery) {
         const request = buildMmtGrievanceFetchRequest(context);
@@ -167,7 +112,6 @@ export const mmtGrievanceApi = createApi({
 });
 
 export const {
-  useGetMmtDrsQuery,
   useGetMmtGrievancesQuery,
   useLazyGetMmtGrievancesQuery,
   useSaveMmtGrievancesMutation,

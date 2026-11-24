@@ -1,5 +1,6 @@
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { createApi } from "@reduxjs/toolkit/query/react";
+import type { DecisionHistoryRow } from "@insurance-poc/common/decision-history";
 import type { RequirementItem } from "@insurance-poc/common/requirement-mgmt";
 import {
   absoluteApiBaseUrl,
@@ -12,8 +13,22 @@ import {
 } from "@insurance-poc/utils";
 import { getRetailDrsTaskConfig } from "../config/drsTaskConfig";
 import retailDrsMock from "../modules/drs/mock/retailDrs.json";
+import retailUwDecisionHistoryMock from "../../../../mock/drs/retail-uw-decision-history.json";
 import type { CvtEditApplicantValues } from "../modules/drs/CvtEditApplicantDialog";
-import { mapRawRequirementRows, mapRetailDrsPayload, type RetailDrsData } from "./drsService";
+import {
+  mapDecisionHistory,
+  mapRawRequirementRows,
+  mapRetailDrsPayload,
+  type RetailDrsData,
+} from "./drsService";
+
+/** `lob` sent to the UW decision fetch API for Retail. */
+const RETAIL_LOB = "R";
+
+/** Request of `uw-decision/fetch` (CVT Decision History). */
+export type RetailUwDecisionHistoryRequest = {
+  applicationNumber: string;
+};
 
 export type RetailDrsQueryArg = {
   applicationNo: string;
@@ -203,6 +218,30 @@ export const retailDrsApi = createApi({
         }
       },
     }),
+    /** Decision History of the application (CVT page load). */
+    getRetailUwDecisionHistory: build.query<DecisionHistoryRow[], RetailUwDecisionHistoryRequest>({
+      async queryFn(arg, _api, _extra, baseQuery) {
+        if (useMock) return { data: mapDecisionHistory(retailUwDecisionHistoryMock) };
+        const fetchUrl = retailBusinessUrls.uwDecisionFetch;
+        if (fetchUrl.length === 0) {
+          return { error: customError("UW decision fetch API is not configured.") };
+        }
+
+        const result = await baseQuery({
+          url: fetchUrl,
+          method: "POST",
+          body: {
+            applicationNumber: arg.applicationNumber,
+            level: "application",
+            screenType: "CVT",
+            lob: RETAIL_LOB,
+          },
+          headers: { accept: "*/*", "Content-Type": "application/json" },
+        });
+        if (result.error) return { error: result.error };
+        return { data: mapDecisionHistory(result.data) };
+      },
+    }),
     saveRetailDrsRequirements: build.mutation<RequirementItem[], SaveRetailDrsRequirementsArg>({
       async queryFn(arg, api, _extra, baseQuery) {
         const taskConfig = getRetailDrsTaskConfig(arg.roleType ?? getDrsRoleType());
@@ -303,6 +342,7 @@ export const retailDrsApi = createApi({
 
 export const {
   useGetRetailDrsQuery,
+  useGetRetailUwDecisionHistoryQuery,
   useSaveRetailDrsRequirementsMutation,
   useSaveRetailDrsApplicantMutation,
 } = retailDrsApi;
