@@ -64,6 +64,12 @@ export type GuwClaimAuditListRequest = {
   partyId: string;
 };
 
+/** `data.commonSection` and `data.membersDetails` of the DRS response, sent back as-is with the requirement save. */
+export type GuwDrsRequirementData = {
+  commonSection: unknown;
+  membersDetails: unknown;
+};
+
 export type SaveGroupDrsRequirementsArg = {
   applicationNo: string;
   requirements: RequirementItem[];
@@ -71,6 +77,9 @@ export type SaveGroupDrsRequirementsArg = {
   lob?: string;
   userId?: string;
   queryArg?: GroupDrsQueryArg;
+  /** GUW: when set, the whole DRS response (with the updated requirements) is sent instead of the `requirementManagement` section only. */
+  drsData?: GuwDrsRequirementData;
+  caseType?: string;
 };
 
 export type SaveGroupDrsApplicantArg = {
@@ -122,10 +131,48 @@ function buildDrsRequestBody(arg: GroupDrsQueryArg) {
   };
 }
 
+const isPersistedRequirementId = (item: RequirementItem): boolean =>
+  typeof item.id === "number" ||
+  (typeof item.id === "string" && !item.id.startsWith("req-") && Number.isFinite(Number(item.id)) && Number(item.id) > 0);
+
+/** Saved requirements keep their numeric `requirementId`; a newly added one has none, so it is sent blank. */
+function toGuwRequirementRow(item: RequirementItem, original?: Record<string, unknown>): Record<string, unknown> {
+  return {
+    ...original,
+    status: item.status,
+    ocrStatus: item.ocrStatus,
+    team: item.team,
+    profile: item.profile,
+    category: item.category,
+    subCategory: item.subCategory,
+    document: item.document,
+    reason: item.reason,
+    fupCode: item.fupCode,
+    extraRemarks: item.extraRemarks,
+    description: item.description,
+    requirementId: isPersistedRequirementId(item) ? Number(item.id) : "",
+  };
+}
+
+/** `commonSection` with the rows of `requirementManagement` replaced by the updated requirements. */
+function buildGuwCommonSection(commonSection: unknown, requirements: RequirementItem[]): unknown {
+  if (!Array.isArray(commonSection)) return commonSection;
+  return commonSection.map((section) => {
+    if (!isRecord(section) || section.name !== "requirementManagement") return section;
+
+    const rowsHolder = isRecord(section.value) && Array.isArray(section.value.rows) ? section.value : section;
+    const originalRows = Array.isArray(rowsHolder.rows) ? rowsHolder.rows.filter(isRecord) : [];
+    const originalById = new Map(originalRows.map((row) => [String(row.requirementId), row]));
+    const rows = requirements.map((item) =>
+      toGuwRequirementRow(item, isPersistedRequirementId(item) ? originalById.get(String(item.id)) : undefined),
+    );
+
+    return rowsHolder === section ? { ...section, rows } : { ...section, value: { ...rowsHolder, rows } };
+  });
+}
+
 export const toRequirementRequestItem = (item: RequirementItem) => {
-  const isNumericId =
-    typeof item.id === "number" ||
-    (typeof item.id === "string" && !item.id.startsWith("req-") && Number.isFinite(Number(item.id)) && Number(item.id) > 0);
+  const isNumericId = isPersistedRequirementId(item);
 
   const payload: Record<string, unknown> = {
     status: item.status || "Pending",
@@ -728,16 +775,30 @@ export const groupDrsApi = createApi({
         const roleType = arg.roleType ?? taskConfig.roleType ?? "DVT_TASK";
         const lob = arg.lob ?? "G";
 
-        const body = {
-          applicationNo: arg.applicationNo,
-          lob,
-          userId,
-          roleType,
-          sections: ["requirementManagement"],
-          data: {
-            requirementManagement: arg.requirements.map(toRequirementRequestItem),
-          },
-        };
+        const body = arg.drsData
+          ? {
+              applicationNo: arg.applicationNo,
+              userId,
+              screenType: taskConfig.screenType,
+              businessType: taskConfig.businessType,
+              roleType,
+              caseType: arg.caseType ?? "",
+              data: {
+                commonSection: buildGuwCommonSection(arg.drsData.commonSection, arg.requirements),
+                membersDetails: arg.drsData.membersDetails,
+                memberDetails: arg.drsData.membersDetails,
+              },
+            }
+          : {
+              applicationNo: arg.applicationNo,
+              lob,
+              userId,
+              roleType,
+              sections: ["requirementManagement"],
+              data: {
+                requirementManagement: arg.requirements.map(toRequirementRequestItem),
+              },
+            };
 
         console.log("[saveGroupDrsRequirements] PUT payload to send:", body);
 
@@ -768,6 +829,9 @@ export const groupDrsApi = createApi({
         };
 
         if (useMock) {
+          if (arg.requirements && arg.requirements.length > 0) {
+            return { data: arg.requirements };
+          }
           return { data: applyResponseToCache(groupDrsApplicantSaveMock) };
         }
 

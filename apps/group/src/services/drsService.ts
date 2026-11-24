@@ -254,6 +254,8 @@ function extractRequirementRows(rowsOrSection: unknown): unknown[] {
   if (isRecord(rowsOrSection)) {
     if (Array.isArray(rowsOrSection.rows)) return rowsOrSection.rows;
     if (Array.isArray(rowsOrSection.requirementManagement)) return rowsOrSection.requirementManagement;
+    // GUW / HOD / Sr UW payloads keep the rows under the section's `value` (same as the GUW fetch mapper).
+    if (isRecord(rowsOrSection.value) && Array.isArray(rowsOrSection.value.rows)) return rowsOrSection.value.rows;
   }
   return [];
 }
@@ -1233,6 +1235,8 @@ export interface GuwDrsRecord {
   sections: GuwDialogSections;
   uwData?: GuwUwData;
   requirements: RequirementItem[];
+  /** `data.commonSection` / `data.membersDetails` exactly as returned; sent back when requirements are saved. */
+  drsData: { commonSection: unknown; membersDetails: unknown };
   /** Distinct `membersDetails[].memberType` values; options for the requirement "Profile" field. */
   memberTypes: string[];
   /** `data.subSections[]` mapped for the Quick Links dialogs. */
@@ -1791,6 +1795,7 @@ export function mapGuwDrsPayload(payload: unknown, memberId?: string): GuwDrsRec
     breData: mapBreData(findSectionValue(commonSection, "latestBreDecision"), rawReqs),
     sections: dialogSections,
     requirements,
+    drsData: { commonSection: root.commonSection, membersDetails: root.membersDetails },
     memberTypes: readMemberTypes(root.membersDetails),
     quickLinks: {
       ...mapMembersQuickLinks(root.membersDetails),

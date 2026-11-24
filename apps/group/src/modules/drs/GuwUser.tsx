@@ -210,6 +210,9 @@ const GuwUser = () => {
         roleType: drsTaskConfig.roleType,
         lob: "G",
         requirements: updatedRequirements,
+        ...(page.kind === "ready"
+          ? { drsData: page.record.drsData, caseType: page.record.caseType }
+          : {}),
       }).unwrap();
       setPage((prev) =>
         prev.kind === "ready"
