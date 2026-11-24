@@ -301,17 +301,22 @@ type EditValuesSource = {
 const readEditValues = (source: EditValuesSource): Partial<EditApplicantValues> => {
   const rawApplicantStatus = fieldValue(source.rawPersonalKyc ?? [], "Applicant Status");
 
+  const rawKyc = source.rawPersonalKyc ?? [];
+
   return {
+    dobDocument: toMasterCode("misc", fieldValue(rawKyc, "Dob Document"), "AGE"),
+    genderDocument: toMasterCode("misc", fieldValue(rawKyc, "Gender Document"), "IDENTITY"),
+    pincodeDocument: toMasterCode("misc", fieldValue(rawKyc, "Pincode Document"), "ADDRESS"),
     dob: toIsoDate(fieldValue(source.personal, "Date of Birth")),
     gender: toMasterCode("gender", fieldValue(source.personal, "Gender")),
     zipCode: fieldValue(source.communicationAddress, "Pin Code"),
     mobileNo: fieldValue(source.contactDetails, "Mobile Number"),
-    immigrationStatus: toMasterCode("resident_status", fieldValue(source.personal, "Resident Status")),
+    immigrationStatus: toMasterCode("resident_status", fieldValue(rawKyc, "Immigration Status")),
     panNumber: fieldValue(source.kyc, "PAN Number"),
     isPanValid: toYesNo(fieldValue(source.kyc, "PAN Flag")),
     aadharSeedingStatus: toYesNo(fieldValue(source.kyc, "PAN Aadhar Seeding Status")),
-    nsdlNameMatching: toYesNo(fieldValue(source.rawPersonalKyc ?? [], "Nsdl Name Matching")),
-    nsdlDobMatching: toYesNo(fieldValue(source.rawPersonalKyc ?? [], "Nsdl Dob Matching")),
+    nsdlNameMatching: toYesNo(fieldValue(rawKyc, "Nsdl Name Matching")),
+    nsdlDobMatching: toYesNo(fieldValue(rawKyc, "Nsdl Dob Matching")),
     emailId: fieldValue(source.contactDetails, "Email Id"),
     height: fieldValue(source.health, "Height"),
     weight: fieldValue(source.health, "Weight"),
