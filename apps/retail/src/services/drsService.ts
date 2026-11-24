@@ -1,5 +1,6 @@
 import type { BannerRowDetail } from "@insurance-poc/common/applicant-banner";
 import type { DetailAttribute, DetailTable } from "@insurance-poc/common/detail-card";
+import type { DecisionHistoryRow } from "@insurance-poc/common/decision-history";
 import {
   grievanceColumns,
   type GrievanceHistoryRow,
@@ -228,39 +229,42 @@ function readBre(section: Record<string, unknown> | null): BreDecision {
   };
 }
 
+type PivvRowFields = Omit<PivvDetailRow, "id">;
+
+/** Raw `pivvDetails` rows of one member (empty when the member has no such section). */
+function readMemberPivvRows(member: unknown): unknown[] {
+  if (!isRecord(member) || !Array.isArray(member.sections)) return [];
+  const section = member.sections.find((s) => isRecord(s) && s.name === "pivvDetails");
+  const value = isRecord(section) ? section.value : null;
+  return isRecord(value) && Array.isArray(value.rows) ? value.rows : [];
+}
+
+function mapPivvRow(row: Record<string, unknown>): PivvRowFields {
+  const decisions = Array.isArray(row.pivvDecision)
+    ? row.pivvDecision.map(readText).filter((item) => item.trim() !== "")
+    : [];
+  return {
+    fupCode: readText(row.fupCode).trim(),
+    profile: readText(row.profile).trim(),
+    raisedDate: readText(row.raisedDate).trim(),
+    raisedRemark: readText(row.raisedRemark).trim(),
+    decisions,
+    pivvRemark: readText(row.pivvRemark).trim(),
+  };
+}
+
+function isEmptyPivvRow({ decisions, ...texts }: PivvRowFields): boolean {
+  return decisions.length === 0 && Object.values(texts).every((text) => text === "");
+}
+
 /** Reads the `pivvDetails` section rows from every member's `sections`; fully empty rows are dropped. */
 function readPivvDetails(membersDetails: unknown[]): PivvDetailRow[] {
-  const rows: PivvDetailRow[] = [];
-  for (const member of membersDetails) {
-    if (!isRecord(member) || !Array.isArray(member.sections)) continue;
-    const section = member.sections.find((s) => isRecord(s) && s.name === "pivvDetails");
-    const value = isRecord(section) ? section.value : null;
-    if (!isRecord(value) || !Array.isArray(value.rows)) continue;
-
-    for (const row of value.rows) {
-      if (!isRecord(row)) continue;
-      const decisions = Array.isArray(row.pivvDecision)
-        ? row.pivvDecision.map(readText).filter((item) => item.trim() !== "")
-        : [];
-      const mapped = {
-        fupCode: readText(row.fupCode).trim(),
-        profile: readText(row.profile).trim(),
-        raisedDate: readText(row.raisedDate).trim(),
-        raisedRemark: readText(row.raisedRemark).trim(),
-        decisions,
-        pivvRemark: readText(row.pivvRemark).trim(),
-      };
-      const isEmpty =
-        decisions.length === 0 &&
-        mapped.fupCode === "" &&
-        mapped.profile === "" &&
-        mapped.raisedDate === "" &&
-        mapped.raisedRemark === "" &&
-        mapped.pivvRemark === "";
-      if (!isEmpty) rows.push({ id: `pivv-${rows.length + 1}`, ...mapped });
-    }
-  }
-  return rows;
+  return membersDetails
+    .flatMap(readMemberPivvRows)
+    .filter(isRecord)
+    .map(mapPivvRow)
+    .filter((mapped) => !isEmptyPivvRow(mapped))
+    .map((mapped, index) => ({ id: `pivv-${index + 1}`, ...mapped }));
 }
 
 const normaliseStatus = (status: string): string => {
@@ -395,6 +399,38 @@ function mapApplicantSubSection(member: Record<string, unknown> | null): RetailM
     partyId: readText(value?.partyId),
     lifeNumber: readText(value?.lifeNumber),
   };
+}
+
+/** First non-empty text among the given response fields. */
+function firstText(source: Record<string, unknown>, keys: string[]): string {
+  for (const key of keys) {
+    const text = readText(source[key]).trim();
+    if (text) return text;
+  }
+  return "";
+}
+
+/**
+ * `uw-decision/fetch` response -> Decision History rows. Accepts a bare list, `{ data: [...] }`
+ * or `{ data: { ... } }` (one decision). Rows with no values at all are dropped.
+ */
+export function mapDecisionHistory(payload: unknown): DecisionHistoryRow[] {
+  const root = isRecord(payload) && "data" in payload ? payload.data : payload;
+  let list: unknown[] = [];
+  if (Array.isArray(root)) {
+    list = root;
+  } else if (isRecord(root)) {
+    list = [root];
+  }
+  return list
+    .filter(isRecord)
+    .map((row) => ({
+      date: formatDateTime(firstText(row, ["createdAt", "updatedAt", "date"])),
+      userName: firstText(row, ["userName", "createdBy", "updatedBy"]),
+      userRole: firstText(row, ["userRole", "roleType"]),
+      remarks: firstText(row, ["uwRemarks", "remarks"]),
+    }))
+    .filter((row) => Object.values(row).some((value) => value !== ""));
 }
 
 export function mapRetailDrsPayload(value: unknown): RetailDrsData {
