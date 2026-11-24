@@ -1304,17 +1304,26 @@ export function GuwUwPanel({
         taskId,
         instanceId,
       };
+      // `assignedTo.name` is the selected user's full name and `assignedTo.value` is that user's NTID
+      const ntidOf = (role: string, fullName: string) =>
+        assigneeOptionsForRole(role).find((option) => option.value === fullName)?.ntid ?? "";
       const parallelRequests =
         effectiveDecision === "REFERRAL"
           ? buildGuwReferralParallelDecisionRequests(
               parallelBase,
-              referralRows.filter((r) => r.selected),
+              referralRows
+                .filter((r) => r.selected)
+                .map((r) => ({
+                  ...r,
+                  assignedToNtid: ntidOf(assigneeRoleForReferralRow(r.target), r.assignedTo),
+                })),
             )
           : [
               buildGuwCounterSignParallelDecisionRequest(parallelBase, {
                 reason: approverReason,
                 referTo: approverTarget,
                 assignedTo: approverAssignedTo,
+                assignedToNtid: ntidOf(assigneeRoleForReferTo(approverTarget), approverAssignedTo),
                 remarks: dialogRemarks,
               }),
             ];

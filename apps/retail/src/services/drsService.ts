@@ -1,11 +1,18 @@
 import type { BannerRowDetail } from "@insurance-poc/common/applicant-banner";
 import type { DetailAttribute, DetailTable } from "@insurance-poc/common/detail-card";
+import {
+  grievanceColumns,
+  type GrievanceHistoryRow,
+} from "@insurance-poc/common/grievance-history";
 import type { LifeAssuredApplicant } from "@insurance-poc/common/life-assured";
 import type { PivvDetailRow } from "@insurance-poc/common/pivv-details";
 import type { RequirementItem } from "@insurance-poc/common/requirement-mgmt";
+import type { Column } from "@insurance-poc/ui";
+import { formatDateTime } from "@insurance-poc/utils";
 import retailMock from "../../../../mock/drs/retail-drs.json";
 import { mapCvtApplicants } from "../modules/drs/cvtApplicantData";
 import type { CvtEditApplicantValues } from "../modules/drs/CvtEditApplicantDialog";
+import type { MmtGrievanceMemberContext } from "./mmtGrievanceService";
 
 export interface DrsRecord {
   applicationNo: string;
@@ -60,6 +67,12 @@ export type BreDecision = {
   decision: string;
 };
 
+/** Applicant profile values the MMT banner reads from `membersDetails[].subSections`. */
+export type RetailMmtSubSection = {
+  partyId: string;
+  lifeNumber: string;
+};
+
 export type RetailDrsData = {
   applicationNo: string;
   cardDetails: CardDetail[];
@@ -71,6 +84,16 @@ export type RetailDrsData = {
   applicants: LifeAssuredApplicant[];
   /** Edit Applicant dialog initial values per applicant id. */
   editValues: Record<string, CvtEditApplicantValues>;
+  applicantName: string;
+  grievanceHistoryTitle: string;
+  tpaGrievanceTitle: string;
+  grievanceHistoryColumns: Column<GrievanceHistoryRow>[];
+  tpaGrievanceColumns: Column<GrievanceHistoryRow>[];
+  grievanceHistory: GrievanceHistoryRow[];
+  tpaGrievanceDetails: GrievanceHistoryRow[];
+  subSections: RetailMmtSubSection;
+  /** Party context sent to the MMT grievance fetch and save APIs. */
+  memberContext: MmtGrievanceMemberContext;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -146,9 +169,9 @@ function readRowDetails(value: unknown): BannerRowDetail[] {
   }));
 }
 
-/** Finds an entry by name inside `commonSection`. */
+/** Finds an entry by name. A missing section list means that section was not sent. */
 function findSection(sections: unknown, name: string): Record<string, unknown> | null {
-  if (!Array.isArray(sections)) throw invalidResponse();
+  if (!Array.isArray(sections)) return null;
   return sections.find((s): s is Record<string, unknown> => isRecord(s) && s.name === name) ?? null;
 }
 
@@ -173,16 +196,23 @@ function readBreHeader(columns: unknown, key: string, fallback: string): string 
 
 function readBre(section: Record<string, unknown> | null): BreDecision {
   const value = section?.value;
-  if (!isRecord(value) || !Array.isArray(value.rows)) throw invalidResponse();
-
-  const rows = value.rows.map((row): BreRow => {
-    if (!isRecord(row)) throw invalidResponse();
+  if (!isRecord(value) || !Array.isArray(value.rows)) {
     return {
+      headers: { label: "BRE", initial: "Initial BRE", final: "Final BRE" },
+      rows: [],
+      initialDecision: "",
+      decision: "",
+    };
+  }
+
+  const rows = value.rows.flatMap((row): BreRow[] => {
+    if (!isRecord(row)) return [];
+    return [{
       id: readText(row.id),
       label: readText(row.label),
       initial: readBreText(row.initial),
       final: readBreText(row.final),
-    };
+    }];
   });
   const decisionRow = rows.find((row) => row.id === BRE_DECISION_ROW_ID);
 
@@ -275,6 +305,98 @@ export function mapRawRequirementRows(rowsOrSection: unknown): RequirementItem[]
   });
 }
 
+const GRIEVANCE_ROW_KEYS: (keyof GrievanceHistoryRow)[] = [
+  "userName",
+  "fupCode",
+  "profile",
+  "grievanceRemarks",
+  "tpaRemark",
+  "raisedDate",
+  "updatedDate",
+  "raisedBy",
+  "updatedBy",
+];
+
+const GRIEVANCE_ROW_ALIASES: Record<keyof GrievanceHistoryRow, string[]> = {
+  userName: ["userName", "user", "raisedBy", "User Name"],
+  fupCode: ["fupCode", "FUP Code"],
+  profile: ["profile", "Profile"],
+  grievanceRemarks: ["grievanceRemarks", "userRemarks", "grievanceRaisedRemark", "Grievance Raised Remark"],
+  tpaRemark: ["tpaRemark", "tpaRemarks", "TPA Remarks"],
+  raisedDate: ["raisedDate", "grievanceRaisedDate", "Grievance Raised Date"],
+  updatedDate: ["updatedDate", "Updated Date"],
+  raisedBy: ["raisedBy", "Raised by"],
+  updatedBy: ["updatedBy", "Updated by"],
+};
+
+function findNamedSection(sections: unknown, name: string): Record<string, unknown> | null {
+  if (!Array.isArray(sections)) return null;
+  return sections.find((section): section is Record<string, unknown> => isRecord(section) && section.name === name) ?? null;
+}
+
+function headerText(column: unknown): string {
+  return isRecord(column) ? readText(column.label) : readText(column);
+}
+
+function buildGrievanceColumns(sectionValue: unknown): Column<GrievanceHistoryRow>[] {
+  const section = isRecord(sectionValue) ? sectionValue : {};
+  const labels = Array.isArray(section.columns) ? section.columns.map((column) => headerText(column)) : [];
+  const defaults = new Map(grievanceColumns.map((column) => [column.key, column]));
+  return GRIEVANCE_ROW_KEYS.map((key, index) => {
+    const fallback = defaults.get(key);
+    return {
+      key,
+      header: labels[index] || fallback?.header || key,
+      width: fallback?.width,
+    };
+  });
+}
+
+function rowField(row: Record<string, unknown>, keys: string[]): string {
+  for (const key of keys) {
+    if (key in row) return readText(row[key]);
+  }
+  return "";
+}
+
+function formatGrievanceDate(value: string): string {
+  if (value.length === 0) return "";
+  const formatted = formatDateTime(value);
+  return formatted.length > 0 ? formatted : value;
+}
+
+function mapGrievanceRows(section: Record<string, unknown> | null): GrievanceHistoryRow[] {
+  const value = section?.value;
+  const rows = isRecord(value) && Array.isArray(value.rows) ? value.rows : [];
+  return rows.filter(isRecord).map((row) => ({
+    userName: rowField(row, GRIEVANCE_ROW_ALIASES.userName),
+    fupCode: rowField(row, GRIEVANCE_ROW_ALIASES.fupCode),
+    profile: rowField(row, GRIEVANCE_ROW_ALIASES.profile),
+    grievanceRemarks: rowField(row, GRIEVANCE_ROW_ALIASES.grievanceRemarks),
+    tpaRemark: rowField(row, GRIEVANCE_ROW_ALIASES.tpaRemark),
+    raisedDate: formatGrievanceDate(rowField(row, GRIEVANCE_ROW_ALIASES.raisedDate)),
+    updatedDate: formatGrievanceDate(rowField(row, GRIEVANCE_ROW_ALIASES.updatedDate)),
+    raisedBy: rowField(row, GRIEVANCE_ROW_ALIASES.raisedBy),
+    updatedBy: rowField(row, GRIEVANCE_ROW_ALIASES.updatedBy),
+  }));
+}
+
+function fieldValue(fields: BannerRowDetail["fields"] | undefined, name: string): string {
+  return readText(fields?.find((field) => field.name === name)?.value);
+}
+
+function mapApplicantSubSection(member: Record<string, unknown> | null): RetailMmtSubSection {
+  const subSections = member?.subSections;
+  const profileSection = Array.isArray(subSections)
+    ? subSections.filter(isRecord).find((entry) => entry.name === "applicantProfile")
+    : null;
+  const value = isRecord(profileSection?.value) ? profileSection.value : null;
+  return {
+    partyId: readText(value?.partyId),
+    lifeNumber: readText(value?.lifeNumber),
+  };
+}
+
 export function mapRetailDrsPayload(value: unknown): RetailDrsData {
   if (!isRecord(value)) throw invalidResponse();
   const data = isRecord(value.data) ? value.data : value;
@@ -285,15 +407,36 @@ export function mapRetailDrsPayload(value: unknown): RetailDrsData {
   const membersDetails = Array.isArray(data.membersDetails) ? data.membersDetails : [];
   const primaryMember = membersDetails.find(isRecord) ?? null;
   const { applicants, editValues } = mapCvtApplicants(membersDetails);
+  const rowDetails = readRowDetails(primaryMember?.rowDetails ?? data.rowDetails);
+  const nameRow = rowDetails.find((row) => row.id === 0);
+  const historySection = findNamedSection(data.commonSection, "grievanceHistory");
+  const tpaSection = findNamedSection(data.commonSection, "tpaGrievanceDetails");
+  const subSections = mapApplicantSubSection(primaryMember);
+  const partyId = subSections.partyId.trim();
+  const lifeNumber = subSections.lifeNumber.trim();
 
   return {
     applicationNo,
     cardDetails: readCards(primaryMember?.cardDetails ?? data.cardDetails),
-    rowDetails: readRowDetails(primaryMember?.rowDetails ?? data.rowDetails),
+    rowDetails,
     breDecision: readBre(findSection(data.commonSection, "latestBreDecision")),
     requirements: mapRawRequirementRows(findSection(data.commonSection, "requirementManagement")),
     pivvDetails: readPivvDetails(membersDetails),
     applicants,
     editValues,
+    applicantName: fieldValue(nameRow?.fields, "Name"),
+    grievanceHistoryTitle: readText(historySection?.label) || "Grievance History",
+    tpaGrievanceTitle: readText(tpaSection?.label) || "TPA Grievance Details",
+    grievanceHistoryColumns: buildGrievanceColumns(historySection?.value),
+    tpaGrievanceColumns: buildGrievanceColumns(tpaSection?.value),
+    grievanceHistory: mapGrievanceRows(historySection),
+    tpaGrievanceDetails: mapGrievanceRows(tpaSection),
+    subSections,
+    memberContext: {
+      applicationNo,
+      partyId: partyId.length > 0 ? partyId : undefined,
+      lifeNumber: lifeNumber.length > 0 ? lifeNumber : undefined,
+      transactionId: readText(data.transactionId).trim() || null,
+    },
   };
 }

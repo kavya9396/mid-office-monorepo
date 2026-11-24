@@ -25,18 +25,23 @@ import guwDrsMock from "../../../../mock/drs/guw-informal-drs.json";
 import guwHodDrsMock from "../../../../mock/drs/guw-hod-drs.json";
 import guwSrUwDrsMock from "../../../../mock/drs/guw-sr-uw-drs.json";
 import guwUwDecisionMock from "../../../../mock/drs/guw-uw-decision.json";
+import guwClaimAuditListMock from "../../../../mock/drs/guw-claim-audit-list.json";
+import guwUwDecisionHistoryMock from "../../../../mock/drs/guw-uw-decision-history.json";
 import usersByRoleMock from "../../../../mock/drs/users-by-role.json";
 import groupDrsApplicantSaveMock from "../modules/drs/mock/groupDrsApplicantSave.json";
 import {
+  GUW_LOB,
   mapGroupDrsPayload,
   mapGuwUwDecisions,
   mapRawRequirementRows,
+  mapReferralDecisionHistory,
   mapUsersByRole,
   type GroupDrsData,
   type GuwAssigneeOption,
   type GuwParallelDecisionRequest,
   type GuwUwDecisionRequest,
   type GuwUwDecisionResult,
+  type ReferralDecisionHistoryRow,
 } from "./drsService";
 
 export type GroupDrsQueryArg =
@@ -48,6 +53,16 @@ export type GroupDrsQueryArg =
       businessType?: string;
       taskType?: string;
     };
+
+/** Request of `uw-decision/fetch` (HOD / Sr UW Underwriting Decision History). */
+export type GuwUwDecisionHistoryRequest = {
+  applicationNumber: string;
+};
+
+export type GuwClaimAuditListRequest = {
+  applicationNumber: string;
+  partyId: string;
+};
 
 export type SaveGroupDrsRequirementsArg = {
   applicationNo: string;
@@ -562,6 +577,49 @@ export const groupDrsApi = createApi({
         return { data: result.data };
       },
     }),
+    /** Underwriting Decision History of the application (HOD / Sr UW page load). */
+    getGuwUwDecisionHistory: build.query<ReferralDecisionHistoryRow[], GuwUwDecisionHistoryRequest>({
+      async queryFn(arg, _api, _extra, baseQuery) {
+        if (useMock) return { data: mapReferralDecisionHistory(guwUwDecisionHistoryMock) };
+        const fetchUrl = groupBusinessUrls.uwDecisionFetch;
+        if (fetchUrl.length === 0) {
+          return { error: customError("UW decision fetch API is not configured.") };
+        }
+
+        const result = await baseQuery({
+          url: fetchUrl,
+          method: "POST",
+          body: {
+            applicationNumber: arg.applicationNumber,
+            level: "application",
+            screenType: "GUW",
+            lob: GUW_LOB,
+          },
+          headers: { accept: "*/*", "Content-Type": "application/json" },
+        });
+        if (result.error) return { error: result.error };
+        return { data: mapReferralDecisionHistory(result.data) };
+      },
+    }),
+    /** Claim Audit list of one member (GUW "Claim Audit" button). */
+    getGuwClaimAuditList: build.query<unknown, GuwClaimAuditListRequest>({
+      async queryFn(arg, _api, _extra, baseQuery) {
+        if (useMock) return { data: guwClaimAuditListMock as unknown };
+        const listUrl = groupBusinessUrls.claimAuditList;
+        if (listUrl.length === 0) {
+          return { error: customError("Claim audit list API is not configured.") };
+        }
+
+        const result = await baseQuery({
+          url: listUrl,
+          method: "POST",
+          body: { applicationNumber: arg.applicationNumber, partyId: arg.partyId },
+          headers: { accept: "*/*", "Content-Type": "application/json" },
+        });
+        if (result.error) return { error: result.error };
+        return { data: result.data };
+      },
+    }),
     /**
      * Member-level UW decision (decision code + remarks) for the GUW screen.
      * Raise Referral sends an array (one item per referral) and gets one saved decision per item back.
@@ -771,6 +829,16 @@ export const groupDrsApi = createApi({
             draft.applicants = mapped.applicants;
             draft.memberTypes = mapped.memberTypes;
             draft.quickLinks = mapped.quickLinks;
+            draft.rowDetails = mapped.rowDetails;
+            draft.applicantName = mapped.applicantName;
+            draft.grievanceHistoryTitle = mapped.grievanceHistoryTitle;
+            draft.tpaGrievanceTitle = mapped.tpaGrievanceTitle;
+            draft.grievanceHistoryColumns = mapped.grievanceHistoryColumns;
+            draft.tpaGrievanceColumns = mapped.tpaGrievanceColumns;
+            draft.grievanceHistory = mapped.grievanceHistory;
+            draft.tpaGrievanceDetails = mapped.tpaGrievanceDetails;
+            draft.subSections = mapped.subSections;
+            draft.memberContext = mapped.memberContext;
           };
 
           if (arg.queryArg) {
@@ -812,6 +880,8 @@ export const groupDrsApi = createApi({
 export const {
   useGetGroupDrsQuery,
   useGetGuwDrsPayloadQuery,
+  useGetGuwUwDecisionHistoryQuery,
+  useLazyGetGuwClaimAuditListQuery,
   useGetGuwUwDecisionMutation,
   useGetUsersByRoleQuery,
   useSaveGuwParallelDecisionMutation,

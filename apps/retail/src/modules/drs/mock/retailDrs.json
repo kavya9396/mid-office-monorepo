@@ -209,6 +209,78 @@
             }
           ]
         }
+      },
+      {
+        "name": "grievanceHistory",
+        "label": "Grievance History",
+        "value": {
+          "columns": [
+            {
+              "label": "User Name"
+            },
+            {
+              "label": "FUP Code"
+            },
+            {
+              "label": "Profile"
+            },
+            {
+              "label": "Grievance Raised Remark"
+            },
+            {
+              "label": "TPA Remarks"
+            },
+            {
+              "label": "Grievance Raised Date"
+            },
+            {
+              "label": "Updated Date"
+            },
+            {
+              "label": "Raised by"
+            },
+            {
+              "label": "Updated by"
+            }
+          ],
+          "rows": []
+        }
+      },
+      {
+        "name": "tpaGrievanceDetails",
+        "label": "TPA Grievance Details",
+        "value": {
+          "columns": [
+            {
+              "label": "User Name"
+            },
+            {
+              "label": "FUP Code"
+            },
+            {
+              "label": "Profile"
+            },
+            {
+              "label": "Grievance Raised Remark"
+            },
+            {
+              "label": "TPA Remarks"
+            },
+            {
+              "label": "Grievance Raised Date"
+            },
+            {
+              "label": "Updated Date"
+            },
+            {
+              "label": "Raised by"
+            },
+            {
+              "label": "Updated by"
+            }
+          ],
+          "rows": []
+        }
       }
     ],
     "membersDetails": [
@@ -230,76 +302,56 @@
             "id": 0,
             "fields": [
               {
-                "name": "Product",
-                "value": "ICICI PRU SUPER PROTECT CREDIT - GP1"
+                "name": "Name",
+                "value": "Rudra Prakash Sangha"
               },
               {
-                "name": "Channel",
-                "value": ""
+                "name": "App No.",
+                "value": "OB90377122"
               },
               {
-                "name": "Sum Assured",
-                "value": "5000000"
+                "name": "Member",
+                "value": "Life Assured 1"
               },
               {
-                "name": "MPH Name",
-                "value": ""
+                "name": "Marital status",
+                "value": "Married"
               },
               {
-                "name": "Policy Term",
-                "value": "49"
+                "name": "Gender",
+                "value": "Male"
               },
               {
-                "name": "Annual Premium",
-                "value": "7897"
+                "name": "Age",
+                "value": "40"
               },
               {
-                "name": "PAD",
-                "value": ""
+                "name": "Education",
+                "value": "Graduate"
               },
               {
-                "name": "Date of loan disbursement",
-                "value": "2026-09-09T00:00"
+                "name": "Occupation",
+                "value": "Salaried"
               },
               {
-                "name": "Coverage option",
-                "value": "Reducing Cover"
+                "name": "Organisation",
+                "value": "3I INFOTECH"
               },
               {
-                "name": "Loan type",
-                "value": "L1"
+                "name": "Declared income",
+                "value": "1000000"
               },
               {
-                "name": "Bank type",
-                "value": "B1"
+                "name": "City, State",
+                "value": "Pune, Maharashtra"
               },
               {
-                "name": "Loan term",
-                "value": "360"
+                "name": "Residence Status",
+                "value": "Indian"
               },
               {
-                "name": "Loan Account No.",
-                "value": ""
-              },
-              {
-                "name": "Share of loan",
-                "value": "100"
-              },
-              {
-                "name": "Applicant status",
-                "value": "Primary Borrower"
-              },
-              {
-                "name": "Loan amount",
-                "value": "2100000"
-              },
-              {
-                "name": "Master policy holder code",
-                "value": ""
-              },
-              {
-                "name": "Type of loan",
-                "value": "Home Loan"
+                "name": "Residing Country",
+                "value": "India"
               }
             ]
           },
@@ -307,20 +359,16 @@
             "id": 1,
             "fields": [
               {
-                "name": "Policy Type",
-                "value": "Retail New Business"
+                "name": "Product Name - Product Code",
+                "value": "ICICI Pru GIFT Pro"
               },
               {
-                "name": "Agent Name",
-                "value": ""
+                "name": "Channel",
+                "value": "Agency"
               },
               {
-                "name": "Agent Code",
-                "value": "01434799"
-              },
-              {
-                "name": "Customer Type",
-                "value": "SHNI"
+                "name": "Sum Assured",
+                "value": "₹10,68,000"
               }
             ]
           },
@@ -329,23 +377,15 @@
             "fields": [
               {
                 "name": "WOP - SA",
-                "value": ""
+                "value": "₹15,00,000"
               },
               {
                 "name": "BTBB - SA",
-                "value": ""
+                "value": "₹25,00,000"
               },
               {
                 "name": "TI Rider - SA",
-                "value": ""
-              },
-              {
-                "name": "ADBR - SA",
-                "value": "0"
-              },
-              {
-                "name": "CI Rider - SA",
-                "value": ""
+                "value": "₹25,00,000"
               }
             ]
           }
@@ -803,6 +843,13 @@
           }
         ],
         "subSections": [
+          {
+            "name": "applicantProfile",
+            "value": {
+              "partyId": "3202e174-2338-4970-a7e8-253831e31274",
+              "lifeNumber": "01"
+            }
+          },
           {
             "name": "proposalFormAndDocuments",
             "label": "Proposal Form and Document",

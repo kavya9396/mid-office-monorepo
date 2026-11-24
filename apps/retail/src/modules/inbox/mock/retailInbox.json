@@ -74,6 +74,26 @@
         "role": "RETAIL_CPT_DATA_ENTRY_MR_USER",
         "roleType": "CPT_DATA_ENTRY_MR_TASK"
       }
+    ],
+    "MMT_TASK": [
+      {
+        "id": 9,
+        "applicationNo": "OS90414710",
+        "nameOfProposer": "MANOJ GANTA",
+        "nameOfLifeAssured": "DFGG NA",
+        "productOpted": "T74",
+        "plan": null,
+        "medicalRaisedDate": null,
+        "dateAndTimeStamp": "2026-11-02T17:22:13.382022",
+        "taskId": "292",
+        "instanceId": "171",
+        "dueDate": "2026-11-03T12:00:00Z",
+        "startTime": "2026-11-02T17:02:33Z",
+        "atRiskTime": "2026-11-03T10:06:15Z",
+        "businessType": "RETAIL",
+        "role": "RETAIL_MMT_ADMIN",
+        "roleType": "MMT_TASK"
+      }
     ]
   }
 }

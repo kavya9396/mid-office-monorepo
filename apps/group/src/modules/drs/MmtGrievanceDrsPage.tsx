@@ -10,8 +10,8 @@ import { CustomBox, CustomLoader, CustomSnackbar } from "@insurance-poc/ui";
 import { groupPaths } from "@insurance-poc/routes";
 import { getDrsRoleType, readApiErrorMessage } from "@insurance-poc/utils";
 import { getGroupDrsTaskConfig } from "../../config/drsTaskConfig";
+import { useGetGroupDrsQuery } from "../../services/drsApi";
 import {
-  useGetMmtDrsQuery,
   useGetMmtGrievancesQuery,
   useSaveMmtGrievancesMutation,
 } from "../../services/mmtGrievanceApi";
@@ -35,10 +35,10 @@ export function MmtGrievanceDrsPage() {
   const roleType = getDrsRoleType().trim();
   const drsTaskConfig = getGroupDrsTaskConfig(roleType);
 
-  const drs = useGetMmtDrsQuery(
+  const drs = useGetGroupDrsQuery(
     {
       applicationNo,
-      roleType,
+      roleType: roleType || drsTaskConfig.roleType,
       screenType: "MMT",
       businessType: drsTaskConfig.businessType,
     },
