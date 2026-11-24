@@ -8,7 +8,7 @@
 export const requiredMessage = (label: string) => `${label} is required`;
 
 /** Formats a text field can be restricted to (patterns live in `fieldFormat.ts`). */
-export type FieldFormat = "numeric" | "alphabets" | "alphanumeric" | "pan";
+export type FieldFormat = "numeric" | "alphabets" | "alphanumeric" | "pan" | "ifsc";
 
 /** Message for a value that does not match the field's format, for example `formatMessage("Height", "numeric")` -> "Height should be numeric". */
 export const formatMessage = (label: string, format: FieldFormat) => {
@@ -21,6 +21,8 @@ export const formatMessage = (label: string, format: FieldFormat) => {
       return `${label} should be alphanumeric`;
     case "pan":
       return `${label} should be in the format ABCDE1234F`;
+    case "ifsc":
+      return `${label} should be 4 letters, then 0, then 6 letters or digits (e.g. SBIN0000300)`;
   }
 };
 
