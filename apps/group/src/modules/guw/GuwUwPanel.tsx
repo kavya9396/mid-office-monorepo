@@ -213,7 +213,7 @@ const readFirstAvailableMiscOptions = (types: string[]) => {
   return [];
 };
 
-const readPostponementPeriodOptions = () => readFirstAvailableMiscOptions(["GUW_POST_PERIOD"]);
+const readPostponementPeriodOptions = () => readFirstAvailableMiscOptions(["POSTPONE_PERIOD"]);
 
 const DENY_RIDER_TYPE = "Deny Rider";
 
