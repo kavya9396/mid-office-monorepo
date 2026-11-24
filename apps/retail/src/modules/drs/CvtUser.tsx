@@ -18,6 +18,7 @@ import {
   getDrsRoleLabel,
   getDrsRoleType,
   getMasterList,
+  getSessionUser,
   readApiErrorMessage,
   setBreRetriggerCount,
 } from "@insurance-poc/utils";
@@ -25,14 +26,16 @@ import { Financial } from "@insurance-poc/common/financial";
 import { Medical } from "@insurance-poc/common/medical";
 import { QuickLinksModule, type QuickLinkItem } from "@insurance-poc/common/quick-links";
 import { DecisionHistory, type DecisionHistoryRow } from "@insurance-poc/common/decision-history";
-import { PivvDetails, type PivvDetailRow } from "@insurance-poc/common/pivv-details";
+import { PivvDetails } from "@insurance-poc/common/pivv-details";
 import {
   DecisionBar,
   DecisionComparisonTable,
   type ComparisonRow,
 } from "@insurance-poc/common/decision-bar";
+import { ApplicantBanner, type RowDetailsOptions } from "@insurance-poc/common/applicant-banner";
 import { DetailCard } from "@insurance-poc/common/detail-card";
 import { DecisionSection, type DecisionSubmitPayload } from "@insurance-poc/common/decision-section";
+import { ValidationList, type ValidationRow } from "@insurance-poc/common/validation-list";
 import { LifeAssured, type LifeAssuredTab } from "@insurance-poc/common/life-assured";
 import {
   RequirementMgmt,
@@ -42,26 +45,24 @@ import {
 import { getRetailDrsTaskConfig } from "../../config/drsTaskConfig";
 import { useRetriggerRetailBreMutation } from "../../services/breRetriggerApi";
 import { useCompleteRetailTaskMutation } from "../../services/completeTaskApi";
+import { useFetchCvtValidationMutation } from "../../services/cvtValidationApi";
 import {
   useGetRetailDrsQuery,
   useSaveRetailDrsApplicantMutation,
   useSaveRetailDrsRequirementsMutation,
 } from "../../services/drsApi";
+import {
+  useGetRetailFinancialDetailsQuery,
+  useSaveRetailFinancialMutation,
+} from "../../services/financialApi";
+import { RETAIL_FINANCIAL_ACTIONS_CONFIG } from "../config/financialActions.config";
 import { CvtEditApplicantDialog } from "./CvtEditApplicantDialog";
 import { requirementStatusOrder, requirementStatusVariants } from "./requirementData";
 
-/** PIVV Details rows. Static until the DRS response provides them (prototype data in cvt-drs-prototype.html). */
-const CVT_PIVV_DETAILS: PivvDetailRow[] = [
-  {
-    id: "pivv-demo-1",
-    fupCode: "PIV",
-    profile: "Life Assured",
-    raisedDate: "9 Sep 2026",
-    raisedRemark: "-",
-    decisions: ["Another person spoken", "Pre-recorded video", "Customer didn’t complete the full script"],
-    pivvRemark: "Customer not speaking",
-  },
-];
+/** Row 0 is the product / loan line, row 1 the policy / agent line, row 2 the rider sums assured. */
+const CVT_BANNER_OPTIONS: RowDetailsOptions = {
+  rowLabels: { 2: "Riders" },
+};
 
 /** Decision History rows. Static until the DRS response provides them (prototype data in cvt-drs-prototype.html). */
 const CVT_DECISION_HISTORY: DecisionHistoryRow[] = [
@@ -143,9 +144,19 @@ const CvtUser = () => {
     // Always hit the DRS API when the screen mounts instead of serving the cached result.
     refetchOnMountOrArgChange: true,
   });
+  const applicants = drs.data?.applicants ?? [];
+  const selectedApplicant = applicants.find((applicant) => applicant.id === currentApplicantId) ?? applicants[0];
+  const activePartyId = selectedApplicant?.partyId ?? "";
+  const financialQuery = useGetRetailFinancialDetailsQuery(
+    { applicationNumber: applicationNo, partyId: activePartyId },
+    { skip: !isFinancialRoute || !applicationNo || !activePartyId },
+  );
+  const [saveFinancial] = useSaveRetailFinancialMutation();
   const [saveRetailDrsRequirements] = useSaveRetailDrsRequirementsMutation();
   const [saveRetailDrsApplicant] = useSaveRetailDrsApplicantMutation();
   const [completeRetailTask, completeRetailTaskState] = useCompleteRetailTaskMutation();
+  const [fetchCvtValidation, fetchCvtValidationState] = useFetchCvtValidationMutation();
+  const [validationRows, setValidationRows] = useState<ValidationRow[]>([]);
   const [retriggerRetailBre, retriggerRetailBreState] = useRetriggerRetailBreMutation();
 
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
@@ -173,7 +184,7 @@ const CvtUser = () => {
 
   const goToInbox = () => {
     clearBreRetriggerCount();
-    navigate("/inbox", { replace: true });
+    void navigate("/inbox", { replace: true });
   };
 
   const handleBreRetrigger = async () => {
@@ -207,6 +218,33 @@ const CvtUser = () => {
     }
     if (applicationNo.length === 0) {
       setSnackbarMessage("Application number is missing.");
+      return;
+    }
+    // Validation API first; the complete-task API is called only when it returns no validations.
+    try {
+      const validation = await fetchCvtValidation({
+        userId: getSessionUser()?.username ?? "",
+        role: "CVT",
+        applicationNo,
+        partyDecision: applicants.map((applicant) => ({
+          partyId: applicant.partyId ?? "",
+          decision: payload.decision,
+        })),
+      }).unwrap();
+      const rows: ValidationRow[] = validation.partyValidations.flatMap((party) =>
+        party.validations.map((item) => ({
+          memberType: party.memberType,
+          reason: item.reason,
+          remarks: item.remarks,
+        })),
+      );
+      if (rows.length > 0) {
+        setValidationRows(rows);
+        return;
+      }
+    } catch (reason: unknown) {
+      const apiMessage = readApiErrorMessage(reason);
+      setSnackbarMessage(apiMessage.length > 0 ? apiMessage : "Unable to validate the CVT decision.");
       return;
     }
     try {
@@ -250,8 +288,7 @@ const CvtUser = () => {
     );
   }
 
-  const { cardDetails, breDecision, requirements, applicants, editValues } = drs.data;
-  const selectedApplicant = applicants.find((applicant) => applicant.id === currentApplicantId) ?? applicants[0];
+  const { cardDetails, rowDetails, breDecision, requirements, pivvDetails, editValues } = drs.data;
   const applicantOptions = applicants.map((applicant) => ({ key: applicant.id, label: applicant.label }));
 
   const handleSaveEditApplicant = async (applicantId: string, values: Parameters<typeof saveRetailDrsApplicant>[0]["values"]) => {
@@ -276,14 +313,16 @@ const CvtUser = () => {
   };
 
   const openFinancial = (applicantId: string) => {
-    navigate({ pathname: financialPath, search }, { state: { applicantId } satisfies ApplicantRouteState });
+    void navigate({ pathname: financialPath, search }, { state: { applicantId } satisfies ApplicantRouteState });
   };
   const openMedical = (applicantId: string) => {
-    navigate({ pathname: medicalPath, search }, { state: { applicantId } satisfies ApplicantRouteState });
+    void navigate({ pathname: medicalPath, search }, { state: { applicantId } satisfies ApplicantRouteState });
   };
-  const closeSubPage = () => navigate({ pathname: drsBasePath, search });
+  const closeSubPage = () => {
+    void navigate({ pathname: drsBasePath, search });
+  };
   const handleFinancialApplicantChange = (applicantKey: string) => {
-    navigate(
+    void navigate(
       { pathname: financialPath, search },
       { replace: true, state: { applicantId: applicantKey } satisfies ApplicantRouteState },
     );
@@ -313,12 +352,19 @@ const CvtUser = () => {
     return (
       <Financial
         applicationNumber={applicationNo}
+        partyId={selectedApplicant?.partyId}
         summary={detailCards}
-        applicants={applicantOptions}
+        applicants={applicantOptions.map((option) => ({
+          ...option,
+          partyId: applicants.find((applicant) => applicant.id === option.key)?.partyId,
+        }))}
         initialApplicantKey={selectedApplicant?.id}
+        sections={financialQuery.data}
+        actions={RETAIL_FINANCIAL_ACTIONS_CONFIG.cvt}
         onApplicantChange={handleFinancialApplicantChange}
         onBack={closeSubPage}
-        onSubmit={(payload) => console.log("Submit financial", payload)}
+        onSaveSection={(saveRequest) => saveFinancial(saveRequest).unwrap()}
+        onSubmit={closeSubPage}
       />
     );
   }
@@ -366,13 +412,19 @@ const CvtUser = () => {
     >
       {retriggerRetailBreState.isLoading && <CustomLoader message="Retriggering BRE" fullScreen />}
 
-      {detailCards}
+      <ApplicantBanner
+        applicationNo={applicationNo}
+        rowDetails={rowDetails}
+        rowDetailsOptions={CVT_BANNER_OPTIONS}
+      />
 
       <QuickLinksModule
         items={CVT_QUICK_LINKS}
         applicationNo={applicationNo}
         roleType={getDrsRoleLabel() || CVT_DEFAULT_ROLE_TYPE}
-        onNavigate={(path) => navigate(path)}
+        onNavigate={(path) => {
+          void navigate(path);
+        }}
         onNotify={(message) => setSnackbarMessage(message)}
         title="Quick Links"
       />
@@ -441,7 +493,7 @@ const CvtUser = () => {
         }}
       />
 
-      <PivvDetails rows={CVT_PIVV_DETAILS} />
+      <PivvDetails rows={pivvDetails} />
 
       <DecisionHistory rows={CVT_DECISION_HISTORY} />
 
@@ -455,8 +507,25 @@ const CvtUser = () => {
         onDecisionChange={setDecision}
         onRemarksChange={setRemarks}
         onSubmit={handleDecisionSubmit}
-        isSubmitting={completeRetailTaskState.isLoading}
+        isSubmitting={fetchCvtValidationState.isLoading || completeRetailTaskState.isLoading}
       />
+
+      <CustomDialog
+        open={validationRows.length > 0}
+        onClose={() => setValidationRows([])}
+        title={
+          <CustomTypography
+            component="span"
+            sx={{ fontSize: 16, fontWeight: 700 }}
+          >
+            Validations
+          </CustomTypography>
+        }
+        maxWidth="md"
+        fullWidth
+      >
+        <ValidationList rows={validationRows} />
+      </CustomDialog>
 
       <CustomSnackbar
         open={Boolean(snackbarMessage)}

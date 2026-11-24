@@ -1,3 +1,4 @@
+import { getSessionUser } from "@insurance-poc/utils";
 import type { FinancialSection } from "./financial.config";
 
 /**
@@ -37,6 +38,7 @@ export interface AppointmentLetterSavePayload {
 
 export interface CommissionStatementMonthEntry {
   periodMonth: number;
+  month: string | null;
   commissionDtlId?: number | null;
   commissionAmount: number | null;
 }
@@ -118,6 +120,7 @@ export interface FormJReceiptEntry {
 
 export interface FormJMonthEntry {
   periodMonth: number;
+  month: string | null;
   formJDtlId?: number | null;
   receipts: FormJReceiptEntry[];
 }
@@ -284,6 +287,7 @@ export interface SalaryRevisionLetterSavePayload {
 
 export interface SalarySlipsMonthEntry {
   periodMonth: number;
+  month: string | null;
   salarySlipDtlId?: number | null;
   monthlyGrossSalary: number | null;
 }
@@ -299,6 +303,7 @@ export interface SalarySlipsSavePayload {
 
 export interface BankStatementMonthEntry {
   periodMonth: number;
+  month: string | null;
   bankStmtDtlId?: number | null;
   closingBalance: number | null;
 }
@@ -341,6 +346,7 @@ export interface VahanSavePayload {
 
 export interface SipStatementMonthEntry {
   periodMonth: number;
+  month: string | null;
   sipDtlId?: number | null;
   sipAmount: number | null;
 }
@@ -365,6 +371,7 @@ export interface GstIncomeSavePayload {
 
 export interface BankStatementSalaryCreditMonthEntry {
   periodMonth: number;
+  month: string | null;
   bankSalCrDtlId?: number | null;
   netSalaryCredited: number | null;
 }
@@ -389,6 +396,7 @@ export interface EpfBasicSavePayload {
 
 export interface EpfAdvancedMonthEntry {
   periodMonth: number;
+  month: string | null;
   epfDtlId?: number | null;
   pfContribution: number | null;
 }
@@ -444,27 +452,31 @@ export interface CreditBureauDetailsSavePayload {
 /* Transformation helpers                                             */
 /* ------------------------------------------------------------------ */
 
-function yesNoToYN(value: unknown): "Y" | "N" | string | null {
-  if (value == null) return null;
-  const str = String(value).trim();
+type FieldValues = Readonly<Record<string, string>>;
+
+const DDMMYYYY_PATTERN = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
+
+function yesNoToYN(value: string): string | null {
+  const str = value.trim();
   if (str === "Yes" || str === "Y") return "Y";
   if (str === "No" || str === "N") return "N";
   return str.length > 0 ? str : null;
 }
 
 function parseNumber(value: unknown): number | null {
-  if (value == null) return null;
-  const str = String(value).replace(/,/g, "").trim();
+  if (typeof value === "number") return Number.isNaN(value) ? null : value;
+  if (typeof value !== "string") return null;
+  const str = value.replaceAll(",", "").trim();
   if (!str) return null;
   const num = Number(str);
   return Number.isNaN(num) ? null : num;
 }
 
 function formatDateToISO(value: unknown): string | null {
-  if (value == null) return null;
-  const str = String(value).trim();
+  if (typeof value !== "string") return null;
+  const str = value.trim();
   if (!str) return null;
-  const ddmmyyyy = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(str);
+  const ddmmyyyy = DDMMYYYY_PATTERN.exec(str);
   if (ddmmyyyy) {
     const d = ddmmyyyy[1].padStart(2, "0");
     const m = ddmmyyyy[2].padStart(2, "0");
@@ -473,561 +485,802 @@ function formatDateToISO(value: unknown): string | null {
   return str;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return isRecord(value) ? value : {};
+}
+
+function readString(value: unknown): string | undefined {
+  return typeof value === "string" ? value : undefined;
+}
+
+function readList(raw: Record<string, unknown>, key: string): unknown[] {
+  const value = raw[key];
+  return Array.isArray(value) ? value : [];
+}
+
+function readMetricIds<T>(rawEntry: Record<string, unknown>): T | undefined {
+  return isRecord(rawEntry.metricIds) ? (rawEntry.metricIds as T) : undefined;
+}
+
+/** Stored value of the field at `index`, falling back to the field's configured default. */
+function readFieldValue(
+  values: FieldValues,
+  section: FinancialSection,
+  index: number,
+): string {
+  if (index < 0) return "";
+  const stored = values[`${section.key}-${index}`];
+  if (stored !== undefined && stored !== "") return stored;
+  return section.fields[index][1] ?? "";
+}
+
+/**
+ * First non-empty value for the given labels. Per label: exact match, then case-insensitive
+ * match, then a direct `<section>-<label>` key lookup.
+ */
 function getVal(
-  values: Readonly<Record<string, string>>,
+  values: FieldValues,
   section: FinancialSection,
   ...labels: string[]
 ): string {
   for (const label of labels) {
     const trimmed = label.trim();
-    // 1. Exact match on field label
-    const exactIndex = section.fields.findIndex((f) => f[0] === trimmed);
-    if (exactIndex >= 0) {
-      const val = values[`${section.key}-${exactIndex}`];
-      if (val !== undefined && val !== "") return val;
-      const def = section.fields[exactIndex][1] ?? "";
-      if (def !== "") return def;
+    const lower = trimmed.toLowerCase();
+    const candidates = [
+      section.fields.findIndex((f) => f[0] === trimmed),
+      section.fields.findIndex((f) => f[0].trim().toLowerCase() === lower),
+    ];
+    for (const index of candidates) {
+      const found = readFieldValue(values, section, index);
+      if (found !== "") return found;
     }
-
-    // 2. Case-insensitive match on field label
-    const lowerIndex = section.fields.findIndex(
-      (f) => f[0].trim().toLowerCase() === trimmed.toLowerCase(),
-    );
-    if (lowerIndex >= 0) {
-      const val = values[`${section.key}-${lowerIndex}`];
-      if (val !== undefined && val !== "") return val;
-      const def = section.fields[lowerIndex][1] ?? "";
-      if (def !== "") return def;
-    }
-
-    // 3. Direct key lookup by label name
-    const directVal = values[`${section.key}-${trimmed}`];
-    if (directVal !== undefined && directVal !== "") return directVal;
+    const direct = values[`${section.key}-${trimmed}`];
+    if (direct) return direct;
   }
   return "";
 }
 
-function getExtra(
-  values: Readonly<Record<string, string>>,
-  key: string,
-): string {
-  return values[key] ?? "";
+/** Month dropdown value stored beside a field (`<section>-<field index>-month`); null when unset. */
+function getFieldMonth(
+  values: FieldValues,
+  section: FinancialSection,
+  label: string,
+): string | null {
+  const index = section.fields.findIndex((f) => f[0] === label);
+  if (index < 0) return null;
+  return values[`${section.key}-${index}-month`] || null;
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
+function extractOptionalId<K extends string>(
+  raw: Record<string, unknown>,
+  key: K,
+): { [P in K]?: number } {
+  const val = raw[key];
+  if (typeof val === "number" && !Number.isNaN(val)) {
+    return { [key]: val } as { [P in K]?: number };
+  }
+  if (typeof val === "string" && val.trim().length > 0) {
+    const num = Number(val.trim());
+    if (!Number.isNaN(num)) {
+      return { [key]: num } as { [P in K]?: number };
+    }
+  }
+  return {};
 }
 
 /* ------------------------------------------------------------------ */
-/* Document builder logic                                             */
+/* Build context                                                      */
 /* ------------------------------------------------------------------ */
+
+/** Everything a document builder needs to read form values for one section. */
+interface BuildContext {
+  /** Raw document returned by the fetch API (carries the `*DtlId` identifiers). */
+  readonly raw: Record<string, unknown>;
+  /** First non-empty value for the labels, or "". */
+  readonly val: (...labels: string[]) => string;
+  /** Value for the labels, or null when empty. */
+  readonly text: (...labels: string[]) => string | null;
+  /** Value for the labels parsed as a number, or null. */
+  readonly num: (...labels: string[]) => number | null;
+  /** Value for the labels mapped to "Y" / "N", or null. */
+  readonly yn: (...labels: string[]) => string | null;
+  /** Value stored under an arbitrary store key (not a section field), or "". */
+  readonly extra: (key: string) => string;
+  /** Month dropdown stored beside the field with this label, or null. */
+  readonly fieldMonth: (label: string) => string | null;
+}
+
+type DocumentBuilder = (ctx: BuildContext) => unknown;
+
+function createContext(
+  section: FinancialSection,
+  values: FieldValues,
+): BuildContext {
+  const val = (...labels: string[]) => getVal(values, section, ...labels);
+  return {
+    raw: asRecord(section.rawDocument),
+    val,
+    text: (...labels) => val(...labels) || null,
+    num: (...labels) => parseNumber(val(...labels)),
+    yn: (...labels) => yesNoToYN(val(...labels)),
+    extra: (key) => values[key] ?? "",
+    fieldMonth: (label) => getFieldMonth(values, section, label),
+  };
+}
+
+/** Builds `count` entries, handing each its 1-based position and the matching raw entry. */
+function buildEntries<T>(
+  ctx: BuildContext,
+  listKey: "months" | "years",
+  count: number,
+  build: (position: number, rawEntry: Record<string, unknown>) => T,
+): T[] {
+  const list = readList(ctx.raw, listKey);
+  return Array.from({ length: count }, (_, i) =>
+    build(i + 1, asRecord(list[i])),
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Shared labels and year helpers                                     */
+/* ------------------------------------------------------------------ */
+
+const LABEL = {
+  assessmentYear: "Assessment Year",
+  incomeEarned: "Income Earned",
+  lifeAssuredName: "Life Assured Name",
+  isLifeAssuredNameSame: "Is Life Assured Name Same?",
+  isLaNameMatch: "Is LA Name Match with Doc Name?",
+  isLaDefaulter: "Is LA Defaulter in the Payment",
+  statementPeriod: "Statement Period",
+  openingBalance: "Opening Balance",
+  grossSalaryPa: "Gross Salary PA",
+  purchasePrice: "Purchase Price",
+  organisationFirm: "Name of Organisation/Firm",
+  permanentAccountNumber: "Permanent Account Number",
+  itrAckNumber: "ITR Acknowledgement Number",
+  itrFilingDate: "Date of Filling ITR",
+  panBarcodeMatch: "Pan Number Matched with Barcode Number",
+  shortTermCapitalGains: "Short term & Capital Gains",
+  incomeFromOtherSources: "Income from Other Sources",
+  incomeFromHouseProperty: "Income from House Property",
+  agriculturalIncome: "Agricultural Income",
+  latestOrganizationName: "Latest Organization Name",
+  isOrganizationNameSame: "Is Organization Name Same?",
+} as const;
+
+/** SIP monthly amount field labels, in month order (the month dropdown sits beside each). */
+const SIP_AMOUNT_LABELS = [
+  "SIP Per Month 1",
+  "SIP Per Month2",
+  "SIP Per Month 3",
+  "SIP Per Month4",
+  "SIP Per Month 5",
+  "SIP Per Month 6",
+] as const;
+
+const MONTHS_PER_HALF_YEAR = 6;
+const FORM_J_MONTHS = 3;
+const FORM_J_RECEIPTS_PER_MONTH = 6;
+const ASSESSMENT_YEARS = 3;
+const GST_ASSESSMENT_YEARS = 4;
+
+/** Label suffix for the 2nd and 3rd year columns: "", " Year 2", " Year 3". */
+function yearSuffix(year: number): string {
+  return year === 1 ? "" : ` Year ${year}`;
+}
+
+/** Fallback assessment year, e.g. position 1 and first year 23 -> "AY 23-24". */
+function defaultAssessmentYear(position: number, firstYear: number): string {
+  const start = firstYear + position - 1;
+  return `AY ${start}-${start + 1}`;
+}
+
+function buildYears<T>(
+  ctx: BuildContext,
+  count: number,
+  build: (year: number, suffix: string, rawEntry: Record<string, unknown>) => T,
+): T[] {
+  return buildEntries(ctx, "years", count, (year, rawEntry) =>
+    build(year, yearSuffix(year), rawEntry),
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Document builders                                                  */
+/* ------------------------------------------------------------------ */
+
+function buildAppointmentLetter(ctx: BuildContext): AppointmentLetterSavePayload {
+  return {
+    ...extractOptionalId(ctx.raw, "apptDtlId"),
+    grossSalaryPa: ctx.num(LABEL.grossSalaryPa, "CTC"),
+    companyName: ctx.text("Name of the Company"),
+    partyName: ctx.text("Name of the Employee"),
+    joiningDt: formatDateToISO(ctx.val("Joining Date")),
+  };
+}
+
+function buildCommissionStatement(ctx: BuildContext): CommissionStatementSavePayload {
+  const months = buildEntries(
+    ctx,
+    "months",
+    MONTHS_PER_HALF_YEAR,
+    (p, rawM): CommissionStatementMonthEntry => ({
+      periodMonth: p,
+      month: ctx.extra(`commission_statement-entry-month-${p}`) || null,
+      ...extractOptionalId(rawM, "commissionDtlId"),
+      commissionAmount: parseNumber(
+        ctx.extra(`commission_statement-entry-income-${p}`) ||
+          ctx.val(`Income for Month ${p}`, `Month ${p}`),
+      ),
+    }),
+  );
+  return { months };
+}
+
+function buildComputationOfIncome(ctx: BuildContext): ComputationOfIncomeSavePayload {
+  const years = buildYears(
+    ctx,
+    ASSESSMENT_YEARS,
+    (y, suffix, rawY): ComputationOfIncomeYearEntry => ({
+      assessmentYear:
+        ctx.val(`${LABEL.assessmentYear}${suffix}`) ||
+        defaultAssessmentYear(y, 23),
+      metricIds: readMetricIds<ComputationOfIncomeYearEntry["metricIds"]>(rawY),
+      incomeFromSalary: ctx.num(`Income from Salary(A)${suffix}`),
+      incomeFromBusiness: ctx.num(`Income from Business or Profession (B)${suffix}`),
+      shortTermCapitalGains: ctx.num(`${LABEL.shortTermCapitalGains}${suffix}`),
+      incomeFromOtherSources: ctx.num(`${LABEL.incomeFromOtherSources}${suffix}`),
+      agriculturalIncome: ctx.num(`${LABEL.agriculturalIncome}${suffix}`),
+      incomeFromHouseProperty: ctx.num(`${LABEL.incomeFromHouseProperty}${suffix}`),
+      exemptIncome: ctx.num(`Exempt Income(C)${suffix}`),
+    }),
+  );
+  return { years };
+}
+
+function buildCreditCard(ctx: BuildContext): CreditCardSavePayload {
+  return {
+    ...extractOptionalId(ctx.raw, "ccDtlId"),
+    nameMatchInd: ctx.yn(
+      "Is Credit card statement in the name of LA",
+      "Credit card statement in the name of LA",
+    ),
+    isDefaulter: ctx.yn(LABEL.isLaDefaulter, "LA Defaulter in the Payment"),
+    cardType: ctx.text("Type of Card"),
+    creditLimit: ctx.num("Credit Limit"),
+    incomeEarned: ctx.num(LABEL.incomeEarned),
+    pointsEarned: ctx.num("Points Earned"),
+  };
+}
+
+function buildFixedDepositReceipt(ctx: BuildContext): FixedDepositReceiptSavePayload {
+  return {
+    ...extractOptionalId(ctx.raw, "fdDtlId"),
+    nameMatchInd: ctx.yn("Is Fixed Deposit Receipt in the name of LA"),
+    isMatured: ctx.yn("Is Fixed Deposit Receipts matured"),
+    amountInvested: ctx.num("Amount Invested"),
+    incomeEarned: ctx.num(LABEL.incomeEarned),
+  };
+}
+
+function buildForm16(ctx: BuildContext): Form16SavePayload {
+  const years = buildYears(
+    ctx,
+    ASSESSMENT_YEARS,
+    (y, suffix, rawY): Form16YearEntry => ({
+      assessmentYear:
+        ctx.val(`${LABEL.assessmentYear}${suffix}`, `Assessment${suffix}`) ||
+        defaultAssessmentYear(y, 23),
+      ...extractOptionalId(rawY, "form16DtlId"),
+      grossSalaryPa: ctx.num(`${LABEL.grossSalaryPa}${suffix}`),
+      companyName: ctx.text(`Company Name${suffix}`),
+      panNumber: ctx.text(
+        `Life Assured Pan No${suffix}`,
+        `Life Assured PAN No${suffix}`,
+        `Pan Number${suffix}`,
+        `PAN Number${suffix}`,
+      ),
+      partyName: ctx.text(`${LABEL.lifeAssuredName}${suffix}`),
+    }),
+  );
+  return {
+    nameMatchInd: ctx.yn("Is Life Assured Name Same With Doc Name?"),
+    years,
+  };
+}
+
+function buildForm16a(ctx: BuildContext): Form16aSavePayload {
+  const years = buildYears(
+    ctx,
+    ASSESSMENT_YEARS,
+    (y, suffix, rawY): Form16aYearEntry => ({
+      assessmentYear:
+        ctx.val(`${LABEL.assessmentYear}${suffix}`) ||
+        defaultAssessmentYear(y, 23),
+      ...extractOptionalId(rawY, "form16aDtlId"),
+      netReceiptPa: ctx.num(`Net Receipt pa${suffix}`),
+    }),
+  );
+  return { years };
+}
+
+function buildFormJ(ctx: BuildContext): FormJSavePayload {
+  const months = buildEntries(
+    ctx,
+    "months",
+    FORM_J_MONTHS,
+    (m, rawM): FormJMonthEntry => ({
+      periodMonth: m,
+      month: ctx.extra(`form_j-month-Month${m}`) || null,
+      ...extractOptionalId(rawM, "formJDtlId"),
+      receipts: Array.from(
+        { length: FORM_J_RECEIPTS_PER_MONTH },
+        (_, i): FormJReceiptEntry => ({
+          index: i + 1,
+          amount: ctx.num(`Month${m} Receipt${i + 1}`),
+        }),
+      ),
+    }),
+  );
+  return {
+    nameMatchInd: ctx.yn("Is Form J in the name of LA"),
+    months,
+  };
+}
+
+function buildGovtBonds(ctx: BuildContext): GovtBondsSavePayload {
+  return {
+    ...extractOptionalId(ctx.raw, "govtBondDtlId"),
+    nameMatchInd: ctx.yn("Is Bond Certification in the name of LA"),
+    isMatured: ctx.yn("Is Bond Certificate matured"),
+    amountInvested: ctx.num("Amount Invested or Maturity Value"),
+    incomeEarned: ctx.num(LABEL.incomeEarned),
+  };
+}
+
+function buildItrNonIndividual(ctx: BuildContext): ItrNonIndividualSavePayload {
+  const years = buildYears(
+    ctx,
+    ASSESSMENT_YEARS,
+    (y, suffix, rawY): ItrNonIndividualYearEntry => ({
+      assessmentYear:
+        ctx.val(`${LABEL.assessmentYear}${suffix}`) ||
+        defaultAssessmentYear(y, 23),
+      metricIds: readMetricIds<ItrNonIndividualYearEntry["metricIds"]>(rawY),
+      ackNumber: ctx.text(`${LABEL.itrAckNumber}${suffix}`),
+      itrFilingDt: formatDateToISO(
+        ctx.val(`${LABEL.itrFilingDate}${suffix}`) || readString(rawY.itrFilingDt),
+      ),
+      pfDeduction: parseNumber(rawY.pfDeduction ?? 0),
+      panBarcodeMatchInd: ctx.yn(`${LABEL.panBarcodeMatch}${suffix}`),
+      incomeFromSalary: ctx.num(`Income from Salary${suffix}`),
+      incomeFromHouseProperty: ctx.num(`${LABEL.incomeFromHouseProperty}${suffix}`),
+      incomeFromBusiness: ctx.num(`Income from Business or Profession${suffix}`),
+      shortTermCapitalGains: ctx.num(`${LABEL.shortTermCapitalGains}${suffix}`),
+      incomeFromOtherSources: ctx.num(`${LABEL.incomeFromOtherSources}${suffix}`),
+      agriculturalIncome: ctx.num(`${LABEL.agriculturalIncome}${suffix}`),
+      exemptIncome: ctx.num(`Exempt Income${suffix}`),
+    }),
+  );
+  return {
+    ...extractOptionalId(ctx.raw, "itrDtlId"),
+    orgName: ctx.text(LABEL.organisationFirm),
+    panNumber: ctx.text(LABEL.permanentAccountNumber),
+    years,
+  };
+}
+
+function buildItrIndividual(ctx: BuildContext): ItrIndividualSavePayload {
+  const years = buildYears(
+    ctx,
+    ASSESSMENT_YEARS,
+    (y, suffix, rawY): ItrIndividualYearEntry => ({
+      assessmentYear:
+        ctx.val(`${LABEL.assessmentYear}${suffix}`) ||
+        defaultAssessmentYear(y, 23),
+      metricIds: readMetricIds<ItrIndividualYearEntry["metricIds"]>(rawY),
+      partyName: ctx.text(`${LABEL.lifeAssuredName}${suffix}`),
+      ackNumber: ctx.text(`${LABEL.itrAckNumber}${suffix}`),
+      itrFilingDt: formatDateToISO(
+        ctx.val(`${LABEL.itrFilingDate}${suffix}`) || readString(rawY.itrFilingDt),
+      ),
+      pfDeduction: ctx.num(`PF deduction - Salaried customers${suffix}`),
+      panBarcodeMatchInd: ctx.yn(`${LABEL.panBarcodeMatch}${suffix}`),
+      incomeFromSalary: ctx.num(`Income from Salary(A)${suffix}`),
+      incomeFromHouseProperty: ctx.num(`${LABEL.incomeFromHouseProperty}${suffix}`),
+      incomeFromBusiness: ctx.num(`Income from Business or Profession(B)${suffix}`),
+      shortTermCapitalGains: ctx.num(`${LABEL.shortTermCapitalGains}${suffix}`),
+      incomeFromOtherSources: ctx.num(`${LABEL.incomeFromOtherSources}${suffix}`),
+      agriculturalIncome: ctx.num(`${LABEL.agriculturalIncome}${suffix}`),
+      exemptIncome: ctx.num(`Exempt Income(C)${suffix}`),
+    }),
+  );
+  return {
+    ...extractOptionalId(ctx.raw, "itrDtlId"),
+    orgName: ctx.text(LABEL.organisationFirm),
+    panNumber: ctx.text(LABEL.permanentAccountNumber),
+    nameMatchInd: ctx.yn(LABEL.isLifeAssuredNameSame),
+    years,
+  };
+}
+
+function buildLoanStatement(ctx: BuildContext): LoanStatementSavePayload {
+  return {
+    ...extractOptionalId(ctx.raw, "loanStmtDtlId"),
+    nameMatchInd: ctx.yn(
+      "Is Loan Statements in the name of LA",
+      "Loan Statements in the name of LA",
+    ),
+    isDefaulter: ctx.yn(LABEL.isLaDefaulter, "LA Defaulter in the Payment"),
+    monthlyEmi: ctx.num("Monthly EMI as per Schedule"),
+    incomeEarned: ctx.num(LABEL.incomeEarned),
+  };
+}
+
+function buildMutualFund(ctx: BuildContext): MutualFundSavePayload {
+  return {
+    ...extractOptionalId(ctx.raw, "mfDtlId"),
+    nameMatchInd: ctx.yn("Is Mutual Fund Statement in the name of LA"),
+    latestMarketValue: ctx.num("Latest Market Value (as per NAV) in Statement"),
+    incomeEarned: ctx.num(LABEL.incomeEarned),
+  };
+}
+
+function buildPensionStatement(ctx: BuildContext): PensionStatementSavePayload {
+  return {
+    ...extractOptionalId(ctx.raw, "pensionDtlId"),
+    totalMonthlyPension: ctx.num("Total Monthly Pension"),
+  };
+}
+
+function buildProfitAndLoss(ctx: BuildContext): ProfitAndLossSavePayload {
+  const years = buildYears(
+    ctx,
+    ASSESSMENT_YEARS,
+    (y, suffix, rawY): ProfitAndLossYearEntry => ({
+      assessmentYear:
+        ctx.val(`${LABEL.assessmentYear}${suffix}`) ||
+        defaultAssessmentYear(y, 23),
+      metricIds: readMetricIds<ProfitAndLossYearEntry["metricIds"]>(rawY),
+      totalShareholdersFunds: ctx.text(
+        `Total Shareholders Funds or Partner's Fund${suffix}`,
+      ),
+      shareCapital: ctx.num(`Share Capital or Fixed/Fluctuating Capital${suffix}`),
+      reservesSurplus: ctx.num(`Reserves & Surplus${suffix}`),
+      pbdt: ctx.num(`Profit Before Depreciation & Tax (PBDT)${suffix}`),
+      depreciation: ctx.num(`Less : Depreciation${suffix}`),
+      pbt: ctx.num(`Profit Before Tax (PBT)${suffix}`),
+      tax: ctx.num(`Tax${suffix}`),
+      profitAfterTax: ctx.num(`Profit After Tax (PAT)${suffix}`),
+      sales: ctx.num(`Sales${suffix}`),
+    }),
+  );
+  return {
+    ...extractOptionalId(ctx.raw, "pnlDtlId"),
+    orgName: ctx.text("Name of Organization/Firm"),
+    years,
+  };
+}
+
+function buildPropertyPurchase(ctx: BuildContext): PropertyPurchaseSavePayload {
+  return {
+    ...extractOptionalId(ctx.raw, "propPurchDtlId"),
+    isPurchasedByLa: ctx.yn("Is Property purchased by LA"),
+    purchasePrice: ctx.num(LABEL.purchasePrice),
+    financialYearOfPurchase: ctx.text("Financial Year of Purchase"),
+    estimatedMarketValue: ctx.num("Estimated Market Value of Property"),
+  };
+}
+
+function buildPropertyValuation(ctx: BuildContext): PropertyValuationSavePayload {
+  return {
+    ...extractOptionalId(ctx.raw, "propValDtlId"),
+    nameMatchInd: ctx.yn("Is Property Valuation Report in the name of LA"),
+    estimatedMarketValue: ctx.num("Estimated Market Value of Property (as per report)"),
+  };
+}
+
+function buildSalaryCertificate(ctx: BuildContext): SalaryCertificateSavePayload {
+  return {
+    ...extractOptionalId(ctx.raw, "salCertDtlId"),
+    grossSalaryPa: ctx.num(LABEL.grossSalaryPa),
+  };
+}
+
+function buildSalaryRevisionLetter(ctx: BuildContext): SalaryRevisionLetterSavePayload {
+  return {
+    ...extractOptionalId(ctx.raw, "salRevDtlId"),
+    grossSalaryPa: ctx.num(LABEL.grossSalaryPa),
+  };
+}
+
+function buildSalarySlips(ctx: BuildContext): SalarySlipsSavePayload {
+  const months = buildEntries(
+    ctx,
+    "months",
+    MONTHS_PER_HALF_YEAR,
+    (m, rawM): SalarySlipsMonthEntry => ({
+      periodMonth: m,
+      month: ctx.fieldMonth(`Gross Salary Pm${m}`),
+      ...extractOptionalId(rawM, "salarySlipDtlId"),
+      monthlyGrossSalary: ctx.num(`Gross Salary Pm${m}`, `Gross Salary Pm ${m}`),
+    }),
+  );
+  return {
+    companyName: ctx.text("Company Name"),
+    partyName: ctx.text(LABEL.lifeAssuredName),
+    pfUan: ctx.text("PF / UAN No"),
+    nameMatchInd: ctx.yn(LABEL.isLifeAssuredNameSame),
+    annualBonus: ctx.num("Annual Bonus/Incentive/Reimbursement"),
+    months,
+  };
+}
+
+function buildBankStatement(ctx: BuildContext): BankStatementSavePayload {
+  const months = buildEntries(
+    ctx,
+    "months",
+    MONTHS_PER_HALF_YEAR,
+    (m, rawM): BankStatementMonthEntry => ({
+      periodMonth: m,
+      month: ctx.fieldMonth(`Monthly Closing Bal ${m}`),
+      ...extractOptionalId(rawM, "bankStmtDtlId"),
+      closingBalance: ctx.num(`Monthly Closing Bal ${m}`),
+    }),
+  );
+  return {
+    fullName: ctx.text(LABEL.lifeAssuredName),
+    nameMatchInd: ctx.yn(LABEL.isLaNameMatch),
+    statementPeriod: ctx.text(LABEL.statementPeriod),
+    openingBalance: ctx.num(LABEL.openingBalance),
+    liPremiumDeductionInd: ctx.yn("Life Insurance Premium Deduction Entry"),
+    wineBeerEntriesInd: ctx.yn("Wine Beer_Entries"),
+    medEntryInd: ctx.yn("Med Entry"),
+    latest6MonthsInd: ctx.yn("Latest 6 months statements given"),
+    overdraftInd: ctx.yn("Any Overdraft(Negative/Debit) Balances"),
+    months,
+  };
+}
+
+function buildStockHolding(ctx: BuildContext): StockHoldingSavePayload {
+  return {
+    ...extractOptionalId(ctx.raw, "stockDtlId"),
+    nameMatchInd: ctx.yn("Is Stock Holding Stmt in name of LA/his Business"),
+    estimatedMarketValue: ctx.num("Gross Total Market Value as per the Stmt"),
+    incomeEarned: ctx.num(LABEL.incomeEarned),
+  };
+}
+
+function buildVehicleOwnership(ctx: BuildContext): VehicleOwnershipSavePayload {
+  return {
+    ...extractOptionalId(ctx.raw, "vehicleDtlId"),
+    isRegNameLa: ctx.yn("Is Registration Papers in the name of LA"),
+    isInvoiceNameLa: ctx.yn("Is Purchase invoices in the name of LA"),
+    purchasePrice: ctx.num(LABEL.purchasePrice),
+    vehicleRcNumber: ctx.text("Vehicle RC Number"),
+  };
+}
+
+function buildVahan(ctx: BuildContext): VahanSavePayload {
+  return {
+    ...extractOptionalId(ctx.raw, "vahanDtlId"),
+    isRegNameLa: ctx.yn("Is Registration Papers in the Name of LA"),
+    isInvoiceNameLa: ctx.yn("Is Purchase Invoices in the Name of LA"),
+    carRcNumber: ctx.text("Car RC Number"),
+    idv: ctx.num("IDV"),
+  };
+}
+
+function buildSipStatement(ctx: BuildContext): SipStatementSavePayload {
+  const months = buildEntries(
+    ctx,
+    "months",
+    MONTHS_PER_HALF_YEAR,
+    (m, rawM): SipStatementMonthEntry => ({
+      periodMonth: m,
+      month: ctx.fieldMonth(SIP_AMOUNT_LABELS[m - 1]),
+      ...extractOptionalId(rawM, "sipDtlId"),
+      sipAmount: ctx.num(SIP_AMOUNT_LABELS[m - 1]),
+    }),
+  );
+  return {
+    isLaNameSame: ctx.yn("Is SIP Statements in the Name of LA"),
+    latest6MonthsInd: ctx.yn("Latest 6 Months SIP Statements Given"),
+    months,
+  };
+}
+
+function buildGstIncome(ctx: BuildContext): GstIncomeSavePayload {
+  const years = buildYears(
+    ctx,
+    GST_ASSESSMENT_YEARS,
+    (y, suffix, rawY): GstIncomeYearEntry => ({
+      assessmentYear:
+        ctx.val(`${LABEL.assessmentYear}${suffix}`) ||
+        defaultAssessmentYear(y, 22),
+      ...extractOptionalId(rawY, "gstIncomeDtlId"),
+      grossSales: ctx.num(`Gross Sales${suffix}`),
+      grossPurchases: ctx.num(`Gross Purchases${suffix}`),
+      profitAfterGst: ctx.num(`Profit After GST${suffix}`),
+    }),
+  );
+  return { years };
+}
+
+function buildBankStatementSalaryCredit(
+  ctx: BuildContext,
+): BankStatementSalaryCreditSavePayload {
+  const months = buildEntries(
+    ctx,
+    "months",
+    MONTHS_PER_HALF_YEAR,
+    (m, rawM): BankStatementSalaryCreditMonthEntry => ({
+      periodMonth: m,
+      month: ctx.extra(`bank_statement_salary_credit-entry-month-${m}`) || null,
+      ...extractOptionalId(rawM, "bankSalCrDtlId"),
+      netSalaryCredited: parseNumber(
+        ctx.extra(`bank_statement_salary_credit-entry-income-${m}`) ||
+          ctx.val(`Net Salary Credited PM${m}`, `Net Salary Credited PM ${m}`),
+      ),
+    }),
+  );
+  return {
+    fullName: ctx.text(LABEL.lifeAssuredName),
+    nameMatchInd: ctx.yn(LABEL.isLaNameMatch),
+    salaryCreditedInd: ctx.yn("Salary Credited"),
+    annualBonus: ctx.num("Annual Bonus /Incentive /Reimbursement"),
+    openingBalance: ctx.num(LABEL.openingBalance),
+    closingBalance: ctx.num("Closing Balance"),
+    statementPeriod: ctx.text(LABEL.statementPeriod),
+    months,
+  };
+}
+
+function buildEpfBasic(ctx: BuildContext): EpfBasicSavePayload {
+  return {
+    ...extractOptionalId(ctx.raw, "epfDtlId"),
+    orgName: ctx.text(LABEL.latestOrganizationName),
+    isOrgNameSame: ctx.yn(LABEL.isOrganizationNameSame),
+    income: ctx.num("Income"),
+  };
+}
+
+function buildEpfAdvanced(ctx: BuildContext): EpfAdvancedSavePayload {
+  const months = buildEntries(
+    ctx,
+    "months",
+    MONTHS_PER_HALF_YEAR,
+    (m, rawM): EpfAdvancedMonthEntry => ({
+      periodMonth: m,
+      month: ctx.extra(`epf_advanced-entry-month-${m}`) || null,
+      ...extractOptionalId(rawM, "epfDtlId"),
+      pfContribution: parseNumber(
+        ctx.extra(`epf_advanced-entry-income-${m}`) || ctx.val(`Month ${m}`),
+      ),
+    }),
+  );
+  return {
+    orgName: ctx.text(LABEL.latestOrganizationName),
+    isOrgNameSame: ctx.yn(LABEL.isOrganizationNameSame),
+    months,
+  };
+}
+
+function buildEmployeeIdCard(ctx: BuildContext): EmployeeIdCardSavePayload {
+  return {
+    ...extractOptionalId(ctx.raw, "empIdCardDtlId"),
+    companyName: ctx.text("Name of the company"),
+    employeeName: ctx.text("Name of the employee"),
+    employeeNumber: ctx.text("Employee number"),
+    photoAvailableInd: ctx.yn("Photo available"),
+  };
+}
+
+function buildDecision(ctx: BuildContext): DecisionSavePayload {
+  return {
+    ...extractOptionalId(ctx.raw, "decisionDtlId"),
+    verifiedIncomeDoc: readString(ctx.raw.verifiedIncomeDoc) ?? "salary_slips",
+    verifiedIncome: ctx.num("Verified Income"),
+    justification:
+      readString(ctx.raw.justification) ?? "Income verified from submitted documents",
+    decisionCode:
+      ctx.val("Financial Decision") ||
+      readString(ctx.raw.decisionCode) ||
+      "financially eligible",
+  };
+}
+
+function buildFinancialProfession(ctx: BuildContext): FinancialProfessionSavePayload {
+  return {
+    occupation: ctx.text("Occupation"),
+    annualIncome: ctx.num("Annual Income"),
+    gstin: ctx.text("GSTIN"),
+    industryType: ctx.text("Industry Type"),
+    employmentType: ctx.text("Employment Type"),
+    educationType: ctx.text("Education Type"),
+    organisationType: ctx.text("Organisation Type"),
+    organisationName: ctx.text("Organisation Name"),
+    designation: ctx.text("Designation"),
+  };
+}
+
+function buildCreditBureauDetails(ctx: BuildContext): CreditBureauDetailsSavePayload {
+  return {
+    experianIncome: ctx.num("Experian Income"),
+    experianScore: ctx.num("Experian Score"),
+    crifIncome: ctx.num("Crif Income"),
+    crifScore: ctx.num("Crif Score"),
+    cibilIncome: ctx.num("Cibil Income"),
+    cibilScore: ctx.num("Cibil Score"),
+    imputedIncome: ctx.num("Imputed Income"),
+    digitalIncome: ctx.num("Digital Income"),
+    payuIncome: ctx.num("PayU Income"),
+    averageIncome: ctx.num("Average Income"),
+  };
+}
+
+/** Sections without a dedicated builder send every field keyed by its label. */
+function buildGenericDocument(
+  section: FinancialSection,
+  values: FieldValues,
+): Record<string, string> {
+  const result: Record<string, string> = {};
+  for (const [label] of section.fields) {
+    result[label] = getVal(values, section, label);
+  }
+  return result;
+}
+
+const DOCUMENT_BUILDERS = new Map<string, DocumentBuilder>([
+  ["appointment_letter", buildAppointmentLetter],
+  ["commission_statement", buildCommissionStatement],
+  ["computation_of_income", buildComputationOfIncome],
+  ["credit_card", buildCreditCard],
+  ["fixed_deposit_receipt", buildFixedDepositReceipt],
+  ["form16", buildForm16],
+  ["form16a", buildForm16a],
+  ["form_j", buildFormJ],
+  ["govt_bonds", buildGovtBonds],
+  ["itr_non_individual", buildItrNonIndividual],
+  ["itr_individual", buildItrIndividual],
+  ["loan_statement", buildLoanStatement],
+  ["mutual_fund", buildMutualFund],
+  ["pension_statement", buildPensionStatement],
+  ["profit_and_loss", buildProfitAndLoss],
+  ["property_purchase", buildPropertyPurchase],
+  ["property_valuation", buildPropertyValuation],
+  ["salary_certificate", buildSalaryCertificate],
+  ["salary_revision_letter", buildSalaryRevisionLetter],
+  ["salary_slips", buildSalarySlips],
+  ["bank_statement", buildBankStatement],
+  ["stock_holding", buildStockHolding],
+  ["vehicle_ownership", buildVehicleOwnership],
+  ["vahan", buildVahan],
+  ["sip_statement", buildSipStatement],
+  ["gst_income", buildGstIncome],
+  ["bank_statement_salary_credit", buildBankStatementSalaryCredit],
+  ["epf_basic", buildEpfBasic],
+  ["epf_advanced", buildEpfAdvanced],
+  ["employee_id_card", buildEmployeeIdCard],
+  ["decision", buildDecision],
+  ["bre_financial_decision", buildDecision],
+  ["financial_profession", buildFinancialProfession],
+  ["credit_bureau_details", buildCreditBureauDetails],
+]);
 
 export function buildDocumentPayload(
   sectionKey: string,
   section: FinancialSection,
-  values: Readonly<Record<string, string>>,
+  values: FieldValues,
 ): unknown {
-  const raw = isRecord(section.rawDocument) ? section.rawDocument : {};
-
-  switch (sectionKey) {
-    case "appointment_letter": {
-      return {
-        apptDtlId: (raw.apptDtlId as number | undefined) ?? 4,
-        grossSalaryPa: parseNumber(getVal(values, section, "Gross Salary PA") || getVal(values, section, "CTC")),
-        companyName: getVal(values, section, "Name of the Company") || null,
-        partyName: getVal(values, section, "Name of the Employee") || null,
-        joiningDt: formatDateToISO(getVal(values, section, "Joining Date")),
-      } satisfies AppointmentLetterSavePayload;
-    }
-
-    case "commission_statement": {
-      const rawMonths = Array.isArray(raw.months) ? raw.months : [];
-      const months: CommissionStatementMonthEntry[] = [1, 2, 3, 4, 5, 6].map((p) => {
-        const rawM = isRecord(rawMonths[p - 1]) ? rawMonths[p - 1] : {};
-        const amountStr =
-          getExtra(values, `commission_statement-entry-income-${p}`) ||
-          getVal(values, section, `Income for Month ${p}`) ||
-          getVal(values, section, `Month ${p}`);
-        return {
-          periodMonth: p,
-          commissionDtlId: (rawM.commissionDtlId as number | undefined) ?? (p === 1 ? 10 : p === 2 ? 11 : p === 3 ? 12 : p === 4 ? 23 : p === 5 ? 24 : 25),
-          commissionAmount: parseNumber(amountStr),
-        };
-      });
-      return { months } satisfies CommissionStatementSavePayload;
-    }
-
-    case "computation_of_income": {
-      const rawYears = Array.isArray(raw.years) ? raw.years : [];
-      const years: ComputationOfIncomeYearEntry[] = [1, 2, 3].map((y) => {
-        const rawY = isRecord(rawYears[y - 1]) ? rawYears[y - 1] : {};
-        const suffix = y === 1 ? "" : ` Year ${y}`;
-        const ay = getVal(values, section, `Assessment Year${suffix}`) || (y === 1 ? "AY 23-24" : y === 2 ? "AY 24-25" : "AY 25-26");
-        return {
-          assessmentYear: ay,
-          metricIds: isRecord(rawY.metricIds) ? (rawY.metricIds as ComputationOfIncomeYearEntry["metricIds"]) : undefined,
-          incomeFromSalary: parseNumber(getVal(values, section, `Income from Salary(A)${suffix}`)),
-          incomeFromBusiness: parseNumber(getVal(values, section, `Income from Business or Profession (B)${suffix}`)),
-          shortTermCapitalGains: parseNumber(getVal(values, section, `Short term & Capital Gains${suffix}`)),
-          incomeFromOtherSources: parseNumber(getVal(values, section, `Income from Other Sources${suffix}`)),
-          agriculturalIncome: parseNumber(getVal(values, section, `Agricultural Income${suffix}`)),
-          incomeFromHouseProperty: parseNumber(getVal(values, section, `Income from House Property${suffix}`)),
-          exemptIncome: parseNumber(getVal(values, section, `Exempt Income(C)${suffix}`)),
-        };
-      });
-      return { years } satisfies ComputationOfIncomeSavePayload;
-    }
-
-    case "credit_card": {
-      return {
-        ccDtlId: (raw.ccDtlId as number | undefined) ?? 4,
-        nameMatchInd: yesNoToYN(getVal(values, section, "Is Credit card statement in the name of LA", "Credit card statement in the name of LA")),
-        isDefaulter: yesNoToYN(getVal(values, section, "Is LA Defaulter in the Payment", "LA Defaulter in the Payment")),
-        cardType: getVal(values, section, "Type of Card") || null,
-        creditLimit: parseNumber(getVal(values, section, "Credit Limit")),
-        incomeEarned: parseNumber(getVal(values, section, "Income Earned")),
-        pointsEarned: parseNumber(getVal(values, section, "Points Earned")),
-      } satisfies CreditCardSavePayload;
-    }
-
-    case "fixed_deposit_receipt": {
-      return {
-        fdDtlId: (raw.fdDtlId as number | undefined) ?? 4,
-        nameMatchInd: yesNoToYN(getVal(values, section, "Is Fixed Deposit Receipt in the name of LA")),
-        isMatured: yesNoToYN(getVal(values, section, "Is Fixed Deposit Receipts matured")),
-        amountInvested: parseNumber(getVal(values, section, "Amount Invested")),
-        incomeEarned: parseNumber(getVal(values, section, "Income Earned")),
-      } satisfies FixedDepositReceiptSavePayload;
-    }
-
-    case "form16": {
-      const rawYears = Array.isArray(raw.years) ? raw.years : [];
-      const years: Form16YearEntry[] = [1, 2, 3].map((y) => {
-        const rawY = isRecord(rawYears[y - 1]) ? rawYears[y - 1] : {};
-        const suffix = y === 1 ? "" : ` Year ${y}`;
-        return {
-          assessmentYear: getVal(values, section, `Assessment Year${suffix}`) || getVal(values, section, `Assessment${suffix}`) || (y === 1 ? "AY 23-24" : y === 2 ? "AY 24-25" : "AY 25-26"),
-          form16DtlId: (rawY.form16DtlId as number | undefined) ?? (y === 1 ? 12 : y === 2 ? 13 : 14),
-          grossSalaryPa: parseNumber(getVal(values, section, `Gross Salary PA${suffix}`)),
-          companyName: getVal(values, section, `Company Name${suffix}`) || null,
-          panNumber: getVal(values, section, `Life Assured Pan No${suffix}`, `Life Assured PAN No${suffix}`, `Pan Number${suffix}`, `PAN Number${suffix}`) || null,
-          partyName: getVal(values, section, `Life Assured Name${suffix}`) || null,
-        };
-      });
-      return {
-        nameMatchInd: yesNoToYN(getVal(values, section, "Is Life Assured Name Same With Doc Name?")),
-        years,
-      } satisfies Form16SavePayload;
-    }
-
-    case "form16a": {
-      const rawYears = Array.isArray(raw.years) ? raw.years : [];
-      const years: Form16aYearEntry[] = [1, 2, 3].map((y) => {
-        const rawY = isRecord(rawYears[y - 1]) ? rawYears[y - 1] : {};
-        const suffix = y === 1 ? "" : ` Year ${y}`;
-        return {
-          assessmentYear: getVal(values, section, `Assessment Year${suffix}`) || (y === 1 ? "AY 23-24" : y === 2 ? "AY 24-25" : "AY 25-26"),
-          form16aDtlId: (rawY.form16aDtlId as number | undefined) ?? (y === 1 ? 20 : y === 2 ? 7 : 8),
-          netReceiptPa: parseNumber(getVal(values, section, `Net Receipt pa${suffix}`)),
-        };
-      });
-      return { years } satisfies Form16aSavePayload;
-    }
-
-    case "form_j": {
-      const rawMonths = Array.isArray(raw.months) ? raw.months : [];
-      const months: FormJMonthEntry[] = [1, 2, 3].map((m) => {
-        const rawM = isRecord(rawMonths[m - 1]) ? rawMonths[m - 1] : {};
-        const receipts: FormJReceiptEntry[] = [1, 2, 3, 4, 5, 6].map((r) => ({
-          index: r,
-          amount: parseNumber(getVal(values, section, `Month${m} Receipt${r}`)),
-        }));
-        return {
-          periodMonth: m,
-          formJDtlId: (rawM.formJDtlId as number | undefined) ?? (m === 1 ? 10 : m === 2 ? 11 : 12),
-          receipts,
-        };
-      });
-      return {
-        nameMatchInd: yesNoToYN(getVal(values, section, "Is Form J in the name of LA")),
-        months,
-      } satisfies FormJSavePayload;
-    }
-
-    case "govt_bonds": {
-      return {
-        govtBondDtlId: (raw.govtBondDtlId as number | undefined) ?? 4,
-        nameMatchInd: yesNoToYN(getVal(values, section, "Is Bond Certification in the name of LA")),
-        isMatured: yesNoToYN(getVal(values, section, "Is Bond Certificate matured")),
-        amountInvested: parseNumber(getVal(values, section, "Amount Invested or Maturity Value")),
-        incomeEarned: parseNumber(getVal(values, section, "Income Earned")),
-      } satisfies GovtBondsSavePayload;
-    }
-
-    case "itr_non_individual": {
-      const rawYears = Array.isArray(raw.years) ? raw.years : [];
-      const years: ItrNonIndividualYearEntry[] = [1, 2, 3].map((y) => {
-        const rawY = isRecord(rawYears[y - 1]) ? rawYears[y - 1] : {};
-        const suffix = y === 1 ? "" : ` Year ${y}`;
-        return {
-          assessmentYear: getVal(values, section, `Assessment Year${suffix}`) || (y === 1 ? "AY 23-24" : y === 2 ? "AY 24-25" : "AY 25-26"),
-          metricIds: isRecord(rawY.metricIds) ? (rawY.metricIds as ItrNonIndividualYearEntry["metricIds"]) : undefined,
-          ackNumber: getVal(values, section, `ITR Acknowledgement Number${suffix}`) || null,
-          itrFilingDt: formatDateToISO((rawY.itrFilingDt as string | undefined) ?? (y === 1 ? "2024-09-30" : y === 2 ? "2025-09-30" : "2026-06-20")),
-          pfDeduction: parseNumber(rawY.pfDeduction ?? 0),
-          panBarcodeMatchInd: yesNoToYN(getVal(values, section, `Pan Number Matched with Barcode Number${suffix}`)),
-          incomeFromSalary: parseNumber(getVal(values, section, `Income from Salary${suffix}`)),
-          incomeFromHouseProperty: parseNumber(getVal(values, section, `Income from House Property${suffix}`)),
-          incomeFromBusiness: parseNumber(getVal(values, section, `Income from Business or Profession${suffix}`)),
-          shortTermCapitalGains: parseNumber(getVal(values, section, `Short term & Capital Gains${suffix}`)),
-          incomeFromOtherSources: parseNumber(getVal(values, section, `Income from Other Sources${suffix}`)),
-          agriculturalIncome: parseNumber(getVal(values, section, `Agricultural Income${suffix}`)),
-          exemptIncome: parseNumber(getVal(values, section, `Exempt Income${suffix}`)),
-        };
-      });
-      return {
-        itrDtlId: (raw.itrDtlId as number | undefined) ?? 9,
-        orgName: getVal(values, section, "Name of Organisation/Firm") || null,
-        panNumber: getVal(values, section, "Permanent Account Number") || null,
-        years,
-      } satisfies ItrNonIndividualSavePayload;
-    }
-
-    case "itr_individual": {
-      const rawYears = Array.isArray(raw.years) ? raw.years : [];
-      const years: ItrIndividualYearEntry[] = [1, 2, 3].map((y) => {
-        const rawY = isRecord(rawYears[y - 1]) ? rawYears[y - 1] : {};
-        const suffix = y === 1 ? "" : ` Year ${y}`;
-        return {
-          assessmentYear: getVal(values, section, `Assessment Year${suffix}`) || (y === 1 ? "AY 23-24" : y === 2 ? "AY 24-25" : "AY 25-26"),
-          metricIds: isRecord(rawY.metricIds) ? (rawY.metricIds as ItrIndividualYearEntry["metricIds"]) : undefined,
-          partyName: getVal(values, section, `Life Assured Name${suffix}`) || null,
-          ackNumber: getVal(values, section, `ITR Acknowledgement Number${suffix}`) || null,
-          itrFilingDt: formatDateToISO(getVal(values, section, `Date of Filling ITR${suffix}`) || (rawY.itrFilingDt as string | undefined)),
-          pfDeduction: parseNumber(getVal(values, section, `PF deduction - Salaried customers${suffix}`)),
-          panBarcodeMatchInd: yesNoToYN(getVal(values, section, `Pan Number Matched with Barcode Number${suffix}`)),
-          incomeFromSalary: parseNumber(getVal(values, section, `Income from Salary(A)${suffix}`)),
-          incomeFromHouseProperty: parseNumber(getVal(values, section, `Income from House Property${suffix}`)),
-          incomeFromBusiness: parseNumber(getVal(values, section, `Income from Business or Profession(B)${suffix}`)),
-          shortTermCapitalGains: parseNumber(getVal(values, section, `Short term & Capital Gains${suffix}`)),
-          incomeFromOtherSources: parseNumber(getVal(values, section, `Income from Other Sources${suffix}`)),
-          agriculturalIncome: parseNumber(getVal(values, section, `Agricultural Income${suffix}`)),
-          exemptIncome: parseNumber(getVal(values, section, `Exempt Income(C)${suffix}`)),
-        };
-      });
-      return {
-        itrDtlId: (raw.itrDtlId as number | undefined) ?? 8,
-        orgName: getVal(values, section, "Name of Organisation/Firm") || null,
-        panNumber: getVal(values, section, "Permanent Account Number") || null,
-        nameMatchInd: yesNoToYN(getVal(values, section, "Is Life Assured Name Same?")),
-        years,
-      } satisfies ItrIndividualSavePayload;
-    }
-
-    case "loan_statement": {
-      return {
-        loanStmtDtlId: (raw.loanStmtDtlId as number | undefined) ?? 4,
-        nameMatchInd: yesNoToYN(getVal(values, section, "Is Loan Statements in the name of LA", "Loan Statements in the name of LA")),
-        isDefaulter: yesNoToYN(getVal(values, section, "Is LA Defaulter in the Payment", "LA Defaulter in the Payment")),
-        monthlyEmi: parseNumber(getVal(values, section, "Monthly EMI as per Schedule")),
-        incomeEarned: parseNumber(getVal(values, section, "Income Earned")),
-      } satisfies LoanStatementSavePayload;
-    }
-
-    case "mutual_fund": {
-      return {
-        mfDtlId: (raw.mfDtlId as number | undefined) ?? 4,
-        nameMatchInd: yesNoToYN(getVal(values, section, "Is Mutual Fund Statement in the name of LA")),
-        latestMarketValue: parseNumber(getVal(values, section, "Latest Market Value (as per NAV) in Statement")),
-        incomeEarned: parseNumber(getVal(values, section, "Income Earned")),
-      } satisfies MutualFundSavePayload;
-    }
-
-    case "pension_statement": {
-      return {
-        pensionDtlId: (raw.pensionDtlId as number | undefined) ?? 4,
-        totalMonthlyPension: parseNumber(getVal(values, section, "Total Monthly Pension")),
-      } satisfies PensionStatementSavePayload;
-    }
-
-    case "profit_and_loss": {
-      const rawYears = Array.isArray(raw.years) ? raw.years : [];
-      const years: ProfitAndLossYearEntry[] = [1, 2, 3].map((y) => {
-        const rawY = isRecord(rawYears[y - 1]) ? rawYears[y - 1] : {};
-        const suffix = y === 1 ? "" : ` Year ${y}`;
-        return {
-          assessmentYear: getVal(values, section, `Assessment Year${suffix}`) || (y === 1 ? "AY 23-24" : y === 2 ? "AY 24-25" : "AY 25-26"),
-          metricIds: isRecord(rawY.metricIds) ? (rawY.metricIds as ProfitAndLossYearEntry["metricIds"]) : undefined,
-          totalShareholdersFunds: getVal(values, section, `Total Shareholders Funds or Partner's Fund${suffix}`) || null,
-          shareCapital: parseNumber(getVal(values, section, `Share Capital or Fixed/Fluctuating Capital${suffix}`)),
-          reservesSurplus: parseNumber(getVal(values, section, `Reserves & Surplus${suffix}`)),
-          pbdt: parseNumber(getVal(values, section, `Profit Before Depreciation & Tax (PBDT)${suffix}`)),
-          depreciation: parseNumber(getVal(values, section, `Less : Depreciation${suffix}`)),
-          pbt: parseNumber(getVal(values, section, `Profit Before Tax (PBT)${suffix}`)),
-          tax: parseNumber(getVal(values, section, `Tax${suffix}`)),
-          profitAfterTax: parseNumber(getVal(values, section, `Profit After Tax (PAT)${suffix}`)),
-          sales: parseNumber(getVal(values, section, `Sales${suffix}`)),
-        };
-      });
-      return {
-        pnlDtlId: (raw.pnlDtlId as number | undefined) ?? 4,
-        orgName: getVal(values, section, "Name of Organization/Firm") || null,
-        years,
-      } satisfies ProfitAndLossSavePayload;
-    }
-
-    case "property_purchase": {
-      return {
-        propPurchDtlId: (raw.propPurchDtlId as number | undefined) ?? 4,
-        isPurchasedByLa: yesNoToYN(getVal(values, section, "Is Property purchased by LA")),
-        purchasePrice: parseNumber(getVal(values, section, "Purchase Price")),
-        financialYearOfPurchase: getVal(values, section, "Financial Year of Purchase") || null,
-        estimatedMarketValue: parseNumber(getVal(values, section, "Estimated Market Value of Property")),
-      } satisfies PropertyPurchaseSavePayload;
-    }
-
-    case "property_valuation": {
-      return {
-        propValDtlId: (raw.propValDtlId as number | undefined) ?? 4,
-        nameMatchInd: yesNoToYN(getVal(values, section, "Is Property Valuation Report in the name of LA")),
-        estimatedMarketValue: parseNumber(getVal(values, section, "Estimated Market Value of Property (as per report)")),
-      } satisfies PropertyValuationSavePayload;
-    }
-
-    case "salary_certificate": {
-      return {
-        salCertDtlId: (raw.salCertDtlId as number | undefined) ?? 4,
-        grossSalaryPa: parseNumber(getVal(values, section, "Gross Salary PA")),
-      } satisfies SalaryCertificateSavePayload;
-    }
-
-    case "salary_revision_letter": {
-      return {
-        salRevDtlId: (raw.salRevDtlId as number | undefined) ?? 4,
-        grossSalaryPa: parseNumber(getVal(values, section, "Gross Salary PA")),
-      } satisfies SalaryRevisionLetterSavePayload;
-    }
-
-    case "salary_slips": {
-      const rawMonths = Array.isArray(raw.months) ? raw.months : [];
-      const months: SalarySlipsMonthEntry[] = [1, 2, 3, 4, 5, 6].map((m) => {
-        const rawM = isRecord(rawMonths[m - 1]) ? rawMonths[m - 1] : {};
-        const salaryVal = getVal(values, section, `Gross Salary Pm${m}`) || getVal(values, section, `Gross Salary Pm ${m}`);
-        return {
-          periodMonth: m,
-          salarySlipDtlId: (rawM.salarySlipDtlId as number | undefined) ?? (m === 1 ? 10 : m === 2 ? 11 : m === 3 ? 12 : m === 4 ? 24 : m === 5 ? 25 : 26),
-          monthlyGrossSalary: parseNumber(salaryVal),
-        };
-      });
-      return {
-        companyName: getVal(values, section, "Company Name") || null,
-        partyName: getVal(values, section, "Life Assured Name") || null,
-        pfUan: getVal(values, section, "PF / UAN No") || null,
-        nameMatchInd: yesNoToYN(getVal(values, section, "Is Life Assured Name Same?")),
-        annualBonus: parseNumber(getVal(values, section, "Annual Bonus/Incentive/Reimbursement")),
-        months,
-      } satisfies SalarySlipsSavePayload;
-    }
-
-    case "bank_statement": {
-      const rawMonths = Array.isArray(raw.months) ? raw.months : [];
-      const months: BankStatementMonthEntry[] = [1, 2, 3, 4, 5, 6].map((m) => {
-        const rawM = isRecord(rawMonths[m - 1]) ? rawMonths[m - 1] : {};
-        return {
-          periodMonth: m,
-          bankStmtDtlId: (rawM.bankStmtDtlId as number | undefined) ?? (18 + m),
-          closingBalance: parseNumber(getVal(values, section, `Monthly Closing Bal ${m}`)),
-        };
-      });
-      return {
-        fullName: getVal(values, section, "Life Assured Name") || null,
-        nameMatchInd: yesNoToYN(getVal(values, section, "Is LA Name Match with Doc Name?")),
-        statementPeriod: getVal(values, section, "Statement Period") || null,
-        openingBalance: parseNumber(getVal(values, section, "Opening Balance")),
-        liPremiumDeductionInd: yesNoToYN(getVal(values, section, "Life Insurance Premium Deduction Entry")),
-        wineBeerEntriesInd: yesNoToYN(getVal(values, section, "Wine Beer_Entries")),
-        medEntryInd: yesNoToYN(getVal(values, section, "Med Entry")),
-        latest6MonthsInd: yesNoToYN(getVal(values, section, "Latest 6 months statements given")),
-        overdraftInd: yesNoToYN(getVal(values, section, "Any Overdraft(Negative/Debit) Balances")),
-        months,
-      } satisfies BankStatementSavePayload;
-    }
-
-    case "stock_holding": {
-      return {
-        stockDtlId: (raw.stockDtlId as number | undefined) ?? 4,
-        nameMatchInd: yesNoToYN(getVal(values, section, "Is Stock Holding Stmt in name of LA/his Business")),
-        estimatedMarketValue: parseNumber(getVal(values, section, "Gross Total Market Value as per the Stmt")),
-        incomeEarned: parseNumber(getVal(values, section, "Income Earned")),
-      } satisfies StockHoldingSavePayload;
-    }
-
-    case "vehicle_ownership": {
-      return {
-        vehicleDtlId: (raw.vehicleDtlId as number | undefined) ?? 4,
-        isRegNameLa: yesNoToYN(getVal(values, section, "Is Registration Papers in the name of LA")),
-        isInvoiceNameLa: yesNoToYN(getVal(values, section, "Is Purchase invoices in the name of LA")),
-        purchasePrice: parseNumber(getVal(values, section, "Purchase Price")),
-        vehicleRcNumber: getVal(values, section, "Vehicle RC Number") || null,
-      } satisfies VehicleOwnershipSavePayload;
-    }
-
-    case "vahan": {
-      return {
-        vahanDtlId: (raw.vahanDtlId as number | undefined) ?? 4,
-        isRegNameLa: yesNoToYN(getVal(values, section, "Is Registration Papers in the Name of LA")),
-        isInvoiceNameLa: yesNoToYN(getVal(values, section, "Is Purchase Invoices in the Name of LA")),
-        carRcNumber: getVal(values, section, "Car RC Number") || null,
-        idv: parseNumber(getVal(values, section, "IDV")),
-      } satisfies VahanSavePayload;
-    }
-
-    case "sip_statement": {
-      const rawMonths = Array.isArray(raw.months) ? raw.months : [];
-      const months: SipStatementMonthEntry[] = [1, 2, 3, 4, 5, 6].map((m) => {
-        const rawM = isRecord(rawMonths[m - 1]) ? rawMonths[m - 1] : {};
-        return {
-          periodMonth: m,
-          sipDtlId: (rawM.sipDtlId as number | undefined) ?? (18 + m),
-          sipAmount: parseNumber(getVal(values, section, `SIP of Month ${m}`)),
-        };
-      });
-      return {
-        isLaNameSame: yesNoToYN(getVal(values, section, "Is SIP Statements in the Name of LA")),
-        latest6MonthsInd: yesNoToYN(getVal(values, section, "Latest 6 Months SIP Statements Given")),
-        months,
-      } satisfies SipStatementSavePayload;
-    }
-
-    case "gst_income": {
-      const rawYears = Array.isArray(raw.years) ? raw.years : [];
-      const years: GstIncomeYearEntry[] = [1, 2, 3, 4].map((y) => {
-        const rawY = isRecord(rawYears[y - 1]) ? rawYears[y - 1] : {};
-        const suffix = y === 1 ? "" : ` Year ${y}`;
-        return {
-          assessmentYear: getVal(values, section, `Assessment Year${suffix}`) || (y === 1 ? "AY 22-23" : y === 2 ? "AY 23-24" : y === 3 ? "AY 24-25" : "AY 25-26"),
-          gstIncomeDtlId: (rawY.gstIncomeDtlId as number | undefined) ?? (15 + y),
-          grossSales: parseNumber(getVal(values, section, `Gross Sales${suffix}`)),
-          grossPurchases: parseNumber(getVal(values, section, `Gross Purchases${suffix}`)),
-          profitAfterGst: parseNumber(getVal(values, section, `Profit After GST${suffix}`)),
-        };
-      });
-      return { years } satisfies GstIncomeSavePayload;
-    }
-
-    case "bank_statement_salary_credit": {
-      const rawMonths = Array.isArray(raw.months) ? raw.months : [];
-      const months: BankStatementSalaryCreditMonthEntry[] = [1, 2, 3, 4, 5, 6].map((m) => {
-        const rawM = isRecord(rawMonths[m - 1]) ? rawMonths[m - 1] : {};
-        const netSal =
-          getExtra(values, `bank_statement_salary_credit-entry-income-${m}`) ||
-          getVal(values, section, `Net Salary Credited PM${m}`) ||
-          getVal(values, section, `Net Salary Credited PM ${m}`);
-        return {
-          periodMonth: m,
-          bankSalCrDtlId: (rawM.bankSalCrDtlId as number | undefined) ?? (18 + m),
-          netSalaryCredited: parseNumber(netSal),
-        };
-      });
-      return {
-        fullName: getVal(values, section, "Life Assured Name") || null,
-        nameMatchInd: yesNoToYN(getVal(values, section, "Is LA Name Match with Doc Name?")),
-        salaryCreditedInd: yesNoToYN(getVal(values, section, "Salary Credited")),
-        annualBonus: parseNumber(getVal(values, section, "Annual Bonus /Incentive /Reimbursement")),
-        openingBalance: parseNumber(getVal(values, section, "Opening Balance")),
-        closingBalance: parseNumber(getVal(values, section, "Closing Balance")),
-        statementPeriod: getVal(values, section, "Statement Period") || null,
-        months,
-      } satisfies BankStatementSalaryCreditSavePayload;
-    }
-
-    case "epf_basic": {
-      return {
-        epfDtlId: (raw.epfDtlId as number | undefined) ?? 28,
-        orgName: getVal(values, section, "Latest Organization Name") || null,
-        isOrgNameSame: yesNoToYN(getVal(values, section, "Is Organization Name Same?")),
-        income: parseNumber(getVal(values, section, "Income")),
-      } satisfies EpfBasicSavePayload;
-    }
-
-    case "epf_advanced": {
-      const rawMonths = Array.isArray(raw.months) ? raw.months : [];
-      const months: EpfAdvancedMonthEntry[] = [1, 2, 3, 4, 5, 6].map((m) => {
-        const rawM = isRecord(rawMonths[m - 1]) ? rawMonths[m - 1] : {};
-        const contrib =
-          getExtra(values, `epf_advanced-entry-income-${m}`) ||
-          getVal(values, section, `Month ${m}`);
-        return {
-          periodMonth: m,
-          epfDtlId: (rawM.epfDtlId as number | undefined) ?? (21 + m),
-          pfContribution: parseNumber(contrib),
-        };
-      });
-      return {
-        orgName: getVal(values, section, "Latest Organization Name") || null,
-        isOrgNameSame: yesNoToYN(getVal(values, section, "Is Organization Name Same?")),
-        months,
-      } satisfies EpfAdvancedSavePayload;
-    }
-
-    case "employee_id_card": {
-      return {
-        empIdCardDtlId: (raw.empIdCardDtlId as number | undefined) ?? 1,
-        companyName: getVal(values, section, "Name of the company") || null,
-        employeeName: getVal(values, section, "Name of the employee") || null,
-        employeeNumber: getVal(values, section, "Employee number") || null,
-        photoAvailableInd: yesNoToYN(getVal(values, section, "Photo available")),
-      } satisfies EmployeeIdCardSavePayload;
-    }
-
-    case "decision":
-    case "bre_financial_decision": {
-      return {
-        decisionDtlId: (raw.decisionDtlId as number | undefined) ?? 1,
-        verifiedIncomeDoc: (raw.verifiedIncomeDoc as string | undefined) ?? "salary_slips",
-        verifiedIncome: parseNumber(getVal(values, section, "Verified Income")),
-        justification: (raw.justification as string | undefined) ?? "Income verified from submitted documents",
-        decisionCode: getVal(values, section, "Financial Decision") || (raw.decisionCode as string | undefined) || "financially eligible",
-      } satisfies DecisionSavePayload;
-    }
-
-    case "financial_profession": {
-      return {
-        occupation: getVal(values, section, "Occupation") || null,
-        annualIncome: parseNumber(getVal(values, section, "Annual Income")),
-        gstin: getVal(values, section, "GSTIN") || null,
-        industryType: getVal(values, section, "Industry Type") || null,
-        employmentType: getVal(values, section, "Employment Type") || null,
-        educationType: getVal(values, section, "Education Type") || null,
-        organisationType: getVal(values, section, "Organisation Type") || null,
-        organisationName: getVal(values, section, "Organisation Name") || null,
-        designation: getVal(values, section, "Designation") || null,
-      } satisfies FinancialProfessionSavePayload;
-    }
-
-    case "credit_bureau_details": {
-      return {
-        experianIncome: parseNumber(getVal(values, section, "Experian Income")),
-        experianScore: parseNumber(getVal(values, section, "Experian Score")),
-        crifIncome: parseNumber(getVal(values, section, "Crif Income")),
-        crifScore: parseNumber(getVal(values, section, "Crif Score")),
-        cibilIncome: parseNumber(getVal(values, section, "Cibil Income")),
-        cibilScore: parseNumber(getVal(values, section, "Cibil Score")),
-        imputedIncome: parseNumber(getVal(values, section, "Imputed Income")),
-        digitalIncome: parseNumber(getVal(values, section, "Digital Income")),
-        payuIncome: parseNumber(getVal(values, section, "PayU Income")),
-        averageIncome: parseNumber(getVal(values, section, "Average Income")),
-      } satisfies CreditBureauDetailsSavePayload;
-    }
-
-    default: {
-      const result: Record<string, unknown> = {};
-      section.fields.forEach(([label]) => {
-        result[label] = getVal(values, section, label);
-      });
-      return result;
-    }
-  }
+  const builder = DOCUMENT_BUILDERS.get(sectionKey);
+  if (!builder) return buildGenericDocument(section, values);
+  return builder(createContext(section, values));
 }
 
 export interface BuildFinancialSaveRequestOptions {
@@ -1036,7 +1289,7 @@ export interface BuildFinancialSaveRequestOptions {
   createdBy?: string;
   updatedBy?: string;
   section: FinancialSection;
-  values: Readonly<Record<string, string>>;
+  values: FieldValues;
 }
 
 /**
@@ -1045,18 +1298,19 @@ export interface BuildFinancialSaveRequestOptions {
 export function buildFinancialSaveRequest({
   applicationNumber,
   partyId,
-  createdBy = "ui-user",
-  updatedBy = "ui-user-2",
+  createdBy,
+  updatedBy,
   section,
   values,
 }: BuildFinancialSaveRequestOptions): FinancialSaveRequest {
+  const sessionUsername = getSessionUser()?.username?.trim() || "";
   const docPayload = buildDocumentPayload(section.key, section, values);
 
   const request: FinancialSaveRequest = {
     applicationNumber,
     partyId,
-    createdBy,
-    updatedBy,
+    createdBy: createdBy ?? sessionUsername,
+    updatedBy: updatedBy ?? sessionUsername,
     documents: {
       [section.key]: docPayload,
     },

@@ -9,8 +9,8 @@ import { MmtGrievanceDrsPage } from "./MmtGrievanceDrsPage";
 import DvtUser from "./DvtUser";
 import GuwUser from "./GuwUser";
 import { ReferralDrsPage } from "../referral-uw/ReferralDrsPage";
-import { fetchGuwMembers } from "../../services/guwService";
-import { HOD_CONFIG, SR_UW_CONFIG } from "../../services/referralUwService";
+import { fetchGuwMembers } from "../../services/drsService";
+import { HOD_CONFIG, SR_UW_CONFIG } from "../../services/drsService";
 
 interface MemberEntryProps {
   /** Member selection page opened when the DRS payload holds more than one member. */

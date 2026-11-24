@@ -5,6 +5,7 @@ import {
   type GrievanceHistoryRow,
 } from "@insurance-poc/common/grievance-history";
 import type { LifeAssuredApplicant } from "@insurance-poc/common/life-assured";
+import type { PivvDetailRow } from "@insurance-poc/common/pivv-details";
 import type { RequirementItem } from "@insurance-poc/common/requirement-mgmt";
 import type { Column } from "@insurance-poc/ui";
 import { formatDateTime } from "@insurance-poc/utils";
@@ -75,13 +76,14 @@ export type RetailMmtSubSection = {
 export type RetailDrsData = {
   applicationNo: string;
   cardDetails: CardDetail[];
+  /** Primary member's `rowDetails[]` as returned by the API; rendered by ApplicantBanner. */
+  rowDetails: BannerRowDetail[];
   breDecision: BreDecision;
   requirements: RequirementItem[];
+  pivvDetails: PivvDetailRow[];
   applicants: LifeAssuredApplicant[];
   /** Edit Applicant dialog initial values per applicant id. */
   editValues: Record<string, CvtEditApplicantValues>;
-  /** Banner rows from the primary member (`membersDetails[].rowDetails`). */
-  rowDetails: BannerRowDetail[];
   applicantName: string;
   grievanceHistoryTitle: string;
   tpaGrievanceTitle: string;
@@ -153,6 +155,20 @@ function readCards(value: unknown): CardDetail[] {
   );
 }
 
+/** Passes `rowDetails[]` through, normalising field names/values to strings. */
+function readRowDetails(value: unknown): BannerRowDetail[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter(isRecord).map((row, index) => ({
+    id: typeof row.id === "string" || typeof row.id === "number" ? row.id : index,
+    label: typeof row.label === "string" ? row.label : undefined,
+    fields: Array.isArray(row.fields)
+      ? row.fields
+          .filter(isRecord)
+          .map((field) => ({ name: readText(field.name), value: readText(field.value) }))
+      : [],
+  }));
+}
+
 /** Finds an entry by name. A missing section list means that section was not sent. */
 function findSection(sections: unknown, name: string): Record<string, unknown> | null {
   if (!Array.isArray(sections)) return null;
@@ -210,6 +226,41 @@ function readBre(section: Record<string, unknown> | null): BreDecision {
     initialDecision: decisionRow?.initial ?? "",
     decision: decisionRow?.final ?? "",
   };
+}
+
+/** Reads the `pivvDetails` section rows from every member's `sections`; fully empty rows are dropped. */
+function readPivvDetails(membersDetails: unknown[]): PivvDetailRow[] {
+  const rows: PivvDetailRow[] = [];
+  for (const member of membersDetails) {
+    if (!isRecord(member) || !Array.isArray(member.sections)) continue;
+    const section = member.sections.find((s) => isRecord(s) && s.name === "pivvDetails");
+    const value = isRecord(section) ? section.value : null;
+    if (!isRecord(value) || !Array.isArray(value.rows)) continue;
+
+    for (const row of value.rows) {
+      if (!isRecord(row)) continue;
+      const decisions = Array.isArray(row.pivvDecision)
+        ? row.pivvDecision.map(readText).filter((item) => item.trim() !== "")
+        : [];
+      const mapped = {
+        fupCode: readText(row.fupCode).trim(),
+        profile: readText(row.profile).trim(),
+        raisedDate: readText(row.raisedDate).trim(),
+        raisedRemark: readText(row.raisedRemark).trim(),
+        decisions,
+        pivvRemark: readText(row.pivvRemark).trim(),
+      };
+      const isEmpty =
+        decisions.length === 0 &&
+        mapped.fupCode === "" &&
+        mapped.profile === "" &&
+        mapped.raisedDate === "" &&
+        mapped.raisedRemark === "" &&
+        mapped.pivvRemark === "";
+      if (!isEmpty) rows.push({ id: `pivv-${rows.length + 1}`, ...mapped });
+    }
+  }
+  return rows;
 }
 
 const normaliseStatus = (status: string): string => {
@@ -330,18 +381,6 @@ function mapGrievanceRows(section: Record<string, unknown> | null): GrievanceHis
   }));
 }
 
-function mapRowDetails(rowDetails: unknown): BannerRowDetail[] {
-  if (!Array.isArray(rowDetails)) return [];
-  return rowDetails.filter(isRecord).map((row, index) => ({
-    id: typeof row.id === "number" || typeof row.id === "string" ? row.id : index,
-    fields: Array.isArray(row.fields)
-      ? row.fields
-          .filter(isRecord)
-          .map((field) => ({ name: readText(field.name), value: readText(field.value) }))
-      : [],
-  }));
-}
-
 function fieldValue(fields: BannerRowDetail["fields"] | undefined, name: string): string {
   return readText(fields?.find((field) => field.name === name)?.value);
 }
@@ -368,7 +407,7 @@ export function mapRetailDrsPayload(value: unknown): RetailDrsData {
   const membersDetails = Array.isArray(data.membersDetails) ? data.membersDetails : [];
   const primaryMember = membersDetails.find(isRecord) ?? null;
   const { applicants, editValues } = mapCvtApplicants(membersDetails);
-  const rowDetails = mapRowDetails(primaryMember?.rowDetails);
+  const rowDetails = readRowDetails(primaryMember?.rowDetails ?? data.rowDetails);
   const nameRow = rowDetails.find((row) => row.id === 0);
   const historySection = findNamedSection(data.commonSection, "grievanceHistory");
   const tpaSection = findNamedSection(data.commonSection, "tpaGrievanceDetails");
@@ -379,11 +418,12 @@ export function mapRetailDrsPayload(value: unknown): RetailDrsData {
   return {
     applicationNo,
     cardDetails: readCards(primaryMember?.cardDetails ?? data.cardDetails),
+    rowDetails,
     breDecision: readBre(findSection(data.commonSection, "latestBreDecision")),
     requirements: mapRawRequirementRows(findSection(data.commonSection, "requirementManagement")),
+    pivvDetails: readPivvDetails(membersDetails),
     applicants,
     editValues,
-    rowDetails,
     applicantName: fieldValue(nameRow?.fields, "Name"),
     grievanceHistoryTitle: readText(historySection?.label) || "Grievance History",
     tpaGrievanceTitle: readText(tpaSection?.label) || "TPA Grievance Details",

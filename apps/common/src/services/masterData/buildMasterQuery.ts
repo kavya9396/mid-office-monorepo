@@ -1,4 +1,14 @@
-/** Builds `types=a&types=b` query string for the masters API. */
+export interface MasterTypesRequestBody {
+  types: readonly string[];
+}
+
+/** Builds the POST JSON request body for the masters API. */
+export function buildMasterTypesPayload(types: readonly string[]): MasterTypesRequestBody {
+  const cleanTypes = types.map((t) => t.trim()).filter((t) => t.length > 0);
+  return { types: cleanTypes };
+}
+
+/** Builds `types=a&types=b` query string for the masters API (legacy GET query builder). */
 export function buildMasterTypesQuery(types: readonly string[]): string {
   const params = new URLSearchParams();
   for (const type of types) {

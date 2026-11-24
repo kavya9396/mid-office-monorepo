@@ -1,6 +1,10 @@
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import type { BusinessRequest, SessionBusinessType } from "@insurance-poc/utils";
 import {
+  absoluteApiBaseUrl,
+  applyBusinessApiAuthHeaders,
+  breUrls,
+  getSessionBusinessType,
   isApiFailureBody,
   readApiErrorMessage,
   toCustomQueryError,
@@ -16,7 +20,7 @@ function waitMs(ms: number): Promise<void> {
   });
 }
 
-export type BreRetriggerEventName = "BRE-GROUP" | "BRE-RETAIL";
+export type BreRetriggerEventName = "BRE-GROUP" | "BRE-RETAIL" | "FE";
 
 export type BreRetriggerLob = "G" | "R";
 
@@ -100,13 +104,14 @@ export function resolveBreRetriggerLob(businessType: SessionBusinessType): BreRe
 export function buildBreRetriggerRequestBody(
   applicationNumber: string,
   businessType: SessionBusinessType,
+  eventNameOverride?: BreRetriggerEventName,
 ): BreRetriggerRequestBody | { error: string } {
   const appNo = applicationNumber.trim();
   if (appNo.length === 0) {
     return { error: "Application number is required to retrigger BRE." };
   }
   return {
-    eventName: resolveBreRetriggerEventName(businessType),
+    eventName: eventNameOverride ?? resolveBreRetriggerEventName(businessType),
     applicationNumber: appNo,
     lob: resolveBreRetriggerLob(businessType),
   };
@@ -179,11 +184,13 @@ export async function mutateBreRetrigger(
   retriggerUrl: string,
   applicationNumber: string,
   businessType: SessionBusinessType,
+  eventNameOverride?: BreRetriggerEventName,
 ): Promise<{ data: BreRetriggerMappedFinal } | { error: FetchBaseQueryError }> {
-  const request = buildBreRetriggerRequestBody(applicationNumber, businessType);
+  const request = buildBreRetriggerRequestBody(applicationNumber, businessType, eventNameOverride);
   if ("error" in request) {
     return { error: customError(request.error) };
   }
+  console.log("BRE Retrigger Payload:", request);
 
   if (useMock) {
     await waitMs(MOCK_BRE_RETRIGGER_DELAY_MS);
@@ -224,5 +231,152 @@ export async function mutateBreRetrigger(
     const message =
       reason instanceof Error ? reason.message : "BRE retrigger response is not in the expected format.";
     return { error: customError(message) };
+  }
+}
+
+export type RetriggerBreOptions = {
+  businessType?: SessionBusinessType | null;
+  eventName?: BreRetriggerEventName;
+  retriggerUrl?: string;
+  baseQuery?: BreRetriggerBaseQuery;
+};
+
+async function executeMockBreRetrigger(): Promise<
+  { data: BreRetriggerMappedFinal } | { error: string }
+> {
+  await waitMs(MOCK_BRE_RETRIGGER_DELAY_MS);
+  try {
+    const output = readBreOutputFromResponse(breRetriggerMock);
+    return { data: mapBreRetriggerOutput(output) };
+  } catch (reason: unknown) {
+    const message = reason instanceof Error ? reason.message : "BRE retrigger mock failed.";
+    return { error: message };
+  }
+}
+
+async function delegateBaseQueryBreRetrigger(
+  baseQuery: BreRetriggerBaseQuery,
+  retriggerUrl: string,
+  applicationNumber: string,
+  businessType: SessionBusinessType,
+  eventName: BreRetriggerEventName,
+): Promise<{ data: BreRetriggerMappedFinal } | { error: string }> {
+  const res = await mutateBreRetrigger(
+    baseQuery,
+    retriggerUrl,
+    applicationNumber,
+    businessType,
+    eventName,
+  );
+  if ("error" in res) {
+    const msg =
+      typeof res.error === "object" &&
+      res.error !== null &&
+      "error" in res.error &&
+      typeof res.error.error === "string"
+        ? res.error.error
+        : "BRE retrigger failed.";
+    return { error: msg };
+  }
+  return { data: res.data };
+}
+
+function resolveBreRetriggerUrl(configured?: string): string {
+  const endpoint = configured?.trim() || breUrls.retrigger;
+  if (!endpoint) return "";
+  if (endpoint.startsWith("http://") || endpoint.startsWith("https://")) {
+    return endpoint;
+  }
+  return `${absoluteApiBaseUrl}${endpoint}`;
+}
+
+function parseJsonSafely(text: string): unknown {
+  if (!text) return null;
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
+}
+
+async function executeHttpBreRetrigger(
+  targetUrl: string,
+  request: BreRetriggerRequestBody,
+): Promise<{ data: BreRetriggerMappedFinal } | { error: string }> {
+  const headers = new Headers();
+  headers.set("Accept", "application/json");
+  headers.set("Content-Type", "application/json");
+  applyBusinessApiAuthHeaders(headers);
+
+  const response = await fetch(targetUrl, {
+    method: "POST",
+    body: JSON.stringify(request),
+    headers,
+  });
+
+  const text = await response.text();
+  const payload = parseJsonSafely(text);
+
+  if (!response.ok) {
+    const message =
+      typeof payload === "object" &&
+      payload !== null &&
+      "message" in payload &&
+      typeof payload.message === "string"
+        ? payload.message
+        : `BRE retrigger request failed (${response.status}).`;
+    return { error: message };
+  }
+
+  if (isApiFailureBody(payload)) {
+    return { error: readApiErrorMessage(payload, "Unable to retrigger BRE.") };
+  }
+
+  const output = readBreOutputFromResponse(payload);
+  return { data: mapBreRetriggerOutput(output) };
+}
+
+/**
+ * Retriggers BRE orchestrator directly or through an optional RTK query `baseQuery`.
+ * Defaults `eventName` to `"FE"` when called from financial workflows or resolves from business type.
+ */
+export async function retriggerBre(
+  applicationNumber: string,
+  options?: RetriggerBreOptions,
+): Promise<{ data: BreRetriggerMappedFinal } | { error: string }> {
+  const businessType = options?.businessType ?? getSessionBusinessType() ?? "RETAIL";
+  const eventName = options?.eventName ?? resolveBreRetriggerEventName(businessType);
+
+  if (options?.baseQuery) {
+    const url = options.retriggerUrl ?? breUrls.retrigger;
+    return delegateBaseQueryBreRetrigger(
+      options.baseQuery,
+      url,
+      applicationNumber,
+      businessType,
+      eventName,
+    );
+  }
+
+  const request = buildBreRetriggerRequestBody(applicationNumber, businessType, eventName);
+  if ("error" in request) {
+    return { error: request.error };
+  }
+  console.log("BRE Retrigger Payload:", request);
+
+  if (useMock) {
+    return executeMockBreRetrigger();
+  }
+
+  const targetUrl = resolveBreRetriggerUrl(options?.retriggerUrl);
+  if (!targetUrl) {
+    return { error: "BRE retrigger API is not configured." };
+  }
+
+  try {
+    return await executeHttpBreRetrigger(targetUrl, request);
+  } catch (reason: unknown) {
+    const message = reason instanceof Error ? reason.message : "Unable to retrigger BRE.";
+    return { error: message };
   }
 }

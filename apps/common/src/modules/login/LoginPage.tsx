@@ -119,7 +119,11 @@ async function completeLoginAfterAuth(args: LoginSuccessHandlerArgs): Promise<vo
 
   setFirstLoginChangePending(false);
   applyLoginSession({ accessToken, refreshToken, sessionId, user, lastLoginAt, businessType });
-  await fetchAndStoreMasterData();
+  try {
+    await fetchAndStoreMasterData();
+  } catch (err: unknown) {
+    console.warn("Unable to load master data on login:", err);
+  }
   const destination = businessInboxUrl(businessType);
   if (!destination) {
     throw new Error("Business Inbox is not configured.");
@@ -308,7 +312,11 @@ export function LoginPage() {
           accessToken: loginResult.accessToken,
           refreshToken: loginResult.refreshToken,
           sessionId: loginResult.sessionId,
-          user: { username: loginResult.user.username, displayName: loginResult.user.displayName },
+          user: {
+            username: loginResult.user.username,
+            displayName: loginResult.user.displayName,
+            roles: loginResult.user.roles,
+          },
           firstLogin: loginResult.firstLogin,
           mustChangePassword: loginResult.mustChangePassword,
           lastLoginAt: loginResult.lastLoginAt,
@@ -319,7 +327,7 @@ export function LoginPage() {
         return;
       } catch (reason: unknown) {
         clearSession();
-        showNotify(readApiMessage(reason, "Unable to load master data."), "error");
+        showNotify(readApiMessage(reason, "Login failed."), "error");
         if (awaitingInboxRedirect) {
           setLoadingMasters(false);
         }

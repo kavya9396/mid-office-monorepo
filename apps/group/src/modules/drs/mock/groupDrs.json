@@ -334,12 +334,8 @@
             {
               "id": "decision",
               "label": "BRE Decision",
-              "initial": [
-                "STP"
-              ],
-              "final": [
-                "RJ"
-              ]
+              "initial": ["STP"],
+              "final": ["RJ"]
             },
             {
               "id": "remarks",
@@ -536,11 +532,7 @@
             "tables": [
               {
                 "name": "Rider Details",
-                "columns": [
-                  "Rider",
-                  "Rider Code",
-                  "Sum Assured"
-                ],
+                "columns": ["Rider", "Rider Code", "Sum Assured"],
                 "rows": [
                   {
                     "Rider": "Rider 1",
@@ -640,6 +632,11 @@
             "attributes": [
               {
                 "name": "Coverage Option",
+                "value": ""
+              },
+              {
+                "key": "groupDetails.moratoriumPeriod",
+                "label": "Moratorium Period",
                 "value": ""
               },
               {
@@ -1147,32 +1144,66 @@
                       {
                         "key": "height",
                         "label": "Height",
-                        "value": "172"
+                        "value": "170"
                       },
                       {
                         "key": "weight",
                         "label": "Weight",
-                        "value": "70"
+                        "value": "72"
+                      },
+                      {
+                        "key": "bmi",
+                        "label": "BMI",
+                        "value": "25.0"
+                      },
+                      {
+                        "key": "smoker",
+                        "label": "Smoker",
+                        "value": ""
+                      },
+                      {
+                        "key": "alcohol",
+                        "label": "Alcohol",
+                        "value": ""
+                      },
+                      {
+                        "key": "narcotics",
+                        "label": "Any Narcotics Question ticked Positive",
+                        "value": ""
+                      },
+                      {
+                        "key": "hazardousOccupation",
+                        "label": "Is Occupation Hazardous?",
+                        "value": ""
+                      },
+                      {
+                        "key": "anyMedicalQuestionPositive",
+                        "label": "Any Medical Question ticked Positive",
+                        "value": ""
+                      },
+                      {
+                        "key": "familyMedicalHistory",
+                        "label": "Is Family Medical History?",
+                        "value": ""
+                      },
+                      {
+                        "key": "familyMedicalHistoryDetails",
+                        "label": "Family Medical History Details",
+                        "value": ""
+                      },
+                      {
+                        "key": "illnessImpairment",
+                        "label": "Illness Impairment",
+                        "value": ""
+                      },
+                      {
+                        "key": "illnessImpairmentDetails",
+                        "label": "Illness Impairment Details",
+                        "value": ""
                       },
                       {
                         "label": "Other Medical History",
                         "value": ""
-                      }
-                    ]
-                  },
-                  {
-                    "key": "personalDetails.lifestyleHabits",
-                    "label": "Lifestyle Habits",
-                    "value": [
-                      {
-                        "substance": "",
-                        "consumedAs": "",
-                        "quantity": {
-                          "amount": "",
-                          "unit": "day/week"
-                        },
-                        "noOfYears": null,
-                        "advisedByDoctorForAbstinence": ""
                       }
                     ]
                   }
@@ -1819,12 +1850,7 @@
             }
           }
         ],
-        "sectionType": [
-          "Header",
-          "Card",
-          "Section",
-          "quickLinks"
-        ]
+        "sectionType": ["Header", "Card", "Section", "quickLinks"]
       }
     ]
   }

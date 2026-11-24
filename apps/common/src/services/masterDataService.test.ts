@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getMasterData } from "@insurance-poc/utils";
 import { MASTER_DATA_TYPES } from "./masterData/masterTypesConfig";
-import { buildMastersRequestUrl } from "./masterData/buildMasterQuery";
+import { buildMasterTypesPayload, buildMastersRequestUrl } from "./masterData/buildMasterQuery";
 import { parseMasterDataResponse } from "./masterDataService";
 
 describe("parseMasterDataResponse", () => {
@@ -37,7 +37,12 @@ describe("fetchAndStoreMasterData", () => {
   });
 });
 
-describe("MASTER_DATA_TYPES query", () => {
+describe("MASTER_DATA_TYPES query and payload", () => {
+  it("builds the POST payload with all configured types", () => {
+    const payload = buildMasterTypesPayload(MASTER_DATA_TYPES);
+    expect(payload.types).toEqual(MASTER_DATA_TYPES);
+  });
+
   it("includes every configured type in the URL", () => {
     const url = buildMastersRequestUrl("https://midoffice-uat-api.icicilife.com/masters", MASTER_DATA_TYPES);
     for (const type of MASTER_DATA_TYPES) {

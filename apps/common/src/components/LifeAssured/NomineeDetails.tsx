@@ -3,6 +3,7 @@ import dayjs from "dayjs";
 import { z } from "zod";
 import type { FieldErrors } from "react-hook-form";
 import { Box, Typography } from "@mui/material";
+import { getMasterList } from "@insurance-poc/utils";
 import {
   Calendar,
   CloseIcon,
@@ -17,20 +18,21 @@ import {
   type Column,
 } from "@insurance-poc/ui";
 import { FILL_ALL_NOMINEE_FIELDS_MESSAGE, requiredMessage } from "./editApplicant.messages";
+import { requiredFormat } from "./fieldFormat";
 
 const required = (label: string) => z.string().trim().min(1, requiredMessage(label));
 
 // All Nominee fields are mandatory
 export const nomineeSchema = z.object({
-  firstName: required("First Name"),
-  lastName: required("Last Name"),
+  firstName: requiredFormat("First Name", "alphabets"),
+  lastName: requiredFormat("Last Name", "alphabets"),
   /** YYYY-MM-DD */
   dob: required("DOB"),
   gender: required("Gender"),
-  proposerNomineeRelation: required("Relationship"),
-  percentage: required("Share %"),
-  accountNumber: required("Account No."),
-  ifsc: required("IFSC"),
+  proposerNomineeRelation: requiredFormat("Relationship", "alphabets"),
+  percentage: requiredFormat("Share %", "numeric"),
+  accountNumber: requiredFormat("Account No.", "alphanumeric"),
+  ifsc: requiredFormat("IFSC", "alphanumeric"),
 });
 
 export type NomineeEditRow = z.infer<typeof nomineeSchema>;
@@ -74,12 +76,11 @@ const EMPTY_NOMINEE: NomineeEditRow = {
   ifsc: "",
 };
 
-// Prototype nominee gender list
-const GENDER_OPTIONS = [
-  { label: "Male", value: "Male" },
-  { label: "Female", value: "Female" },
-  { label: "Other", value: "Other" },
-];
+// Gender options come from the `gender` master list (post-login master data); the select value is the master code
+const getGenderOptions = () =>
+  getMasterList("gender")
+    .filter((entry) => entry.isActive === "Y")
+    .map((entry) => ({ label: entry.description, value: entry.code }));
 
 export const isNomineeBlank = (nominee: NomineeEditRow) => !nomineeSchema.safeParse(nominee).success;
 
@@ -95,6 +96,7 @@ export const dangerButtonSx = {
 };
 
 export function NomineeDetails({ nominees, onChange, onNotify, errors }: Readonly<NomineeDetailsProps>) {
+  const genderOptions = getGenderOptions();
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [draft, setDraft] = useState<NomineeEditRow>(EMPTY_NOMINEE);
   const [localErrors, setLocalErrors] = useState<NomineeErrors>({});
@@ -183,7 +185,7 @@ export function NomineeDetails({ nominees, onChange, onNotify, errors }: Readonl
         <CustomSelect
           value={draft.gender}
           onChange={(value) => changeDraft("gender", value)}
-          options={GENDER_OPTIONS}
+          options={genderOptions}
           error={hasError}
           helperText={helperText}
         />
@@ -202,6 +204,7 @@ export function NomineeDetails({ nominees, onChange, onNotify, errors }: Readonl
 
   const displayText = (field: NomineeField, value: string) => {
     if (!value) return "";
+    if (field === "gender") return genderOptions.find((opt) => opt.value === value)?.label ?? value;
     return field === "dob" ? dayjs(value).format("DD/MM/YYYY") : value;
   };
 

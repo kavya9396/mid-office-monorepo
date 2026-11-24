@@ -9,6 +9,7 @@ import type {
 } from "@insurance-poc/common/life-assured";
 import {
   absoluteApiBaseUrl,
+  buildAuthServiceGetHeaders,
   createBusinessBaseQuery,
   getDrsRoleType,
   getMasterList,
@@ -25,15 +26,18 @@ import guwHodDrsMock from "../../../../mock/drs/guw-hod-drs.json";
 import guwSrUwDrsMock from "../../../../mock/drs/guw-sr-uw-drs.json";
 import guwUwDecisionMock from "../../../../mock/drs/guw-uw-decision.json";
 import usersByRoleMock from "../../../../mock/drs/users-by-role.json";
+import groupDrsApplicantSaveMock from "../modules/drs/mock/groupDrsApplicantSave.json";
 import {
+  mapGroupDrsPayload,
   mapGuwUwDecisions,
+  mapRawRequirementRows,
+  mapUsersByRole,
+  type GroupDrsData,
+  type GuwAssigneeOption,
   type GuwParallelDecisionRequest,
   type GuwUwDecisionRequest,
   type GuwUwDecisionResult,
-} from "./guwDecisionService";
-import groupDrsApplicantSaveMock from "../modules/drs/mock/groupDrsApplicantSave.json";
-import { mapGroupDrsPayload, mapRawRequirementRows, type GroupDrsData } from "./drsService";
-import { mapUsersByRole, type GuwAssigneeOption } from "./guwAssigneeService";
+} from "./drsService";
 
 export type GroupDrsQueryArg =
   | string
@@ -310,11 +314,6 @@ function buildMedicalLifestyleSection(
     groups.push({ label: "Health Information", value: healthFields });
   }
 
-  if (isFieldChanged(values.lifestyleHabits, initialValues?.lifestyleHabits, hasScope)) {
-    groups.push({ label: "Lifestyle Habits", value: values.lifestyleHabits ?? "" });
-    keys.push("personalDetails.lifestyleHabits");
-  }
-
   return {
     section: groups.length > 0 ? { value: groups } : undefined,
     keys,
@@ -452,11 +451,16 @@ function updateFieldValues(
   }
 }
 
+/** Master code -> description for display ("M" -> "Male"); unknown values are kept as they are. */
+function genderDescription(code: string): string {
+  return getMasterList("gender").find((entry) => entry.code === code)?.description ?? code;
+}
+
 function toNomineeDisplayRows(nominees: NomineeEditRow[]) {
   return nominees.map((n) => ({
     nomineeName: `${n.firstName} ${n.lastName}`.trim(),
     nomineeDOB: n.dob,
-    gender: n.gender,
+    gender: genderDescription(n.gender),
     relationship: n.proposerNomineeRelation,
     sharePercentage: Number(n.percentage) || 0,
     isLASame: "",
@@ -496,7 +500,6 @@ function updateApplicantInGroupDrsDraft(draft: GroupDrsData, arg: SaveGroupDrsAp
   updateFieldValues(applicant.lifestyleFields, {
     height: arg.values.height,
     weight: arg.values.weight,
-    "lifestyle habits": arg.values.lifestyleHabits,
   });
 
   if (arg.nominees?.length > 0) {
@@ -533,7 +536,7 @@ export const groupDrsApi = createApi({
         }
       },
     }),
-    /** Raw DRS payload for GUW / HOD / Sr UW; mapped by `guwService` (same request body as DVT). */
+    /** Raw DRS payload for GUW / HOD / Sr UW; mapped by `drsService` (same request body as DVT). */
     getGuwDrsPayload: build.query<unknown, GroupDrsQueryArg>({
       async queryFn(arg, _api, _extra, baseQuery) {
         if (useMock) {
@@ -565,7 +568,13 @@ export const groupDrsApi = createApi({
      */
     getGuwUwDecision: build.mutation<GuwUwDecisionResult[], GuwUwDecisionRequest | GuwUwDecisionRequest[]>({
       async queryFn(arg, _api, _extra, baseQuery) {
-        console.log("[getGuwUwDecision] request payload:", arg);
+        const sessionUser = getSessionUser();
+        const fallbackUserId = sessionUser?.username ?? "";
+        const payload = Array.isArray(arg)
+          ? arg.map((item) => ({ ...item, userId: item.userId?.trim() || item.createdBy?.trim() || fallbackUserId }))
+          : { ...arg, userId: arg.userId?.trim() || arg.createdBy?.trim() || fallbackUserId };
+
+        console.log("[getGuwUwDecision] request payload:", payload);
         if (useMock) {
           console.log("[getGuwUwDecision] response (mock):", guwUwDecisionMock);
           return { data: mapGuwUwDecisions(guwUwDecisionMock) };
@@ -578,7 +587,7 @@ export const groupDrsApi = createApi({
         const result = await baseQuery({
           url: uwDecisionUrl,
           method: "POST",
-          body: arg,
+          body: payload,
           headers: { accept: "*/*", "Content-Type": "application/json" },
         });
         if (result.error) {
@@ -603,10 +612,17 @@ export const groupDrsApi = createApi({
           return { error: customError("Users by role API is not configured.") };
         }
 
+        let headers: Record<string, string>;
+        try {
+          headers = buildAuthServiceGetHeaders();
+        } catch (reason: unknown) {
+          return { error: customError(readError(reason)) };
+        }
+
         const result = await baseQuery({
           url: `${baseUrl}/${encodeURIComponent(roleName)}`,
           method: "GET",
-          headers: { accept: "*/*" },
+          headers,
         });
         if (result.error) return { error: result.error };
         return { data: mapUsersByRole(result.data) };
@@ -615,7 +631,14 @@ export const groupDrsApi = createApi({
     /** Parallel decision (Opinion / Counter Sign / Raise Referral) for the GUW screen. */
     saveGuwParallelDecision: build.mutation<unknown, GuwParallelDecisionRequest>({
       async queryFn(arg, _api, _extra, baseQuery) {
-        console.log("[saveGuwParallelDecision] request payload:", arg);
+        const sessionUser = getSessionUser();
+        const fallbackUserId = sessionUser?.username ?? "";
+        const payload: GuwParallelDecisionRequest = {
+          ...arg,
+          userId: arg.userId?.trim() || fallbackUserId,
+        };
+
+        console.log("[saveGuwParallelDecision] request payload:", payload);
         if (useMock) return { data: null };
         const parallelDecisionUrl = groupBusinessUrls.parallelDecision;
         if (parallelDecisionUrl.length === 0) {
@@ -625,7 +648,7 @@ export const groupDrsApi = createApi({
         const result = await baseQuery({
           url: parallelDecisionUrl,
           method: "POST",
-          body: arg,
+          body: payload,
           headers: { accept: "*/*", "Content-Type": "application/json" },
         });
         if (result.error) {

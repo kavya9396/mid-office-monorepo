@@ -17,7 +17,7 @@ import {
   fromGuwValidationResponse,
   type GuwValidationRequest,
   type GuwValidationResult,
-} from "./guwService";
+} from "./drsService";
 
 /**
  * Decision code that fails validation in mock mode (the example in the API contract). When any party sends it,
@@ -77,10 +77,8 @@ export const groupDvtValidationApi = createApi({
       async queryFn(request, _api, _extra, baseQuery) {
         if (useMock) {
           try {
-            const fixtures = guwValidationMock as Record<string, unknown>;
-            const decisionCode = request.partyDecision[0]?.decision ?? "";
-            const dto = fixtures[decisionCode] ?? fixtures["default"];
-            const result = fromGuwValidationResponse(dto);
+            // Mock = the API response as-is for every decision; edit guw-validation.json to try other outcomes
+            const result = fromGuwValidationResponse(guwValidationMock);
             return { data: { ...result, applicationNo: request.applicationNo } };
           } catch (reason: unknown) {
             return { error: customError(readError(reason)) };

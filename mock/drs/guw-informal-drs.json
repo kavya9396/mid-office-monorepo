@@ -5,6 +5,7 @@
         "screenType": "GUW_INFORMAL",
         "businessType": "GROUP",
         "roleType": "GUW_TASK",
+        "caseType":"Medical",
         "commonSection": [
             {
                 "name": "latestBreDecision",
@@ -741,9 +742,23 @@
                         "value": {
                             "reasons": [
                                 {
-                                    "reason": "",
-                                    "remark": "",
+                                    "reason": "EMR Capping",
+                                    "remark": "Please Decline case - Substandard life",
                                     "systemAction": "",
+                                    "justificationReason": "",
+                                    "justificationRemarks": ""
+                                },
+                                {
+                                    "reason": "Life Assured gender is Transgender",
+                                    "remark": "Life Assured gender is Transgender, kindly take Reinsurer approval",
+                                    "systemAction": "REF_REINS",
+                                    "justificationReason": "",
+                                    "justificationRemarks": ""
+                                },
+                                {
+                                    "reason": "Life Assured gender is Transgender",
+                                    "remark": "Life Assured gender is Transgender, kindly take CMO Opinion",
+                                    "systemAction": "REF_CMO",
                                     "justificationReason": "",
                                     "justificationRemarks": ""
                                 }
@@ -776,9 +791,9 @@
                             ],
                             "rows": [
                                 {
-                                    "comments": "",
-                                    "updatedDate": "",
-                                    "updatedBy": ""
+                                    "comments": "High risk profile - needs verification",
+                                    "updatedDate": "16-11-2026",
+                                    "updatedBy": "UW001"
                                 }
                             ]
                         }
@@ -1516,7 +1531,18 @@
                                         "riderDetails": [
                                             {
                                                 "riderCode": "",
-                                                "riderName": "",
+                                                "riderName": "ADB",
+                                                "riderSubType": "",
+                                                "faceValue": "",
+                                                "mortalityClass": "",
+                                                "uwMortalityClassBase": "",
+                                                "sumAssured": "",
+                                                "rating": "",
+                                                "sarConsideration": "",
+                                                "clientRole": ""
+                                            },{
+                                                "riderCode": "",
+                                                "riderName": "Rider 2",
                                                 "riderSubType": "",
                                                 "faceValue": "",
                                                 "mortalityClass": "",

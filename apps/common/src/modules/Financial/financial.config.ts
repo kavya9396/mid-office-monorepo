@@ -64,9 +64,7 @@ export interface FinancialApplicantTab {
 }
 
 export type FinancialSubmitPayload = {
-  applicantKey: string;
-  values: Readonly<Record<string, string>>;
-  reviews: Readonly<Record<string, "agree" | "disagree">>;
+  applicantKey?: string;
 };
 
 export const FINANCIAL_SECTIONS: readonly FinancialSection[] = [
@@ -981,11 +979,49 @@ export function resolveFinancialActionMode(
   return builtIn === "readOnly" ? builtIn : (actions?.defaultMode ?? builtIn);
 }
 
+export const FIN_DOC_TABLE_MISC_TYPE = "FIN_DOC_TABLE";
+
 /** Active entries of a `misc` master list; the description is the stored value (e.g. "Yes", "April"). */
 const readMiscOptions = (type: string): FinancialOption[] =>
   getMasterList("misc", type)
     .filter((entry) => entry.isActive === "Y")
     .map((entry) => ({ label: entry.description, value: entry.description }));
+
+/**
+ * Builds document dropdown options from master data (`FIN_DOC_TABLE` under `misc`),
+ * filtering out any documents already present in the current financial data (`table_of_finance_documents` / `sections`).
+ */
+export function buildFinancialDocumentOptions(
+  sections: readonly FinancialSection[],
+): FinancialOption[] {
+  const existingKeys = new Set(sections.map((section) => section.key));
+  const masterEntries = getMasterList("misc", FIN_DOC_TABLE_MISC_TYPE).filter(
+    (entry) => entry.isActive === "Y",
+  );
+
+  if (masterEntries.length > 0) {
+    return masterEntries
+      .filter((entry) => {
+        const key = entry.value || entry.code;
+        return (
+          key.length > 0 &&
+          !existingKeys.has(key) &&
+          (entry.value === null || !existingKeys.has(entry.value)) &&
+          !existingKeys.has(entry.code)
+        );
+      })
+      .map((entry) => ({
+        label: entry.description,
+        value: entry.value || entry.code,
+      }));
+  }
+
+  return FINANCIAL_SECTIONS.filter(
+    (section) =>
+      !existingKeys.has(section.key) &&
+      !FINANCIAL_NON_REVIEWABLE_SECTION_KEYS.includes(section.key),
+  ).map((section) => ({ label: section.title, value: section.key }));
+}
 
 const monthIndex = (name: string) => new Date(`${name} 1, 2000`).getMonth();
 

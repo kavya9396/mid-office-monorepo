@@ -10,7 +10,7 @@ import {
   getDrsRoleLabel,
   getDrsRoleType,
 } from "@insurance-poc/utils";
-import { referralConfigForRoleType } from "../services/referralUwService";
+import { referralConfigForRoleType } from "../services/drsService";
 
 const INBOX_PATH = "/inbox";
 
