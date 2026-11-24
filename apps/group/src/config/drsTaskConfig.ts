@@ -20,6 +20,11 @@ export const GROUP_DRS_TASK_CONFIG: Record<string, GroupDrsTaskConfig> = {
     screenType: "MMT",
     businessType: "GROUP",
   },
+  PRE_ISSUANCE_DVT_TASK: {
+    roleType: "PRE_ISSUANCE_DVT_TASK",
+    screenType: "PRE_ISSUANCE_DVT",
+    businessType: "GROUP",
+  },
 };
 
 export const DEFAULT_GROUP_DRS_TASK_CONFIG: GroupDrsTaskConfig = {

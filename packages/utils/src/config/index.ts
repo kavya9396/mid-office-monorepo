@@ -7,6 +7,7 @@ export {
   landingUrls,
   masterUrls,
   nsdlUrls,
+  preIssuanceDvtUrls,
   retailBusinessUrls,
   isApigeeMode,
   useMock,

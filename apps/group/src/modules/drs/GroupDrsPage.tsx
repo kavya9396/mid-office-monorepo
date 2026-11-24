@@ -7,6 +7,7 @@ import {
 } from "@insurance-poc/utils";
 import { MmtGrievanceDrsPage } from "./MmtGrievanceDrsPage";
 import DvtUser from "./DvtUser";
+import PreIssuanceDvtUser from "./PreIssuanceDvtUser";
 import GuwUser from "./GuwUser";
 import { ReferralDrsPage } from "../referral-uw/ReferralDrsPage";
 import { fetchGuwMembers } from "../../services/drsService";
@@ -89,6 +90,7 @@ const SCREEN_BY_ROLE: Record<string, () => JSX.Element | null> = {
   SR_UW_TASK: SrUwEntry,
   SR_UW: SrUwEntry,
   DVT_TASK: DvtUser,
+  PRE_ISSUANCE_DVT_TASK: PreIssuanceDvtUser,
   MMT_TASK: MmtGrievanceDrsPage,
 };
 

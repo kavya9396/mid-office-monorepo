@@ -114,6 +114,15 @@ export const mmtGrievanceUrls = {
     return configuredUrl(import.meta.env.VITE_MMT_GRIEVANCE_SAVE_API);
   },
 };
+/** Pre Issuance DVT fetch / save. Empty when unset — mock mode skips them. */
+export const preIssuanceDvtUrls = {
+  get fetch(): string {
+    return configuredUrl(import.meta.env.VITE_PRE_ISSUANCE_SERVICE_FETCH);
+  },
+  get save(): string {
+    return configuredUrl(import.meta.env.VITE_PRE_ISSUANCE_SERVICE_SAVE);
+  },
+};
 
 /** Full Group DRS / Financial service URLs from .env. Empty when unset — mock mode skips them. */
 export const groupBusinessUrls = {

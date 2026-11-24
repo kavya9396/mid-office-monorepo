@@ -9,6 +9,7 @@ import { groupInboxApi } from "../services/inboxApi";
 import { groupNsdlApi } from "../services/nsdlApi";
 import { groupDvtValidationApi } from "../services/dvtValidationApi";
 import { mmtGrievanceApi } from "../services/mmtGrievanceApi";
+import { groupPreIssuanceDvtApi } from "../services/preIssuanceDvtApi";
 
 const listenerMiddleware = createListenerMiddleware();
 
@@ -23,6 +24,7 @@ listenerMiddleware.startListening({
     listenerApi.dispatch(groupDvtValidationApi.util.resetApiState());
     listenerApi.dispatch(groupBreRetriggerApi.util.resetApiState());
     listenerApi.dispatch(mmtGrievanceApi.util.resetApiState());
+    listenerApi.dispatch(groupPreIssuanceDvtApi.util.resetApiState());
   },
 });
 
@@ -38,6 +40,7 @@ export const store = configureStore({
     [groupDvtValidationApi.reducerPath]: groupDvtValidationApi.reducer,
     [groupBreRetriggerApi.reducerPath]: groupBreRetriggerApi.reducer,
     [mmtGrievanceApi.reducerPath]: mmtGrievanceApi.reducer,
+    [groupPreIssuanceDvtApi.reducerPath]: groupPreIssuanceDvtApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
@@ -52,6 +55,7 @@ export const store = configureStore({
         groupDvtValidationApi.middleware,
         groupBreRetriggerApi.middleware,
         mmtGrievanceApi.middleware,
+        groupPreIssuanceDvtApi.middleware,
       ),
 });
 

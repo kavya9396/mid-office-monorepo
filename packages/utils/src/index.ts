@@ -8,6 +8,7 @@ export {
   masterUrls,
   mmtGrievanceUrls,
   nsdlUrls,
+  preIssuanceDvtUrls,
   retailBusinessUrls,
   useMock,
   userUrls,
