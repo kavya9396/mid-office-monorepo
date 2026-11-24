@@ -693,6 +693,8 @@ export const groupDrsApi = createApi({
         const fallbackUserId = sessionUser?.username ?? "";
         const payload: GuwParallelDecisionRequest = {
           ...arg,
+          decision: "",
+          remarks: " ",
           userId: arg.userId?.trim() || fallbackUserId,
         };
 
