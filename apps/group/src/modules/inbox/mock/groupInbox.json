@@ -143,7 +143,8 @@
         "role": "RETAIL_MMT_ADMIN",
         "roleType": "MMT_TASK"
       }
-    ],"HOD_TASK": [
+    ],
+    "HOD_TASK": [
       {
         "id": 3,
         "applicationNo": "OS30413321",
@@ -168,7 +169,8 @@
         "role": "GROUP_GUW_USER",
         "roleType": "HOD_TASK"
       }
-    ],"SR_UW_TASK": [
+    ],
+    "SR_UW_TASK": [
       {
         "id": 3,
         "applicationNo": "OS30413321",
@@ -192,6 +194,106 @@
         "businessType": "GROUP",
         "role": "GROUP_GUW_USER",
         "roleType": "SR_UW_TASK"
+      }
+    ],
+    "REF_CMO_TASK": [
+      {
+        "id": 9,
+        "applicationNo": "OS90414710",
+        "nameOfProposer": "MANOJ GANTA",
+        "nameOfLifeAssured": "DFGG NA",
+        "productOpted": "T74",
+        "plan": null,
+        "medicalRaisedDate": null,
+        "dateAndTimeStamp": "2026-11-02T17:22:13.382022",
+        "taskId": "292",
+        "instanceId": "171",
+        "dueDate": "2026-11-03T12:00:00Z",
+        "startTime": "2026-11-02T17:02:33Z",
+        "atRiskTime": "2026-11-03T10:06:15Z",
+        "businessType": "GROUP",
+        "role": "GROUP_REF_CMO_USER",
+        "roleType": "REF_CMO_TASK"
+      }
+    ],
+    "HO_CMO_SPECIAL_TASK": [
+      {
+        "id": 10,
+        "applicationNo": "OS31231001",
+        "nameOfProposer": "MEERA SHAH",
+        "nameOfLifeAssured": "MEERA SHAH",
+        "productOpted": "T74",
+        "plan": null,
+        "medicalRaisedDate": null,
+        "dateAndTimeStamp": "2026-11-02T17:22:13.382022",
+        "taskId": "301",
+        "instanceId": "181",
+        "dueDate": "2026-11-03T12:00:00Z",
+        "startTime": "2026-11-02T17:02:33Z",
+        "atRiskTime": "2026-11-03T10:06:15Z",
+        "businessType": "GROUP",
+        "role": "GROUP_HO_CMO_SPECIAL_USER",
+        "roleType": "HO_CMO_SPECIAL_TASK"
+      }
+    ],
+    "HO_CMO_REFERRAL_TASK": [
+      {
+        "id": 11,
+        "applicationNo": "OS31231002",
+        "nameOfProposer": "RAHUL VERMA",
+        "nameOfLifeAssured": "RAHUL VERMA",
+        "productOpted": "T74",
+        "plan": null,
+        "medicalRaisedDate": null,
+        "dateAndTimeStamp": "2026-11-02T17:22:13.382022",
+        "taskId": "302",
+        "instanceId": "182",
+        "dueDate": "2026-11-03T12:00:00Z",
+        "startTime": "2026-11-02T17:02:33Z",
+        "atRiskTime": "2026-11-03T10:06:15Z",
+        "businessType": "GROUP",
+        "role": "GROUP_HO_CMO_REFERRAL_USER",
+        "roleType": "HO_CMO_REFERRAL_TASK"
+      }
+    ],
+    "VENDOR_CMO_ECG_TASK": [
+      {
+        "id": 12,
+        "applicationNo": "OS31231003",
+        "nameOfProposer": "ANITA DESAI",
+        "nameOfLifeAssured": "ANITA DESAI",
+        "productOpted": "T74",
+        "plan": null,
+        "medicalRaisedDate": null,
+        "dateAndTimeStamp": "2026-11-02T17:22:13.382022",
+        "taskId": "303",
+        "instanceId": "183",
+        "dueDate": "2026-11-03T12:00:00Z",
+        "startTime": "2026-11-02T17:02:33Z",
+        "atRiskTime": "2026-11-03T10:06:15Z",
+        "businessType": "GROUP",
+        "role": "GROUP_VENDOR_CMO_ECG_USER",
+        "roleType": "VENDOR_CMO_ECG_TASK"
+      }
+    ],
+    "VENDOR_CMO_TMT_TASK": [
+      {
+        "id": 13,
+        "applicationNo": "OS31231004",
+        "nameOfProposer": "SANJAY KULKARNI",
+        "nameOfLifeAssured": "SANJAY KULKARNI",
+        "productOpted": "T74",
+        "plan": null,
+        "medicalRaisedDate": null,
+        "dateAndTimeStamp": "2026-11-02T17:22:13.382022",
+        "taskId": "304",
+        "instanceId": "184",
+        "dueDate": "2026-11-03T12:00:00Z",
+        "startTime": "2026-11-02T17:02:33Z",
+        "atRiskTime": "2026-11-03T10:06:15Z",
+        "businessType": "GROUP",
+        "role": "GROUP_VENDOR_CMO_TMT_USER",
+        "roleType": "VENDOR_CMO_TMT_TASK"
       }
     ]
   }

@@ -21,6 +21,11 @@ import {
 } from "@insurance-poc/utils";
 import { getGroupDrsTaskConfig } from "../config/drsTaskConfig";
 import groupDrsMock from "../modules/drs/mock/groupDrs.json";
+import refCmoDrsMock from "../modules/drs/mock/ref-cmo-drs.json";
+import hoCmoSpecialDrsMock from "../modules/drs/mock/ho-cmo-special-drs.json";
+import hoCmoReferralDrsMock from "../modules/drs/mock/ho-cmo-referral-drs.json";
+import vendorCmoEcgDrsMock from "../modules/drs/mock/vendor-cmo-ecg-drs.json";
+import vendorCmoTmtDrsMock from "../modules/drs/mock/vendor-cmo-tmt-drs.json";
 import guwDrsMock from "../../../../mock/drs/guw-informal-drs.json";
 import guwHodDrsMock from "../../../../mock/drs/guw-hod-drs.json";
 import guwSrUwDrsMock from "../../../../mock/drs/guw-sr-uw-drs.json";
@@ -32,11 +37,13 @@ import groupDrsApplicantSaveMock from "../modules/drs/mock/groupDrsApplicantSave
 import {
   GUW_LOB,
   mapGroupDrsPayload,
+  mapGuwDrsPayload,
   mapGuwUwDecisions,
   mapRawRequirementRows,
   mapReferralDecisionHistory,
   mapUsersByRole,
   type GroupDrsData,
+  type GuwDrsRecord,
   type GuwAssigneeOption,
   type GuwParallelDecisionRequest,
   type GuwUwDecisionRequest,
@@ -91,6 +98,25 @@ export type SaveGroupDrsApplicantArg = {
   businessType?: string;
   userId?: string;
   queryArg?: GroupDrsQueryArg;
+};
+
+/** CMO DRS request. `memberId` selects one `membersDetails` row; the DRS body stays the shared shape. */
+export type CmoDrsQueryArg = {
+  applicationNo: string;
+  roleType?: string;
+  screenType?: string;
+  businessType?: string;
+  taskType?: string;
+  memberId?: string;
+};
+
+/** Mock CMO payloads, keyed by inbox `roleType`. */
+const CMO_DRS_MOCK_BY_ROLE: Record<string, unknown> = {
+  REF_CMO_TASK: refCmoDrsMock,
+  HO_CMO_SPECIAL_TASK: hoCmoSpecialDrsMock,
+  HO_CMO_REFERRAL_TASK: hoCmoReferralDrsMock,
+  VENDOR_CMO_ECG_TASK: vendorCmoEcgDrsMock,
+  VENDOR_CMO_TMT_TASK: vendorCmoTmtDrsMock,
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -874,11 +900,46 @@ export const groupDrsApi = createApi({
         }
       },
     }),
+    /** CMO DRS. Same POST as the other group screens; mock file follows the CMO role. */
+    getCmoDrs: build.query<GuwDrsRecord, CmoDrsQueryArg>({
+      async queryFn(arg, _api, _extra, baseQuery) {
+        const memberId = arg.memberId?.trim() || undefined;
+        const requestArg: GroupDrsQueryArg = {
+          applicationNo: arg.applicationNo,
+          roleType: arg.roleType,
+          screenType: arg.screenType,
+          businessType: arg.businessType,
+          taskType: arg.taskType ?? arg.roleType,
+        };
+        try {
+          if (useMock) {
+            const role = (arg.taskType ?? arg.roleType ?? getDrsRoleType()).trim().toUpperCase();
+            const mock = CMO_DRS_MOCK_BY_ROLE[role] ?? refCmoDrsMock;
+            return { data: mapGuwDrsPayload(mock, memberId) };
+          }
+          const drsDataUrl = groupBusinessUrls.drsData;
+          if (drsDataUrl.length === 0) {
+            return { error: customError("Group DRS data API is not configured.") };
+          }
+          const result = await baseQuery({
+            url: drsDataUrl,
+            method: "POST",
+            body: buildDrsRequestBody(requestArg),
+            headers: { accept: "*/*", "Content-Type": "application/json" },
+          });
+          if (result.error) return { error: result.error };
+          return { data: mapGuwDrsPayload(result.data, memberId) };
+        } catch (reason: unknown) {
+          return { error: customError(readError(reason)) };
+        }
+      },
+    }),
   }),
 });
 
 export const {
   useGetGroupDrsQuery,
+  useGetCmoDrsQuery,
   useGetGuwDrsPayloadQuery,
   useGetGuwUwDecisionHistoryQuery,
   useLazyGetGuwClaimAuditListQuery,

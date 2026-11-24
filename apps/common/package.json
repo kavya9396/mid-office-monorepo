@@ -129,6 +129,11 @@
       "import": "./src/modules/Medical/Medical.tsx",
       "default": "./src/modules/Medical/Medical.tsx"
     },
+    "./cmo": {
+      "types": "./src/components/cmo/index.ts",
+      "import": "./src/components/cmo/index.ts",
+      "default": "./src/components/cmo/index.ts"
+    },
     "./life-assured": {
       "types": "./src/components/LifeAssured/LifeAssured.tsx",
       "import": "./src/components/LifeAssured/LifeAssured.tsx",

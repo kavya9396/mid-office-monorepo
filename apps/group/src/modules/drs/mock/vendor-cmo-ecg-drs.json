@@ -1,0 +1,247 @@
+{
+  "success": true,
+  "data": {
+    "applicationNo": "OS31231003",
+    "screenType": "VENDOR_CMO_ECG",
+    "businessType": "GROUP",
+    "commonSection": [],
+    "membersDetails": [
+      {
+        "rowDetails": [
+          {
+            "id": 0,
+            "fields": [
+              { "name": "Name", "value": "Anita Desai" },
+              { "name": "App No.", "value": "OS31231003" }
+            ]
+          },
+          {
+            "id": 1,
+            "fields": [
+              { "name": "Product", "value": "Demo Plan - P1" },
+              { "name": "Policy Term", "value": "Agency channel" },
+              { "name": "Channel", "value": "" },
+              { "name": "SA", "value": "1000000" },
+              { "name": "WOP - SA", "value": "" },
+              { "name": "BTBB - SA", "value": "" },
+              { "name": "TI Rider - SA", "value": "300000" },
+              { "name": "ADBR - SA", "value": "100000" },
+              { "name": "CI Rider - SA", "value": "500000" }
+            ]
+          },
+          {
+            "id": 3,
+            "fields": [
+              { "name": "TSA", "value": "1200000" },
+              { "name": "TRSA", "value": "1100000" },
+              { "name": "TPSA", "value": "" },
+              { "name": "TFSA", "value": "1.5" },
+              { "name": "TSSA", "value": "" },
+              { "name": "ADBR TSA", "value": "" },
+              { "name": "ATPD TSA", "value": "" },
+              { "name": "CI Rider TSA", "value": "" },
+              { "name": "CI Rider TRSA", "value": "" },
+              { "name": "WOP TSA", "value": "" },
+              { "name": "BTBB TSA", "value": "" },
+              { "name": "Total Premium", "value": "0" }
+            ]
+          }
+        ],
+        "cardDetails": [
+          {
+            "type": "MEDICAL",
+            "label": "Medical",
+            "attributes": [{ "name": "Physical Medical Decision", "value": "" }],
+            "expandedAttributes": [
+              { "name": "Physical Medical Decision", "value": "" },
+              { "name": "Tele/Video MER Decision", "value": "" },
+              { "name": "Tele/Video MER Remark", "value": "" },
+              { "name": "MunichRe Medical Decision", "value": "" },
+              { "name": "MunichRe Rating", "value": "" },
+              { "name": "BIU Medical Status", "value": "N" },
+              { "name": "Physical Medical Remark", "value": "" }
+            ],
+            "tables": []
+          },
+          {
+            "type": "RISK_PARAMETERS",
+            "label": "Risk Parameters",
+            "attributes": [
+              { "name": "DRC Response", "value": "" },
+              { "name": "Criminal Question Response LA", "value": "No" },
+              { "name": "PEP Question Response LA", "value": "No" }
+            ],
+            "expandedAttributes": [
+              { "name": "DRC Response", "value": "" },
+              { "name": "Criminal Question Response LA", "value": "No" },
+              { "name": "PEP Question Response LA", "value": "No" },
+              { "name": "PTLR Response", "value": "" },
+              { "name": "Adverse IIB", "value": "" },
+              { "name": "Criminal Question Response PR", "value": "No" },
+              { "name": "PEP Question Response PR", "value": "No" },
+              { "name": "Previous Policy Substandard", "value": "" },
+              { "name": "Avocation Related Disclosure", "value": "" },
+              { "name": "Health Question Positive", "value": "Yes" },
+              { "name": "Employment In Risky Industry", "value": "IMP" },
+              { "name": "FATF/OFAC Country Login", "value": "" },
+              { "name": "Hazardous Occupation", "value": "" },
+              { "name": "EDD Flag", "value": "" },
+              { "name": "Claim Risk Indicator", "value": "" },
+              { "name": "Face Match Score", "value": "100" },
+              { "name": "Tobacco", "value": "" },
+              { "name": "Narcotics", "value": "" },
+              { "name": "Third Party Payment", "value": "" },
+              { "name": "Policy Bazar Risk Response", "value": "" },
+              { "name": "Adverse ACR", "value": "" },
+              { "name": "Distance < acceptable range", "value": "" },
+              { "name": "Adverse App OID", "value": "" }
+            ],
+            "tables": []
+          }
+        ],
+        "sections": [],
+        "subSections": [
+          {
+            "name": "applicantProfile",
+            "label": "Applicant Profile",
+            "value": {
+              "memberType": "lifeassured1",
+              "lifeType": "LA",
+              "partyId": "41464d4d-b19f-46f1-93cb-86127a78dd8a",
+              "lifeNumber": "01",
+              "clientId": "CL00012345",
+              "proposerLaRelation": "Self",
+              "personal_kyc": {
+                "label": "Personal & KYC",
+                "groups": [
+                  [
+                    { "label": "Applicant Name", "value": "Anita Desai" },
+                    { "label": "Date Of Birth", "value": "1990-01-15" },
+                    { "label": "Age", "value": "36" },
+                    { "label": "Gender", "value": "Male" }
+                  ]
+                ]
+              }
+            }
+          },
+          {
+            "name": "previousPolicies",
+            "label": "Previous Policies",
+            "value": {
+              "members": {
+                "memberKey": "lifeAssured1",
+                "label": "Life Assured 1",
+                "ipru": [
+                  {
+                    "policyNumber": "00012345678",
+                    "sumAssured": 1000000,
+                    "companyName": "ICICI Prudential Life Insurance"
+                  }
+                ]
+              },
+              "familyPolicies": []
+            }
+          },
+          {
+            "name": "openOtherTasks",
+            "label": "Open Tasks",
+            "value": {
+              "columns": [
+                { "label": "Call log date" },
+                { "label": "Service call ID" },
+                { "label": "CT" },
+                { "label": "ST" },
+                { "label": "Call Details" },
+                { "label": "User Pool" },
+                { "label": "Source" }
+              ],
+              "rows": [
+                {
+                  "callLogDate": "",
+                  "callId": "",
+                  "ct": "",
+                  "st": "",
+                  "callDetails": "",
+                  "userPoll": "",
+                  "source": ""
+                }
+              ]
+            }
+          },
+          {
+            "name": "riskDetails",
+            "label": "Risk Details",
+            "value": [
+              {
+                "risk_details": {
+                  "label": "Risk Details",
+                  "member": "Life Assured 1",
+                  "memberDetails": {
+                    "label": "Member Details",
+                    "value": [
+                      { "label": "Application No", "value": "OS31231003" },
+                      { "label": "Customer Name", "value": "Anita Desai" }
+                    ]
+                  }
+                },
+                "riskAssessament": {
+                  "label": "Risk Assessment",
+                  "value": [
+                    { "label": "Name, address & stay confirmed", "value": "" },
+                    { "label": "Face match", "value": "100" }
+                  ]
+                },
+                "riskDecision": {
+                  "label": "Risk Decision",
+                  "riskRemark": "",
+                  "riskCode": ""
+                }
+              }
+            ]
+          },
+          {
+            "name": "auditTrail",
+            "label": "Audit Trail",
+            "value": {
+              "columns": [
+                { "label": "User ID" },
+                { "label": "User Name" },
+                { "label": "Pool Name" },
+                { "label": "Case Status" },
+                { "label": "Decision" },
+                { "label": "Date Updated On" },
+                { "label": "Comments/Remarks" }
+              ],
+              "value": [
+                {
+                  "userId": "",
+                  "userName": "",
+                  "poolName": "",
+                  "caseStatus": "",
+                  "Decision": "",
+                  "updatedDate": "",
+                  "comments": ""
+                }
+              ]
+            }
+          },
+          {
+            "name": "raiseGrievance",
+            "label": "Raise Grievance",
+            "value": {
+              "title": "Raise Grievance",
+              "section": "Medical Requirements",
+              "columns": [
+                { "label": "FUP Code" },
+                { "label": "Profile" },
+                { "label": "Remarks By User" }
+              ],
+              "rows": [{ "fupCode": "", "profile": "", "Remarks": "" }]
+            }
+          }
+        ],
+        "sectionType": ["Header", "Card", "Section", "quickLinks"]
+      }
+    ]
+  }
+}
