@@ -949,27 +949,46 @@ export const GUW_ASSIGNEE_ROLE = {
 
 /** Role whose users are listed for a Counter Sign "Refer To" value ("HOD" / "Sr UW"); "" when none. */
 export function assigneeRoleForReferTo(referTo: string): string {
-  const key = referTo.trim().toLowerCase().replace(/\s+/g, " ");
-  if (key === "hod") return GUW_ASSIGNEE_ROLE.HOD;
-  if (key === "sr uw" || key === "sruw" || key === "sr_uw" || key === "senior uw") return GUW_ASSIGNEE_ROLE.SR_UW;
+  const key = referTo.trim().toLowerCase().replace(/[\s_.-]+/g, " ");
+  if (key === "hod" || key === "ref hod") return GUW_ASSIGNEE_ROLE.HOD;
+  if (key === "sr uw" || key === "sruw" || key === "sr_uw" || key === "senior uw" || key === "ref sruw" || key === "ref sr uw") return GUW_ASSIGNEE_ROLE.SR_UW;
   return "";
 }
 
 /** Role whose users are listed for a Raise Referral row code; "" when the row is not assignable. */
 export function assigneeRoleForReferralRow(target: string): string {
-  if (target === "REF_HOD") return GUW_ASSIGNEE_ROLE.HOD;
-  if (target === "REF_SR_UW") return GUW_ASSIGNEE_ROLE.SR_UW;
+  const key = target.trim().toLowerCase().replace(/[\s_.-]+/g, " ");
+  if (key === "ref_hod" || key === "ref hod" || key === "hod opinion") return GUW_ASSIGNEE_ROLE.HOD;
+  if (key === "ref_sr_uw" || key === "ref sr uw" || key === "ref sruw" || key === "sr uw opinion") return GUW_ASSIGNEE_ROLE.SR_UW;
   return "";
 }
 
-
 /** Maps the users-by-role response (`data.users[].fullName` / `ntid`) to dropdown options. */
 export function mapUsersByRole(payload: unknown): GuwAssigneeOption[] {
-  const data = isRecord(payload) && isRecord(payload.data) ? payload.data : null;
-  const users = Array.isArray(data?.users) ? data.users : [];
+  if (!isRecord(payload)) return [];
+  const root = isRecord(payload.data) ? payload.data : payload;
+  const users = Array.isArray(root.users)
+    ? root.users
+    : Array.isArray(payload.data)
+      ? payload.data
+      : Array.isArray(root.data)
+        ? root.data
+        : [];
   return users.flatMap((user) => {
-    const fullName = isRecord(user) && typeof user.fullName === "string" ? user.fullName.trim() : "";
-    const ntid = isRecord(user) && typeof user.ntid === "string" ? user.ntid.trim() : "";
+    if (!isRecord(user)) return [];
+    const fullName =
+      (typeof user.fullName === "string" && user.fullName.trim()) ||
+      (typeof user.name === "string" && user.name.trim()) ||
+      (typeof user.userName === "string" && user.userName.trim()) ||
+      (typeof user.userFullName === "string" && user.userFullName.trim()) ||
+      (typeof user.username === "string" && user.username.trim()) ||
+      "";
+    const ntid =
+      (typeof user.ntid === "string" && user.ntid.trim()) ||
+      (typeof user.userId === "string" && user.userId.trim()) ||
+      (typeof user.id === "string" && user.id.trim()) ||
+      (typeof user.username === "string" && user.username.trim()) ||
+      "";
     return fullName ? [{ value: fullName, label: fullName, ntid }] : [];
   });
 }
@@ -1190,6 +1209,14 @@ export interface GuwSubmittedDecision {
   guidelines: GuwSubmittedGuideline[];
   /** UW Guidelines rows from the validation API with saved justifications (absent on older snapshots). */
   validationRows?: GuwSavedValidationRow[];
+  referralRows?: {
+    target: string;
+    label: string;
+    selected: boolean;
+    reason: string;
+    remarks: string;
+    assignedTo: string;
+  }[];
 }
 
 export interface GuwUwData {

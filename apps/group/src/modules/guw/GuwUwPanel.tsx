@@ -147,6 +147,14 @@ interface SubmittedDecision {
   guidelines: GuidelineRow[];
   /** UW Guidelines rows from the validation API, with the justifications the user saved. */
   validationRows?: GuwSavedValidationRow[];
+  referralRows?: {
+    target: string;
+    label: string;
+    selected: boolean;
+    reason: string;
+    remarks: string;
+    assignedTo: string;
+  }[];
 }
 
 /** "XXE - Counter Offer with Exclusion" -> "XXE" (the code is the part before the first " - "). */
@@ -655,6 +663,9 @@ export function GuwUwPanel({
     remarks: string;
     assignedTo: string;
   }[]>(() => {
+    if (initialSubmittedDecision?.referralRows && initialSubmittedDecision.referralRows.length > 0) {
+      return initialSubmittedDecision.referralRows.map((r) => ({ ...r }));
+    }
     const savedReferrals = initialSubmittedDecision?.fields.find((f) => f.label === "Refer To")?.value;
     const names = savedReferrals ? savedReferrals.split(",").map((s) => s.trim().toLowerCase()) : [];
     const savedReason = initialSubmittedDecision?.fields.find((f) => f.label === "Referral Reason")?.value ?? "";
@@ -915,6 +926,10 @@ export function GuwUwPanel({
         : [],
       guidelines: [],
       validationRows: rows.map((r) => ({ ...r })),
+      referralRows:
+        dialogDecision === "REFERRAL"
+          ? referralRows.map((r) => ({ ...r }))
+          : undefined,
     };
   };
 
@@ -1013,6 +1028,9 @@ export function GuwUwPanel({
       if (prevReason) setApproverReason(prevReason);
       const prevAssigned = submittedDecision.fields.find((f) => f.label === "Assigned To")?.value;
       if (prevAssigned) setApproverAssignedTo(prevAssigned);
+      if (submittedDecision.referralRows && submittedDecision.referralRows.length > 0) {
+        setReferralRows(submittedDecision.referralRows.map((r) => ({ ...r })));
+      }
       if (submittedDecision.counterOfferRows && submittedDecision.counterOfferRows.length > 0) {
         setCounterOfferRows(submittedDecision.counterOfferRows.map((r) => ({ ...r })));
       }
