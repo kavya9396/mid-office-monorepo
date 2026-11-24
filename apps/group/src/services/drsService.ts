@@ -784,11 +784,15 @@ export interface GuwParallelDecisionRequest {
   appNo: string;
   partyId: string;
   action: GuwParallelDecisionAction;
+  /** Always sent, always an empty string. */
+  decision: "";
+  /** Always sent, always a single space. */
+  remarks: " ";
   userId: string;
   taskId?: string;
   instanceId?: string;
-  /** Raise Referral only: the Refer To values (master GUW_REF_TO) of the selected rows, e.g. ["IT", "HOD"]. */
-  refer_to?: string[];
+  // Extra top-level object, not sent. Raise Referral only: the Refer To values (master GUW_REF_TO) of the selected rows.
+  // refer_to?: string[];
 }
 
 export type GuwParallelDecisionBaseInput = Pick<GuwDecisionFormInput, "applicationNo" | "partyId" | "screenType"> & {
@@ -804,7 +808,7 @@ function toParallelDecisionRequest(
   base: GuwParallelDecisionBaseInput,
   action: GuwParallelDecisionAction,
   parallelDecision: GuwParallelDecisionItem[],
-  referTo?: string[],
+  // referTo?: string[],
 ): GuwParallelDecisionRequest {
   const taskIds = getDrsTaskIds();
   const taskId = base.taskId?.trim() || taskIds.taskId;
@@ -817,14 +821,16 @@ function toParallelDecisionRequest(
     appNo: base.applicationNo,
     partyId: base.partyId,
     action,
+    decision: "",
+    remarks: " ",
     userId,
     ...(taskId ? { taskId } : {}),
     ...(instanceId ? { instanceId } : {}),
-    ...(referTo ? { refer_to: referTo } : {}),
+    // ...(referTo ? { refer_to: referTo } : {}),
   };
 }
 
-const referToOf = (items: GuwParallelDecisionItem[]) => items.map((item) => item.referTo.referName);
+// const referToOf = (items: GuwParallelDecisionItem[]) => items.map((item) => item.referTo.referName);
 
 /**
  * Raise Referral: selected rows -> `parallel-decision` requests. `action` is one value per request, so
@@ -851,9 +857,9 @@ export function buildGuwReferralParallelDecisionRequests(
   const opinions = rows.filter((row) => OPINION_REFERRALS.includes(row.target)).map(toItem);
   const referrals = rows.filter((row) => !OPINION_REFERRALS.includes(row.target)).map(toItem);
   const requests: GuwParallelDecisionRequest[] = [];
-  if (opinions.length > 0) requests.push(toParallelDecisionRequest(base, "OPINION", opinions, referToOf(opinions)));
+  if (opinions.length > 0) requests.push(toParallelDecisionRequest(base, "OPINION", opinions));
   if (referrals.length > 0) {
-    requests.push(toParallelDecisionRequest(base, "RAISE_REFERRAL", referrals, referToOf(referrals)));
+    requests.push(toParallelDecisionRequest(base, "RAISE_REFERRAL", referrals));
   }
   return requests;
 }
