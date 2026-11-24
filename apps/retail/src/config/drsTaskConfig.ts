@@ -10,6 +10,16 @@ export const RETAIL_DRS_TASK_CONFIG: Record<string, RetailDrsTaskConfig> = {
     screenType: "CVT",
     businessType: "RETAIL",
   },
+  CPT_DATA_ENTRY_NMR_TASK: {
+    roleType: "CPT_DATA_ENTRY_NMR_TASK",
+    screenType: "CPT_NMR",
+    businessType: "RETAIL",
+  },
+  CPT_DATA_ENTRY_MR_TASK: {
+    roleType: "CPT_DATA_ENTRY_MR_TASK",
+    screenType: "CPT_MR",
+    businessType: "RETAIL",
+  },
 };
 
 export const DEFAULT_RETAIL_DRS_TASK_CONFIG: RetailDrsTaskConfig = RETAIL_DRS_TASK_CONFIG.CVT_TASK;

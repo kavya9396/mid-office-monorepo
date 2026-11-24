@@ -1,6 +1,6 @@
 import type { FinancialActionsConfig } from "@insurance-poc/common/financial";
 
-export type RetailFinancialScreen = "cvt";
+export type RetailFinancialScreen = "cvt" | "cptNmr";
 
 /**
  * Which sections and buttons each Retail screen shows on the Financial page.
@@ -21,6 +21,14 @@ export const RETAIL_FINANCIAL_ACTIONS_CONFIG: Record<
       "decision", // Decision
     ],
     defaultMode: "readOnly",
+    sectionModes: {},
+  },
+  cptNmr: {
+    hiddenSectionKeys: [
+      "bre_financial_decision", // BRE Financial Decision
+      "decision", // Decision
+    ],
+    defaultMode: "edit",
     sectionModes: {},
   },
 };
