@@ -381,11 +381,14 @@ async function resolveAuth<T>(mock: () => T, real: () => Promise<T>): Promise<T>
   return mock();
 }
 
+/** Apigee mode returns `{ encryptedResponse, statusCode }`. Mid-office responses stay plain. */
 async function unwrapLoginPayload(payload: unknown): Promise<unknown> {
   if (!isApigeeMode() || !isRecord(payload)) return payload;
   const encrypted = payload.encryptedResponse;
-  if (typeof encrypted !== "string" || encrypted.trim().length === 0) return payload;
-  return decryptPayload(encrypted);
+  if (typeof encrypted !== "string") return payload;
+  const ciphertext = encrypted.replace(/\s+/g, "");
+  if (ciphertext.length === 0) return payload;
+  return decryptPayload(ciphertext);
 }
 
 async function realLogin(request: LoginRequest): Promise<LoginResult> {
