@@ -4,7 +4,6 @@ import {
   canInvokeBreRetrigger,
   clearBreRetriggerCount,
   getDrsApplicationNo,
-  getDrsMemberCount,
   getDrsMemberId,
   getDrsRoleType,
   readApiErrorMessage,
@@ -31,12 +30,19 @@ import { useRetriggerGroupBreMutation } from "../../services/breRetriggerApi";
 import { formatBreTimestamp, splitDiscrepancies } from "../drs/breFormat";
 import { GuwSdtRow } from "../guw/GuwSdtRow";
 import { GuwSectionDialogs, type GuwSectionDialogKey } from "../guw/GuwSectionDialogs";
-import { fetchGuwDrs, type GuwDrsRecord } from "../../services/drsService";
 import {
-  fetchReferralDecisionHistory,
+  fetchGuwDrs,
+  mapClaimAuditListPayload,
+  type GuwClaimAuditSection,
+  type GuwDrsRecord,
+} from "../../services/drsService";
+import { useGetGuwUwDecisionHistoryQuery, useLazyGetGuwClaimAuditListQuery } from "../../services/drsApi";
+import {
+  readReferralDecisionOptions,
   type ReferralDecisionHistoryRow,
   type ReferralRoleConfig,
 } from "../../services/drsService";
+import { useReferralCompleteTask } from "./useReferralCompleteTask";
 import { DecisionSection } from "@insurance-poc/common/decision-section";
 import { REFERRAL_PROFILE_IMAGE_URL } from "./profileImage";
 
@@ -100,17 +106,23 @@ export function ReferralDrsPage({ config }: Readonly<ReferralDrsPageProps>) {
   const applicationNo = applicationNoParam?.trim() || getDrsApplicationNo();
   const memberId = getDrsMemberId();
   const roleType = getDrsRoleType();
-  const isMultiLife = getDrsMemberCount() > 1;
-  const postSubmitUrl = isMultiLife ? groupPaths.referralMemberSelection : groupPaths.inbox;
 
   const [retriggerGroupBre, retriggerGroupBreState] = useRetriggerGroupBreMutation();
+  const [fetchClaimAuditList] = useLazyGetGuwClaimAuditListQuery();
+  // Underwriting Decision History: `uw-decision/fetch` on page load
+  const historyQuery = useGetGuwUwDecisionHistoryQuery(
+    { applicationNumber: applicationNo },
+    { skip: !applicationNo },
+  );
+  const historyRows: ReferralDecisionHistoryRow[] = historyQuery.data ?? [];
 
   const [page, setPage] = useState<PageState>(
     applicationNo ? { kind: "loading" } : { kind: "missing-id" },
   );
-  const [historyRows, setHistoryRows] = useState<ReferralDecisionHistoryRow[]>([]);
 
   const [sectionDialog, setSectionDialog] = useState<GuwSectionDialogKey | null>(null);
+  // Claim Audit rows from the claim-audit list API; null = use the rows that came with the DRS.
+  const [claimAuditOverride, setClaimAuditOverride] = useState<GuwClaimAuditSection | null>(null);
   const [breDetailOpen, setBreDetailOpen] = useState(false);
   const [breRetriggerFinals, setBreRetriggerFinals] = useState<BreRetriggerFinalOverrides>({});
   const [breRetriggerBarDecision, setBreRetriggerBarDecision] = useState<string | null>(null);
@@ -122,6 +134,22 @@ export function ReferralDrsPage({ config }: Readonly<ReferralDrsPageProps>) {
     setSnackbarMessage(message);
     setSnackbarOpen(true);
   };
+
+  const handleClaimAuditClick = async (record: GuwDrsRecord) => {
+    try {
+      const payload = await fetchClaimAuditList({
+        applicationNumber: record.applicationNo || applicationNo,
+        partyId: record.partyId,
+      }).unwrap();
+      setClaimAuditOverride(mapClaimAuditListPayload(payload, record.sections.claimAudit));
+      setSectionDialog("claimAudit");
+    } catch (reason: unknown) {
+      const message = readApiErrorMessage(reason);
+      notify(message.length > 0 ? message : "Unable to load Claim Audit.");
+    }
+  };
+
+  const referralCompleteTask = useReferralCompleteTask(applicationNo, notify);
 
   const goToInbox = () => {
     clearBreRetriggerCount();
@@ -169,6 +197,10 @@ export function ReferralDrsPage({ config }: Readonly<ReferralDrsPageProps>) {
   }, [applicationNo]);
 
   useEffect(() => {
+    setClaimAuditOverride(null);
+  }, [applicationNo, memberId]);
+
+  useEffect(() => {
     if (!applicationNo) {
       setPage({ kind: "missing-id" });
       return;
@@ -178,9 +210,6 @@ export function ReferralDrsPage({ config }: Readonly<ReferralDrsPageProps>) {
     void fetchGuwDrs(applicationNo, memberId, roleType).then((record) => {
       if (!active) return;
       setPage(record ? { kind: "ready", record } : { kind: "not-found" });
-    });
-    void fetchReferralDecisionHistory(applicationNo).then((rows) => {
-      if (active) setHistoryRows(rows);
     });
     return () => {
       active = false;
@@ -251,7 +280,7 @@ export function ReferralDrsPage({ config }: Readonly<ReferralDrsPageProps>) {
                   <GuwSdtRow
                     data={page.record.sdtRow}
                     onGrievanceHistory={() => setSectionDialog("grievanceHistory")}
-                    onClaimAudit={() => setSectionDialog("claimAudit")}
+                    onClaimAudit={() => void handleClaimAuditClick(page.record)}
                     onUwGuidelines={() => setSectionDialog("uwGuidelines")}
                     onSpecialRemarks={() => setSectionDialog("specialRemarks")}
                   />
@@ -340,10 +369,15 @@ export function ReferralDrsPage({ config }: Readonly<ReferralDrsPageProps>) {
                   ariaLabel={`${config.label} Decision`}
                   remarksLabel={`${config.label} Remarks`}
                   decisionLabel={`${config.label} Decision`}
-                  decisionOptions={config.decisionOptions}
-                  onSubmit={() => {
-                    // Submit API handler to be wired
-                    replaceUrl(postSubmitUrl);
+                  decisionOptions={readReferralDecisionOptions(config)}
+                  isSubmitting={referralCompleteTask.isSubmitting}
+                  onSubmit={(payload) => {
+                    void referralCompleteTask.submit(payload).then((done) => {
+                      if (done) {
+                        clearBreRetriggerCount();
+                        replaceUrl(groupPaths.inbox);
+                      }
+                    });
                   }}
                 />
               </Box>
@@ -412,7 +446,11 @@ export function ReferralDrsPage({ config }: Readonly<ReferralDrsPageProps>) {
 
       {page.kind === "ready" ? (
         <GuwSectionDialogs
-          sections={page.record.sections}
+          sections={
+            claimAuditOverride
+              ? { ...page.record.sections, claimAudit: claimAuditOverride }
+              : page.record.sections
+          }
           open={sectionDialog}
           onClose={() => setSectionDialog(null)}
           notify={notify}

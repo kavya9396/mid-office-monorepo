@@ -31,8 +31,8 @@ export const nomineeSchema = z.object({
   gender: required("Gender"),
   proposerNomineeRelation: requiredFormat("Relationship", "alphabets"),
   percentage: requiredFormat("Share %", "numeric"),
-  accountNumber: requiredFormat("Account No.", "alphanumeric"),
-  ifsc: requiredFormat("IFSC", "alphanumeric"),
+  accountNumber: requiredFormat("Account No.", "numeric"),
+  ifsc: requiredFormat("IFSC", "ifsc"),
 });
 
 export type NomineeEditRow = z.infer<typeof nomineeSchema>;

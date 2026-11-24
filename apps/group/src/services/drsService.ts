@@ -4,6 +4,7 @@ import {
   formatIndianCurrency,
   getDrsRoleType,
   getDrsTaskIds,
+  getMasterList,
   getSessionUser,
   getToken,
   masterUrls,
@@ -498,7 +499,10 @@ export interface GuwReferralRowInput {
   target: string;
   reason: string;
   remarks: string;
+  /** Selected user's full name; sent as `assignedTo.name` in the `parallel-decision` request. */
   assignedTo: string;
+  /** Selected user's NTID; sent as `assignedTo.value` in the `parallel-decision` request. */
+  assignedToNtid?: string;
 }
 
 export interface GuwDecisionFormInput {
@@ -832,6 +836,7 @@ export function buildGuwReferralParallelDecisionRequests(
 ): GuwParallelDecisionRequest[] {
   const toItem = (row: GuwReferralRowInput & { label: string }): GuwParallelDecisionItem => {
     const assignedTo = row.assignedTo.trim();
+    const ntid = row.assignedToNtid?.trim() ?? "";
     return {
       referTo: {
         referValue: row.target,
@@ -840,7 +845,7 @@ export function buildGuwReferralParallelDecisionRequests(
         remarks: row.remarks.trim(),
         reason: row.reason,
       },
-      ...(assignedTo ? { assignedTo: { name: assignedTo, description: assignedTo, value: assignedTo } } : {}),
+      ...(assignedTo ? { assignedTo: { name: assignedTo, description: assignedTo, value: ntid } } : {}),
     };
   };
   const opinions = rows.filter((row) => OPINION_REFERRALS.includes(row.target)).map(toItem);
@@ -856,7 +861,7 @@ export function buildGuwReferralParallelDecisionRequests(
 /** Counter Sign: Reason / Refer To / Assigned To / UW Remarks -> one `parallel-decision` request. */
 export function buildGuwCounterSignParallelDecisionRequest(
   base: GuwParallelDecisionBaseInput,
-  input: { reason: string; referTo: string; assignedTo: string; remarks: string },
+  input: { reason: string; referTo: string; assignedTo: string; assignedToNtid?: string; remarks: string },
 ): GuwParallelDecisionRequest {
   return toParallelDecisionRequest(base, "COUNTER_SIGN", [
     {
@@ -867,7 +872,7 @@ export function buildGuwCounterSignParallelDecisionRequest(
         remarks: input.remarks.trim(),
         reason: input.reason,
       },
-      assignedTo: { name: input.assignedTo, description: input.assignedTo, value: input.assignedTo },
+      assignedTo: { name: input.assignedTo, description: input.assignedTo, value: input.assignedToNtid?.trim() ?? "" },
     },
   ]);
 }
@@ -924,6 +929,8 @@ export function mapGuwUwDecision(payload: unknown): GuwUwDecisionResult {
 export interface GuwAssigneeOption {
   value: string;
   label: string;
+  /** The user's NTID (`users[].ntid`); sent as `assignedTo.value` in the `parallel-decision` request. */
+  ntid: string;
 }
 
 /** `roleName` path value sent to the users-by-role API. */
@@ -948,13 +955,14 @@ export function assigneeRoleForReferralRow(target: string): string {
 }
 
 
-/** Maps the users-by-role response (`data.users[].fullName`) to dropdown options. */
+/** Maps the users-by-role response (`data.users[].fullName` / `ntid`) to dropdown options. */
 export function mapUsersByRole(payload: unknown): GuwAssigneeOption[] {
   const data = isRecord(payload) && isRecord(payload.data) ? payload.data : null;
   const users = Array.isArray(data?.users) ? data.users : [];
   return users.flatMap((user) => {
     const fullName = isRecord(user) && typeof user.fullName === "string" ? user.fullName.trim() : "";
-    return fullName ? [{ value: fullName, label: fullName }] : [];
+    const ntid = isRecord(user) && typeof user.ntid === "string" ? user.ntid.trim() : "";
+    return fullName ? [{ value: fullName, label: fullName, ntid }] : [];
   });
 }
 
@@ -1498,7 +1506,7 @@ function mapClaimAuditSection(value: unknown): GuwClaimAuditSection {
     rows: recordList(section.rows)
       .filter(hasValues)
       .map((r, index) => ({
-        id: str(r.id) || String(index + 1),
+        id: str(r.id) || str(r.claimId) || String(index + 1),
         policyNo: str(r.policyNumber),
         productCode: str(r.productCode),
         claimKey: str(r.claimKey),
@@ -1513,6 +1521,20 @@ function mapClaimAuditSection(value: unknown): GuwClaimAuditSection {
         status: str(r.decisionStatus),
       })),
   };
+}
+
+/**
+ * Rows of the claim-audit list API, using the same row keys as the DRS `claimAudit.rows`.
+ * Accepts `{ data: { rows } }`, `{ data: [...] }`, `{ rows }` or a bare array; titles / headers stay from `fallback`.
+ */
+export function mapClaimAuditListPayload(
+  payload: unknown,
+  fallback: GuwClaimAuditSection,
+): GuwClaimAuditSection {
+  const root = recordOf(payload);
+  const body = root.data ?? payload;
+  const list = Array.isArray(body) ? body : recordOf(body).rows;
+  return { ...fallback, rows: mapClaimAuditSection({ rows: list }).rows };
 }
 
 /** Column order of `specialRemarks.columns`. */
@@ -2559,13 +2581,29 @@ export interface ReferralRoleConfig {
   label: string;
   /** `roleType` values (upper-case) the inbox sends for this role. */
   roleTypes: string[];
+  /** Master `misc` type holding the decision dropdown options of this role. */
+  decisionMasterType: string;
+  /** Used only when the master data has no active entries for `decisionMasterType`. */
   decisionOptions: string[];
+}
+
+/** Decision dropdown options of a role from the post-login master data (`misc` list); falls back to the static list. */
+export function readReferralDecisionOptions(
+  config: ReferralRoleConfig,
+): { label: string; value: string }[] {
+  const fromMaster = getMasterList("misc", config.decisionMasterType)
+    .filter((entry) => entry.isActive === "Y")
+    .map((entry) => ({ label: entry.value ?? entry.description, value: entry.code }));
+  return fromMaster.length > 0
+    ? fromMaster
+    : config.decisionOptions.map((option) => ({ label: option, value: option }));
 }
 
 export const HOD_CONFIG: ReferralRoleConfig = {
   role: "HOD",
   label: "HOD",
   roleTypes: ["HOD", "HOD_TASK"],
+  decisionMasterType: "HOD_TERM_DEC",
   decisionOptions: ["Agree", "Disagree", "Refer to HO CMO", "Refer back to last UW", "Refer to IT"],
 };
 
@@ -2573,6 +2611,7 @@ export const SR_UW_CONFIG: ReferralRoleConfig = {
   role: "SR_UW",
   label: "Sr UW",
   roleTypes: ["SR_UW", "SR_UW_TASK"],
+  decisionMasterType: "SRUW_TERM_DEC",
   decisionOptions: [
     "Agree",
     "Disagree",
@@ -2607,27 +2646,37 @@ export interface ReferralDecisionHistoryRow {
   referralRemarks: string;
 }
 
-// Mock rows until the real endpoint is available.
-const DECISION_HISTORY_MOCK: ReferralDecisionHistoryRow[] = [
-  {
-    userName: "Ananya Sharma",
-    userRole: "Sr. UW",
-    firstUwDecision: "Standard",
-    firstUwRemarks: "Case referred for HOD review due to the overall risk assessment.",
-    date: "08 Sep 2026, 11:15:48 am",
-    financialDecision: "Standard",
-    medicalDecision: "Standard",
-    smokerStatus: "Non-Smoker",
-    referralReason: "Overall risk assessment",
-    referralRemarks: "Referred for HOD review.",
-  },
-];
+/** First non-empty text among the given response fields. */
+function firstText(source: Record<string, unknown>, keys: string[]): string {
+  for (const key of keys) {
+    const text = readText(source[key]).trim();
+    if (text) return text;
+  }
+  return "";
+}
 
-export async function fetchReferralDecisionHistory(
-  _applicationNo: string,
-): Promise<ReferralDecisionHistoryRow[]> {
-  await wait(150);
-  return DECISION_HISTORY_MOCK.map((row) => ({ ...row }));
+/**
+ * `uw-decision/fetch` response -> Underwriting Decision History rows. Accepts a bare list, `{ data: [...] }`
+ * or `{ data: { ... } }` (one decision). Rows with no values at all are dropped.
+ */
+export function mapReferralDecisionHistory(payload: unknown): ReferralDecisionHistoryRow[] {
+  const root = isRecord(payload) && "data" in payload ? payload.data : payload;
+  const list = Array.isArray(root) ? root : isRecord(root) ? [root] : [];
+  return list
+    .filter(isRecord)
+    .map((row) => ({
+      userName: firstText(row, ["userName", "createdBy", "updatedBy"]),
+      userRole: firstText(row, ["userRole", "roleType"]),
+      firstUwDecision: firstText(row, ["decision", "caseUwDecision"]),
+      firstUwRemarks: firstText(row, ["uwRemarks", "remarks"]),
+      date: formatDateTime(firstText(row, ["createdAt", "updatedAt", "date"])),
+      financialDecision: firstText(row, ["financialDecision"]),
+      medicalDecision: firstText(row, ["medicalDecision"]),
+      smokerStatus: firstText(row, ["smokerStatus"]),
+      referralReason: firstText(row, ["referralReason", "reasons"]),
+      referralRemarks: firstText(row, ["referralRemarks"]),
+    }))
+    .filter((row) => Object.values(row).some((value) => value !== ""));
 }
 
 export type ReferralDecisionTone = "decline" | "standard" | "refer" | "default";

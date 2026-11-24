@@ -6249,6 +6249,14 @@
         "type": "GUW_RECONS_TYPE"
       },
       {
+         "code": "3 Months",
+        "description": "3 Months",
+        "value": "3 Months",
+        "isActive": "Y",
+        "miscMastId": "1",
+"type":"POSTPONE_PERIOD"
+      },
+      {
         "code": "2228",
         "description": "Skin disorder- Psoriasis",
         "value": "Skin disorder- Psoriasis",

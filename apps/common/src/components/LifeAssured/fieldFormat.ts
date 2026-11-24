@@ -7,6 +7,7 @@ const FORMAT_PATTERNS: Record<FieldFormat, RegExp> = {
   alphabets: RegexPatterns.alphabets,
   alphanumeric: RegexPatterns.alphanumeric,
   pan: RegexPatterns.pan,
+  ifsc: RegexPatterns.ifsc,
 };
 
 /** Mandatory text field that must also match `format`; empty -> "is required", wrong format -> "should be ...". */

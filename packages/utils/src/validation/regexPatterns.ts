@@ -22,4 +22,6 @@ export class RegexPatterns {
   static readonly year = /^\d{4}$/;
   /** Permanent Account Number: 5 capital letters, 4 digits, 1 capital letter (e.g. ABCDE1234F). */
   static readonly pan = /^[A-Z]{5}\d{4}[A-Z]$/;
+  /** IFSC: 4 letters (bank), the digit 0 (reserved by RBI), then 6 letters or digits (branch), e.g. SBIN0000300. */
+  static readonly ifsc = /^[A-Za-z]{4}0[A-Za-z\d]{6}$/;
 }
