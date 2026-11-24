@@ -157,6 +157,9 @@ export const retailBusinessUrls = {
   get cvtValidation(): string {
     return configuredUrl(import.meta.env.VITE_RETAIL_CVT_VALIDATION_API);
   },
+  get uwDecisionFetch(): string {
+    return configuredUrl(import.meta.env.VITE_RETAIL_UW_DECISION_FETCH_API);
+  },
 };
 
 /** NSDL external-event-service URLs from .env. Empty when unset — mock mode skips them. */
