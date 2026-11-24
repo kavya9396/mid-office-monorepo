@@ -27,11 +27,12 @@ import {
   type Column,
 } from "@insurance-poc/ui";
 import {
+  buildFinancialDecisionOptions,
   buildFinancialDocumentOptions,
   buildFinancialMonthOptions,
+  buildFinancialVerifiedIncomeDocOptions,
   buildFinancialYesNoOptions,
   FINANCIAL_DATE_FORMAT,
-  FINANCIAL_DECISION_OPTIONS,
   FINANCIAL_DEFAULT_APPLICANTS,
   FINANCIAL_LOCKED_FIELDS,
   FINANCIAL_MESSAGES,
@@ -47,6 +48,7 @@ import {
   type FinancialControlKind,
   type FinancialLabelRef,
   type FinancialMonthlyIncomeLayout,
+  type FinancialOption,
   type FinancialSection,
   type FinancialStatementLayout,
   type FinancialSubmitPayload,
@@ -222,6 +224,8 @@ const createFinancialStore = (
 const StoreContext = createContext<FinancialStore | null>(null);
 /** Whether the section that owns a field is currently editable (after "Edit"). */
 const EditingContext = createContext(false);
+/** Options for the "Verified Income Doc" dropdown (documents of `table_of_finance_documents`). */
+const VerifiedIncomeDocOptionsContext = createContext<FinancialOption[]>([]);
 
 function useFinancialStore(): FinancialStore {
   const store = useContext(StoreContext);
@@ -302,6 +306,7 @@ const getAvatarText = (label: string) =>
 
 const selectPlaceholder = (kind: FinancialControlKind) => {
   if (kind === "decision") return "Select financial decision";
+  if (kind === "verifiedIncomeDoc") return "Select document";
   if (kind === "month") return "Select month";
   if (kind === "yesNo") return "Select";
   return "";
@@ -651,12 +656,14 @@ const FinancialControl = memo(function FinancialControl({
   const store = useFinancialStore();
   const value = useFieldValue(id);
   const error = useFieldError(id);
+  const verifiedIncomeDocOptions = useContext(VerifiedIncomeDocOptionsContext);
   // Master lists are read from session storage, so resolve them once per kind / value.
   const selectOptions = useMemo(() => {
-    if (kind === "decision") return FINANCIAL_DECISION_OPTIONS;
+    if (kind === "decision") return buildFinancialDecisionOptions(value);
+    if (kind === "verifiedIncomeDoc") return verifiedIncomeDocOptions;
     if (kind === "month") return buildFinancialMonthOptions();
     return buildFinancialYesNoOptions(value);
-  }, [kind, value]);
+  }, [kind, value, verifiedIncomeDocOptions]);
   const onChange = useCallback(
     (next: string) => {
       store.set(id, next);
@@ -667,6 +674,10 @@ const FinancialControl = memo(function FinancialControl({
 
   if (readOnly) {
     let displayValue = value;
+    if (kind === "verifiedIncomeDoc") {
+      displayValue =
+        selectOptions.find((option) => option.value === value)?.label ?? value;
+    }
     if (kind === "date" && value) {
       const parsed = parseFinancialDate(value);
       if (parsed) displayValue = parsed.format(FINANCIAL_DATE_FORMAT);
@@ -684,7 +695,12 @@ const FinancialControl = memo(function FinancialControl({
     );
   }
 
-  if (kind === "decision" || kind === "yesNo" || kind === "month") {
+  if (
+    kind === "decision" ||
+    kind === "yesNo" ||
+    kind === "month" ||
+    kind === "verifiedIncomeDoc"
+  ) {
     return (
       <Box sx={EDITABLE_CONTROL_SX} data-field={id}>
         <CustomSelect
@@ -1670,8 +1686,14 @@ export function Financial({
     () => buildFinancialDocumentOptions(sections),
     [sections],
   );
+  /** "Verified Income Doc" options: documents of `table_of_finance_documents` barring profession / bureau / decision. */
+  const verifiedIncomeDocOptions = useMemo(
+    () => buildFinancialVerifiedIncomeDocOptions(sections),
+    [sections],
+  );
   return (
     <StoreContext.Provider value={store}>
+      <VerifiedIncomeDocOptionsContext.Provider value={verifiedIncomeDocOptions}>
       <Box
         component="section"
         aria-label="View Financial"
@@ -1896,6 +1918,7 @@ export function Financial({
           onClose={() => setSnackbar(null)}
         />
       </Box>
+      </VerifiedIncomeDocOptionsContext.Provider>
     </StoreContext.Provider>
   );
 }

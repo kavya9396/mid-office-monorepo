@@ -1184,7 +1184,10 @@ function buildEmployeeIdCard(ctx: BuildContext): EmployeeIdCardSavePayload {
 function buildDecision(ctx: BuildContext): DecisionSavePayload {
   return {
     ...extractOptionalId(ctx.raw, "decisionDtlId"),
-    verifiedIncomeDoc: readString(ctx.raw.verifiedIncomeDoc) ?? "salary_slips",
+    verifiedIncomeDoc:
+      ctx.val("Verified Income Doc") ||
+      readString(ctx.raw.verifiedIncomeDoc) ||
+      "salary_slips",
     verifiedIncome: ctx.num("Verified Income"),
     justification:
       readString(ctx.raw.justification) ?? "Income verified from submitted documents",

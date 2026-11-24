@@ -50,7 +50,7 @@ export interface FinancialStatementLayout {
   trailing?: readonly string[];
 }
 
-export type FinancialControlKind = "text" | "yesNo" | "decision" | "date" | "month";
+export type FinancialControlKind = "text" | "yesNo" | "decision" | "date" | "month" | "verifiedIncomeDoc";
 
 export interface FinancialOption {
   label: string;
@@ -1031,12 +1031,39 @@ export function buildFinancialMonthOptions(): FinancialOption[] {
   return [{ label: "Select month", value: "" }, ...months];
 }
 
-export const FINANCIAL_DECISION_OPTIONS: FinancialOption[] = [
-  { label: "Select financial decision", value: "" },
-  { label: "financially eligible", value: "financially eligible" },
-  { label: "counter offer", value: "counter offer" },
-  { label: "reject", value: "reject" },
-];
+/** Financial Decision options from the `misc` master (type `financial_decision`); an unexpected existing value is kept as an extra option. */
+export function buildFinancialDecisionOptions(value: string): FinancialOption[] {
+  const options: FinancialOption[] = [
+    { label: "Select financial decision", value: "" },
+    ...readMiscOptions("financial_decision"),
+  ];
+  if (value && !options.some((option) => option.value === value)) {
+    options.splice(1, 0, { label: value, value });
+  }
+  return options;
+}
+
+/** Documents that are not selectable as the "Verified Income Doc". */
+const VERIFIED_INCOME_DOC_EXCLUDED_KEYS: ReadonlySet<string> = new Set([
+  "financial_profession",
+  "credit_bureau_details",
+  "decision",
+]);
+
+/**
+ * "Verified Income Doc" options: the documents listed in `table_of_finance_documents`
+ * (one section per document), barring the excluded documents.
+ */
+export function buildFinancialVerifiedIncomeDocOptions(
+  sections: readonly FinancialSection[],
+): FinancialOption[] {
+  return [
+    { label: "Select document", value: "" },
+    ...sections
+      .filter((section) => !VERIFIED_INCOME_DOC_EXCLUDED_KEYS.has(section.key))
+      .map((section) => ({ label: section.title, value: section.key })),
+  ];
+}
 
 export const FINANCIAL_DEFAULT_APPLICANTS: readonly FinancialApplicantTab[] = [
   { key: "lifeAssured1", label: "Life Assured1" },
@@ -1061,6 +1088,7 @@ const DATE_LABEL = /^(Joining Date|Date of Filling ITR)/i;
 
 export function resolveFinancialControlKind(sectionKey: string, label: string): FinancialControlKind {
   if (sectionKey === "decision" && label === "Financial Decision") return "decision";
+  if (sectionKey === "decision" && label === "Verified Income Doc") return "verifiedIncomeDoc";
   if (YES_NO_LABEL.test(label)) return "yesNo";
   if (DATE_LABEL.test(label)) return "date";
   return "text";
