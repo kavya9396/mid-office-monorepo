@@ -8,7 +8,7 @@ import {
   CustomTypography,
   DeleteIcon,
 } from "@insurance-poc/ui";
-import { getDrsRoleLabel, readApiErrorMessage } from "@insurance-poc/utils";
+import { clearDrsTaskIds, getDrsRoleLabel, readApiErrorMessage } from "@insurance-poc/utils";
 import { QuickLinksModule, type QuickLinkItem } from "@insurance-poc/common/quick-links";
 import { ApplicantProfile } from "@insurance-poc/common/applicant-profile";
 import type { LifeAssuredTab } from "@insurance-poc/common/life-assured";
@@ -19,6 +19,7 @@ import {
   type RequirementItem,
 } from "@insurance-poc/common/requirement-mgmt";
 import { getRetailDrsTaskConfig } from "../../config/drsTaskConfig";
+import { useCompleteRetailTaskMutation } from "../../services/completeTaskApi";
 import { useGetRetailDrsQuery, useSaveRetailDrsRequirementsMutation } from "../../services/drsApi";
 import { requirementStatusOrder, requirementStatusVariants } from "./requirementData";
 
@@ -30,6 +31,9 @@ const CPT_MR_BANNER_OPTIONS: RowDetailsOptions = {
 const CPT_MR_ROLE_TYPE = "CPT_DATA_ENTRY_MR_TASK";
 
 const CPT_MR_DEFAULT_ROLE_LABEL = "CPT Data Entry MR User";
+
+/** Decision sent to the complete-task API when the Data Entry user submits (no decision field on this screen). */
+const CPT_MR_SUBMIT_DECISION = "CLS_TASK";
 
 /** Only Applicant Profile is shown in Quick Links on the CPT MR DRS. */
 const CPT_MR_QUICK_LINKS: QuickLinkItem[] = [{ id: "applicant-profile", label: "Applicant Profile" }];
@@ -66,8 +70,25 @@ const CptMrUser = () => {
     refetchOnMountOrArgChange: true,
   });
   const [saveRetailDrsRequirements] = useSaveRetailDrsRequirementsMutation();
+  const [completeRetailTask, completeRetailTaskState] = useCompleteRetailTaskMutation();
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
   const [applicantProfileOpen, setApplicantProfileOpen] = useState(false);
+
+  const handleSubmit = async () => {
+    if (completeRetailTaskState.isLoading) return;
+    if (applicationNo.length === 0) {
+      setSnackbarMessage("Application number is missing.");
+      return;
+    }
+    const payload = { appNo: applicationNo, decision: CPT_MR_SUBMIT_DECISION, remarks: "" };
+    try {
+      await completeRetailTask(payload).unwrap();
+      clearDrsTaskIds();
+      void navigate("/inbox", { replace: true });
+    } catch (reason: unknown) {
+      setSnackbarMessage(readApiErrorMessage(reason) || "Unable to complete the task.");
+    }
+  };
 
   const handleSaveRequirements = async (updatedRequirements: RequirementItem[]) => {
     try {
@@ -156,7 +177,9 @@ const CptMrUser = () => {
 
       <CustomBox sx={{ display: "flex", justifyContent: "center", gap: "15px", py: 1 }}>
         <CustomButton>View Medical</CustomButton>
-        <CustomButton>Submit</CustomButton>
+        <CustomButton onClick={() => void handleSubmit()} disabled={completeRetailTaskState.isLoading}>
+          Submit
+        </CustomButton>
       </CustomBox>
 
       <CustomSnackbar

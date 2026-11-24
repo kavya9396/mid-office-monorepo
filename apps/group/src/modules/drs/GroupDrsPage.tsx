@@ -9,8 +9,9 @@ import { MmtGrievanceDrsPage } from "./MmtGrievanceDrsPage";
 import DvtUser from "./DvtUser";
 import GuwUser from "./GuwUser";
 import { ReferralDrsPage } from "../referral-uw/ReferralDrsPage";
-import { fetchGuwMembers } from "../../services/drsService";
-import { HOD_CONFIG, SR_UW_CONFIG } from "../../services/drsService";
+import { HOD_CONFIG, SR_UW_CONFIG, fetchGuwMembers } from "../../services/drsService";
+import DptNmrUser from "./DptNmrUser";
+import DptMrUser from "./DptMrUser";
 
 interface MemberEntryProps {
   /** Member selection page opened when the DRS payload holds more than one member. */
@@ -42,7 +43,7 @@ function MemberEntry({ memberSelectionPath, children }: Readonly<MemberEntryProp
           memberCount: members.length,
           memberId: "",
         });
-        navigate(memberSelectionPath, { replace: true });
+        void navigate(memberSelectionPath, { replace: true });
       } else {
         setDrsOpenContext({ applicationNo, memberCount: 1, memberId: "" });
         setChecked(true);
@@ -90,11 +91,13 @@ const SCREEN_BY_ROLE: Record<string, () => JSX.Element | null> = {
   SR_UW: SrUwEntry,
   DVT_TASK: DvtUser,
   MMT_TASK: MmtGrievanceDrsPage,
+  GROUP_DATA_ENTRY_NMR_TASK: DptNmrUser,
+  GROUP_DATA_ENTRY_MR_TASK: DptMrUser
 };
 
 export function GroupDrsPage() {
   const roleType = getDrsRoleType().trim().toUpperCase();
-  const Screen = SCREEN_BY_ROLE[roleType] ?? DvtUser;
+  const Screen = SCREEN_BY_ROLE[roleType] ?? <div>Page not found</div>;
   return <Screen />;
 }
 
