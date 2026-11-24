@@ -476,7 +476,7 @@
                     {
                       "key": "proposerSummary.residentStatus",
                       "label": "Resident Status",
-                      "value": "RESIDENT I"
+                      "value": "RESIDENT"
                     },
                     {
                       "label": "Designation",
@@ -507,7 +507,7 @@
                     {
                       "key": "kycDetails.pranNo",
                       "label": "Pran Number",
-                      "value": ""
+                      "value": "123456789123"
                     },
                     {
                       "label": "Pran Number Verification",
@@ -516,12 +516,12 @@
                     {
                       "key": "kycDetails.panNumber",
                       "label": "Pan Number",
-                      "value": ""
+                      "value": "ABCDE1234F"
                     },
                     {
                       "key": "kycDetails.isPanValid",
                       "label": "Pan Flag",
-                      "value": ""
+                      "value": "Yes"
                     },
                     {
                       "key": "kycDetails.aadharSeedingStatus",
@@ -583,17 +583,17 @@
                     {
                       "key": "kycDetails.dobDocument",
                       "label": "Dob Document",
-                      "value": ""
+                      "value": "Passport"
                     },
                     {
                       "key": "kycDetails.genderDocument",
                       "label": "Gender Document",
-                      "value": ""
+                      "value": "Passport"
                     },
                     {
                       "key": "kycDetails.pincodeDocument",
                       "label": "Pincode Document",
-                      "value": ""
+                      "value": "Passport"
                     }
                   ]
                 ]
@@ -635,7 +635,7 @@
                       {
                         "key": "address.communication.pinCode",
                         "label": "Pincode",
-                        "value": ""
+                        "value": "400002"
                       }
                     ]
                   },
