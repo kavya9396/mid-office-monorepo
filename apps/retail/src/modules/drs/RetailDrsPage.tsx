@@ -13,6 +13,7 @@ import CptMrUser from "./CptMrUser";
 import TpaDrsPage from "./TpaDrsPage";
 import CuwUser from "./CuwUser";
 import { fetchCuwMembers } from "../../services/drsService";
+import { findRetailDrsTaskConfig } from "../../config/drsTaskConfig";
 
 interface MemberEntryProps {
   /** Member selection page opened when the DRS payload holds more than one member. */
@@ -65,25 +66,22 @@ function CuwEntry() {
   );
 }
 
-/** `/app/{applicationNo}/drs` — screen picked from inbox session `roleType`. */
-/** Keys match `roleType` on inbox cases (see `retailInbox.json` poolData). */
-const SCREEN_BY_ROLE: Record<string, () => JSX.Element | null> = {
-  CUW_TASK: CuwEntry,
-  HOD_TASK: CuwEntry,
-  HOD: CuwEntry,
-  SR_UW_TASK: CuwEntry,
-  SR_UW: CuwEntry,
-  MMT_TASK: MmtGrievanceDrsPage,
-  AMR_NON_MEDICAL: TpaDrsPage,
-  MEDICAL_TPA_ERROR: TpaDrsPage,
-  CVT_TASK: CvtUser,
-  CPT_DATA_ENTRY_NMR_TASK: CptNmrUser,
-  CPT_DATA_ENTRY_MR_TASK: CptMrUser,
+/**
+ * `/app/{applicationNo}/drs` — the inbox session `roleType` (from the role-list response) is looked up in
+ * `RETAIL_DRS_TASK_CONFIG`; its `screenType` picks the screen. A new task needs a config entry only.
+ */
+const SCREEN_BY_SCREEN_TYPE: Record<string, () => JSX.Element | null> = {
+  CUW: CuwEntry,
+  CVT: CvtUser,
+  MMT: MmtGrievanceDrsPage,
+  TPA: TpaDrsPage,
+  CPT_NMR: CptNmrUser,
+  CPT_MR: CptMrUser,
 };
 
 export function RetailDrsPage() {
-  const roleType = getDrsRoleType().trim().toUpperCase();
-  const Screen = SCREEN_BY_ROLE[roleType] ?? RetailDrsRecordPage;
+  const taskConfig = findRetailDrsTaskConfig(getDrsRoleType());
+  const Screen = (taskConfig ? SCREEN_BY_SCREEN_TYPE[taskConfig.screenType] : undefined) ?? RetailDrsRecordPage;
   return <Screen />;
 }
 

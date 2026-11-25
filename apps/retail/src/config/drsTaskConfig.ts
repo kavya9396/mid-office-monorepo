@@ -47,9 +47,26 @@ export const RETAIL_DRS_TASK_CONFIG: Record<string, RetailDrsTaskConfig> = {
     screenType: "MMT",
     businessType: "RETAIL",
   },
+  // Medical TPA tasks open the TPA screen, which loads its own record (no DRS task config needed).
+  AMR_NON_MEDICAL: {
+    roleType: "AMR_NON_MEDICAL",
+    screenType: "TPA",
+    businessType: "RETAIL",
+  },
+  MEDICAL_TPA_ERROR: {
+    roleType: "MEDICAL_TPA_ERROR",
+    screenType: "TPA",
+    businessType: "RETAIL",
+  },
 };
 
 export const DEFAULT_RETAIL_DRS_TASK_CONFIG: RetailDrsTaskConfig = RETAIL_DRS_TASK_CONFIG.CVT_TASK;
+
+/** Config of the `roleType` the role-list API returned; `undefined` when that role has no config entry. */
+export function findRetailDrsTaskConfig(roleType?: string): RetailDrsTaskConfig | undefined {
+  const key = roleType?.trim().toUpperCase() ?? "";
+  return key === "" ? undefined : RETAIL_DRS_TASK_CONFIG[key];
+}
 
 export function getRetailDrsTaskConfig(roleOrTaskType?: string): RetailDrsTaskConfig {
   if (!roleOrTaskType) return DEFAULT_RETAIL_DRS_TASK_CONFIG;
