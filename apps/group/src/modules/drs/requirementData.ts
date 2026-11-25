@@ -19,6 +19,7 @@ export function mapRequirements(rawRequirements: RawRequirement[]): RequirementI
   return rawRequirements.map(({ requirementId, ...rest }) => ({
     ...rest,
     id: requirementId,
+    requirementId,
     status: normaliseStatus(rest.status),
   }));
 }

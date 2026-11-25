@@ -18,6 +18,9 @@ export const createEmptyRequirement = (template?: Partial<RequirementItem>): Req
   extraRemarks: "",
   description: "",
   isNew: true,
+  requirementPoolType: "",
+  partyId: "",
+  memberType: "lifeassured1",
   ...template,
 });
 

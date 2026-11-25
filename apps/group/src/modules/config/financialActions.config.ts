@@ -20,7 +20,7 @@ export const GROUP_FINANCIAL_ACTIONS_CONFIG: Record<
       "bre_financial_decision", // BRE Financial Decision
       "decision", // Decision
     ],
-    defaultMode: "edit",
+    defaultMode: "readOnly",
     sectionModes: {},
   },
   dptNmr: {

@@ -290,7 +290,7 @@
         "customerType": "SHNI",
         "partyId": "9f01c60b-6143-422b-ab85-ad8eba675e6a",
         "jontFlag": false,
-        "lifeNumber": "",
+        "lifeNumber": "01",
         "clientId": "NA",
         "proposerLaRelation": "",
         "jointLARelation": "",
@@ -400,7 +400,7 @@
               "customerType": "SHNI",
               "partyId": "9f01c60b-6143-422b-ab85-ad8eba675e6a",
               "jontFlag": false,
-              "lifeNumber": "",
+              "lifeNumber": "01",
               "clientId": "NA",
               "proposerLaRelation": "",
               "jointLARelation": "",
@@ -831,9 +831,9 @@
               ],
               "rows": [
                 {
-                  "fupCode": "",
-                  "profile": "",
-                  "raisedDate": "",
+                  "fupCode": "PIV",
+                  "profile": "Life Assured",
+                  "raisedDate": "9 Sep 2026",
                   "raisedRemark": "",
                   "pivvDecision": [],
                   "pivvRemark": ""

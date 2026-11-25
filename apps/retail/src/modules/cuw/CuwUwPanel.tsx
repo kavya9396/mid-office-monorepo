@@ -23,6 +23,7 @@ import { ValidationList } from "@insurance-poc/common/validation-list";
 import { getDrsRoleType, getDrsTaskIds, getMasterList, getSessionUser } from "@insurance-poc/utils";
 import {
   findPendingValidationMessage,
+  readCuwCaseDecisionOptions,
   type CuwRequiredValidations,
 } from "../../services/drsService";
 import {
@@ -34,6 +35,9 @@ import {
   CUW_ASSIGNEE_ROLE,
   assigneeRoleForReferTo,
   assigneeRoleForReferralRow,
+  cuwSrUwReferralCode,
+  isCuwSrUwReferral,
+  SR_UW_OPINION_MASTER_VALUE,
   buildCuwCounterSignParallelDecisionRequest,
   buildCuwReferralParallelDecisionRequests,
   buildCuwUwDecisionProducts,
@@ -163,26 +167,10 @@ const codeOfDecisionCodeText = (text: string) => text.split(" - ")[0].trim();
 /** Case UW Decisions that show the Decision Code dropdown (options from the `uw_decision_mapping` master). */
 const DECISION_CODE_DECISIONS = ["STD", "BOR_STD", "REJ", "DC", "POSTP", "CO", "EP"];
 
-// Case UW Decision options come from master data (misc / CUW_TERM_DESC). Three master codes differ from the
-// codes used by the decision rules, validation, saved decisions and the `uw-decision` API (BOR_STD, DC, POSTP),
-// so they are translated to those codes here.
-const DECISION_CODE_BY_MASTER_CODE: Record<string, string | undefined> = {
-  BSD_STD: "BOR_STD",
-  DEC: "DC",
-  POS_PON: "POSTP",
-};
-
-/**
- * Case UW Decision options from the post-login master data. Read at render time (like the DVT decision
- * options), not at module load, because the master data is only in session after login.
- */
-const readDecisionOptions = () =>
-  getMasterList("misc", "CUW_TERM_DESC")
-    .filter((entry) => entry.isActive === "Y")
-    .map((entry) => ({
-      value: DECISION_CODE_BY_MASTER_CODE[entry.code] ?? entry.code,
-      label: entry.value ?? entry.description,
-    }));
+// Case UW Decision options come from master data (misc / CUW_TERM_DESC) via `readCuwCaseDecisionOptions`.
+// Read at render time (like the DVT decision options), not at module load, because the master data is only
+// in session after login.
+const readDecisionOptions = readCuwCaseDecisionOptions;
 
 /** Reason options of the given master `misc` types, in that order, from the post-login master data. */
 const readReasonOptions = (types: string[]) =>
@@ -301,10 +289,10 @@ const ACTION_DECISION_OPTIONS = [
 // Row code of each master `CUW_REF_TO` value (lower case). The row code drives the existing exclusive /
 // reason / assign / reinsurer rules, so only the Refer To text comes from the master.
 // Plain "HOD" / "SR UW" are Counter Sign values only; Raise Referral uses the "... Opinion" values.
+// "SR UW Opinion" is not listed here: its row code is the master's own code (see `cuwSrUwReferralCode`).
 const REFERRAL_TARGET_BY_MASTER_VALUE: Record<string, string | undefined> = {
   it: "REF_IT",
   reinsurer: "REF_REINS",
-  "sr uw opinion": "REF_SR_UW",
   "hod opinion": "REF_HOD",
   "ho cmo": "REF_CMO",
   cmo: "REF_CMO_LOCAL",
@@ -319,19 +307,29 @@ const REFERRAL_TARGET_BY_MASTER_VALUE: Record<string, string | undefined> = {
  * Raise Referral "Refer To" rows from master `misc` type CUW_REF_TO (label = master value, in master order).
  * Read at render time because the master data is only in session after login.
  */
-const readReferralTypeOptions = () =>
-  readFirstAvailableMiscOptions(["CUW_REF_TO"]).flatMap((option) => {
+const readReferralTypeOptions = () => {
+  const seen = new Set<string>();
+  return readFirstAvailableMiscOptions(["CUW_REF_TO"]).flatMap((option) => {
     if (assigneeRoleForReferTo(option.value) !== "") return [];
-    const target = REFERRAL_TARGET_BY_MASTER_VALUE[option.value.trim().toLowerCase()];
+    const key = option.value.trim().toLowerCase();
+    const target = key === SR_UW_OPINION_MASTER_VALUE ? cuwSrUwReferralCode() : REFERRAL_TARGET_BY_MASTER_VALUE[key];
     if (!target) {
       console.warn(`[CuwUwPanel] CUW_REF_TO value "${option.value}" has no referral row; skipped.`);
       return [];
     }
+    // The master can list one value twice (numeric and coded entries); one row per referral target
+    if (seen.has(target)) return [];
+    seen.add(target);
     return [{ value: target, label: option.value }];
   });
+};
 
-// Assigned To is enabled only for these referral rows
-const ASSIGNABLE_REFERRALS = ["REF_SR_UW", "REF_HOD"];
+// Referral rows that exclude every other row (Reinsurer, Sr UW Opinion, HOD Opinion)
+const isExclusiveReferral = (target: string) =>
+  target === "REF_REINS" || target === "REF_HOD" || isCuwSrUwReferral(target);
+
+// Assigned To is enabled only for these referral rows (Sr UW Opinion, HOD Opinion)
+const isAssignableReferral = (target: string) => target === "REF_HOD" || isCuwSrUwReferral(target);
 
 // Referrals whose Reason dropdown is disabled
 const DISABLED_REASON_REFERRALS = ["REF_ACU", "REF_CUW_CLM"];
@@ -341,7 +339,6 @@ const DISABLED_REASON_REFERRALS = ["REF_ACU", "REF_CUW_CLM"];
 const REFERRAL_REASON_MASTER_TYPES: Record<string, string | undefined> = {
   REF_IT: "CUW_REF_IT_RSN",
   REF_REINS: "CUW_REF_REINS",
-  REF_SR_UW: "CUW_REF_SRUW_OP",
   REF_HOD: "CUW_REF_HOD_OP",
   REF_CMO: "CUW_HO_CMO_RSN",
   REF_CMO_LOCAL: "CUW_CMO_RSN",
@@ -353,13 +350,18 @@ const REFERRAL_STATIC_REASON_OPTIONS: Record<string, string[] | undefined> = {
   REF_VIDEO_MER: ["Medical review", "Other"],
 };
 
+const SR_UW_OPINION_REASON_MASTER_TYPE = "CUW_REF_SRUW_OP";
+
+const referralReasonMasterType = (target: string) =>
+  isCuwSrUwReferral(target) ? SR_UW_OPINION_REASON_MASTER_TYPE : REFERRAL_REASON_MASTER_TYPES[target];
+
 const hasReferralReasonOptions = (target: string) =>
   !DISABLED_REASON_REFERRALS.includes(target) &&
-  (REFERRAL_REASON_MASTER_TYPES[target] !== undefined || REFERRAL_STATIC_REASON_OPTIONS[target] !== undefined);
+  (referralReasonMasterType(target) !== undefined || REFERRAL_STATIC_REASON_OPTIONS[target] !== undefined);
 
 const readReferralReasonOptions = (target: string) => {
   if (DISABLED_REASON_REFERRALS.includes(target)) return [];
-  const type = REFERRAL_REASON_MASTER_TYPES[target];
+  const type = referralReasonMasterType(target);
   if (type) return readFirstAvailableMiscOptions([type]);
   return (REFERRAL_STATIC_REASON_OPTIONS[target] ?? []).map((text) => ({ value: text, label: text }));
 };
@@ -419,9 +421,10 @@ const GUIDELINE_CELL = {
 } as const;
 const GUIDELINE_CELL_LAST = { padding: "8px 10px", borderBottom: "1px solid #eadfd9" } as const;
 
-// Exclusive referral rows, in pre-selection priority order after CMO / other rows (priority 0)
-const EXCLUSIVE_REFERRALS = [
-  { key: "sr uw", row: "REF_SR_UW", priority: 1 },
+// Exclusive referral rows, in pre-selection priority order after CMO / other rows (priority 0).
+// The Sr UW row code comes from the master, so the list is built when it is read.
+const readExclusiveReferrals = () => [
+  { key: "sr uw", row: cuwSrUwReferralCode(), priority: 1 },
   { key: "hod", row: "REF_HOD", priority: 2 },
   { key: "reinsurer", row: "REF_REINS", priority: 3 },
 ];
@@ -483,7 +486,7 @@ function pickReferralRow(targets: string[]): string | null {
   let best: { priority: number; row: string } | null = null;
   for (const target of targets) {
     const key = target.toLowerCase();
-    const exclusive = EXCLUSIVE_REFERRALS.find((e) => e.key === key);
+    const exclusive = readExclusiveReferrals().find((e) => e.row !== "" && e.key === key);
     const option = exclusive
       ? undefined
       : referralOptions.find((o) => o.label.toLowerCase() === key);
@@ -685,7 +688,7 @@ export function CuwUwPanel({
     referralRows.some((r) => r.target === "REF_HOD" && r.selected) ||
     assigneeRoleForReferTo(approverTarget) === CUW_ASSIGNEE_ROLE.HOD;
   const srUwPicked =
-    referralRows.some((r) => r.target === "REF_SR_UW" && r.selected) ||
+    referralRows.some((r) => isCuwSrUwReferral(r.target) && r.selected) ||
     assigneeRoleForReferTo(approverTarget) === CUW_ASSIGNEE_ROLE.SR_UW;
   const hodUsers = useGetUsersByRoleQuery(CUW_ASSIGNEE_ROLE.HOD, { skip: !hodPicked });
   const srUwUsers = useGetUsersByRoleQuery(CUW_ASSIGNEE_ROLE.SR_UW, { skip: !srUwPicked });
@@ -1090,7 +1093,7 @@ export function CuwUwPanel({
       // Sr UW / HOD Opinion: Reason, Remarks and Assigned To are mandatory
       const incomplete = selectedReferrals.find(
         (r) =>
-          ASSIGNABLE_REFERRALS.includes(r.target) &&
+          isAssignableReferral(r.target) &&
           (!r.reason.trim() || !r.remarks.trim() || !r.assignedTo.trim()),
       );
       if (incomplete) {
@@ -2014,12 +2017,12 @@ export function CuwUwPanel({
                         <th style={{ padding: "8px 10px", border: "1px solid #ded9d6", textAlign: "center", width: "40px" }}>
                           <input
                             type="checkbox"
-                            disabled={referralRows.some((r) => ["REF_REINS", "REF_SR_UW", "REF_HOD"].includes(r.target) && r.selected)}
+                            disabled={referralRows.some((r) => isExclusiveReferral(r.target) && r.selected)}
                             checked={
                               referralRows.length > 0 &&
-                              !referralRows.some((r) => ["REF_REINS", "REF_SR_UW", "REF_HOD"].includes(r.target) && r.selected) &&
+                              !referralRows.some((r) => isExclusiveReferral(r.target) && r.selected) &&
                               referralRows
-                                .filter((r) => !["REF_REINS", "REF_SR_UW", "REF_HOD", "REF_TELE_MER", "REF_VIDEO_MER"].includes(r.target))
+                                .filter((r) => !isExclusiveReferral(r.target) && !["REF_TELE_MER", "REF_VIDEO_MER"].includes(r.target))
                                 .every((r) => r.selected)
                             }
                             onChange={(e) => {
@@ -2028,7 +2031,7 @@ export function CuwUwPanel({
                                 prev.map((r) => ({
                                   ...r,
                                   // Tele MER / Video MER are mutually exclusive, so select-all leaves them unchanged
-                                  selected: ["REF_REINS", "REF_SR_UW", "REF_HOD"].includes(r.target)
+                                  selected: isExclusiveReferral(r.target)
                                     ? false
                                     : ["REF_TELE_MER", "REF_VIDEO_MER"].includes(r.target)
                                     ? r.selected
@@ -2037,7 +2040,7 @@ export function CuwUwPanel({
                               );
                             }}
                             style={{
-                              cursor: referralRows.some((r) => ["REF_REINS", "REF_SR_UW", "REF_HOD"].includes(r.target) && r.selected)
+                              cursor: referralRows.some((r) => isExclusiveReferral(r.target) && r.selected)
                                 ? "not-allowed"
                                 : "pointer",
                               transform: "scale(1.1)",
@@ -2064,9 +2067,9 @@ export function CuwUwPanel({
                     <tbody>
                       {referralRows.map((row, index) => {
                         const isReinsurer = row.target === "REF_REINS";
-                        const isExclusive = ["REF_REINS", "REF_SR_UW", "REF_HOD"].includes(row.target);
+                        const isExclusive = isExclusiveReferral(row.target);
                         const isExclusiveSelected = referralRows.some(
-                          (r) => ["REF_REINS", "REF_SR_UW", "REF_HOD"].includes(r.target) && r.selected
+                          (r) => isExclusiveReferral(r.target) && r.selected
                         );
                         const isHoCmoSelected = referralRows.some(
                           (r) => r.target === "REF_CMO" && r.selected
@@ -2078,7 +2081,7 @@ export function CuwUwPanel({
                           (row.target === "REF_CMO_LOCAL" && isHoCmoSelected) ||
                           (row.target === "REF_VIDEO_MER" && isTeleMerSelected) ||
                           (row.target === "REF_TELE_MER" && isVideoMerSelected);
-                        const canAssign = ASSIGNABLE_REFERRALS.includes(row.target);
+                        const canAssign = isAssignableReferral(row.target);
                         const isReasonDisabled =
                           !row.selected || isRowDisabled || DISABLED_REASON_REFERRALS.includes(row.target);
                         const reasonOptions = readReferralReasonOptions(row.target);

@@ -17,8 +17,6 @@ import type { LifeAssuredApplicant, RiderEditRow } from "@insurance-poc/common/l
 import type { RequirementItem } from "@insurance-poc/common/requirement-mgmt";
 import type { RiskCardData, RiskCardField } from "@insurance-poc/common/risk-cards";
 import type { ComparisonRow } from "@insurance-poc/common/decision-bar";
-import { store } from "../app/store";
-import { groupDrsApi } from "./drsApi";
 import { mapApplicants } from "../modules/drs/lifeAssuredData";
 import {
   mapMembersQuickLinks,
@@ -72,6 +70,7 @@ export type GroupDrsData = {
   requirements: RequirementItem[];
   applicants: LifeAssuredApplicant[];
   memberTypes: string[];
+  profileOptions: Array<{ label: string; value: string }>;
   /** Quick Link pages (previous policy, open tasks, audit trail, risk details). */
   quickLinks: QuickLinksSubSections;
   /** Banner rows from the primary member (`membersDetails[].rowDetails`). */
@@ -134,19 +133,44 @@ function readAttributes(value: unknown): DetailAttribute[] {
   });
 }
 
-function readTables(value: unknown): DetailTable[] {
+/**
+ * Rider rows of the member's applicant profile: `product_details.value.rows[]` with `productType` "rider"
+ * (`name` = product code and `sumAssured` feed the card's Rider Details table; `productName` and `term`
+ * feed the Rider Name / Rider Term of the edit dialog).
+ * `null` when the member has no `product_details` rows, so the card's own table rows are used instead.
+ */
+function readProductRiderRows(member: Record<string, unknown> | null): Record<string, unknown>[] | null {
+  const sections = Array.isArray(member?.sections) ? member.sections : [];
+  const profileSection = sections.find((s) => isRecord(s) && s.name === "applicantProfile");
+  const profile = isRecord(profileSection) && isRecord(profileSection.value) ? profileSection.value : member;
+  const productDetails = isRecord(profile?.product_details) ? profile.product_details : null;
+  const productRows = isRecord(productDetails?.value) ? productDetails.value.rows : null;
+  if (!Array.isArray(productRows)) return null;
+  return productRows
+    .filter(isRecord)
+    .filter((row) => readText(row.productType).trim().toLowerCase() === "rider")
+    .map((row) => ({
+      name: readText(row.productCode),
+      sumAssured: readText(row.sumAssured),
+      productName: readText(row.productName),
+      term: readText(row.term),
+    }));
+}
+
+function readTables(value: unknown, riderRows: Record<string, unknown>[] | null = null): DetailTable[] {
   if (!Array.isArray(value)) return [];
   return value.map((item) => {
     if (!isRecord(item) || typeof item.name !== "string" || !Array.isArray(item.columns)) {
       return { name: "", columns: [], rows: [] };
     }
     if (!item.columns.every((column) => typeof column === "string")) return { name: "", columns: [], rows: [] };
-    if (!Array.isArray(item.rows)) return { name: item.name, columns: item.columns, rows: [] };
+    const isRiderTable = item.name === RIDER_TABLE_NAME;
+    const sourceRows: unknown = isRiderTable && riderRows ? riderRows : item.rows;
+    if (!Array.isArray(sourceRows)) return { name: item.name, columns: item.columns, rows: [] };
 
     const columns: string[] = item.columns;
-    const isRiderTable = item.name === RIDER_TABLE_NAME;
 
-    const rows = item.rows.map((row, index) => {
+    const rows = sourceRows.map((row, index) => {
       if (!isRecord(row)) return {};
       const cells: Record<string, string> = {};
       for (const column of columns) {
@@ -165,7 +189,7 @@ function readTables(value: unknown): DetailTable[] {
   });
 }
 
-function readCards(value: unknown): CardDetail[] {
+function readCards(value: unknown, riderRows: Record<string, unknown>[] | null = null): CardDetail[] {
   if (!Array.isArray(value)) return [];
   return value
     .filter((item): item is Record<string, unknown> => isRecord(item) && typeof item.type === "string" && Boolean(CARD_TYPE_BY_NAME[item.type]))
@@ -173,7 +197,7 @@ function readCards(value: unknown): CardDetail[] {
       type: readCardType(item.type as string),
       attributes: readAttributes(item.attributes),
       expandedAttributes: readAttributes(item.expandedAttributes),
-      tables: readTables(item.tables),
+      tables: readTables(item.tables, riderRows),
     }));
 }
 
@@ -294,14 +318,29 @@ export function mapRawRequirementRows(rowsOrSection: unknown): RequirementItem[]
       fupCode: readText(row.fupCode),
       extraRemarks: readText(row.extraRemarks),
       description: readText(row.description),
+      requirementPoolType: readText(row.requirementPoolType) || readText(row.team),
+      partyId: readText(row.partyId),
+      memberType: readText(row.memberType),
     };
   });
 
   return mapRequirements(rawList);
 }
 
-/** Rider rows of the Application Detail card's "Rider Details" table (name + sum assured only). */
-function readRiders(cardDetails: unknown): RiderEditRow[] {
+/**
+ * Rider rows of the edit dialog. Taken from the member's `product_details` rider rows (`productName`,
+ * `sumAssured`, `term`); the Application Detail card's "Rider Details" table is only the fallback.
+ */
+function readRiders(cardDetails: unknown, productRiderRows: Record<string, unknown>[] | null): RiderEditRow[] {
+  if (productRiderRows) {
+    return productRiderRows
+      .map((row) => ({
+        riderName: readText(row.productName) || readText(row.name),
+        sumAssured: readText(row.sumAssured),
+        riderTerm: readText(row.term),
+      }))
+      .filter((r) => Boolean(r.riderName.trim() || r.sumAssured.trim() || r.riderTerm.trim()));
+  }
   if (!Array.isArray(cardDetails)) return [];
   const card = cardDetails.find(
     (item): item is Record<string, unknown> => isRecord(item) && item.type === "Application Detail",
@@ -335,6 +374,38 @@ export function readMemberTypes(membersDetails: unknown): string[] {
         .filter((val): val is string => val.length > 0),
     ),
   );
+}
+
+export function readProfileOptions(membersDetails: unknown): Array<{ label: string; value: string }> {
+  if (!Array.isArray(membersDetails)) return [];
+  const options: Array<{ label: string; value: string }> = [];
+  const seen = new Set<string>();
+
+  for (const m of membersDetails) {
+    if (!isRecord(m)) continue;
+    const memberType = typeof m.memberType === "string" ? m.memberType.trim() : "";
+    const sections = Array.isArray(m.sections) ? m.sections : [];
+    const subSections = Array.isArray(m.subSections) ? m.subSections : [];
+    const allSections = [...sections, ...subSections];
+    const profileSection = allSections.find(
+      (s): s is Record<string, unknown> => isRecord(s) && s.name === "applicantProfile",
+    );
+    const profileVal = isRecord(profileSection?.value) ? profileSection.value : null;
+
+    const lifeNumber =
+      readText(profileVal?.lifeNumber).trim() ||
+      readText(m.lifeNumber).trim();
+
+    const label = memberType || (lifeNumber ? `Life ${lifeNumber}` : "");
+    const value = lifeNumber || memberType;
+
+    if (label && value && !seen.has(`${label}:${value}`)) {
+      seen.add(`${label}:${value}`);
+      options.push({ label, value });
+    }
+  }
+
+  return options;
 }
 
 const GRIEVANCE_ROW_KEYS: (keyof GrievanceHistoryRow)[] = [
@@ -432,6 +503,7 @@ export function mapGroupDrsPayload(value: unknown): GroupDrsData {
   const membersDetails = Array.isArray(data.membersDetails) ? data.membersDetails : [];
   const primaryMember = membersDetails.find(isRecord) ?? null;
   const cardDetailsRaw = primaryMember?.cardDetails ?? data.cardDetails;
+  const productRiderRows = readProductRiderRows(primaryMember);
   const rowDetails = mapRowDetails(primaryMember?.rowDetails);
   const nameRow = rowDetails.find((row) => row.id === 0);
   const historySection = findNamedSection(sections, "grievanceHistory");
@@ -440,7 +512,7 @@ export function mapGroupDrsPayload(value: unknown): GroupDrsData {
 
   return {
     applicationNo,
-    cardDetails: readCards(cardDetailsRaw),
+    cardDetails: readCards(cardDetailsRaw, productRiderRows),
     breDecision: readBre(findSection(sections, "latestBreDecision")),
     dvtDecision: readDvtDecision(findSection(sections, "dvtDecision")),
     requirements: mapRawRequirementRows(findSection(sections, "requirementManagement")),
@@ -450,9 +522,10 @@ export function mapGroupDrsPayload(value: unknown): GroupDrsData {
           ? { value: data.membersDetails }
           : findSection(sections, "applicantProfile")
       ),
-      riders: readRiders(cardDetailsRaw),
+      riders: readRiders(cardDetailsRaw, productRiderRows),
     }),
     memberTypes: readMemberTypes(data.membersDetails),
+    profileOptions: readProfileOptions(data.membersDetails),
     quickLinks: mapMembersQuickLinks(data.membersDetails),
     rowDetails,
     applicantName: fieldValue(nameRow?.fields, "Name"),
@@ -787,7 +860,7 @@ export interface GuwParallelDecisionRequest {
   partyId: string;
   action: GuwParallelDecisionAction;
   /** Always sent, always an empty string. */
-  decision: "";
+  decision: string;
   /** Always sent, always a single space. */
   remarks: " ";
   userId: string;
@@ -803,8 +876,31 @@ export type GuwParallelDecisionBaseInput = Pick<GuwDecisionFormInput, "applicati
   instanceId?: string;
 };
 
+/** Master `GUW_REF_TO` value (lower case) of the Sr UW Opinion referral. */
+export const SR_UW_OPINION_MASTER_VALUE = "sr uw opinion";
+
+/**
+ * Referral code of Sr UW Opinion, read from the master `misc` type GUW_REF_TO (the entry whose value is
+ * "SR UW Opinion" and whose code is a `REF_` code, e.g. REF_SRUW). "" when the master has none.
+ * Read at call time because the master data is only in session after login.
+ */
+export function guwSrUwReferralCode(): string {
+  const entry = getMasterList("misc", "GUW_REF_TO").find(
+    (item) =>
+      item.isActive === "Y" &&
+      (item.value ?? item.description).trim().toLowerCase() === SR_UW_OPINION_MASTER_VALUE &&
+      item.code.toUpperCase().startsWith("REF_"),
+  );
+  return entry?.code ?? "";
+}
+
+export function isGuwSrUwReferral(target: string): boolean {
+  const code = guwSrUwReferralCode();
+  return code !== "" && target === code;
+}
+
 /** Referral rows whose Refer To is an opinion (Sr UW Opinion / HOD Opinion); every other row is a plain referral. */
-const OPINION_REFERRALS = ["REF_SR_UW", "REF_HOD"];
+const isOpinionReferral = (target: string) => isGuwSrUwReferral(target) || target === "REF_HOD";
 
 function toParallelDecisionRequest(
   base: GuwParallelDecisionBaseInput,
@@ -856,8 +952,8 @@ export function buildGuwReferralParallelDecisionRequests(
       ...(assignedTo ? { assignedTo: { name: assignedTo, description: assignedTo, value: ntid } } : {}),
     };
   };
-  const opinions = rows.filter((row) => OPINION_REFERRALS.includes(row.target)).map(toItem);
-  const referrals = rows.filter((row) => !OPINION_REFERRALS.includes(row.target)).map(toItem);
+  const opinions = rows.filter((row) => isOpinionReferral(row.target)).map(toItem);
+  const referrals = rows.filter((row) => !isOpinionReferral(row.target)).map(toItem);
   const requests: GuwParallelDecisionRequest[] = [];
   if (opinions.length > 0) requests.push(toParallelDecisionRequest(base, "OPINION", opinions));
   if (referrals.length > 0) {
@@ -959,7 +1055,7 @@ export function assigneeRoleForReferTo(referTo: string): string {
 export function assigneeRoleForReferralRow(target: string): string {
   const key = target.trim().toLowerCase().replace(/[\s_.-]+/g, " ");
   if (key === "ref_hod" || key === "ref hod" || key === "hod opinion") return GUW_ASSIGNEE_ROLE.HOD;
-  if (key === "ref_sr_uw" || key === "ref sr uw" || key === "ref sruw" || key === "sr uw opinion") return GUW_ASSIGNEE_ROLE.SR_UW;
+  if (isGuwSrUwReferral(target) || key === "sr uw opinion") return GUW_ASSIGNEE_ROLE.SR_UW;
   return "";
 }
 
@@ -1266,6 +1362,7 @@ export interface GuwDrsRecord {
   drsData: { commonSection: unknown; membersDetails: unknown };
   /** Distinct `membersDetails[].memberType` values; options for the requirement "Profile" field. */
   memberTypes: string[];
+  profileOptions: Array<{ label: string; value: string }>;
   /** `data.subSections[]` mapped for the Quick Links dialogs. */
   quickLinks: QuickLinksSubSections;
   /** `subSections[applicantProfile].product_details.value.rows[]` of the member. */
@@ -1301,6 +1398,25 @@ function mapRowDetails(rowDetails: unknown): BannerRowDetail[] {
     fields: Array.isArray(row.fields)
       ? row.fields.filter(isRecord).map((f) => ({ name: str(f.name), value: str(f.value) }))
       : [],
+  }));
+}
+
+/**
+ * GUW rows: id 0 = member line (Name, App No., Member, demographics), 1 = product, 2 = riders, 3 = sum at risk.
+ * Some payloads send Name / App No. as their own row and the member fields as the next row; fold that
+ * into row 0 and renumber the rest so the product and rider rows keep their expected ids.
+ */
+function mapGuwRowDetails(rowDetails: unknown): BannerRowDetail[] {
+  const rows = mapRowDetails(rowDetails);
+  const hasField = (row: BannerRowDetail | undefined, name: string) =>
+    row?.fields.some((f) => f.name === name) ?? false;
+  const [first, second, ...rest] = rows;
+  if (!first || !second || !hasField(first, "Name") || hasField(first, "Member") || !hasField(second, "Member")) {
+    return rows;
+  }
+  return [{ ...first, fields: [...first.fields, ...second.fields] }, ...rest].map((row, index) => ({
+    ...row,
+    id: index,
   }));
 }
 
@@ -1650,14 +1766,14 @@ function memberRecords(payload: unknown): Record<string, unknown>[] {
 
 /** Member id of one `membersDetails[]` object: the "Member" field of `rowDetails` id 0 (e.g. "Life Assured 1"). */
 function memberIdOf(member: Record<string, unknown>, index: number): string {
-  const memberFields = mapRowDetails(member.rowDetails).find((r) => r.id === 0)?.fields;
+  const memberFields = mapGuwRowDetails(member.rowDetails).find((r) => r.id === 0)?.fields;
   return fieldValue(memberFields, "Member") || `Life Assured ${index + 1}`;
 }
 
 /** Member rows for the member selection screen, from `rowDetails` id 0 (name, member and demographics). */
 export function mapGuwMembers(payload: unknown): GuwMemberSummary[] {
   return memberRecords(payload).map((data, index) => {
-    const rows = mapRowDetails(data.rowDetails);
+    const rows = mapGuwRowDetails(data.rowDetails);
     const memberFields = rows.find((r) => r.id === 0)?.fields;
     const detail = (name: string) => fieldValue(memberFields, name);
     const age = fieldValue(memberFields, "Age");
@@ -1686,6 +1802,10 @@ export function mapGuwMembers(payload: unknown): GuwMemberSummary[] {
  */
 async function loadGuwPayload(applicationNo: string, roleType?: string): Promise<unknown> {
   const taskType = roleType?.trim() || getDrsRoleType() || "GUW";
+  const [{ store }, { groupDrsApi }] = await Promise.all([
+    import("../app/store"),
+    import("./drsApi"),
+  ]);
   const request = store.dispatch(
     groupDrsApi.endpoints.getGuwDrsPayload.initiate({ applicationNo, taskType }),
   );
@@ -1706,7 +1826,7 @@ export async function fetchGuwMembers(applicationNo: string, roleType?: string):
 /** Product (id 1) and rider (id 2) rows of the first `membersDetails[]` object, for the member selection banner. */
 export function mapGuwProductRowDetails(payload: unknown): BannerRowDetail[] {
   const firstMember = memberRecords(payload)[0];
-  return mapRowDetails(firstMember?.rowDetails).filter((row) => row.id === 1 || row.id === 2);
+  return mapGuwRowDetails(firstMember?.rowDetails).filter((row) => row.id === 1 || row.id === 2);
 }
 
 export async function fetchGuwProductRowDetails(applicationNo: string, roleType?: string): Promise<BannerRowDetail[]> {
@@ -1744,7 +1864,7 @@ export function mapGuwDrsPayload(payload: unknown, memberId?: string): GuwDrsRec
   );
   const requirements: RequirementItem[] = mapRawRequirementRows(rawReqs);
 
-  const rowDetails = mapRowDetails(data.rowDetails);
+  const rowDetails = mapGuwRowDetails(data.rowDetails);
   const applicantName = fieldValue(rowDetails[0]?.fields, "Name");
 
   const riskCards: RiskCardData[] = Array.isArray(data.cardDetails)
@@ -1824,6 +1944,7 @@ export function mapGuwDrsPayload(payload: unknown, memberId?: string): GuwDrsRec
     requirements,
     drsData: { commonSection: root.commonSection, membersDetails: root.membersDetails },
     memberTypes: readMemberTypes(root.membersDetails),
+    profileOptions: readProfileOptions(root.membersDetails),
     quickLinks: {
       ...mapMembersQuickLinks(root.membersDetails),
       raiseGrievance: mapRaiseGrievance(data.subSections),
@@ -1835,7 +1956,7 @@ export function mapGuwDrsPayload(payload: unknown, memberId?: string): GuwDrsRec
       ...(caseDecisionVal
         ? {
             submittedDecision: {
-              decisionCode: GUW_DECISION_CODE_BY_LABEL[caseDecisionVal.toLowerCase()] ?? caseDecisionVal,
+              decisionCode: guwDecisionCodeOfLabel(caseDecisionVal),
               remarks: caseRemarksVal,
               fields: [
                 { label: "Case UW Decision", value: caseDecisionVal },
@@ -2069,17 +2190,13 @@ const DEFAULT_JUSTIFICATION_REASONS = [
   "Other",
 ];
 
-const GUW_DECISION_CODE_BY_LABEL: Record<string, string> = {
-  standard: "STD",
-  "counter offer": "CO",
-  decline: "DC",
-  reject: "REJ",
-  postpone: "POSTP",
+/**
+ * Decisions raised from the action buttons / referral rows. They are not part of the `GUW_TERM_DESC`
+ * master (Standard, Reject, Counter Offer ... come from the master, see `readGuwCaseDecisionOptions`).
+ */
+const GUW_ACTION_DECISION_CODE_BY_LABEL: Record<string, string> = {
   hold: "HOLD",
-  "extra premium": "EP",
-  "borderline standard": "BOR_STD",
   "refer to hod": "REF_HOD",
-  "refer to sr.uw": "REF_SR_UW",
   "refer to ho cmo": "REF_CMO",
   "refer to cmo": "REF_CMO",
   "refer to reinsurer": "REF_REINS",
@@ -2093,6 +2210,16 @@ const GUW_DECISION_CODE_BY_LABEL: Record<string, string> = {
   "counter sign": "APPROVER",
   "raise referral": "REFERRAL",
 };
+
+/** Decision code of a submitted Case UW Decision label; "Refer to Sr.UW" resolves to the master's Sr UW code. */
+function guwDecisionCodeOfLabel(label: string): string {
+  const key = label.toLowerCase();
+  if (key === "refer to sr.uw") return guwSrUwReferralCode() || label;
+  const fromMaster = readGuwCaseDecisionOptions().find(
+    (option) => option.label.trim().toLowerCase() === key,
+  );
+  return fromMaster?.value ?? GUW_ACTION_DECISION_CODE_BY_LABEL[key] ?? label;
+}
 
 /** DTO -> domain. Unknown fields are dropped; missing lists become empty. */
 export function fromGuwValidationResponse(dto: unknown): GuwValidationResult {
@@ -2190,82 +2317,25 @@ export interface DropdownOption {
   label: string;
 }
 
-export const MASTER_DECISION_OPTIONS: DropdownOption[] = [
-  { value: "STD", label: "Standard" },
-  { value: "BOR_STD", label: "Borderline Standard" },
-  { value: "REJ", label: "Reject" },
-  { value: "DC", label: "Decline" },
-  { value: "POSTP", label: "Postpone" },
-  { value: "CO", label: "Counter Offer" },
-  { value: "EP", label: "Extra Premium" },
-  { value: "HOLD", label: "Hold" },
-  { value: "REFERRAL", label: "Refer To" },
-  { value: "AMR", label: "Raise Requirement" },
-  { value: "APPROVER", label: "Refer to Approver" },
-];
-
-export const MASTER_REFERRAL_TYPE_OPTIONS: DropdownOption[] = [
-  { value: "REF_IT", label: "IT" },
-  { value: "REF_REINS", label: "Reinsurer" },
-  { value: "REF_CMO", label: "HO CMO" },
-  { value: "REF_CMO_LOCAL", label: "CMO" },
-  { value: "REF_RISK", label: "Risk" },
-  { value: "REF_ACU", label: "Accuity" },
-  { value: "REF_CUW_CLM", label: "CUW Claim" },
-];
-
-export const MASTER_REFERRAL_REASON_OPTIONS: Record<string, string[]> = {
-  REF_IT: ["System issue", "Data correction", "Other"],
-  REF_REINS: ["High sum assured", "Medical risk", "Other"],
-  REF_CMO: ["Medical review", "Specialist opinion", "Other"],
-  REF_CMO_LOCAL: ["Medical review", "Specialist opinion", "Other"],
-  REF_RISK: ["Risk assessment", "Policy exception", "Other"],
-  REF_ACU: ["Screening review", "Match review", "Other"],
-  REF_CUW_CLM: ["Claim history", "Investigation", "Other"],
+// Three `GUW_TERM_DESC` master codes differ from the codes used by the decision rules, validation, saved
+// decisions and the `uw-decision` API (BOR_STD, DC, POSTP), so they are translated to those codes.
+const DECISION_CODE_BY_MASTER_CODE: Record<string, string | undefined> = {
+  BSD_STD: "BOR_STD",
+  DEC: "DC",
+  POS_PON: "POSTP",
 };
 
-export const MASTER_LOADING_CLASS_OPTIONS: Record<string, string[]> = {
-  "Medical Loading": ["ML001 - Substandard", "ML002 - Rated Up", "ML003 - Extra Mortality", "ML004 - Occupational Hazard"],
-  "FE Loading": ["FE001 - Financial Extra", "FE002 - Income Mismatch", "FE003 - High SA"],
-  "Smoker Loading": ["SL001 - Smoker", "SL002 - Tobacco User", "SL003 - Ex-Smoker"],
-};
-
-export const MASTER_LOADING_REASON_OPTIONS: Record<string, string[]> = {
-  "Medical Loading": ["Medical history", "BMI deviation", "Pre-existing condition", "Hazardous occupation"],
-  "FE Loading": ["Income proof inadequate", "SA exceeds eligibility", "Financial inconsistency"],
-  "Smoker Loading": ["Active smoker", "Tobacco chewer", "Recent cessation"],
-};
-
-export const MASTER_REINSURER_UW_OPTIONS: string[] = ["Swiss Re", "Munich Re", "Scor Re", "Gen Re", "RGA Re", "Hannover Re"];
-export const MASTER_REFERRAL_DOCUMENTS: string[] = ["Application Form", "PhotoId Proof", "Address Proof"];
-
-export async function fetchCaseDecisionOptions(): Promise<DropdownOption[]> {
-  await wait(100);
-  return MASTER_DECISION_OPTIONS;
-}
-export async function fetchReferralTypeOptions(): Promise<DropdownOption[]> {
-  await wait(100);
-  return MASTER_REFERRAL_TYPE_OPTIONS;
-}
-export async function fetchReferralReasonOptions(): Promise<Record<string, string[]>> {
-  await wait(100);
-  return MASTER_REFERRAL_REASON_OPTIONS;
-}
-export async function fetchLoadingClassOptions(): Promise<Record<string, string[]>> {
-  await wait(100);
-  return MASTER_LOADING_CLASS_OPTIONS;
-}
-export async function fetchLoadingReasonOptions(): Promise<Record<string, string[]>> {
-  await wait(100);
-  return MASTER_LOADING_REASON_OPTIONS;
-}
-export async function fetchReinsurerUwOptions(): Promise<string[]> {
-  await wait(100);
-  return MASTER_REINSURER_UW_OPTIONS;
-}
-export async function fetchReferralDocuments(): Promise<string[]> {
-  await wait(100);
-  return MASTER_REFERRAL_DOCUMENTS;
+/**
+ * Case UW Decision options from the post-login master data (`misc` / `GUW_TERM_DESC`). Read at call time
+ * because the master data is only in session after login.
+ */
+export function readGuwCaseDecisionOptions(): DropdownOption[] {
+  return getMasterList("misc", "GUW_TERM_DESC")
+    .filter((entry) => entry.isActive === "Y")
+    .map((entry) => ({
+      value: DECISION_CODE_BY_MASTER_CODE[entry.code] ?? entry.code,
+      label: entry.value ?? entry.description,
+    }));
 }
 
 /* ------------------------------------------------------------------ */

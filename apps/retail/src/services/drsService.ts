@@ -26,8 +26,6 @@ import {
 import retailMock from "../../../../mock/drs/retail-drs.json";
 import cuwValidationMock from "../../../../mock/drs/cuw-validation.json";
 import uwDecisionMappingMock from "../../../../mock/drs/cuw-uw-decision-mapping.json";
-import { store } from "../app/store";
-import { retailDrsApi } from "./drsApi";
 import { mapCvtApplicants } from "../modules/drs/cvtApplicantData";
 import type { CvtEditApplicantValues } from "../modules/drs/CvtEditApplicantDialog";
 import { formatBreTimestamp, splitDiscrepancies } from "../modules/drs/breFormat";
@@ -109,6 +107,7 @@ export type RetailDrsData = {
   requirements: RequirementItem[];
   pivvDetails: PivvDetailRow[];
   applicants: LifeAssuredApplicant[];
+  profileOptions: Array<{ label: string; value: string }>;
   /** Edit Applicant dialog initial values per applicant id. */
   editValues: Record<string, CvtEditApplicantValues>;
   applicantName: string;
@@ -318,8 +317,10 @@ function extractRequirementRows(rowsOrSection: unknown): unknown[] {
 export function mapRawRequirementRows(rowsOrSection: unknown): RequirementItem[] {
   return extractRequirementRows(rowsOrSection).map((row, index) => {
     const source = isRecord(row) ? row : {};
+    const reqId = typeof source.requirementId === "number" ? source.requirementId : index + 1;
     return {
-      id: typeof source.requirementId === "number" ? source.requirementId : index + 1,
+      id: reqId,
+      requirementId: reqId,
       status: normaliseStatus(readText(source.status)),
       ocrStatus: readText(source.ocrStatus),
       team: readText(source.team),
@@ -331,8 +332,43 @@ export function mapRawRequirementRows(rowsOrSection: unknown): RequirementItem[]
       fupCode: readText(source.fupCode),
       extraRemarks: readText(source.extraRemarks),
       description: readText(source.description),
+      requirementPoolType: readText(source.requirementPoolType) || readText(source.team),
+      partyId: readText(source.partyId),
+      memberType: readText(source.memberType),
     };
   });
+}
+
+export function readProfileOptions(membersDetails: unknown): Array<{ label: string; value: string }> {
+  if (!Array.isArray(membersDetails)) return [];
+  const options: Array<{ label: string; value: string }> = [];
+  const seen = new Set<string>();
+
+  for (const m of membersDetails) {
+    if (!isRecord(m)) continue;
+    const memberType = typeof m.memberType === "string" ? m.memberType.trim() : "";
+    const sections = Array.isArray(m.sections) ? m.sections : [];
+    const subSections = Array.isArray(m.subSections) ? m.subSections : [];
+    const allSections = [...sections, ...subSections];
+    const profileSection = allSections.find(
+      (s): s is Record<string, unknown> => isRecord(s) && s.name === "applicantProfile",
+    );
+    const profileVal = isRecord(profileSection?.value) ? profileSection.value : null;
+
+    const lifeNumber =
+      readText(profileVal?.lifeNumber).trim() ||
+      readText(m.lifeNumber).trim();
+
+    const label = memberType || (lifeNumber ? `Life ${lifeNumber}` : "");
+    const value = lifeNumber || memberType;
+
+    if (label && value && !seen.has(`${label}:${value}`)) {
+      seen.add(`${label}:${value}`);
+      options.push({ label, value });
+    }
+  }
+
+  return options;
 }
 
 const GRIEVANCE_ROW_KEYS: (keyof GrievanceHistoryRow)[] = [
@@ -485,6 +521,7 @@ export function mapRetailDrsPayload(value: unknown): RetailDrsData {
     requirements: mapRawRequirementRows(findSection(data.commonSection, "requirementManagement")),
     pivvDetails: readPivvDetails(membersDetails),
     applicants,
+    profileOptions: readProfileOptions(membersDetails),
     editValues,
     applicantName: fieldValue(nameRow?.fields, "Name"),
     grievanceHistoryTitle: readText(historySection?.label) || "Grievance History",
@@ -832,7 +869,7 @@ export interface CuwParallelDecisionRequest {
   partyId: string;
   action: CuwParallelDecisionAction;
   /** Always sent, always an empty string. */
-  decision: "";
+  decision: string;
   /** Always sent, always a single space. */
   remarks: " ";
   userId: string;
@@ -848,8 +885,31 @@ export type CuwParallelDecisionBaseInput = Pick<CuwDecisionFormInput, "applicati
   instanceId?: string;
 };
 
+/** Master `CUW_REF_TO` value (lower case) of the Sr UW Opinion referral. */
+export const SR_UW_OPINION_MASTER_VALUE = "sr uw opinion";
+
+/**
+ * Referral code of Sr UW Opinion, read from the master `misc` type CUW_REF_TO (the entry whose value is
+ * "SR UW Opinion" and whose code is a `REF_` code, e.g. REF_SRUW). "" when the master has none.
+ * Read at call time because the master data is only in session after login.
+ */
+export function cuwSrUwReferralCode(): string {
+  const entry = getMasterList("misc", "CUW_REF_TO").find(
+    (item) =>
+      item.isActive === "Y" &&
+      (item.value ?? item.description).trim().toLowerCase() === SR_UW_OPINION_MASTER_VALUE &&
+      item.code.toUpperCase().startsWith("REF_"),
+  );
+  return entry?.code ?? "";
+}
+
+export function isCuwSrUwReferral(target: string): boolean {
+  const code = cuwSrUwReferralCode();
+  return code !== "" && target === code;
+}
+
 /** Referral rows whose Refer To is an opinion (Sr UW Opinion / HOD Opinion); every other row is a plain referral. */
-const OPINION_REFERRALS = ["REF_SR_UW", "REF_HOD"];
+const isOpinionReferral = (target: string) => isCuwSrUwReferral(target) || target === "REF_HOD";
 
 function toParallelDecisionRequest(
   base: CuwParallelDecisionBaseInput,
@@ -901,8 +961,8 @@ export function buildCuwReferralParallelDecisionRequests(
       ...(assignedTo ? { assignedTo: { name: assignedTo, description: assignedTo, value: ntid } } : {}),
     };
   };
-  const opinions = rows.filter((row) => OPINION_REFERRALS.includes(row.target)).map(toItem);
-  const referrals = rows.filter((row) => !OPINION_REFERRALS.includes(row.target)).map(toItem);
+  const opinions = rows.filter((row) => isOpinionReferral(row.target)).map(toItem);
+  const referrals = rows.filter((row) => !isOpinionReferral(row.target)).map(toItem);
   const requests: CuwParallelDecisionRequest[] = [];
   if (opinions.length > 0) requests.push(toParallelDecisionRequest(base, "OPINION", opinions));
   if (referrals.length > 0) {
@@ -1004,7 +1064,7 @@ export function assigneeRoleForReferTo(referTo: string): string {
 export function assigneeRoleForReferralRow(target: string): string {
   const key = target.trim().toLowerCase().replace(/[\s_.-]+/g, " ");
   if (key === "ref_hod" || key === "ref hod" || key === "hod opinion") return CUW_ASSIGNEE_ROLE.HOD;
-  if (key === "ref_sr_uw" || key === "ref sr uw" || key === "ref sruw" || key === "sr uw opinion") return CUW_ASSIGNEE_ROLE.SR_UW;
+  if (isCuwSrUwReferral(target) || key === "sr uw opinion") return CUW_ASSIGNEE_ROLE.SR_UW;
   return "";
 }
 
@@ -1709,6 +1769,10 @@ export function mapCuwMembers(payload: unknown): CuwMemberSummary[] {
  */
 async function loadCuwPayload(applicationNo: string, roleType?: string): Promise<unknown> {
   const taskType = roleType?.trim() || getDrsRoleType() || "CUW";
+  const [{ store }, { retailDrsApi }] = await Promise.all([
+    import("../app/store"),
+    import("./drsApi"),
+  ]);
   const request = store.dispatch(
     retailDrsApi.endpoints.getCuwDrsPayload.initiate({ applicationNo, taskType }),
   );
@@ -1858,7 +1922,7 @@ export function mapCuwDrsPayload(payload: unknown, memberId?: string): CuwDrsRec
       ...(caseDecisionVal
         ? {
             submittedDecision: {
-              decisionCode: CUW_DECISION_CODE_BY_LABEL[caseDecisionVal.toLowerCase()] ?? caseDecisionVal,
+              decisionCode: cuwDecisionCodeOfLabel(caseDecisionVal),
               remarks: caseRemarksVal,
               fields: [
                 { label: "Case UW Decision", value: caseDecisionVal },
@@ -2088,17 +2152,13 @@ const DEFAULT_JUSTIFICATION_REASONS = [
   "Other",
 ];
 
-const CUW_DECISION_CODE_BY_LABEL: Record<string, string> = {
-  standard: "STD",
-  "counter offer": "CO",
-  decline: "DC",
-  reject: "REJ",
-  postpone: "POSTP",
+/**
+ * Decisions raised from the action buttons / referral rows. They are not part of the `CUW_TERM_DESC`
+ * master (Standard, Reject, Counter Offer ... come from the master, see `readCuwCaseDecisionOptions`).
+ */
+const CUW_ACTION_DECISION_CODE_BY_LABEL: Record<string, string> = {
   hold: "HOLD",
-  "extra premium": "EP",
-  "borderline standard": "BOR_STD",
   "refer to hod": "REF_HOD",
-  "refer to sr.uw": "REF_SR_UW",
   "refer to ho cmo": "REF_CMO",
   "refer to cmo": "REF_CMO",
   "refer to reinsurer": "REF_REINS",
@@ -2112,6 +2172,17 @@ const CUW_DECISION_CODE_BY_LABEL: Record<string, string> = {
   "counter sign": "APPROVER",
   "raise referral": "REFERRAL",
 };
+
+/** Decision code of a submitted Case UW Decision label; "Refer to Sr.UW" resolves to the master's Sr UW code. */
+function cuwDecisionCodeOfLabel(label: string): string {
+  const key = label.toLowerCase();
+  if (key === "refer to sr.uw") return cuwSrUwReferralCode() || label;
+  const fromMaster = readCuwCaseDecisionOptions().find(
+    (option) => option.label.trim().toLowerCase() === key,
+  );
+  return fromMaster?.value ?? CUW_ACTION_DECISION_CODE_BY_LABEL[key] ?? label;
+}
+
 
 /** DTO -> domain. Unknown fields are dropped; missing lists become empty. */
 export function fromCuwValidationResponse(dto: unknown): CuwValidationResult {
@@ -2209,82 +2280,25 @@ export interface DropdownOption {
   label: string;
 }
 
-export const MASTER_DECISION_OPTIONS: DropdownOption[] = [
-  { value: "STD", label: "Standard" },
-  { value: "BOR_STD", label: "Borderline Standard" },
-  { value: "REJ", label: "Reject" },
-  { value: "DC", label: "Decline" },
-  { value: "POSTP", label: "Postpone" },
-  { value: "CO", label: "Counter Offer" },
-  { value: "EP", label: "Extra Premium" },
-  { value: "HOLD", label: "Hold" },
-  { value: "REFERRAL", label: "Refer To" },
-  { value: "AMR", label: "Raise Requirement" },
-  { value: "APPROVER", label: "Refer to Approver" },
-];
-
-export const MASTER_REFERRAL_TYPE_OPTIONS: DropdownOption[] = [
-  { value: "REF_IT", label: "IT" },
-  { value: "REF_REINS", label: "Reinsurer" },
-  { value: "REF_CMO", label: "HO CMO" },
-  { value: "REF_CMO_LOCAL", label: "CMO" },
-  { value: "REF_RISK", label: "Risk" },
-  { value: "REF_ACU", label: "Accuity" },
-  { value: "REF_CUW_CLM", label: "CUW Claim" },
-];
-
-export const MASTER_REFERRAL_REASON_OPTIONS: Record<string, string[]> = {
-  REF_IT: ["System issue", "Data correction", "Other"],
-  REF_REINS: ["High sum assured", "Medical risk", "Other"],
-  REF_CMO: ["Medical review", "Specialist opinion", "Other"],
-  REF_CMO_LOCAL: ["Medical review", "Specialist opinion", "Other"],
-  REF_RISK: ["Risk assessment", "Policy exception", "Other"],
-  REF_ACU: ["Screening review", "Match review", "Other"],
-  REF_CUW_CLM: ["Claim history", "Investigation", "Other"],
+// Three `CUW_TERM_DESC` master codes differ from the codes used by the decision rules, validation, saved
+// decisions and the `uw-decision` API (BOR_STD, DC, POSTP), so they are translated to those codes.
+const DECISION_CODE_BY_MASTER_CODE: Record<string, string | undefined> = {
+  BSD_STD: "BOR_STD",
+  DEC: "DC",
+  POS_PON: "POSTP",
 };
 
-export const MASTER_LOADING_CLASS_OPTIONS: Record<string, string[]> = {
-  "Medical Loading": ["ML001 - Substandard", "ML002 - Rated Up", "ML003 - Extra Mortality", "ML004 - Occupational Hazard"],
-  "FE Loading": ["FE001 - Financial Extra", "FE002 - Income Mismatch", "FE003 - High SA"],
-  "Smoker Loading": ["SL001 - Smoker", "SL002 - Tobacco User", "SL003 - Ex-Smoker"],
-};
-
-export const MASTER_LOADING_REASON_OPTIONS: Record<string, string[]> = {
-  "Medical Loading": ["Medical history", "BMI deviation", "Pre-existing condition", "Hazardous occupation"],
-  "FE Loading": ["Income proof inadequate", "SA exceeds eligibility", "Financial inconsistency"],
-  "Smoker Loading": ["Active smoker", "Tobacco chewer", "Recent cessation"],
-};
-
-export const MASTER_REINSURER_UW_OPTIONS: string[] = ["Swiss Re", "Munich Re", "Scor Re", "Gen Re", "RGA Re", "Hannover Re"];
-export const MASTER_REFERRAL_DOCUMENTS: string[] = ["Application Form", "PhotoId Proof", "Address Proof"];
-
-export async function fetchCaseDecisionOptions(): Promise<DropdownOption[]> {
-  await wait(100);
-  return MASTER_DECISION_OPTIONS;
-}
-export async function fetchReferralTypeOptions(): Promise<DropdownOption[]> {
-  await wait(100);
-  return MASTER_REFERRAL_TYPE_OPTIONS;
-}
-export async function fetchReferralReasonOptions(): Promise<Record<string, string[]>> {
-  await wait(100);
-  return MASTER_REFERRAL_REASON_OPTIONS;
-}
-export async function fetchLoadingClassOptions(): Promise<Record<string, string[]>> {
-  await wait(100);
-  return MASTER_LOADING_CLASS_OPTIONS;
-}
-export async function fetchLoadingReasonOptions(): Promise<Record<string, string[]>> {
-  await wait(100);
-  return MASTER_LOADING_REASON_OPTIONS;
-}
-export async function fetchReinsurerUwOptions(): Promise<string[]> {
-  await wait(100);
-  return MASTER_REINSURER_UW_OPTIONS;
-}
-export async function fetchReferralDocuments(): Promise<string[]> {
-  await wait(100);
-  return MASTER_REFERRAL_DOCUMENTS;
+/**
+ * Case UW Decision options from the post-login master data (`misc` / `CUW_TERM_DESC`). Read at call time
+ * because the master data is only in session after login.
+ */
+export function readCuwCaseDecisionOptions(): DropdownOption[] {
+  return getMasterList("misc", "CUW_TERM_DESC")
+    .filter((entry) => entry.isActive === "Y")
+    .map((entry) => ({
+      value: DECISION_CODE_BY_MASTER_CODE[entry.code] ?? entry.code,
+      label: entry.value ?? entry.description,
+    }));
 }
 
 /* ------------------------------------------------------------------ */
