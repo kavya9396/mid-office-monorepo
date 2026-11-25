@@ -35,8 +35,8 @@ import type {
 /** Quick links shown on the Pre Issuance CVT DRS (same set as the CVT DRS). */
 const PRE_ISSUANCE_CVT_QUICK_LINKS: QuickLinkItem[] = [
   { id: "proposal-documents", label: "Proposal Form & Documents" },
-  { id: "open-tasks", label: "Open Tasks" },
-  { id: "audit-trail", label: "Audit Trail" },
+//  { id: "open-tasks", label: "Open Tasks" },
+//  { id: "audit-trail", label: "Audit Trail" },
 ];
 
 const PRE_ISSUANCE_CVT_DEFAULT_ROLE_TYPE = "Pre Issuance CVT User";
