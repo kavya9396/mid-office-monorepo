@@ -1,0 +1,117 @@
+{
+  "success": true,
+  "responseCode": 0,
+  "message": "successful",
+  "headerBanner": {
+    "applicantName": "Rajesh Kumar",
+    "applicationNo": "OB90322247",
+    "policyNo": "",
+    "policyType": "Individual",
+    "customerType": "Existing Customer",
+    "productName": "ICICI Pru GIFT Pro",
+    "productCode": "E36",
+    "channel": "Agency",
+    "sumAssured": 1068000,
+    "faceValue": 1068000,
+    "totalPremium": 50000,
+    "agentName": "Rajesh Sharma",
+    "agentCode": "AGT10234",
+    "demographics": "",
+    "riders": [
+      { "riderCode": "WOP", "sumAssured": 1500000, "policyTerm": 20, "status": "Active" },
+      { "riderCode": "BTBB", "sumAssured": 2500000, "policyTerm": 20, "status": "Active" },
+      { "riderCode": "TI Rider", "sumAssured": 2500000, "policyTerm": 20, "status": "Active" },
+      { "riderCode": "ADBR", "sumAssured": 2500000, "policyTerm": 20, "status": "Active" },
+      { "riderCode": "CI Rider", "sumAssured": 2500000, "policyTerm": 20, "status": "Active" }
+    ]
+  },
+  "servicingOverview": {
+    "requestId": 10245,
+    "serviceId": "SC-PI-10245",
+    "callId": "44776655",
+    "callType": "Pre-Issuance",
+    "subType": "Change in Address/Pin Code",
+    "callCategory": "Non Financial",
+    "financialType": "NON_FINANCIAL",
+    "receivedDate": "2026-09-30T10:32:00.000Z",
+    "requestStatus": "PENDING",
+    "decision": "",
+    "decisionBy": "",
+    "decisionDate": "",
+    "rejectionRemarks": "",
+    "profileTitle": "LA1 - Rajesh Kumar",
+    "historyCount": 3
+  },
+  "changes": [
+    { "changeType": "Address / Pin Code", "fieldName": "Address Type", "jsonFieldPath": "address.type", "oldValue": "Communication Address", "newValue": "Communication Address" },
+    { "changeType": "Address / Pin Code", "fieldName": "Address Line 1", "jsonFieldPath": "address.line1", "oldValue": "Flat 12, Shanti Apartments", "newValue": "Flat 24, Orchid Residency" },
+    { "changeType": "Address / Pin Code", "fieldName": "Address Line 2", "jsonFieldPath": "address.line2", "oldValue": "M. G. Road", "newValue": "Park Street" },
+    { "changeType": "Address / Pin Code", "fieldName": "Address Line 3", "jsonFieldPath": "address.line3", "oldValue": "Fort", "newValue": "Koregaon Park" },
+    { "changeType": "Address / Pin Code", "fieldName": "Landmark", "jsonFieldPath": "address.landmark", "oldValue": "Near Central Library", "newValue": "Near City Mall" },
+    { "changeType": "Address / Pin Code", "fieldName": "City", "jsonFieldPath": "address.city", "oldValue": "Mumbai", "newValue": "Pune" },
+    { "changeType": "Address / Pin Code", "fieldName": "State", "jsonFieldPath": "address.state", "oldValue": "Maharashtra", "newValue": "Maharashtra" },
+    { "changeType": "Address / Pin Code", "fieldName": "Country", "jsonFieldPath": "address.country", "oldValue": "India", "newValue": "India" },
+    { "changeType": "Address / Pin Code", "fieldName": "Pincode", "jsonFieldPath": "address.pincode", "oldValue": "400001", "newValue": "411001" }
+  ],
+  "oldRiders": [
+    { "riderCode": "WOP", "sumAssured": 1500000, "policyTerm": 20, "status": "Active" },
+    { "riderCode": "BTBB", "sumAssured": 2500000, "policyTerm": 20, "status": "Active" },
+    { "riderCode": "TI Rider", "sumAssured": 2500000, "policyTerm": 20, "status": "Active" }
+  ],
+  "newRiders": [
+    { "riderCode": "WOP", "sumAssured": 1500000, "policyTerm": 20, "status": "Active" },
+    { "riderCode": "BTBB", "sumAssured": 2500000, "policyTerm": 20, "status": "Active" },
+    { "riderCode": "TI Rider", "sumAssured": 2500000, "policyTerm": 20, "status": "Active" },
+    { "riderCode": "CI Rider", "sumAssured": 2500000, "policyTerm": 20, "status": "Added" }
+  ],
+  "history": [
+    {
+      "requestId": 10192,
+      "callDate": "2026-09-28T15:18:00.000Z",
+      "serviceId": "SC-PI-10192",
+      "callId": "44776601",
+      "ct": "Pre issuance",
+      "st": "Changes in Frequency",
+      "requestStatus": "COMPLETED",
+      "decision": "Accepted",
+      "details": "Customer requested premium frequency change.",
+      "source": "Customer Service",
+      "changes": [
+        { "changeType": "Frequency", "fieldName": "Premium Frequency", "jsonFieldPath": "premium.frequency", "oldValue": "Yearly", "newValue": "Monthly" }
+      ]
+    },
+    {
+      "requestId": 10185,
+      "callDate": "2026-09-27T11:45:00.000Z",
+      "serviceId": "SC-PI-10185",
+      "callId": "44776588",
+      "ct": "Pre issuance",
+      "st": "Correction and updation of Account details",
+      "requestStatus": "COMPLETED",
+      "decision": "Accepted",
+      "details": "Customer requested bank account details correction.",
+      "source": "Branch",
+      "changes": [
+        { "changeType": "Account Details", "fieldName": "Bank Name", "jsonFieldPath": "bank.name", "oldValue": "ABC Bank", "newValue": "ICICI Bank" },
+        { "changeType": "Account Details", "fieldName": "Account Number", "jsonFieldPath": "bank.accountNo", "oldValue": "XXXX1234", "newValue": "XXXX5678" },
+        { "changeType": "Account Details", "fieldName": "IFSC", "jsonFieldPath": "bank.ifsc", "oldValue": "ABCD0001234", "newValue": "ICIC0005678" }
+      ]
+    },
+    {
+      "requestId": 10178,
+      "callDate": "2026-09-26T14:20:00.000Z",
+      "serviceId": "SC-PI-10178",
+      "callId": "44776540",
+      "ct": "Pre issuance",
+      "st": "Changes in PT/PPT",
+      "requestStatus": "REJECTED",
+      "decision": "Rejected",
+      "details": "Customer requested policy term and premium paying term changes.",
+      "source": "Customer Service",
+      "changes": [
+        { "changeType": "Term", "fieldName": "Policy Term", "jsonFieldPath": "policy.term", "oldValue": "20 Years", "newValue": "25 Years" },
+        { "changeType": "Term", "fieldName": "Premium Paying Term", "jsonFieldPath": "policy.ppt", "oldValue": "10 Years", "newValue": "15 Years" }
+      ]
+    }
+  ]
+}

@@ -25,6 +25,11 @@ export const RETAIL_DRS_TASK_CONFIG: Record<string, RetailDrsTaskConfig> = {
     screenType: "MMT",
     businessType: "RETAIL",
   },
+  PRE_ISSUANCE_CVT_TASK: {
+    roleType: "PRE_ISSUANCE_CVT_TASK",
+    screenType: "PRE_ISSUANCE_CVT",
+    businessType: "RETAIL",
+  },
 };
 
 export const DEFAULT_RETAIL_DRS_TASK_CONFIG: RetailDrsTaskConfig = RETAIL_DRS_TASK_CONFIG.CVT_TASK;

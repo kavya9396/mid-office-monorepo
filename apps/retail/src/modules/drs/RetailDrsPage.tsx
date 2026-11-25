@@ -4,6 +4,7 @@ import RetailDrsRecordPage from "./RetailDrsRecordPage";
 import CvtUser from "./CvtUser";
 import CptNmrUser from "./CptNmrUser";
 import CptMrUser from "./CptMrUser";
+import PreIssuanceCvtUser from "./PreIssuanceCvtUser";
 import TpaDrsPage from "./TpaDrsPage";
 
 /** `/app/{applicationNo}/drs` — screen picked from inbox session `roleType`. */
@@ -15,6 +16,7 @@ const SCREEN_BY_ROLE: Record<string, () => JSX.Element | null> = {
   CVT_TASK: CvtUser,
   CPT_DATA_ENTRY_NMR_TASK: CptNmrUser,
   CPT_DATA_ENTRY_MR_TASK: CptMrUser,
+  PRE_ISSUANCE_CVT_TASK: PreIssuanceCvtUser,
 };
 
 export function RetailDrsPage() {

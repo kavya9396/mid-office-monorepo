@@ -9,6 +9,7 @@ import { retailMmtGrievanceApi } from "../services/mmtGrievanceService";
 import { retailFinancialApi } from "../services/financialApi";
 import { retailInboxApi } from "../services/inboxApi";
 import { retailNsdlApi } from "../services/nsdlApi";
+import { retailPreIssuanceCvtApi } from "../services/preIssuanceCvtApi";
 
 const listenerMiddleware = createListenerMiddleware();
 
@@ -23,6 +24,7 @@ listenerMiddleware.startListening({
     listenerApi.dispatch(retailFinancialApi.util.resetApiState());
     listenerApi.dispatch(retailCvtValidationApi.util.resetApiState());
     listenerApi.dispatch(retailNsdlApi.util.resetApiState());
+    listenerApi.dispatch(retailPreIssuanceCvtApi.util.resetApiState());
   },
 });
 
@@ -38,6 +40,7 @@ export const store = configureStore({
     [retailFinancialApi.reducerPath]: retailFinancialApi.reducer,
     [retailCvtValidationApi.reducerPath]: retailCvtValidationApi.reducer,
     [retailNsdlApi.reducerPath]: retailNsdlApi.reducer,
+    [retailPreIssuanceCvtApi.reducerPath]: retailPreIssuanceCvtApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
@@ -52,6 +55,7 @@ export const store = configureStore({
         retailFinancialApi.middleware,
         retailCvtValidationApi.middleware,
         retailNsdlApi.middleware,
+        retailPreIssuanceCvtApi.middleware,
       ),
 });
 

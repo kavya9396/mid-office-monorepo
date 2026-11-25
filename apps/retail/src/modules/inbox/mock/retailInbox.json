@@ -94,6 +94,31 @@
         "role": "RETAIL_MMT_ADMIN",
         "roleType": "MMT_TASK"
       }
+    ],
+    "PRE_ISSUANCE_CVT_TASK": [
+      {
+        "id": 10,
+        "applicationNo": "OB90322247",
+        "productCode": "GP1",
+        "masterPlanNo": 49,
+        "poolTAT": null,
+        "productType": "base",
+        "product": "ICICI PRU SUPER PROTECT CREDIT",
+        "sumAssured": 1068000,
+        "caseReceivedDate": "2026-09-30",
+        "channelCode": "CABR",
+        "channel": null,
+        "breDecision": "ST",
+        "dateAndTimeStamp": "2026-09-30T10:32:00.000000",
+        "taskId": "1401",
+        "instanceId": "311",
+        "dueDate": "2026-10-02T12:00:00Z",
+        "startTime": "2026-09-30T05:02:00Z",
+        "atRiskTime": "2026-10-01T22:52:19Z",
+        "businessType": "RETAIL",
+        "role": "RETAIL_CVT_USER",
+        "roleType": "PRE_ISSUANCE_CVT_TASK"
+      }
     ]
   }
 }

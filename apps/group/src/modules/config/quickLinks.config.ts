@@ -21,6 +21,24 @@ export const GROUP_QUICK_LINKS_CONFIG: Record<
     ],
     defaultRoleType: "DVT User",
   },
+  dptNmr: {
+    items: [
+      { id: "proposal-documents", label: "Proposal Form & Documents" },
+      { id: "previous-policies", label: "Previous Policy" },
+      { id: "open-tasks", label: "Open Task" },
+      { id: "audit-trail", label: "Audit Trail" },
+    ],
+    defaultRoleType: "Group Data Entry NMR User",
+  },
+  dptMr: {
+    items: [
+      { id: "proposal-documents", label: "Proposal Form & Documents" },
+      { id: "previous-policies", label: "Previous Policy" },
+      { id: "open-tasks", label: "Open Task" },
+      { id: "audit-trail", label: "Audit Trail" },
+    ],
+    defaultRoleType: "Group Data Entry MR User",
+  },
   guw: {
     items: [
       { id: "applicant-profile", label: "Applicant Profile" },
@@ -32,5 +50,14 @@ export const GROUP_QUICK_LINKS_CONFIG: Record<
       { id: "raise-grievance", label: "Raise Grievance" },
     ],
     defaultRoleType: "GUW User",
+  },
+   preIssuanceDvt: {
+    items: [
+      { id: "proposal-documents", label: "Proposal Form & Documents" },
+//      { id: "previous-policies", label: "Previous Policy" },
+//      { id: "open-tasks", label: "Open Task" },
+//      { id: "audit-trail", label: "Audit Trail" },
+    ],
+    defaultRoleType: "Pre Issuance DVT User",
   },
 };
