@@ -26,8 +26,6 @@ import {
 import retailMock from "../../../../mock/drs/retail-drs.json";
 import cuwValidationMock from "../../../../mock/drs/cuw-validation.json";
 import uwDecisionMappingMock from "../../../../mock/drs/cuw-uw-decision-mapping.json";
-import { store } from "../app/store";
-import { retailDrsApi } from "./drsApi";
 import { mapCvtApplicants } from "../modules/drs/cvtApplicantData";
 import type { CvtEditApplicantValues } from "../modules/drs/CvtEditApplicantDialog";
 import { formatBreTimestamp, splitDiscrepancies } from "../modules/drs/breFormat";
@@ -1771,6 +1769,10 @@ export function mapCuwMembers(payload: unknown): CuwMemberSummary[] {
  */
 async function loadCuwPayload(applicationNo: string, roleType?: string): Promise<unknown> {
   const taskType = roleType?.trim() || getDrsRoleType() || "CUW";
+  const [{ store }, { retailDrsApi }] = await Promise.all([
+    import("../app/store"),
+    import("./drsApi"),
+  ]);
   const request = store.dispatch(
     retailDrsApi.endpoints.getCuwDrsPayload.initiate({ applicationNo, taskType }),
   );

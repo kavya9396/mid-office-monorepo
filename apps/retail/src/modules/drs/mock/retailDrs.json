@@ -831,9 +831,9 @@
               ],
               "rows": [
                 {
-                  "fupCode": "",
-                  "profile": "",
-                  "raisedDate": "",
+                  "fupCode": "PIV",
+                  "profile": "Life Assured",
+                  "raisedDate": "9 Sep 2026",
                   "raisedRemark": "",
                   "pivvDecision": [],
                   "pivvRemark": ""
