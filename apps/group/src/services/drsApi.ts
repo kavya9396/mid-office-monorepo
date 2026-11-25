@@ -100,13 +100,12 @@ export type SaveGroupDrsApplicantArg = {
   queryArg?: GroupDrsQueryArg;
 };
 
-/** CMO DRS request. `memberId` selects one `membersDetails` row; the DRS body stays the shared shape. */
+/** CMO DRS request. `memberId` selects one member locally; it is not sent on the DRS body. */
 export type CmoDrsQueryArg = {
   applicationNo: string;
   roleType?: string;
   screenType?: string;
   businessType?: string;
-  taskType?: string;
   memberId?: string;
 };
 
@@ -900,21 +899,21 @@ export const groupDrsApi = createApi({
         }
       },
     }),
-    /** CMO DRS. Same POST as the other group screens; mock file follows the CMO role. */
+    /** CMO DRS. Body is applicationNo, roleType, screenType, and businessType. Mock follows roleType. */
     getCmoDrs: build.query<GuwDrsRecord, CmoDrsQueryArg>({
       async queryFn(arg, _api, _extra, baseQuery) {
         const memberId = arg.memberId?.trim() || undefined;
-        const requestArg: GroupDrsQueryArg = {
+        const roleType = (arg.roleType ?? getDrsRoleType()).trim();
+        const taskConfig = getGroupDrsTaskConfig(roleType);
+        const requestArg = {
           applicationNo: arg.applicationNo,
-          roleType: arg.roleType,
-          screenType: arg.screenType,
-          businessType: arg.businessType,
-          taskType: arg.taskType ?? arg.roleType,
+          roleType: arg.roleType?.trim() || taskConfig.roleType,
+          screenType: arg.screenType?.trim() || taskConfig.screenType,
+          businessType: arg.businessType?.trim() || taskConfig.businessType,
         };
         try {
           if (useMock) {
-            const role = (arg.taskType ?? arg.roleType ?? getDrsRoleType()).trim().toUpperCase();
-            const mock = CMO_DRS_MOCK_BY_ROLE[role] ?? refCmoDrsMock;
+            const mock = CMO_DRS_MOCK_BY_ROLE[roleType.toUpperCase()] ?? refCmoDrsMock;
             return { data: mapGuwDrsPayload(mock, memberId) };
           }
           const drsDataUrl = groupBusinessUrls.drsData;
@@ -924,7 +923,7 @@ export const groupDrsApi = createApi({
           const result = await baseQuery({
             url: drsDataUrl,
             method: "POST",
-            body: buildDrsRequestBody(requestArg),
+            body: requestArg,
             headers: { accept: "*/*", "Content-Type": "application/json" },
           });
           if (result.error) return { error: result.error };

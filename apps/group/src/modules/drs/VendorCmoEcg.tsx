@@ -2,7 +2,7 @@ import { CmoDrsScreen } from "./CmoDrsScreen";
 
 /** Vendor CMO ECG. Role and screen type come from `drsTaskConfig`. */
 export function VendorCmoEcg() {
-  return <CmoDrsScreen testId="vendor-cmo-ecg-drs-main" />;
+  return <CmoDrsScreen testId="vendor-cmo-ecg-drs-main" roleType="VENDOR_CMO_ECG_TASK" />;
 }
 
 export default VendorCmoEcg;

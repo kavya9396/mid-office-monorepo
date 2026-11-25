@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { ApplicantBanner, type RowDetailsOptions } from "@insurance-poc/common/applicant-banner";
 import { ApplicantProfile } from "@insurance-poc/common/applicant-profile";
@@ -9,6 +9,7 @@ import { RiskCards, type RiskCardData } from "@insurance-poc/common/risk-cards";
 import { drsRoutePath } from "@insurance-poc/routes";
 import { CustomBox, CustomButton, CustomLoader, CustomSnackbar } from "@insurance-poc/ui";
 import { getDrsApplicationNo, getDrsMemberId, getDrsRoleLabel, getDrsRoleType } from "@insurance-poc/utils";
+import { getGroupDrsTaskConfig } from "../../config/drsTaskConfig";
 import { GuwRaiseGrievanceDialog } from "../guw/GuwRaiseGrievanceDialog";
 import { GROUP_QUICK_LINKS_CONFIG } from "../config/quickLinks.config";
 import { buildQuickLinkItems } from "./guwQuickLinks";
@@ -31,13 +32,17 @@ const quickLinksConfig = GROUP_QUICK_LINKS_CONFIG.refCmo;
 
 type CmoDrsScreenProps = Readonly<{
   testId: string;
+  /** Role mapped in `GroupDrsPage`. It selects `screenType` and this screen's mock. */
+  roleType: string;
+  /** UI that belongs to this CMO screen only. */
+  children?: ReactNode;
 }>;
 
 /**
- * Shared CMO DRS layout. The session role selects `screenType` through `drsTaskConfig`;
- * this component does not hardcode a role or screen type.
+ * Shared CMO DRS layout. `GroupDrsPage` picks the page from `roleType`.
+ * Pass `children` from that page to add layout that the other CMO screens do not show.
  */
-export function CmoDrsScreen({ testId }: CmoDrsScreenProps) {
+export function CmoDrsScreen({ testId, roleType, children }: CmoDrsScreenProps) {
   const navigate = useNavigate();
   const { pathname, search } = useLocation();
   const { applicationNo: applicationNoParam } = useParams();
@@ -46,12 +51,14 @@ export function CmoDrsScreen({ testId }: CmoDrsScreenProps) {
   const drsBasePath = applicationNo ? drsRoutePath(applicationNo) : "";
   const medicalPath = applicationNo ? drsRoutePath(applicationNo, "medical") : "";
   const memberId = getDrsMemberId();
-  const roleType = getDrsRoleType();
+  const resolvedRoleType = roleType.trim() || getDrsRoleType();
+  const taskConfig = getGroupDrsTaskConfig(resolvedRoleType);
   const drs = useGetCmoDrsQuery(
     {
       applicationNo,
-      roleType,
-      taskType: roleType,
+      roleType: taskConfig.roleType,
+      screenType: taskConfig.screenType,
+      businessType: taskConfig.businessType,
       memberId: memberId || undefined,
     },
     { skip: applicationNo.length === 0 },
@@ -117,6 +124,7 @@ export function CmoDrsScreen({ testId }: CmoDrsScreenProps) {
             <CustomBox sx={{ p: "6px 4px 20px", display: "flex", flexDirection: "column", gap: 1.5 }}>
               <RiskCards cards={riskCards} onView={openMedical} viewCardIds={["MEDICAL"]} />
               <DecisionHistory />
+              {children}
               <CustomBox
                 sx={{
                   display: "flex",
@@ -133,7 +141,7 @@ export function CmoDrsScreen({ testId }: CmoDrsScreenProps) {
                   onClick={() => {
                     // Submit API handler to be wired
                     console.log("Submit CMO", {
-                      roleType,
+                      roleType: resolvedRoleType,
                       applicationNo: record.applicationNo || applicationNo,
                     });
                   }}
