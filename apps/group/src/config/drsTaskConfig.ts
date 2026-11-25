@@ -55,6 +55,12 @@ export const DEFAULT_GROUP_DRS_TASK_CONFIG: GroupDrsTaskConfig = {
   businessType: "Group",
 };
 
+/** Config of the `roleType` the role-list API returned; `undefined` when that role has no config entry. */
+export function findGroupDrsTaskConfig(roleType?: string): GroupDrsTaskConfig | undefined {
+  const key = roleType?.trim().toUpperCase() ?? "";
+  return key === "" ? undefined : GROUP_DRS_TASK_CONFIG[key];
+}
+
 export function getGroupDrsTaskConfig(roleOrTaskType?: string): GroupDrsTaskConfig {
   if (!roleOrTaskType) return DEFAULT_GROUP_DRS_TASK_CONFIG;
   const key = roleOrTaskType.trim().toUpperCase();

@@ -255,6 +255,8 @@ function extractRequirementRows(rowsOrSection: unknown): unknown[] {
   if (isRecord(rowsOrSection)) {
     if (Array.isArray(rowsOrSection.rows)) return rowsOrSection.rows;
     if (Array.isArray(rowsOrSection.requirementManagement)) return rowsOrSection.requirementManagement;
+    // GUW / HOD / Sr UW payloads keep the rows under the section's `value` (same as the GUW fetch mapper).
+    if (isRecord(rowsOrSection.value) && Array.isArray(rowsOrSection.value.rows)) return rowsOrSection.value.rows;
   }
   return [];
 }
@@ -838,8 +840,31 @@ export type GuwParallelDecisionBaseInput = Pick<GuwDecisionFormInput, "applicati
   instanceId?: string;
 };
 
+/** Master `GUW_REF_TO` value (lower case) of the Sr UW Opinion referral. */
+export const SR_UW_OPINION_MASTER_VALUE = "sr uw opinion";
+
+/**
+ * Referral code of Sr UW Opinion, read from the master `misc` type GUW_REF_TO (the entry whose value is
+ * "SR UW Opinion" and whose code is a `REF_` code, e.g. REF_SRUW). "" when the master has none.
+ * Read at call time because the master data is only in session after login.
+ */
+export function guwSrUwReferralCode(): string {
+  const entry = getMasterList("misc", "GUW_REF_TO").find(
+    (item) =>
+      item.isActive === "Y" &&
+      (item.value ?? item.description).trim().toLowerCase() === SR_UW_OPINION_MASTER_VALUE &&
+      item.code.toUpperCase().startsWith("REF_"),
+  );
+  return entry?.code ?? "";
+}
+
+export function isGuwSrUwReferral(target: string): boolean {
+  const code = guwSrUwReferralCode();
+  return code !== "" && target === code;
+}
+
 /** Referral rows whose Refer To is an opinion (Sr UW Opinion / HOD Opinion); every other row is a plain referral. */
-const OPINION_REFERRALS = ["REF_SR_UW", "REF_HOD"];
+const isOpinionReferral = (target: string) => isGuwSrUwReferral(target) || target === "REF_HOD";
 
 function toParallelDecisionRequest(
   base: GuwParallelDecisionBaseInput,
@@ -891,8 +916,8 @@ export function buildGuwReferralParallelDecisionRequests(
       ...(assignedTo ? { assignedTo: { name: assignedTo, description: assignedTo, value: ntid } } : {}),
     };
   };
-  const opinions = rows.filter((row) => OPINION_REFERRALS.includes(row.target)).map(toItem);
-  const referrals = rows.filter((row) => !OPINION_REFERRALS.includes(row.target)).map(toItem);
+  const opinions = rows.filter((row) => isOpinionReferral(row.target)).map(toItem);
+  const referrals = rows.filter((row) => !isOpinionReferral(row.target)).map(toItem);
   const requests: GuwParallelDecisionRequest[] = [];
   if (opinions.length > 0) requests.push(toParallelDecisionRequest(base, "OPINION", opinions));
   if (referrals.length > 0) {
@@ -984,27 +1009,46 @@ export const GUW_ASSIGNEE_ROLE = {
 
 /** Role whose users are listed for a Counter Sign "Refer To" value ("HOD" / "Sr UW"); "" when none. */
 export function assigneeRoleForReferTo(referTo: string): string {
-  const key = referTo.trim().toLowerCase().replace(/\s+/g, " ");
-  if (key === "hod") return GUW_ASSIGNEE_ROLE.HOD;
-  if (key === "sr uw" || key === "sruw" || key === "sr_uw" || key === "senior uw") return GUW_ASSIGNEE_ROLE.SR_UW;
+  const key = referTo.trim().toLowerCase().replace(/[\s_.-]+/g, " ");
+  if (key === "hod" || key === "ref hod") return GUW_ASSIGNEE_ROLE.HOD;
+  if (key === "sr uw" || key === "sruw" || key === "sr_uw" || key === "senior uw" || key === "ref sruw" || key === "ref sr uw") return GUW_ASSIGNEE_ROLE.SR_UW;
   return "";
 }
 
 /** Role whose users are listed for a Raise Referral row code; "" when the row is not assignable. */
 export function assigneeRoleForReferralRow(target: string): string {
-  if (target === "REF_HOD") return GUW_ASSIGNEE_ROLE.HOD;
-  if (target === "REF_SR_UW") return GUW_ASSIGNEE_ROLE.SR_UW;
+  const key = target.trim().toLowerCase().replace(/[\s_.-]+/g, " ");
+  if (key === "ref_hod" || key === "ref hod" || key === "hod opinion") return GUW_ASSIGNEE_ROLE.HOD;
+  if (isGuwSrUwReferral(target) || key === "sr uw opinion") return GUW_ASSIGNEE_ROLE.SR_UW;
   return "";
 }
 
-
 /** Maps the users-by-role response (`data.users[].fullName` / `ntid`) to dropdown options. */
 export function mapUsersByRole(payload: unknown): GuwAssigneeOption[] {
-  const data = isRecord(payload) && isRecord(payload.data) ? payload.data : null;
-  const users = Array.isArray(data?.users) ? data.users : [];
+  if (!isRecord(payload)) return [];
+  const root = isRecord(payload.data) ? payload.data : payload;
+  const users = Array.isArray(root.users)
+    ? root.users
+    : Array.isArray(payload.data)
+      ? payload.data
+      : Array.isArray(root.data)
+        ? root.data
+        : [];
   return users.flatMap((user) => {
-    const fullName = isRecord(user) && typeof user.fullName === "string" ? user.fullName.trim() : "";
-    const ntid = isRecord(user) && typeof user.ntid === "string" ? user.ntid.trim() : "";
+    if (!isRecord(user)) return [];
+    const fullName =
+      (typeof user.fullName === "string" && user.fullName.trim()) ||
+      (typeof user.name === "string" && user.name.trim()) ||
+      (typeof user.userName === "string" && user.userName.trim()) ||
+      (typeof user.userFullName === "string" && user.userFullName.trim()) ||
+      (typeof user.username === "string" && user.username.trim()) ||
+      "";
+    const ntid =
+      (typeof user.ntid === "string" && user.ntid.trim()) ||
+      (typeof user.userId === "string" && user.userId.trim()) ||
+      (typeof user.id === "string" && user.id.trim()) ||
+      (typeof user.username === "string" && user.username.trim()) ||
+      "";
     return fullName ? [{ value: fullName, label: fullName, ntid }] : [];
   });
 }
@@ -1225,6 +1269,14 @@ export interface GuwSubmittedDecision {
   guidelines: GuwSubmittedGuideline[];
   /** UW Guidelines rows from the validation API with saved justifications (absent on older snapshots). */
   validationRows?: GuwSavedValidationRow[];
+  referralRows?: {
+    target: string;
+    label: string;
+    selected: boolean;
+    reason: string;
+    remarks: string;
+    assignedTo: string;
+  }[];
 }
 
 export interface GuwUwData {
@@ -1270,6 +1322,8 @@ export interface GuwDrsRecord {
   sections: GuwDialogSections;
   uwData?: GuwUwData;
   requirements: RequirementItem[];
+  /** `data.commonSection` / `data.membersDetails` exactly as returned; sent back when requirements are saved. */
+  drsData: { commonSection: unknown; membersDetails: unknown };
   /** Distinct `membersDetails[].memberType` values; options for the requirement "Profile" field. */
   memberTypes: string[];
   profileOptions: Array<{ label: string; value: string }>;
@@ -1308,6 +1362,25 @@ function mapRowDetails(rowDetails: unknown): BannerRowDetail[] {
     fields: Array.isArray(row.fields)
       ? row.fields.filter(isRecord).map((f) => ({ name: str(f.name), value: str(f.value) }))
       : [],
+  }));
+}
+
+/**
+ * GUW rows: id 0 = member line (Name, App No., Member, demographics), 1 = product, 2 = riders, 3 = sum at risk.
+ * Some payloads send Name / App No. as their own row and the member fields as the next row; fold that
+ * into row 0 and renumber the rest so the product and rider rows keep their expected ids.
+ */
+function mapGuwRowDetails(rowDetails: unknown): BannerRowDetail[] {
+  const rows = mapRowDetails(rowDetails);
+  const hasField = (row: BannerRowDetail | undefined, name: string) =>
+    row?.fields.some((f) => f.name === name) ?? false;
+  const [first, second, ...rest] = rows;
+  if (!first || !second || !hasField(first, "Name") || hasField(first, "Member") || !hasField(second, "Member")) {
+    return rows;
+  }
+  return [{ ...first, fields: [...first.fields, ...second.fields] }, ...rest].map((row, index) => ({
+    ...row,
+    id: index,
   }));
 }
 
@@ -1657,14 +1730,14 @@ function memberRecords(payload: unknown): Record<string, unknown>[] {
 
 /** Member id of one `membersDetails[]` object: the "Member" field of `rowDetails` id 0 (e.g. "Life Assured 1"). */
 function memberIdOf(member: Record<string, unknown>, index: number): string {
-  const memberFields = mapRowDetails(member.rowDetails).find((r) => r.id === 0)?.fields;
+  const memberFields = mapGuwRowDetails(member.rowDetails).find((r) => r.id === 0)?.fields;
   return fieldValue(memberFields, "Member") || `Life Assured ${index + 1}`;
 }
 
 /** Member rows for the member selection screen, from `rowDetails` id 0 (name, member and demographics). */
 export function mapGuwMembers(payload: unknown): GuwMemberSummary[] {
   return memberRecords(payload).map((data, index) => {
-    const rows = mapRowDetails(data.rowDetails);
+    const rows = mapGuwRowDetails(data.rowDetails);
     const memberFields = rows.find((r) => r.id === 0)?.fields;
     const detail = (name: string) => fieldValue(memberFields, name);
     const age = fieldValue(memberFields, "Age");
@@ -1713,7 +1786,7 @@ export async function fetchGuwMembers(applicationNo: string, roleType?: string):
 /** Product (id 1) and rider (id 2) rows of the first `membersDetails[]` object, for the member selection banner. */
 export function mapGuwProductRowDetails(payload: unknown): BannerRowDetail[] {
   const firstMember = memberRecords(payload)[0];
-  return mapRowDetails(firstMember?.rowDetails).filter((row) => row.id === 1 || row.id === 2);
+  return mapGuwRowDetails(firstMember?.rowDetails).filter((row) => row.id === 1 || row.id === 2);
 }
 
 export async function fetchGuwProductRowDetails(applicationNo: string, roleType?: string): Promise<BannerRowDetail[]> {
@@ -1751,7 +1824,7 @@ export function mapGuwDrsPayload(payload: unknown, memberId?: string): GuwDrsRec
   );
   const requirements: RequirementItem[] = mapRawRequirementRows(rawReqs);
 
-  const rowDetails = mapRowDetails(data.rowDetails);
+  const rowDetails = mapGuwRowDetails(data.rowDetails);
   const applicantName = fieldValue(rowDetails[0]?.fields, "Name");
 
   const riskCards: RiskCardData[] = Array.isArray(data.cardDetails)
@@ -1829,6 +1902,7 @@ export function mapGuwDrsPayload(payload: unknown, memberId?: string): GuwDrsRec
     breData: mapBreData(findSectionValue(commonSection, "latestBreDecision"), rawReqs),
     sections: dialogSections,
     requirements,
+    drsData: { commonSection: root.commonSection, membersDetails: root.membersDetails },
     memberTypes: readMemberTypes(root.membersDetails),
     profileOptions: readProfileOptions(root.membersDetails),
     quickLinks: {
@@ -1842,7 +1916,7 @@ export function mapGuwDrsPayload(payload: unknown, memberId?: string): GuwDrsRec
       ...(caseDecisionVal
         ? {
             submittedDecision: {
-              decisionCode: GUW_DECISION_CODE_BY_LABEL[caseDecisionVal.toLowerCase()] ?? caseDecisionVal,
+              decisionCode: guwDecisionCodeOfLabel(caseDecisionVal),
               remarks: caseRemarksVal,
               fields: [
                 { label: "Case UW Decision", value: caseDecisionVal },
@@ -2086,7 +2160,6 @@ const GUW_DECISION_CODE_BY_LABEL: Record<string, string> = {
   "extra premium": "EP",
   "borderline standard": "BOR_STD",
   "refer to hod": "REF_HOD",
-  "refer to sr.uw": "REF_SR_UW",
   "refer to ho cmo": "REF_CMO",
   "refer to cmo": "REF_CMO",
   "refer to reinsurer": "REF_REINS",
@@ -2100,6 +2173,13 @@ const GUW_DECISION_CODE_BY_LABEL: Record<string, string> = {
   "counter sign": "APPROVER",
   "raise referral": "REFERRAL",
 };
+
+/** Decision code of a submitted Case UW Decision label; "Refer to Sr.UW" resolves to the master's Sr UW code. */
+function guwDecisionCodeOfLabel(label: string): string {
+  const key = label.toLowerCase();
+  if (key === "refer to sr.uw") return guwSrUwReferralCode() || label;
+  return GUW_DECISION_CODE_BY_LABEL[key] ?? label;
+}
 
 /** DTO -> domain. Unknown fields are dropped; missing lists become empty. */
 export function fromGuwValidationResponse(dto: unknown): GuwValidationResult {

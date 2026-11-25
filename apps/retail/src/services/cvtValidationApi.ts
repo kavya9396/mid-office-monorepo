@@ -7,11 +7,17 @@ import {
   useMock,
 } from "@insurance-poc/utils";
 import cvtValidationMock from "../modules/drs/mock/retailCvtValidation.json";
+import cuwValidationMock from "../../../../mock/drs/cuw-validation.json";
 import {
   readCvtValidationResponse,
   type CvtValidationRequest,
   type CvtValidationResult,
 } from "./cvtValidationService";
+import {
+  fromCuwValidationResponse,
+  type CuwValidationRequest,
+  type CuwValidationResult,
+} from "./drsService";
 
 /**
  * Decision code that fails validation in mock mode (CVT "Raise Requirements"). When any party sends it,
@@ -66,7 +72,45 @@ export const retailCvtValidationApi = createApi({
         }
       },
     }),
+
+    validateCuwDecision: build.mutation<CuwValidationResult, CuwValidationRequest>({
+      async queryFn(request, _api, _extra, baseQuery) {
+        if (useMock) {
+          try {
+            // Mock = the API response as-is for every decision; edit cuw-validation.json to try other outcomes
+            const result = fromCuwValidationResponse(cuwValidationMock);
+            return { data: { ...result, applicationNo: request.applicationNo } };
+          } catch (reason: unknown) {
+            return { error: customError(readError(reason)) };
+          }
+        }
+
+        const validationUrl = retailBusinessUrls.cvtValidation;
+        if (validationUrl.length === 0) {
+          return { error: customError("Retail CUW validation API is not configured.") };
+        }
+
+        const result = await baseQuery({
+          url: validationUrl,
+          method: "POST",
+          body: request,
+          headers: {
+            accept: "*/*",
+            "Content-Type": "application/json",
+            "X-Correlation-Id": crypto.randomUUID(),
+          },
+        });
+        if (result.error) return { error: result.error };
+
+        try {
+          const mapped = fromCuwValidationResponse(result.data);
+          return { data: { ...mapped, applicationNo: request.applicationNo } };
+        } catch (reason: unknown) {
+          return { error: customError(readError(reason)) };
+        }
+      },
+    }),
   }),
 });
 
-export const { useFetchCvtValidationMutation } = retailCvtValidationApi;
+export const { useFetchCvtValidationMutation, useValidateCuwDecisionMutation } = retailCvtValidationApi;

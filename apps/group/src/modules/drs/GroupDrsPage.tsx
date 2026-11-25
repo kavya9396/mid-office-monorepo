@@ -8,10 +8,10 @@ import {
 import { MmtGrievanceDrsPage } from "./MmtGrievanceDrsPage";
 import DvtUser from "./DvtUser";
 import GuwUser from "./GuwUser";
-import { ReferralDrsPage } from "../referral-uw/ReferralDrsPage";
-import { HOD_CONFIG, SR_UW_CONFIG, fetchGuwMembers } from "../../services/drsService";
+import { fetchGuwMembers } from "../../services/drsService";
 import DptNmrUser from "./DptNmrUser";
 import DptMrUser from "./DptMrUser";
+import { findGroupDrsTaskConfig } from "../../config/drsTaskConfig";
 
 interface MemberEntryProps {
   /** Member selection page opened when the DRS payload holds more than one member. */
@@ -65,39 +65,22 @@ function GuwEntry() {
   );
 }
 
-function HodEntry() {
-  return (
-    <MemberEntry memberSelectionPath="/referral/member-selection">
-      <ReferralDrsPage config={HOD_CONFIG} />
-    </MemberEntry>
-  );
-}
-
-function SrUwEntry() {
-  return (
-    <MemberEntry memberSelectionPath="/referral/member-selection">
-      <ReferralDrsPage config={SR_UW_CONFIG} />
-    </MemberEntry>
-  );
-}
-
-/** `/app/{applicationNo}/drs` — screen picked from inbox session `roleType`. */
-/** Keys match `roleType` on inbox cases (see `groupInbox.json` poolData). */
-const SCREEN_BY_ROLE: Record<string, () => JSX.Element | null> = {
-  GUW_TASK: GuwEntry,
-  HOD_TASK: HodEntry,
-  HOD: HodEntry,
-  SR_UW_TASK: SrUwEntry,
-  SR_UW: SrUwEntry,
-  DVT_TASK: DvtUser,
-  MMT_TASK: MmtGrievanceDrsPage,
-  GROUP_DATA_ENTRY_NMR_TASK: DptNmrUser,
-  GROUP_DATA_ENTRY_MR_TASK: DptMrUser
+/**
+ * `/app/{applicationNo}/drs` — the inbox session `roleType` (from the role-list response) is looked up in
+ * `GROUP_DRS_TASK_CONFIG`; its `screenType` picks the screen. A new task needs a config entry only.
+ */
+const SCREEN_BY_SCREEN_TYPE: Record<string, () => JSX.Element | null> = {
+  GUW_INFORMAL: GuwEntry,
+  DVT_INFORMAL: DvtUser,
+  MMT: MmtGrievanceDrsPage,
+  CPT_NMR: DptNmrUser,
+  CPT_MR: DptMrUser,
 };
 
 export function GroupDrsPage() {
-  const roleType = getDrsRoleType().trim().toUpperCase();
-  const Screen = SCREEN_BY_ROLE[roleType] ?? <DvtUser />;
+  const taskConfig = findGroupDrsTaskConfig(getDrsRoleType());
+  const Screen = taskConfig ? SCREEN_BY_SCREEN_TYPE[taskConfig.screenType] : undefined;
+  if (!Screen) return <div>Page not found</div>;
   return <Screen />;
 }
 

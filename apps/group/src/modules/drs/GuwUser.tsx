@@ -214,6 +214,9 @@ const GuwUser = () => {
         lob: "G",
         requirements: updatedRequirements,
         initialRequirements,
+        ...(page.kind === "ready"
+          ? { drsData: page.record.drsData, caseType: page.record.caseType }
+          : {}),
       }).unwrap();
       setPage((prev) =>
         prev.kind === "ready"

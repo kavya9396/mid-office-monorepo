@@ -64,6 +64,12 @@ export type GuwClaimAuditListRequest = {
   partyId: string;
 };
 
+/** `data.commonSection` and `data.membersDetails` of the DRS response, sent back as-is with the requirement save. */
+export type GuwDrsRequirementData = {
+  commonSection: unknown;
+  membersDetails: unknown;
+};
+
 export type SaveGroupDrsRequirementsArg = {
   applicationNo: string;
   requirements: RequirementItem[];
@@ -74,6 +80,9 @@ export type SaveGroupDrsRequirementsArg = {
   lob?: string;
   userId?: string;
   queryArg?: GroupDrsQueryArg;
+  /** GUW: when set, the whole DRS response (with the updated requirements) is sent instead of the `requirementManagement` section only. */
+  drsData?: GuwDrsRequirementData;
+  caseType?: string;
 };
 
 export type SaveGroupDrsApplicantArg = {
@@ -125,17 +134,17 @@ function buildDrsRequestBody(arg: GroupDrsQueryArg) {
   };
 }
 
-export const toRequirementRequestItem = (item: RequirementItem) => {
-  const isNumericId =
-    typeof item.id === "number" ||
-    (typeof item.id === "string" && !item.id.startsWith("req-") && Number.isFinite(Number(item.id)) && Number(item.id) > 0);
+const isPersistedRequirementId = (item: RequirementItem): boolean =>
+  typeof item.id === "number" ||
+  (typeof item.id === "string" && !item.id.startsWith("req-") && Number.isFinite(Number(item.id)) && Number(item.id) > 0);
 
-  const reqId =
-    typeof item.requirementId === "number"
-      ? item.requirementId
-      : isNumericId
-        ? Number(item.id)
-        : undefined;
+export const toRequirementRequestItem = (item: RequirementItem) => {
+  let reqId: number | undefined;
+  if (typeof item.requirementId === "number") {
+    reqId = item.requirementId;
+  } else if (isPersistedRequirementId(item)) {
+    reqId = Number(item.id);
+  }
 
   const payload: Record<string, unknown> = {
     status: item.status || "Pending",
@@ -835,6 +844,9 @@ export const groupDrsApi = createApi({
         };
 
         if (useMock) {
+          if (arg.requirements && arg.requirements.length > 0) {
+            return { data: arg.requirements };
+          }
           return { data: applyResponseToCache(groupDrsApplicantSaveMock) };
         }
 
