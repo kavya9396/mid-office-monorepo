@@ -133,19 +133,44 @@ function readAttributes(value: unknown): DetailAttribute[] {
   });
 }
 
-function readTables(value: unknown): DetailTable[] {
+/**
+ * Rider rows of the member's applicant profile: `product_details.value.rows[]` with `productType` "rider"
+ * (`name` = product code and `sumAssured` feed the card's Rider Details table; `productName` and `term`
+ * feed the Rider Name / Rider Term of the edit dialog).
+ * `null` when the member has no `product_details` rows, so the card's own table rows are used instead.
+ */
+function readProductRiderRows(member: Record<string, unknown> | null): Record<string, unknown>[] | null {
+  const sections = Array.isArray(member?.sections) ? member.sections : [];
+  const profileSection = sections.find((s) => isRecord(s) && s.name === "applicantProfile");
+  const profile = isRecord(profileSection) && isRecord(profileSection.value) ? profileSection.value : member;
+  const productDetails = isRecord(profile?.product_details) ? profile.product_details : null;
+  const productRows = isRecord(productDetails?.value) ? productDetails.value.rows : null;
+  if (!Array.isArray(productRows)) return null;
+  return productRows
+    .filter(isRecord)
+    .filter((row) => readText(row.productType).trim().toLowerCase() === "rider")
+    .map((row) => ({
+      name: readText(row.productCode),
+      sumAssured: readText(row.sumAssured),
+      productName: readText(row.productName),
+      term: readText(row.term),
+    }));
+}
+
+function readTables(value: unknown, riderRows: Record<string, unknown>[] | null = null): DetailTable[] {
   if (!Array.isArray(value)) return [];
   return value.map((item) => {
     if (!isRecord(item) || typeof item.name !== "string" || !Array.isArray(item.columns)) {
       return { name: "", columns: [], rows: [] };
     }
     if (!item.columns.every((column) => typeof column === "string")) return { name: "", columns: [], rows: [] };
-    if (!Array.isArray(item.rows)) return { name: item.name, columns: item.columns, rows: [] };
+    const isRiderTable = item.name === RIDER_TABLE_NAME;
+    const sourceRows: unknown = isRiderTable && riderRows ? riderRows : item.rows;
+    if (!Array.isArray(sourceRows)) return { name: item.name, columns: item.columns, rows: [] };
 
     const columns: string[] = item.columns;
-    const isRiderTable = item.name === RIDER_TABLE_NAME;
 
-    const rows = item.rows.map((row, index) => {
+    const rows = sourceRows.map((row, index) => {
       if (!isRecord(row)) return {};
       const cells: Record<string, string> = {};
       for (const column of columns) {
@@ -164,7 +189,7 @@ function readTables(value: unknown): DetailTable[] {
   });
 }
 
-function readCards(value: unknown): CardDetail[] {
+function readCards(value: unknown, riderRows: Record<string, unknown>[] | null = null): CardDetail[] {
   if (!Array.isArray(value)) return [];
   return value
     .filter((item): item is Record<string, unknown> => isRecord(item) && typeof item.type === "string" && Boolean(CARD_TYPE_BY_NAME[item.type]))
@@ -172,7 +197,7 @@ function readCards(value: unknown): CardDetail[] {
       type: readCardType(item.type as string),
       attributes: readAttributes(item.attributes),
       expandedAttributes: readAttributes(item.expandedAttributes),
-      tables: readTables(item.tables),
+      tables: readTables(item.tables, riderRows),
     }));
 }
 
@@ -302,8 +327,20 @@ export function mapRawRequirementRows(rowsOrSection: unknown): RequirementItem[]
   return mapRequirements(rawList);
 }
 
-/** Rider rows of the Application Detail card's "Rider Details" table (name + sum assured only). */
-function readRiders(cardDetails: unknown): RiderEditRow[] {
+/**
+ * Rider rows of the edit dialog. Taken from the member's `product_details` rider rows (`productName`,
+ * `sumAssured`, `term`); the Application Detail card's "Rider Details" table is only the fallback.
+ */
+function readRiders(cardDetails: unknown, productRiderRows: Record<string, unknown>[] | null): RiderEditRow[] {
+  if (productRiderRows) {
+    return productRiderRows
+      .map((row) => ({
+        riderName: readText(row.productName) || readText(row.name),
+        sumAssured: readText(row.sumAssured),
+        riderTerm: readText(row.term),
+      }))
+      .filter((r) => Boolean(r.riderName.trim() || r.sumAssured.trim() || r.riderTerm.trim()));
+  }
   if (!Array.isArray(cardDetails)) return [];
   const card = cardDetails.find(
     (item): item is Record<string, unknown> => isRecord(item) && item.type === "Application Detail",
@@ -466,6 +503,7 @@ export function mapGroupDrsPayload(value: unknown): GroupDrsData {
   const membersDetails = Array.isArray(data.membersDetails) ? data.membersDetails : [];
   const primaryMember = membersDetails.find(isRecord) ?? null;
   const cardDetailsRaw = primaryMember?.cardDetails ?? data.cardDetails;
+  const productRiderRows = readProductRiderRows(primaryMember);
   const rowDetails = mapRowDetails(primaryMember?.rowDetails);
   const nameRow = rowDetails.find((row) => row.id === 0);
   const historySection = findNamedSection(sections, "grievanceHistory");
@@ -474,7 +512,7 @@ export function mapGroupDrsPayload(value: unknown): GroupDrsData {
 
   return {
     applicationNo,
-    cardDetails: readCards(cardDetailsRaw),
+    cardDetails: readCards(cardDetailsRaw, productRiderRows),
     breDecision: readBre(findSection(sections, "latestBreDecision")),
     dvtDecision: readDvtDecision(findSection(sections, "dvtDecision")),
     requirements: mapRawRequirementRows(findSection(sections, "requirementManagement")),
@@ -484,7 +522,7 @@ export function mapGroupDrsPayload(value: unknown): GroupDrsData {
           ? { value: data.membersDetails }
           : findSection(sections, "applicantProfile")
       ),
-      riders: readRiders(cardDetailsRaw),
+      riders: readRiders(cardDetailsRaw, productRiderRows),
     }),
     memberTypes: readMemberTypes(data.membersDetails),
     profileOptions: readProfileOptions(data.membersDetails),
