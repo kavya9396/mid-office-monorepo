@@ -10082,6 +10082,2326 @@
         "isActive": "Y",
         "miscMastId": "MONTHS",
         "type": "month"
+      },
+      {
+        "code": "STD",
+        "description": "Standard",
+        "value": "Standard",
+        "isActive": "Y",
+        "miscMastId": "744",
+        "type": "CUW_TERM_DESC"
+      },
+      {
+        "code": "BSD_STD",
+        "description": "Borderline Standard",
+        "value": "Borderline Standard",
+        "isActive": "Y",
+        "miscMastId": "745",
+        "type": "CUW_TERM_DESC"
+      },
+      {
+        "code": "REJ",
+        "description": "Reject",
+        "value": "Reject",
+        "isActive": "Y",
+        "miscMastId": "746",
+        "type": "CUW_TERM_DESC"
+      },
+      {
+        "code": "DEC",
+        "description": "Decline",
+        "value": "Decline",
+        "isActive": "Y",
+        "miscMastId": "747",
+        "type": "CUW_TERM_DESC"
+      },
+      {
+        "code": "POS_PON",
+        "description": "Postpone",
+        "value": "Postpone",
+        "isActive": "Y",
+        "miscMastId": "748",
+        "type": "CUW_TERM_DESC"
+      },
+      {
+        "code": "CO",
+        "description": "Counter Offer",
+        "value": "Counter Offer",
+        "isActive": "Y",
+        "miscMastId": "749",
+        "type": "CUW_TERM_DESC"
+      },
+      {
+        "code": "EP",
+        "description": "Extra Premium",
+        "value": "Extra Premium",
+        "isActive": "Y",
+        "miscMastId": "750",
+        "type": "CUW_TERM_DESC"
+      },
+      {
+        "code": "SMOK",
+        "description": "Smoker",
+        "value": "Smoker",
+        "isActive": "Y",
+        "miscMastId": "751",
+        "type": "CUW_STD_SMOK"
+      },
+      {
+        "code": "NON_SMOK",
+        "description": "Non Smoker",
+        "value": "Non Smoker",
+        "isActive": "Y",
+        "miscMastId": "752",
+        "type": "CUW_STD_SMOK"
+      },
+      {
+        "code": "AS",
+        "description": "Medically Standard",
+        "value": "Medically Standard",
+        "isActive": "Y",
+        "miscMastId": "753",
+        "type": "CUW_BSD_CODE_MED"
+      },
+      {
+        "code": "BS",
+        "description": "Borderline standard medicals",
+        "value": "Borderline standard medicals",
+        "isActive": "Y",
+        "miscMastId": "754",
+        "type": "CUW_BSD_CODE_MED"
+      },
+      {
+        "code": "BS1",
+        "description": "Medical Borderline standard 1 (for EMR +25)",
+        "value": "Medical Borderline standard 1 (for EMR +25)",
+        "isActive": "Y",
+        "miscMastId": "755",
+        "type": "CUW_BSD_CODE_MED"
+      },
+      {
+        "code": "TMS",
+        "description": "Tele medical standard",
+        "value": "Tele medical standard",
+        "isActive": "Y",
+        "miscMastId": "756",
+        "type": "CUW_BSD_CODE_TELE"
+      },
+      {
+        "code": "BS2",
+        "description": "Medical Borderline standard 2 (for EMR +50)",
+        "value": "Medical Borderline standard 2 (for EMR +50)",
+        "isActive": "Y",
+        "miscMastId": "757",
+        "type": "CUW_BSD_CODE_MED"
+      },
+      {
+        "code": "VS1",
+        "description": "Video medical Borderline standard 1 (for EMR +25)",
+        "value": "Video medical Borderline standard 1 (for EMR +25)",
+        "isActive": "Y",
+        "miscMastId": "758",
+        "type": "CUW_BSD_CODE_VID"
+      },
+      {
+        "code": "BS3",
+        "description": "Medical Borderline standard 3 (for EMR +75)",
+        "value": "Medical Borderline standard 3 (for EMR +75)",
+        "isActive": "Y",
+        "miscMastId": "759",
+        "type": "CUW_BSD_CODE_MED"
+      },
+      {
+        "code": "VS2",
+        "description": "Video medical Borderline standard 2 (for EMR +50)",
+        "value": "Video medical Borderline standard 2 (for EMR +50)",
+        "isActive": "Y",
+        "miscMastId": "760",
+        "type": "CUW_BSD_CODE_VID"
+      },
+      {
+        "code": "BS4",
+        "description": "Medical Borderline standard 4 (for EMR +100)",
+        "value": "Medical Borderline standard 4 (for EMR +100)",
+        "isActive": "Y",
+        "miscMastId": "761",
+        "type": "CUW_BSD_CODE_MED"
+      },
+      {
+        "code": "VS3",
+        "description": "Video medical Borderline standard 3 (for EMR +75)",
+        "value": "Video medical Borderline standard 3 (for EMR +75)",
+        "isActive": "Y",
+        "miscMastId": "762",
+        "type": "CUW_BSD_CODE_VID"
+      },
+      {
+        "code": "SS",
+        "description": "Standard Medical(Standard)",
+        "value": "Standard Medical(Standard)",
+        "isActive": "Y",
+        "miscMastId": "763",
+        "type": "CUW_BSD_CODE_MED"
+      },
+      {
+        "code": "VS4",
+        "description": "Video medical Borderline standard 4 (for EMR +100)",
+        "value": "Video medical Borderline standard 4 (for EMR +100)",
+        "isActive": "Y",
+        "miscMastId": "764",
+        "type": "CUW_BSD_CODE_VID"
+      },
+      {
+        "code": "PMS",
+        "description": "Physical medical standard",
+        "value": "Physical medical standard",
+        "isActive": "Y",
+        "miscMastId": "765",
+        "type": "CUW_BSD_CODE_MED"
+      },
+      {
+        "code": "VS",
+        "description": "Video MER standard",
+        "value": "Video MER standard",
+        "isActive": "Y",
+        "miscMastId": "766",
+        "type": "CUW_BSD_CODE_VID"
+      },
+      {
+        "code": "Immediately",
+        "description": "Immediately",
+        "value": "Immediately",
+        "isActive": "Y",
+        "miscMastId": "767",
+        "type": "CUW_RECONS_AFTER"
+      },
+      {
+        "code": "J1",
+        "description": "Non Medical Standard",
+        "value": "Non Medical Standard",
+        "isActive": "Y",
+        "miscMastId": "768",
+        "type": "CUW_BSD_CODE_NON_MED"
+      },
+      {
+        "code": "15 Days",
+        "description": "15 Days",
+        "value": "15 Days",
+        "isActive": "Y",
+        "miscMastId": "769",
+        "type": "CUW_RECONS_AFTER"
+      },
+      {
+        "code": "J2",
+        "description": "Non Medical Standard",
+        "value": "Non Medical Standard",
+        "isActive": "Y",
+        "miscMastId": "770",
+        "type": "CUW_BSD_CODE_NON_MED"
+      },
+      {
+        "code": "1 Month",
+        "description": "1 Month",
+        "value": "1 Month",
+        "isActive": "Y",
+        "miscMastId": "771",
+        "type": "CUW_RECONS_AFTER"
+      },
+      {
+        "code": "NS1",
+        "description": "Non-Medical Borderline standard 1 (for EMR +25)",
+        "value": "Non-Medical Borderline standard 1 (for EMR +25)",
+        "isActive": "Y",
+        "miscMastId": "772",
+        "type": "CUW_BSD_CODE_NON_MED"
+      },
+      {
+        "code": "2 Months",
+        "description": "2 Months",
+        "value": "2 Months",
+        "isActive": "Y",
+        "miscMastId": "773",
+        "type": "CUW_RECONS_AFTER"
+      },
+      {
+        "code": "NS2",
+        "description": "Non-Medical Borderline standard 2 (for EMR +50)",
+        "value": "Non-Medical Borderline standard 2 (for EMR +50)",
+        "isActive": "Y",
+        "miscMastId": "774",
+        "type": "CUW_BSD_CODE_NON_MED"
+      },
+      {
+        "code": "3 Months",
+        "description": "3 Months",
+        "value": "3 Months",
+        "isActive": "Y",
+        "miscMastId": "775",
+        "type": "CUW_RECONS_AFTER"
+      },
+      {
+        "code": "NS3",
+        "description": "Non-Medical Borderline standard 3 (for EMR +75)",
+        "value": "Non-Medical Borderline standard 3 (for EMR +75)",
+        "isActive": "Y",
+        "miscMastId": "776",
+        "type": "CUW_BSD_CODE_NON_MED"
+      },
+      {
+        "code": "4 Months",
+        "description": "4 Months",
+        "value": "4 Months",
+        "isActive": "Y",
+        "miscMastId": "777",
+        "type": "CUW_RECONS_AFTER"
+      },
+      {
+        "code": "NS4",
+        "description": "Non-Medical Borderline standard 4 (for EMR +100)",
+        "value": "Non-Medical Borderline standard 4 (for EMR +100)",
+        "isActive": "Y",
+        "miscMastId": "778",
+        "type": "CUW_BSD_CODE_NON_MED"
+      },
+      {
+        "code": "5 Months",
+        "description": "5 Months",
+        "value": "5 Months",
+        "isActive": "Y",
+        "miscMastId": "779",
+        "type": "CUW_RECONS_AFTER"
+      },
+      {
+        "code": "TS",
+        "description": "Tele standard",
+        "value": "Tele standard",
+        "isActive": "Y",
+        "miscMastId": "780",
+        "type": "CUW_BSD_CODE_TELE"
+      },
+      {
+        "code": "6 Months",
+        "description": "6 Months",
+        "value": "6 Months",
+        "isActive": "Y",
+        "miscMastId": "781",
+        "type": "CUW_RECONS_AFTER"
+      },
+      {
+        "code": "TS1",
+        "description": "Tele Borderline standard 1 (for EMR +25)",
+        "value": "Tele Borderline standard 1 (for EMR +25)",
+        "isActive": "Y",
+        "miscMastId": "782",
+        "type": "CUW_BSD_CODE_TELE"
+      },
+      {
+        "code": "7 Months",
+        "description": "7 Months",
+        "value": "7 Months",
+        "isActive": "Y",
+        "miscMastId": "783",
+        "type": "CUW_RECONS_AFTER"
+      },
+      {
+        "code": "TS2",
+        "description": "Tele Borderline standard 2 (for EMR +50)",
+        "value": "Tele Borderline standard 2 (for EMR +50)",
+        "isActive": "Y",
+        "miscMastId": "784",
+        "type": "CUW_BSD_CODE_TELE"
+      },
+      {
+        "code": "8 Months",
+        "description": "8 Months",
+        "value": "8 Months",
+        "isActive": "Y",
+        "miscMastId": "785",
+        "type": "CUW_RECONS_AFTER"
+      },
+      {
+        "code": "TS3",
+        "description": "Tele Borderline standard 3 (for EMR +75)",
+        "value": "Tele Borderline standard 3 (for EMR +75)",
+        "isActive": "Y",
+        "miscMastId": "786",
+        "type": "CUW_BSD_CODE_TELE"
+      },
+      {
+        "code": "9 Months",
+        "description": "9 Months",
+        "value": "9 Months",
+        "isActive": "Y",
+        "miscMastId": "787",
+        "type": "CUW_RECONS_AFTER"
+      },
+      {
+        "code": "TS4",
+        "description": "Tele Borderline standard 4 (for EMR +100)",
+        "value": "Tele Borderline standard 4 (for EMR +100)",
+        "isActive": "Y",
+        "miscMastId": "788",
+        "type": "CUW_BSD_CODE_TELE"
+      },
+      {
+        "code": "10 Months",
+        "description": "10 Months",
+        "value": "10 Months",
+        "isActive": "Y",
+        "miscMastId": "789",
+        "type": "CUW_RECONS_AFTER"
+      },
+      {
+        "code": "11 Months",
+        "description": "11 Months",
+        "value": "11 Months",
+        "isActive": "Y",
+        "miscMastId": "790",
+        "type": "CUW_RECONS_AFTER"
+      },
+      {
+        "code": "1 Year",
+        "description": "1 Year",
+        "value": "1 Year",
+        "isActive": "Y",
+        "miscMastId": "791",
+        "type": "CUW_RECONS_AFTER"
+      },
+      {
+        "code": "Repeat Medical",
+        "description": "Repeat Medical",
+        "value": "Repeat Medical",
+        "isActive": "Y",
+        "miscMastId": "792",
+        "type": "CUW_RECONS_TYPE"
+      },
+      {
+        "code": "Specific Test",
+        "description": "Specific Test",
+        "value": "Specific Test",
+        "isActive": "Y",
+        "miscMastId": "793",
+        "type": "CUW_RECONS_TYPE"
+      },
+      {
+        "code": "Doctor Report",
+        "description": "Doctor Report",
+        "value": "Doctor Report",
+        "isActive": "Y",
+        "miscMastId": "794",
+        "type": "CUW_RECONS_TYPE"
+      },
+      {
+        "code": "Documents",
+        "description": "Documents",
+        "value": "Documents",
+        "isActive": "Y",
+        "miscMastId": "795",
+        "type": "CUW_RECONS_TYPE"
+      },
+      {
+        "code": "Others",
+        "description": "Others",
+        "value": "Others",
+        "isActive": "Y",
+        "miscMastId": "796",
+        "type": "CUW_RECONS_TYPE"
+      },
+      {
+        "code": "2228",
+        "description": "Skin disorder- Psoriasis",
+        "value": "Skin disorder- Psoriasis",
+        "isActive": "Y",
+        "miscMastId": "797",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1513",
+        "description": "Medical conditions that affect mood",
+        "value": "Medical conditions that affect mood",
+        "isActive": "Y",
+        "miscMastId": "798",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1601",
+        "description": "Abnormal detection of pus cells in Urine",
+        "value": "Abnormal detection of pus cells in Urine",
+        "isActive": "Y",
+        "miscMastId": "799",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1001",
+        "description": "Right bundle branch found in Electro cardiogram",
+        "value": "Right bundle branch found in Electro cardiogram",
+        "isActive": "Y",
+        "miscMastId": "800",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1706",
+        "description": "Recent history of Fracture",
+        "value": "Recent history of Fracture",
+        "isActive": "Y",
+        "miscMastId": "801",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "2205",
+        "description": "Defects in body posture",
+        "value": "Defects in body posture",
+        "isActive": "Y",
+        "miscMastId": "802",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "2227",
+        "description": "Pregnancy",
+        "value": "Pregnancy",
+        "isActive": "Y",
+        "miscMastId": "803",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1621",
+        "description": "High sugar level in urine analysis",
+        "value": "High sugar level in urine analysis",
+        "isActive": "Y",
+        "miscMastId": "804",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1023",
+        "description": "Abnormal heart murmurs detected on examination",
+        "value": "Abnormal heart murmurs detected on examination",
+        "isActive": "Y",
+        "miscMastId": "805",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1406",
+        "description": "Diabetes during pregnancy",
+        "value": "Diabetes during pregnancy",
+        "isActive": "Y",
+        "miscMastId": "806",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1707",
+        "description": "Gout on treatment",
+        "value": "Gout on treatment",
+        "isActive": "Y",
+        "miscMastId": "807",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1622",
+        "description": "Haematuria (Presence of blood in Urine)",
+        "value": "Haematuria (Presence of blood in Urine)",
+        "isActive": "Y",
+        "miscMastId": "808",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1104",
+        "description": "Higher than normal GGT levels",
+        "value": "Higher than normal GGT levels",
+        "isActive": "Y",
+        "miscMastId": "809",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1506",
+        "description": "Ongoing epilepsy treatment",
+        "value": "Ongoing epilepsy treatment",
+        "isActive": "Y",
+        "miscMastId": "810",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "2101",
+        "description": "Asthma",
+        "value": "Asthma",
+        "isActive": "Y",
+        "miscMastId": "811",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1704",
+        "description": "Backpain",
+        "value": "Backpain",
+        "isActive": "Y",
+        "miscMastId": "812",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1105",
+        "description": "Higher than normal amount of Liver Enzymes",
+        "value": "Higher than normal amount of Liver Enzymes",
+        "isActive": "Y",
+        "miscMastId": "813",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1005",
+        "description": "Abnormal Findings in Treadmill test",
+        "value": "Abnormal Findings in Treadmill test",
+        "isActive": "Y",
+        "miscMastId": "814",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1029",
+        "description": "Increase in heart rate",
+        "value": "Increase in heart rate",
+        "isActive": "Y",
+        "miscMastId": "815",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "2238",
+        "description": "Surgery of eardrum (Tympanoplasty)",
+        "value": "Surgery of eardrum (Tympanoplasty)",
+        "isActive": "Y",
+        "miscMastId": "816",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "2009",
+        "description": "Ulcerative Colitis",
+        "value": "Ulcerative Colitis",
+        "isActive": "Y",
+        "miscMastId": "817",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "2237",
+        "description": "Weight below standard parameters.",
+        "value": "Weight below standard parameters.",
+        "isActive": "Y",
+        "miscMastId": "818",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "5002",
+        "description": "Undesirable Profile",
+        "value": "Undesirable Profile",
+        "isActive": "Y",
+        "miscMastId": "819",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1040",
+        "description": "Ventricular Septal Defects",
+        "value": "Ventricular Septal Defects",
+        "isActive": "Y",
+        "miscMastId": "820",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1609",
+        "description": "Abnormal Xray Findings",
+        "value": "Abnormal Xray Findings",
+        "isActive": "Y",
+        "miscMastId": "821",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1905",
+        "description": "Thyroid cancer",
+        "value": "Thyroid cancer",
+        "isActive": "Y",
+        "miscMastId": "822",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1034",
+        "description": "Poor exercise capacity found in Treadmil test",
+        "value": "Poor exercise capacity found in Treadmil test",
+        "isActive": "Y",
+        "miscMastId": "823",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1507",
+        "description": "History of brain stroke",
+        "value": "History of brain stroke",
+        "isActive": "Y",
+        "miscMastId": "824",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1110",
+        "description": "History of Hepatitis",
+        "value": "History of Hepatitis",
+        "isActive": "Y",
+        "miscMastId": "825",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1708",
+        "description": "History of Hip Replacement surgery",
+        "value": "History of Hip Replacement surgery",
+        "isActive": "Y",
+        "miscMastId": "826",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1515",
+        "description": "History of Vertigo",
+        "value": "History of Vertigo",
+        "isActive": "Y",
+        "miscMastId": "827",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1207",
+        "description": "History of kidney stones",
+        "value": "History of kidney stones",
+        "isActive": "Y",
+        "miscMastId": "828",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1113",
+        "description": "Abnormal levels of Bilirubin in blood",
+        "value": "Abnormal levels of Bilirubin in blood",
+        "isActive": "Y",
+        "miscMastId": "829",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1027",
+        "description": "Ongoing treatment for Hypertension",
+        "value": "Ongoing treatment for Hypertension",
+        "isActive": "Y",
+        "miscMastId": "830",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1403",
+        "description": "Higher than normal fasting blood sugar level",
+        "value": "Higher than normal fasting blood sugar level",
+        "isActive": "Y",
+        "miscMastId": "831",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "2105",
+        "description": "Due to covid-19",
+        "value": "Due to covid-19",
+        "isActive": "Y",
+        "miscMastId": "832",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1016",
+        "description": "History of Angioplasty",
+        "value": "History of Angioplasty",
+        "isActive": "Y",
+        "miscMastId": "833",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1302",
+        "description": "Thyroid gland swelling in the neck (Goitre)",
+        "value": "Thyroid gland swelling in the neck (Goitre)",
+        "isActive": "Y",
+        "miscMastId": "834",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1604",
+        "description": "Abnormal findings in urine test",
+        "value": "Abnormal findings in urine test",
+        "isActive": "Y",
+        "miscMastId": "835",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1028",
+        "description": "Hypertension detected in stress test findings",
+        "value": "Hypertension detected in stress test findings",
+        "isActive": "Y",
+        "miscMastId": "836",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1303",
+        "description": "Onging treatment for Hyperthyroidism",
+        "value": "Onging treatment for Hyperthyroidism",
+        "isActive": "Y",
+        "miscMastId": "837",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "2218",
+        "description": "Enlargement of the lymph gland",
+        "value": "Enlargement of the lymph gland",
+        "isActive": "Y",
+        "miscMastId": "838",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "2238",
+        "description": "Inflammation in the ear- CSOM",
+        "value": "Inflammation in the ear- CSOM",
+        "isActive": "Y",
+        "miscMastId": "839",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1020",
+        "description": "High blood pressure",
+        "value": "High blood pressure",
+        "isActive": "Y",
+        "miscMastId": "840",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1612",
+        "description": "Elevated levels of Cholesterol.",
+        "value": "Elevated levels of Cholesterol.",
+        "isActive": "Y",
+        "miscMastId": "841",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1501",
+        "description": "Acute Ischaemic Stroke",
+        "value": "Acute Ischaemic Stroke",
+        "isActive": "Y",
+        "miscMastId": "842",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "2201",
+        "description": "Addisons disease",
+        "value": "Addisons disease",
+        "isActive": "Y",
+        "miscMastId": "843",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1001",
+        "description": "Abnormal findings in Electro cardiogram(ECG)",
+        "value": "Abnormal findings in Electro cardiogram(ECG)",
+        "isActive": "Y",
+        "miscMastId": "844",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1607",
+        "description": "Abnormal findings in ultrasound findings",
+        "value": "Abnormal findings in ultrasound findings",
+        "isActive": "Y",
+        "miscMastId": "845",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "2202",
+        "description": "Alcohol consumption beyond standard limit.",
+        "value": "Alcohol consumption beyond standard limit.",
+        "isActive": "Y",
+        "miscMastId": "846",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1502",
+        "description": "Alziemers Disease",
+        "value": "Alziemers Disease",
+        "isActive": "Y",
+        "miscMastId": "847",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "2203",
+        "description": "Low haemoglobin levels- Anaemia.",
+        "value": "Low haemoglobin levels- Anaemia.",
+        "isActive": "Y",
+        "miscMastId": "848",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1017",
+        "description": "History of Coronary artery Bypass grafting",
+        "value": "History of Coronary artery Bypass grafting",
+        "isActive": "Y",
+        "miscMastId": "849",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "2226",
+        "description": "Polio (Poliomyelitis)",
+        "value": "Polio (Poliomyelitis)",
+        "isActive": "Y",
+        "miscMastId": "850",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1621",
+        "description": "Glycosuria(Presence of sugar in Urine)",
+        "value": "Glycosuria(Presence of sugar in Urine)",
+        "isActive": "Y",
+        "miscMastId": "851",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1906",
+        "description": "Cancer",
+        "value": "Cancer",
+        "isActive": "Y",
+        "miscMastId": "852",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1002",
+        "description": "2D echo findings",
+        "value": "2D echo findings",
+        "isActive": "Y",
+        "miscMastId": "853",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "2109",
+        "description": "PFT findings",
+        "value": "PFT findings",
+        "isActive": "Y",
+        "miscMastId": "854",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "2237",
+        "description": "Underweight",
+        "value": "Underweight",
+        "isActive": "Y",
+        "miscMastId": "855",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "2219",
+        "description": "Past medical history",
+        "value": "Past medical history",
+        "isActive": "Y",
+        "miscMastId": "856",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1513",
+        "description": "Psychiatric/mental illness",
+        "value": "Psychiatric/mental illness",
+        "isActive": "Y",
+        "miscMastId": "857",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1635",
+        "description": "Findings in the medical examination report",
+        "value": "Findings in the medical examination report",
+        "isActive": "Y",
+        "miscMastId": "858",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1028",
+        "description": "Hypertensive response in treadmill test",
+        "value": "Hypertensive response in treadmill test",
+        "isActive": "Y",
+        "miscMastId": "859",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1514",
+        "description": "Onging treatment for Schrezophrenia",
+        "value": "Onging treatment for Schrezophrenia",
+        "isActive": "Y",
+        "miscMastId": "860",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "2214",
+        "description": "Higher than normal level of LDL cholestrol",
+        "value": "Higher than normal level of LDL cholestrol",
+        "isActive": "Y",
+        "miscMastId": "861",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1021",
+        "description": "Elevated levels of Cholesterol/Triglycerides",
+        "value": "Elevated levels of Cholesterol/Triglycerides",
+        "isActive": "Y",
+        "miscMastId": "862",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1612",
+        "description": "Elevated levels of cholesterol (ratio)",
+        "value": "Elevated levels of cholesterol (ratio)",
+        "isActive": "Y",
+        "miscMastId": "863",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1023",
+        "description": "Heart murmur detected on examination",
+        "value": "Heart murmur detected on examination",
+        "isActive": "Y",
+        "miscMastId": "864",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1507",
+        "description": "Hemiparesis",
+        "value": "Hemiparesis",
+        "isActive": "Y",
+        "miscMastId": "865",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1301",
+        "description": "Higher than normal level of TSH",
+        "value": "Higher than normal level of TSH",
+        "isActive": "Y",
+        "miscMastId": "866",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1206",
+        "description": "Elevated Uric Acid Level",
+        "value": "Elevated Uric Acid Level",
+        "isActive": "Y",
+        "miscMastId": "867",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1206",
+        "description": "Elevated Uric Acid levels",
+        "value": "Elevated Uric Acid levels",
+        "isActive": "Y",
+        "miscMastId": "868",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1022",
+        "description": "Enlargement of Heart",
+        "value": "Enlargement of Heart",
+        "isActive": "Y",
+        "miscMastId": "869",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1108",
+        "description": "Enlargement of Liver",
+        "value": "Enlargement of Liver",
+        "isActive": "Y",
+        "miscMastId": "870",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "2010",
+        "description": "Presence of gallstones",
+        "value": "Presence of gallstones",
+        "isActive": "Y",
+        "miscMastId": "871",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1401",
+        "description": "Diabetes",
+        "value": "Diabetes",
+        "isActive": "Y",
+        "miscMastId": "872",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1401",
+        "description": "Ongoing Diabetes treatment",
+        "value": "Ongoing Diabetes treatment",
+        "isActive": "Y",
+        "miscMastId": "873",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1001",
+        "description": "Abnormal findings in ECG",
+        "value": "Abnormal findings in ECG",
+        "isActive": "Y",
+        "miscMastId": "874",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1628",
+        "description": "Abnormal Mammography findings",
+        "value": "Abnormal Mammography findings",
+        "isActive": "Y",
+        "miscMastId": "875",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "2219",
+        "description": "Medical conditions declared in the medical records",
+        "value": "Medical conditions declared in the medical records",
+        "isActive": "Y",
+        "miscMastId": "876",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1910",
+        "description": "Meningioma",
+        "value": "Meningioma",
+        "isActive": "Y",
+        "miscMastId": "877",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1508",
+        "description": "Meningitis",
+        "value": "Meningitis",
+        "isActive": "Y",
+        "miscMastId": "878",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1804",
+        "description": "Short-sightedness or Myopia",
+        "value": "Short-sightedness or Myopia",
+        "isActive": "Y",
+        "miscMastId": "879",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1210",
+        "description": "Surgical removal of kidney- Nephrectomy",
+        "value": "Surgical removal of kidney- Nephrectomy",
+        "isActive": "Y",
+        "miscMastId": "880",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1911",
+        "description": "Neuro Fibroma",
+        "value": "Neuro Fibroma",
+        "isActive": "Y",
+        "miscMastId": "881",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1701",
+        "description": "Joint disease",
+        "value": "Joint disease",
+        "isActive": "Y",
+        "miscMastId": "882",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "2221",
+        "description": "Weight above standard parameters.",
+        "value": "Weight above standard parameters.",
+        "isActive": "Y",
+        "miscMastId": "883",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1714",
+        "description": "Physical Deformity",
+        "value": "Physical Deformity",
+        "isActive": "Y",
+        "miscMastId": "884",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1633",
+        "description": "Proteinuria (Presence of protein in urine)",
+        "value": "Proteinuria (Presence of protein in urine)",
+        "isActive": "Y",
+        "miscMastId": "885",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "2227",
+        "description": "Hypertension during pregnancy",
+        "value": "Hypertension during pregnancy",
+        "isActive": "Y",
+        "miscMastId": "886",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1403",
+        "description": "Elevated random blood sugar levels",
+        "value": "Elevated random blood sugar levels",
+        "isActive": "Y",
+        "miscMastId": "887",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1803",
+        "description": "Loss of vision",
+        "value": "Loss of vision",
+        "isActive": "Y",
+        "miscMastId": "888",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1604",
+        "description": "Abnormal urine test findings",
+        "value": "Abnormal urine test findings",
+        "isActive": "Y",
+        "miscMastId": "889",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1212",
+        "description": "Kidney stone detected in Ultrasound test",
+        "value": "Kidney stone detected in Ultrasound test",
+        "isActive": "Y",
+        "miscMastId": "890",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1001",
+        "description": "Abnormal findings in the Electro cardiogram",
+        "value": "Abnormal findings in the Electro cardiogram",
+        "isActive": "Y",
+        "miscMastId": "891",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1714",
+        "description": "Loss of Hearing",
+        "value": "Loss of Hearing",
+        "isActive": "Y",
+        "miscMastId": "892",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1714",
+        "description": "Loss of speech",
+        "value": "Loss of speech",
+        "isActive": "Y",
+        "miscMastId": "893",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1622",
+        "description": "Blood Detected in Routine Urine Analysis",
+        "value": "Blood Detected in Routine Urine Analysis",
+        "isActive": "Y",
+        "miscMastId": "894",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1032",
+        "description": "Low Heart rate",
+        "value": "Low Heart rate",
+        "isActive": "Y",
+        "miscMastId": "895",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1905",
+        "description": "Cancer of thyroid",
+        "value": "Cancer of thyroid",
+        "isActive": "Y",
+        "miscMastId": "896",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1102",
+        "description": "Liver Cirrhosis",
+        "value": "Liver Cirrhosis",
+        "isActive": "Y",
+        "miscMastId": "897",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1805",
+        "description": "Retinal detachment",
+        "value": "Retinal detachment",
+        "isActive": "Y",
+        "miscMastId": "898",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1716",
+        "description": "Rheumatoid Arthritis",
+        "value": "Rheumatoid Arthritis",
+        "isActive": "Y",
+        "miscMastId": "899",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1514",
+        "description": "Schrezophrenia",
+        "value": "Schrezophrenia",
+        "isActive": "Y",
+        "miscMastId": "900",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1009",
+        "description": "Irregular heartbeats",
+        "value": "Irregular heartbeats",
+        "isActive": "Y",
+        "miscMastId": "901",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "2233",
+        "description": "Lifestyle-habit of smoking/ tobacco consumption",
+        "value": "Lifestyle-habit of smoking/ tobacco consumption",
+        "isActive": "Y",
+        "miscMastId": "902",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1622",
+        "description": "Abnormal Presence of Blood in Urine",
+        "value": "Abnormal Presence of Blood in Urine",
+        "isActive": "Y",
+        "miscMastId": "903",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1633",
+        "description": "Abnormal Presence of proteins in urine",
+        "value": "Abnormal Presence of proteins in urine",
+        "isActive": "Y",
+        "miscMastId": "904",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1621",
+        "description": "Sugar Detected in Routine Urine Analysis",
+        "value": "Sugar Detected in Routine Urine Analysis",
+        "isActive": "Y",
+        "miscMastId": "905",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "2238",
+        "description": "Past history of major surgery",
+        "value": "Past history of major surgery",
+        "isActive": "Y",
+        "miscMastId": "906",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "2238",
+        "description": "Recent history of surgery",
+        "value": "Recent history of surgery",
+        "isActive": "Y",
+        "miscMastId": "907",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "2238",
+        "description": "Recent history of hospitalization",
+        "value": "Recent history of hospitalization",
+        "isActive": "Y",
+        "miscMastId": "908",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "2238",
+        "description": "Past history of liver surgery/ condition",
+        "value": "Past history of liver surgery/ condition",
+        "isActive": "Y",
+        "miscMastId": "909",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "1612",
+        "description": "Ongoing treatment of dyslipidemia",
+        "value": "Ongoing treatment of dyslipidemia",
+        "isActive": "Y",
+        "miscMastId": "910",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "2238",
+        "description": "Lower than normal level of creatinine in blood",
+        "value": "Lower than normal level of creatinine in blood",
+        "isActive": "Y",
+        "miscMastId": "911",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "5021",
+        "description": "Unavailability of medical records",
+        "value": "Unavailability of medical records",
+        "isActive": "Y",
+        "miscMastId": "912",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "2238",
+        "description": "Abnormal CBC findings",
+        "value": "Abnormal CBC findings",
+        "isActive": "Y",
+        "miscMastId": "913",
+        "type": "CUW_MED_RSN"
+      },
+      {
+        "code": "4001",
+        "description": "Financially Not Eligible",
+        "value": "Financially Not Eligible",
+        "isActive": "Y",
+        "miscMastId": "914",
+        "type": "CUW_NON_MED_RSN"
+      },
+      {
+        "code": "2217",
+        "description": "Family History",
+        "value": "Family History",
+        "isActive": "Y",
+        "miscMastId": "915",
+        "type": "CUW_NON_MED_RSN"
+      },
+      {
+        "code": "3010",
+        "description": "Previous policy found as repudiated / Death claim",
+        "value": "Previous policy found as repudiated / Death claim",
+        "isActive": "Y",
+        "miscMastId": "916",
+        "type": "CUW_NON_MED_RSN"
+      },
+      {
+        "code": "5005",
+        "description": "Habits",
+        "value": "Habits",
+        "isActive": "Y",
+        "miscMastId": "917",
+        "type": "CUW_NON_MED_RSN"
+      },
+      {
+        "code": "5006",
+        "description": "Hazardous hobbies",
+        "value": "Hazardous hobbies",
+        "isActive": "Y",
+        "miscMastId": "918",
+        "type": "CUW_NON_MED_RSN"
+      },
+      {
+        "code": "3020",
+        "description": "Risk finding - Misrepresentation of material facts",
+        "value": "Risk finding - Misrepresentation of material facts",
+        "isActive": "Y",
+        "miscMastId": "919",
+        "type": "CUW_NON_MED_RSN"
+      },
+      {
+        "code": "5016",
+        "description": "Previous policy found as null and void",
+        "value": "Previous policy found as null and void",
+        "isActive": "Y",
+        "miscMastId": "920",
+        "type": "CUW_NON_MED_RSN"
+      },
+      {
+        "code": "5021",
+        "description": "Not eligible as per Internal evaluation criteria",
+        "value": "Not eligible as per Internal evaluation criteria",
+        "isActive": "Y",
+        "miscMastId": "921",
+        "type": "CUW_NON_MED_RSN"
+      },
+      {
+        "code": "3001",
+        "description": "Risk Finding",
+        "value": "Risk Finding",
+        "isActive": "Y",
+        "miscMastId": "922",
+        "type": "CUW_NON_MED_RSN"
+      },
+      {
+        "code": "5007",
+        "description": "High risk occupation",
+        "value": "High risk occupation",
+        "isActive": "Y",
+        "miscMastId": "923",
+        "type": "CUW_NON_MED_RSN"
+      },
+      {
+        "code": "5017",
+        "description": "Product Specification",
+        "value": "Product Specification",
+        "isActive": "Y",
+        "miscMastId": "924",
+        "type": "CUW_NON_MED_RSN"
+      },
+      {
+        "code": "5018",
+        "description": "Place of residence having risky living conditions.",
+        "value": "Place of residence having risky living conditions.",
+        "isActive": "Y",
+        "miscMastId": "925",
+        "type": "CUW_NON_MED_RSN"
+      },
+      {
+        "code": "5020",
+        "description": "Travel",
+        "value": "Travel",
+        "isActive": "Y",
+        "miscMastId": "926",
+        "type": "CUW_NON_MED_RSN"
+      },
+      {
+        "code": "4001",
+        "description": "Boundary criteria not met as per income",
+        "value": "Boundary criteria not met as per income",
+        "isActive": "Y",
+        "miscMastId": "927",
+        "type": "CUW_NON_MED_RSN"
+      },
+      {
+        "code": "5017",
+        "description": "Boundary criteria not met as per occupation",
+        "value": "Boundary criteria not met as per occupation",
+        "isActive": "Y",
+        "miscMastId": "928",
+        "type": "CUW_NON_MED_RSN"
+      },
+      {
+        "code": "5017",
+        "description": "Boundary criteria not met as per education",
+        "value": "Boundary criteria not met as per education",
+        "isActive": "Y",
+        "miscMastId": "929",
+        "type": "CUW_NON_MED_RSN"
+      },
+      {
+        "code": "5021",
+        "description": "Unavailability of criminal records",
+        "value": "Unavailability of criminal records",
+        "isActive": "Y",
+        "miscMastId": "930",
+        "type": "CUW_NON_MED_RSN"
+      },
+      {
+        "code": "5021",
+        "description": "Pre issuance video verification findings",
+        "value": "Pre issuance video verification findings",
+        "isActive": "Y",
+        "miscMastId": "931",
+        "type": "CUW_NON_MED_RSN"
+      },
+      {
+        "code": "5021",
+        "description": "Ongoing legal proceedings",
+        "value": "Ongoing legal proceedings",
+        "isActive": "Y",
+        "miscMastId": "932",
+        "type": "CUW_NON_MED_RSN"
+      },
+      {
+        "code": "1",
+        "description": "IT issue",
+        "value": "IT issue",
+        "isActive": "Y",
+        "miscMastId": "933",
+        "type": "CUW_HOLD_RSN"
+      },
+      {
+        "code": "2",
+        "description": "Sr.UW opinion pending",
+        "value": "Sr.UW opinion pending",
+        "isActive": "Y",
+        "miscMastId": "934",
+        "type": "CUW_HOLD_RSN"
+      },
+      {
+        "code": "3",
+        "description": "Other",
+        "value": "Other",
+        "isActive": "Y",
+        "miscMastId": "935",
+        "type": "CUW_HOLD_RSN"
+      },
+      {
+        "code": "1",
+        "description": "Not required",
+        "value": "Not required",
+        "isActive": "Y",
+        "miscMastId": "936",
+        "type": "CUW_REF_CUW_CLAIM"
+      },
+      {
+        "code": "1",
+        "description": "Not required",
+        "value": "Not required",
+        "isActive": "Y",
+        "miscMastId": "937",
+        "type": "CUW_REF_ACC"
+      },
+      {
+        "code": "1",
+        "description": "Facultative",
+        "value": "Facultative",
+        "isActive": "Y",
+        "miscMastId": "938",
+        "type": "CUW_REF_REINS"
+      },
+      {
+        "code": "2",
+        "description": "Medical",
+        "value": "Medical",
+        "isActive": "Y",
+        "miscMastId": "939",
+        "type": "CUW_REF_REINS"
+      },
+      {
+        "code": "3",
+        "description": "Financial",
+        "value": "Financial",
+        "isActive": "Y",
+        "miscMastId": "940",
+        "type": "CUW_REF_REINS"
+      },
+      {
+        "code": "4",
+        "description": "Residential",
+        "value": "Residential",
+        "isActive": "Y",
+        "miscMastId": "941",
+        "type": "CUW_REF_REINS"
+      },
+      {
+        "code": "5",
+        "description": "Exception",
+        "value": "Exception",
+        "isActive": "Y",
+        "miscMastId": "942",
+        "type": "CUW_REF_REINS"
+      },
+      {
+        "code": "1",
+        "description": "Adverse Profile",
+        "value": "Adverse Profile",
+        "isActive": "Y",
+        "miscMastId": "943",
+        "type": "CUW_REF_RSK"
+      },
+      {
+        "code": "2",
+        "description": "Negative Pincode",
+        "value": "Negative Pincode",
+        "isActive": "Y",
+        "miscMastId": "944",
+        "type": "CUW_REF_RSK"
+      },
+      {
+        "code": "3",
+        "description": "Adverse Agent",
+        "value": "Adverse Agent",
+        "isActive": "Y",
+        "miscMastId": "945",
+        "type": "CUW_REF_RSK"
+      },
+      {
+        "code": "4",
+        "description": "Adverse Branch",
+        "value": "Adverse Branch",
+        "isActive": "Y",
+        "miscMastId": "946",
+        "type": "CUW_REF_RSK"
+      },
+      {
+        "code": "5",
+        "description": "DRC Adverse",
+        "value": "DRC Adverse",
+        "isActive": "Y",
+        "miscMastId": "947",
+        "type": "CUW_REF_RSK"
+      },
+      {
+        "code": "6",
+        "description": "IIB Adverse",
+        "value": "IIB Adverse",
+        "isActive": "Y",
+        "miscMastId": "948",
+        "type": "CUW_REF_RSK"
+      },
+      {
+        "code": "7",
+        "description": "PTRL Adverse",
+        "value": "PTRL Adverse",
+        "isActive": "Y",
+        "miscMastId": "949",
+        "type": "CUW_REF_RSK"
+      },
+      {
+        "code": "8",
+        "description": "BRE Requirement",
+        "value": "BRE Requirement",
+        "isActive": "Y",
+        "miscMastId": "950",
+        "type": "CUW_REF_RSK"
+      },
+      {
+        "code": "1",
+        "description": "PEP case.",
+        "value": "PEP case.",
+        "isActive": "Y",
+        "miscMastId": "951",
+        "type": "CUW_REF_HOD_CS"
+      },
+      {
+        "code": "2",
+        "description": "Criminal History.",
+        "value": "Criminal History.",
+        "isActive": "Y",
+        "miscMastId": "952",
+        "type": "CUW_REF_HOD_CS"
+      },
+      {
+        "code": "3",
+        "description": " Claim History of customer",
+        "value": " Claim History of customer",
+        "isActive": "Y",
+        "miscMastId": "953",
+        "type": "CUW_REF_HOD_CS"
+      },
+      {
+        "code": "4",
+        "description": "Life Assured is Transgender",
+        "value": "Life Assured is Transgender",
+        "isActive": "Y",
+        "miscMastId": "954",
+        "type": "CUW_REF_HOD_CS"
+      },
+      {
+        "code": "5",
+        "description": "Adverse Accuity",
+        "value": "Adverse Accuity",
+        "isActive": "Y",
+        "miscMastId": "955",
+        "type": "CUW_REF_HOD_CS"
+      },
+      {
+        "code": "6",
+        "description": " Higher Sum assured limits",
+        "value": " Higher Sum assured limits",
+        "isActive": "Y",
+        "miscMastId": "956",
+        "type": "CUW_REF_HOD_CS"
+      },
+      {
+        "code": "7",
+        "description": "Exception Approval for Financial eligibility",
+        "value": "Exception Approval for Financial eligibility",
+        "isActive": "Y",
+        "miscMastId": "957",
+        "type": "CUW_REF_HOD_CS"
+      },
+      {
+        "code": "8",
+        "description": "Exception Approval for Medical",
+        "value": "Exception Approval for Medical",
+        "isActive": "Y",
+        "miscMastId": "958",
+        "type": "CUW_REF_HOD_CS"
+      },
+      {
+        "code": "1",
+        "description": "Medical Opinion",
+        "value": "Medical Opinion",
+        "isActive": "Y",
+        "miscMastId": "959",
+        "type": "CUW_REF_HOD_OP"
+      },
+      {
+        "code": "2",
+        "description": "Financial Opinion",
+        "value": "Financial Opinion",
+        "isActive": "Y",
+        "miscMastId": "960",
+        "type": "CUW_REF_HOD_OP"
+      },
+      {
+        "code": "3",
+        "description": "Customer Profile Opinion",
+        "value": "Customer Profile Opinion",
+        "isActive": "Y",
+        "miscMastId": "961",
+        "type": "CUW_REF_HOD_OP"
+      },
+      {
+        "code": "4",
+        "description": " Exception Opinion",
+        "value": " Exception Opinion",
+        "isActive": "Y",
+        "miscMastId": "962",
+        "type": "CUW_REF_HOD_OP"
+      },
+      {
+        "code": "1",
+        "description": "Above Limit Case",
+        "value": "Above Limit Case",
+        "isActive": "Y",
+        "miscMastId": "963",
+        "type": "CUW_REF_SRUW_CS"
+      },
+      {
+        "code": "2",
+        "description": "UW Guideline Breached",
+        "value": "UW Guideline Breached",
+        "isActive": "Y",
+        "miscMastId": "964",
+        "type": "CUW_REF_SRUW_CS"
+      },
+      {
+        "code": "3",
+        "description": "Financial Exception Approval",
+        "value": "Financial Exception Approval",
+        "isActive": "Y",
+        "miscMastId": "965",
+        "type": "CUW_REF_SRUW_CS"
+      },
+      {
+        "code": "4",
+        "description": "Medical Exception Approval",
+        "value": "Medical Exception Approval",
+        "isActive": "Y",
+        "miscMastId": "966",
+        "type": "CUW_REF_SRUW_CS"
+      },
+      {
+        "code": "1",
+        "description": "Medical Opinion",
+        "value": "Medical Opinion",
+        "isActive": "Y",
+        "miscMastId": "967",
+        "type": "CUW_REF_SRUW_OP"
+      },
+      {
+        "code": "2",
+        "description": "Financial Opinion",
+        "value": "Financial Opinion",
+        "isActive": "Y",
+        "miscMastId": "968",
+        "type": "CUW_REF_SRUW_OP"
+      },
+      {
+        "code": "3",
+        "description": "Customer Profile Opinion",
+        "value": "Customer Profile Opinion",
+        "isActive": "Y",
+        "miscMastId": "969",
+        "type": "CUW_REF_SRUW_OP"
+      },
+      {
+        "code": "4",
+        "description": "Exception Opinion",
+        "value": "Exception Opinion",
+        "isActive": "Y",
+        "miscMastId": "970",
+        "type": "CUW_REF_SRUW_OP"
+      },
+      {
+        "code": "1",
+        "description": "IT",
+        "value": "IT",
+        "isActive": "Y",
+        "miscMastId": "971",
+        "type": "CUW_REF_TO"
+      },
+      {
+        "code": "2",
+        "description": "Reinsurer",
+        "value": "Reinsurer",
+        "isActive": "Y",
+        "miscMastId": "972",
+        "type": "CUW_REF_TO"
+      },
+      {
+        "code": "3",
+        "description": "HOD Opinion",
+        "value": "HOD Opinion",
+        "isActive": "Y",
+        "miscMastId": "973",
+        "type": "CUW_REF_TO"
+      },
+      {
+        "code": "4",
+        "description": "SR UW Opinion",
+        "value": "SR UW Opinion",
+        "isActive": "Y",
+        "miscMastId": "974",
+        "type": "CUW_REF_TO"
+      },
+      {
+        "code": "5",
+        "description": "CMO",
+        "value": "CMO",
+        "isActive": "Y",
+        "miscMastId": "975",
+        "type": "CUW_REF_TO"
+      },
+      {
+        "code": "6",
+        "description": "HO CMO",
+        "value": "HO CMO",
+        "isActive": "Y",
+        "miscMastId": "976",
+        "type": "CUW_REF_TO"
+      },
+      {
+        "code": "7",
+        "description": "Risk",
+        "value": "Risk",
+        "isActive": "Y",
+        "miscMastId": "977",
+        "type": "CUW_REF_TO"
+      },
+      {
+        "code": "8",
+        "description": "Accuity",
+        "value": "Accuity",
+        "isActive": "Y",
+        "miscMastId": "978",
+        "type": "CUW_REF_TO"
+      },
+      {
+        "code": "9",
+        "description": "CUW Claim",
+        "value": "CUW Claim",
+        "isActive": "Y",
+        "miscMastId": "979",
+        "type": "CUW_REF_TO"
+      },
+      {
+        "code": "10",
+        "description": "TELE MER",
+        "value": "TELE MER",
+        "isActive": "Y",
+        "miscMastId": "980",
+        "type": "CUW_REF_TO"
+      },
+      {
+        "code": "11",
+        "description": "VIDEO MER",
+        "value": "VIDEO MER",
+        "isActive": "Y",
+        "miscMastId": "981",
+        "type": "CUW_REF_TO"
+      },
+      {
+        "code": "1",
+        "description": "HOD",
+        "value": "HOD",
+        "isActive": "Y",
+        "miscMastId": "982",
+        "type": "CUW_CS"
+      },
+      {
+        "code": "2",
+        "description": "SR UW",
+        "value": "SR UW",
+        "isActive": "Y",
+        "miscMastId": "983",
+        "type": "CUW_CS"
+      },
+      {
+        "code": "1",
+        "description": "Facultative",
+        "value": "Facultative",
+        "isActive": "Y",
+        "miscMastId": "984",
+        "type": "CUW_REF_REINS"
+      },
+      {
+        "code": "2",
+        "description": "Medical",
+        "value": "Medical",
+        "isActive": "Y",
+        "miscMastId": "985",
+        "type": "CUW_REF_REINS"
+      },
+      {
+        "code": "3",
+        "description": "Financial",
+        "value": "Financial",
+        "isActive": "Y",
+        "miscMastId": "986",
+        "type": "CUW_REF_REINS"
+      },
+      {
+        "code": "4",
+        "description": "Residential",
+        "value": "Residential",
+        "isActive": "Y",
+        "miscMastId": "987",
+        "type": "CUW_REF_REINS"
+      },
+      {
+        "code": "5",
+        "description": "Exception",
+        "value": "Exception",
+        "isActive": "Y",
+        "miscMastId": "988",
+        "type": "CUW_REF_REINS"
+      },
+      {
+        "code": "4",
+        "description": "STD",
+        "value": "STD",
+        "isActive": "Y",
+        "miscMastId": "989",
+        "type": "CUW_RSK_DEC"
+      },
+      {
+        "code": "5",
+        "description": "NON-STD",
+        "value": "NON-STD",
+        "isActive": "Y",
+        "miscMastId": "990",
+        "type": "CUW_RSK_DEC"
+      },
+      {
+        "code": "STD",
+        "description": "Standard",
+        "value": "Standard",
+        "isActive": "Y",
+        "miscMastId": "991",
+        "type": "CUW_BSTD_TYPE"
+      },
+      {
+        "code": "BSTD",
+        "description": "Borderline Standard",
+        "value": "Borderline Standard",
+        "isActive": "Y",
+        "miscMastId": "992",
+        "type": "CUW_BSTD_TYPE"
+      },
+      {
+        "code": "STD",
+        "description": "Standard",
+        "value": "Standard",
+        "isActive": "Y",
+        "miscMastId": "993",
+        "type": "CUW_CO_TYPE"
+      },
+      {
+        "code": "BSTD",
+        "description": "Borderline Standard",
+        "value": "Borderline Standard",
+        "isActive": "Y",
+        "miscMastId": "994",
+        "type": "CUW_CO_TYPE"
+      },
+      {
+        "code": "RED_COV",
+        "description": "Reduce Cover",
+        "value": "Reduce Cover",
+        "isActive": "Y",
+        "miscMastId": "995",
+        "type": "CUW_CO_TYPE"
+      },
+      {
+        "code": "RED_PT",
+        "description": "Reduce PT",
+        "value": "Reduce PT",
+        "isActive": "Y",
+        "miscMastId": "996",
+        "type": "CUW_CO_TYPE"
+      },
+      {
+        "code": "STD",
+        "description": "Standard",
+        "value": "Standard",
+        "isActive": "Y",
+        "miscMastId": "997",
+        "type": "CUW_EP_TYPE"
+      },
+      {
+        "code": "BSTD",
+        "description": "Borderline Standard",
+        "value": "Borderline Standard",
+        "isActive": "Y",
+        "miscMastId": "998",
+        "type": "CUW_EP_TYPE"
+      },
+      {
+        "code": "RED_COV",
+        "description": "Reduce Cover",
+        "value": "Reduce Cover",
+        "isActive": "Y",
+        "miscMastId": "999",
+        "type": "CUW_EP_TYPE"
+      },
+      {
+        "code": "RED_PT",
+        "description": "Reduce PT",
+        "value": "Reduce PT",
+        "isActive": "Y",
+        "miscMastId": "1000",
+        "type": "CUW_EP_TYPE"
+      },
+      {
+        "code": "MED_LOAD",
+        "description": "Medical Loading",
+        "value": "Medical Loading",
+        "isActive": "Y",
+        "miscMastId": "1001",
+        "type": "CUW_EP_TYPE"
+      },
+      {
+        "code": "FE_LOAD",
+        "description": "FE Loading",
+        "value": "FE Loading",
+        "isActive": "Y",
+        "miscMastId": "1002",
+        "type": "CUW_EP_TYPE"
+      },
+      {
+        "code": "RFE_IT",
+        "description": "IT",
+        "value": "IT",
+        "isActive": "Y",
+        "miscMastId": "1003",
+        "type": "CUW_REF_TO"
+      },
+      {
+        "code": "REF_REINS",
+        "description": "Reinsurer",
+        "value": "Reinsurer",
+        "isActive": "Y",
+        "miscMastId": "1004",
+        "type": "CUW_REF_TO"
+      },
+      {
+        "code": "REF_HOD",
+        "description": "HOD Opinion",
+        "value": "HOD Opinion",
+        "isActive": "Y",
+        "miscMastId": "1005",
+        "type": "CUW_REF_TO"
+      },
+      {
+        "code": "REF_SRUW",
+        "description": "SR UW Opinion",
+        "value": "SR UW Opinion",
+        "isActive": "Y",
+        "miscMastId": "1006",
+        "type": "CUW_REF_TO"
+      },
+      {
+        "code": "REF_CMO",
+        "description": "CMO",
+        "value": "CMO",
+        "isActive": "Y",
+        "miscMastId": "1007",
+        "type": "CUW_REF_TO"
+      },
+      {
+        "code": "REF_HOCMO",
+        "description": "HO CMO",
+        "value": "HO CMO",
+        "isActive": "Y",
+        "miscMastId": "1008",
+        "type": "CUW_REF_TO"
+      },
+      {
+        "code": "REF_RISK",
+        "description": "Risk",
+        "value": "Risk",
+        "isActive": "Y",
+        "miscMastId": "1009",
+        "type": "CUW_REF_TO"
+      },
+      {
+        "code": "REF_ACCU",
+        "description": "Accuity",
+        "value": "Accuity",
+        "isActive": "Y",
+        "miscMastId": "1010",
+        "type": "CUW_REF_TO"
+      },
+      {
+        "code": "REF_CLAIM",
+        "description": "CUW Claim",
+        "value": "CUW Claim",
+        "isActive": "Y",
+        "miscMastId": "1011",
+        "type": "CUW_REF_TO"
+      },
+      {
+        "code": "REF_TELE",
+        "description": "TELE MER",
+        "value": "TELE MER",
+        "isActive": "Y",
+        "miscMastId": "1012",
+        "type": "CUW_REF_TO"
+      },
+      {
+        "code": "1",
+        "description": "Class - 1",
+        "value": "Class - 1",
+        "isActive": "Y",
+        "miscMastId": "1013",
+        "type": "CUW_EP_LOAD_CLS"
+      },
+      {
+        "code": "2",
+        "description": "Class - 2",
+        "value": "Class - 2",
+        "isActive": "Y",
+        "miscMastId": "1014",
+        "type": "CUW_EP_LOAD_CLS"
+      },
+      {
+        "code": "3",
+        "description": "Class - 3",
+        "value": "Class - 3",
+        "isActive": "Y",
+        "miscMastId": "1015",
+        "type": "CUW_EP_LOAD_CLS"
+      },
+      {
+        "code": "4",
+        "description": "Class - 4",
+        "value": "Class - 4",
+        "isActive": "Y",
+        "miscMastId": "1016",
+        "type": "CUW_EP_LOAD_CLS"
+      },
+      {
+        "code": "5",
+        "description": "Class - 5",
+        "value": "Class - 5",
+        "isActive": "Y",
+        "miscMastId": "1017",
+        "type": "CUW_EP_LOAD_CLS"
+      },
+      {
+        "code": "6",
+        "description": "Class - 6",
+        "value": "Class - 6",
+        "isActive": "Y",
+        "miscMastId": "1018",
+        "type": "CUW_EP_LOAD_CLS"
+      },
+      {
+        "code": "7",
+        "description": "Class - 7",
+        "value": "Class - 7",
+        "isActive": "Y",
+        "miscMastId": "1019",
+        "type": "CUW_EP_LOAD_CLS"
+      },
+      {
+        "code": "8",
+        "description": "Class - 8",
+        "value": "Class - 8",
+        "isActive": "Y",
+        "miscMastId": "1020",
+        "type": "CUW_EP_LOAD_CLS"
+      },
+      {
+        "code": "9",
+        "description": "Class - 9",
+        "value": "Class - 9",
+        "isActive": "Y",
+        "miscMastId": "1021",
+        "type": "CUW_EP_LOAD_CLS"
+      },
+      {
+        "code": "1",
+        "description": "Medical Review ",
+        "value": "Medical Review ",
+        "isActive": "Y",
+        "miscMastId": "1022",
+        "type": "CUW_TELE_MER_RSN"
+      },
+      {
+        "code": "2",
+        "description": "Specialist Opinion",
+        "value": "Specialist Opinion",
+        "isActive": "Y",
+        "miscMastId": "1023",
+        "type": "CUW_TELE_MER_RSN"
+      },
+      {
+        "code": "3",
+        "description": "Others",
+        "value": "Others",
+        "isActive": "Y",
+        "miscMastId": "1024",
+        "type": "CUW_TELE_MER_RSN"
+      },
+      {
+        "code": "1",
+        "description": "Medical Review ",
+        "value": "Medical Review ",
+        "isActive": "Y",
+        "miscMastId": "1025",
+        "type": "CUW_VIDEO_MER_RSN"
+      },
+      {
+        "code": "2",
+        "description": "Specialist Opinion",
+        "value": "Specialist Opinion",
+        "isActive": "Y",
+        "miscMastId": "1026",
+        "type": "CUW_VIDEO_MER_RSN"
+      },
+      {
+        "code": "3",
+        "description": "Others",
+        "value": "Others",
+        "isActive": "Y",
+        "miscMastId": "1027",
+        "type": "CUW_VIDEO_MER_RSN"
+      },
+      {
+        "code": "1",
+        "description": "Medical Review ",
+        "value": "Medical Review ",
+        "isActive": "Y",
+        "miscMastId": "1028",
+        "type": "CUW_HO_CMO_RSN"
+      },
+      {
+        "code": "2",
+        "description": "Specialist Opinion",
+        "value": "Specialist Opinion",
+        "isActive": "Y",
+        "miscMastId": "1029",
+        "type": "CUW_HO_CMO_RSN"
+      },
+      {
+        "code": "3",
+        "description": "Others",
+        "value": "Others",
+        "isActive": "Y",
+        "miscMastId": "1030",
+        "type": "CUW_HO_CMO_RSN"
+      },
+      {
+        "code": "1",
+        "description": "Medical Review ",
+        "value": "Medical Review ",
+        "isActive": "Y",
+        "miscMastId": "1031",
+        "type": "CUW_CMO_RSN"
+      },
+      {
+        "code": "2",
+        "description": "Specialist Opinion",
+        "value": "Specialist Opinion",
+        "isActive": "Y",
+        "miscMastId": "1032",
+        "type": "CUW_CMO_RSN"
+      },
+      {
+        "code": "3",
+        "description": "Others",
+        "value": "Others",
+        "isActive": "Y",
+        "miscMastId": "1033",
+        "type": "CUW_CMO_RSN"
       }
     ],
     "reason": [

@@ -169,6 +169,15 @@ export const retailBusinessUrls = {
   get uwDecisionFetch(): string {
     return configuredUrl(import.meta.env.VITE_RETAIL_UW_DECISION_FETCH_API);
   },
+  get uwDecision(): string {
+    return configuredUrl(import.meta.env.VITE_RETAIL_UW_DECISION_API);
+  },
+  get parallelDecision(): string {
+    return configuredUrl(import.meta.env.VITE_RETAIL_PARALLEL_DECISION_API);
+  },
+  get claimAuditList(): string {
+    return configuredUrl(import.meta.env.VITE_RETAIL_CLAIM_AUDIT_LIST_API);
+  },
 };
 
 /** NSDL external-event-service URLs from .env. Empty when unset — mock mode skips them. */

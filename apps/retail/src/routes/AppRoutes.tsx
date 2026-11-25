@@ -15,6 +15,7 @@ import { RetailOpenTasksPage } from "../modules/openTasks/RetailOpenTasksPage";
 import { RetailAuditTrailPage } from "../modules/auditTrail/RetailAuditTrailPage";
 import { RetailRiskDetailsPage } from "../modules/riskDetails/RetailRiskDetailsPage";
 import { RetailApplicantProfilePage } from "../modules/applicantProfile/RetailApplicantProfilePage";
+import { MemberSelection } from "../modules/member-selection/MemberSelection";
 import { RequireSession } from "./RequireSession";
 import { RetailAppLayout } from "./RetailAppLayout";
 
@@ -33,6 +34,8 @@ export function AppRoutes() {
         >
           <Route index element={<Navigate to="/inbox" replace />} />
           <Route path="/inbox" element={<RetailInboxPage />} />
+          <Route path="/cuw/member-selection" element={<MemberSelection />} />
+          <Route path="/referral/member-selection" element={<MemberSelection />} />
           <Route path="/app/:applicationNo/drs" element={<RetailDrsPage />} />
           <Route path="/app/:applicationNo/drs/financial" element={<RetailDrsPage />} />
           <Route path="/app/:applicationNo/drs/medical" element={<RetailDrsPage />} />
