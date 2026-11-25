@@ -23,6 +23,7 @@ import { ValidationList } from "@insurance-poc/common/validation-list";
 import { getDrsRoleType, getDrsTaskIds, getMasterList, getSessionUser } from "@insurance-poc/utils";
 import {
   findPendingValidationMessage,
+  readCuwCaseDecisionOptions,
   type CuwRequiredValidations,
 } from "../../services/drsService";
 import {
@@ -166,26 +167,10 @@ const codeOfDecisionCodeText = (text: string) => text.split(" - ")[0].trim();
 /** Case UW Decisions that show the Decision Code dropdown (options from the `uw_decision_mapping` master). */
 const DECISION_CODE_DECISIONS = ["STD", "BOR_STD", "REJ", "DC", "POSTP", "CO", "EP"];
 
-// Case UW Decision options come from master data (misc / CUW_TERM_DESC). Three master codes differ from the
-// codes used by the decision rules, validation, saved decisions and the `uw-decision` API (BOR_STD, DC, POSTP),
-// so they are translated to those codes here.
-const DECISION_CODE_BY_MASTER_CODE: Record<string, string | undefined> = {
-  BSD_STD: "BOR_STD",
-  DEC: "DC",
-  POS_PON: "POSTP",
-};
-
-/**
- * Case UW Decision options from the post-login master data. Read at render time (like the DVT decision
- * options), not at module load, because the master data is only in session after login.
- */
-const readDecisionOptions = () =>
-  getMasterList("misc", "CUW_TERM_DESC")
-    .filter((entry) => entry.isActive === "Y")
-    .map((entry) => ({
-      value: DECISION_CODE_BY_MASTER_CODE[entry.code] ?? entry.code,
-      label: entry.value ?? entry.description,
-    }));
+// Case UW Decision options come from master data (misc / CUW_TERM_DESC) via `readCuwCaseDecisionOptions`.
+// Read at render time (like the DVT decision options), not at module load, because the master data is only
+// in session after login.
+const readDecisionOptions = readCuwCaseDecisionOptions;
 
 /** Reason options of the given master `misc` types, in that order, from the post-login master data. */
 const readReasonOptions = (types: string[]) =>

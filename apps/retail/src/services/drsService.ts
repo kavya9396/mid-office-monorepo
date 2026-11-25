@@ -2111,15 +2111,12 @@ const DEFAULT_JUSTIFICATION_REASONS = [
   "Other",
 ];
 
-const CUW_DECISION_CODE_BY_LABEL: Record<string, string> = {
-  standard: "STD",
-  "counter offer": "CO",
-  decline: "DC",
-  reject: "REJ",
-  postpone: "POSTP",
+/**
+ * Decisions raised from the action buttons / referral rows. They are not part of the `CUW_TERM_DESC`
+ * master (Standard, Reject, Counter Offer ... come from the master, see `readCuwCaseDecisionOptions`).
+ */
+const CUW_ACTION_DECISION_CODE_BY_LABEL: Record<string, string> = {
   hold: "HOLD",
-  "extra premium": "EP",
-  "borderline standard": "BOR_STD",
   "refer to hod": "REF_HOD",
   "refer to ho cmo": "REF_CMO",
   "refer to cmo": "REF_CMO",
@@ -2139,7 +2136,10 @@ const CUW_DECISION_CODE_BY_LABEL: Record<string, string> = {
 function cuwDecisionCodeOfLabel(label: string): string {
   const key = label.toLowerCase();
   if (key === "refer to sr.uw") return cuwSrUwReferralCode() || label;
-  return CUW_DECISION_CODE_BY_LABEL[key] ?? label;
+  const fromMaster = readCuwCaseDecisionOptions().find(
+    (option) => option.label.trim().toLowerCase() === key,
+  );
+  return fromMaster?.value ?? CUW_ACTION_DECISION_CODE_BY_LABEL[key] ?? label;
 }
 
 
@@ -2239,82 +2239,25 @@ export interface DropdownOption {
   label: string;
 }
 
-export const MASTER_DECISION_OPTIONS: DropdownOption[] = [
-  { value: "STD", label: "Standard" },
-  { value: "BOR_STD", label: "Borderline Standard" },
-  { value: "REJ", label: "Reject" },
-  { value: "DC", label: "Decline" },
-  { value: "POSTP", label: "Postpone" },
-  { value: "CO", label: "Counter Offer" },
-  { value: "EP", label: "Extra Premium" },
-  { value: "HOLD", label: "Hold" },
-  { value: "REFERRAL", label: "Refer To" },
-  { value: "AMR", label: "Raise Requirement" },
-  { value: "APPROVER", label: "Refer to Approver" },
-];
-
-export const MASTER_REFERRAL_TYPE_OPTIONS: DropdownOption[] = [
-  { value: "REF_IT", label: "IT" },
-  { value: "REF_REINS", label: "Reinsurer" },
-  { value: "REF_CMO", label: "HO CMO" },
-  { value: "REF_CMO_LOCAL", label: "CMO" },
-  { value: "REF_RISK", label: "Risk" },
-  { value: "REF_ACU", label: "Accuity" },
-  { value: "REF_CUW_CLM", label: "CUW Claim" },
-];
-
-export const MASTER_REFERRAL_REASON_OPTIONS: Record<string, string[]> = {
-  REF_IT: ["System issue", "Data correction", "Other"],
-  REF_REINS: ["High sum assured", "Medical risk", "Other"],
-  REF_CMO: ["Medical review", "Specialist opinion", "Other"],
-  REF_CMO_LOCAL: ["Medical review", "Specialist opinion", "Other"],
-  REF_RISK: ["Risk assessment", "Policy exception", "Other"],
-  REF_ACU: ["Screening review", "Match review", "Other"],
-  REF_CUW_CLM: ["Claim history", "Investigation", "Other"],
+// Three `CUW_TERM_DESC` master codes differ from the codes used by the decision rules, validation, saved
+// decisions and the `uw-decision` API (BOR_STD, DC, POSTP), so they are translated to those codes.
+const DECISION_CODE_BY_MASTER_CODE: Record<string, string | undefined> = {
+  BSD_STD: "BOR_STD",
+  DEC: "DC",
+  POS_PON: "POSTP",
 };
 
-export const MASTER_LOADING_CLASS_OPTIONS: Record<string, string[]> = {
-  "Medical Loading": ["ML001 - Substandard", "ML002 - Rated Up", "ML003 - Extra Mortality", "ML004 - Occupational Hazard"],
-  "FE Loading": ["FE001 - Financial Extra", "FE002 - Income Mismatch", "FE003 - High SA"],
-  "Smoker Loading": ["SL001 - Smoker", "SL002 - Tobacco User", "SL003 - Ex-Smoker"],
-};
-
-export const MASTER_LOADING_REASON_OPTIONS: Record<string, string[]> = {
-  "Medical Loading": ["Medical history", "BMI deviation", "Pre-existing condition", "Hazardous occupation"],
-  "FE Loading": ["Income proof inadequate", "SA exceeds eligibility", "Financial inconsistency"],
-  "Smoker Loading": ["Active smoker", "Tobacco chewer", "Recent cessation"],
-};
-
-export const MASTER_REINSURER_UW_OPTIONS: string[] = ["Swiss Re", "Munich Re", "Scor Re", "Gen Re", "RGA Re", "Hannover Re"];
-export const MASTER_REFERRAL_DOCUMENTS: string[] = ["Application Form", "PhotoId Proof", "Address Proof"];
-
-export async function fetchCaseDecisionOptions(): Promise<DropdownOption[]> {
-  await wait(100);
-  return MASTER_DECISION_OPTIONS;
-}
-export async function fetchReferralTypeOptions(): Promise<DropdownOption[]> {
-  await wait(100);
-  return MASTER_REFERRAL_TYPE_OPTIONS;
-}
-export async function fetchReferralReasonOptions(): Promise<Record<string, string[]>> {
-  await wait(100);
-  return MASTER_REFERRAL_REASON_OPTIONS;
-}
-export async function fetchLoadingClassOptions(): Promise<Record<string, string[]>> {
-  await wait(100);
-  return MASTER_LOADING_CLASS_OPTIONS;
-}
-export async function fetchLoadingReasonOptions(): Promise<Record<string, string[]>> {
-  await wait(100);
-  return MASTER_LOADING_REASON_OPTIONS;
-}
-export async function fetchReinsurerUwOptions(): Promise<string[]> {
-  await wait(100);
-  return MASTER_REINSURER_UW_OPTIONS;
-}
-export async function fetchReferralDocuments(): Promise<string[]> {
-  await wait(100);
-  return MASTER_REFERRAL_DOCUMENTS;
+/**
+ * Case UW Decision options from the post-login master data (`misc` / `CUW_TERM_DESC`). Read at call time
+ * because the master data is only in session after login.
+ */
+export function readCuwCaseDecisionOptions(): DropdownOption[] {
+  return getMasterList("misc", "CUW_TERM_DESC")
+    .filter((entry) => entry.isActive === "Y")
+    .map((entry) => ({
+      value: DECISION_CODE_BY_MASTER_CODE[entry.code] ?? entry.code,
+      label: entry.value ?? entry.description,
+    }));
 }
 
 /* ------------------------------------------------------------------ */
