@@ -1,6 +1,5 @@
 import { getDrsRoleType } from "@insurance-poc/utils";
 import { MmtGrievanceDrsPage } from "./MmtGrievanceDrsPage";
-import RetailDrsRecordPage from "./RetailDrsRecordPage";
 import CvtUser from "./CvtUser";
 import CptNmrUser from "./CptNmrUser";
 import CptMrUser from "./CptMrUser";
@@ -19,7 +18,7 @@ const SCREEN_BY_ROLE: Record<string, () => JSX.Element | null> = {
 
 export function RetailDrsPage() {
   const roleType = getDrsRoleType().trim().toUpperCase();
-  const Screen = SCREEN_BY_ROLE[roleType] ?? RetailDrsRecordPage;
+  const Screen = SCREEN_BY_ROLE[roleType] ?? <div>Page not found</div>;
   return <Screen />;
 }
 

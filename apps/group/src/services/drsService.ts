@@ -72,6 +72,7 @@ export type GroupDrsData = {
   requirements: RequirementItem[];
   applicants: LifeAssuredApplicant[];
   memberTypes: string[];
+  profileOptions: Array<{ label: string; value: string }>;
   /** Quick Link pages (previous policy, open tasks, audit trail, risk details). */
   quickLinks: QuickLinksSubSections;
   /** Banner rows from the primary member (`membersDetails[].rowDetails`). */
@@ -292,6 +293,9 @@ export function mapRawRequirementRows(rowsOrSection: unknown): RequirementItem[]
       fupCode: readText(row.fupCode),
       extraRemarks: readText(row.extraRemarks),
       description: readText(row.description),
+      requirementPoolType: readText(row.requirementPoolType) || readText(row.team),
+      partyId: readText(row.partyId),
+      memberType: readText(row.memberType),
     };
   });
 
@@ -333,6 +337,38 @@ export function readMemberTypes(membersDetails: unknown): string[] {
         .filter((val): val is string => val.length > 0),
     ),
   );
+}
+
+export function readProfileOptions(membersDetails: unknown): Array<{ label: string; value: string }> {
+  if (!Array.isArray(membersDetails)) return [];
+  const options: Array<{ label: string; value: string }> = [];
+  const seen = new Set<string>();
+
+  for (const m of membersDetails) {
+    if (!isRecord(m)) continue;
+    const memberType = typeof m.memberType === "string" ? m.memberType.trim() : "";
+    const sections = Array.isArray(m.sections) ? m.sections : [];
+    const subSections = Array.isArray(m.subSections) ? m.subSections : [];
+    const allSections = [...sections, ...subSections];
+    const profileSection = allSections.find(
+      (s): s is Record<string, unknown> => isRecord(s) && s.name === "applicantProfile",
+    );
+    const profileVal = isRecord(profileSection?.value) ? profileSection.value : null;
+
+    const lifeNumber =
+      readText(profileVal?.lifeNumber).trim() ||
+      readText(m.lifeNumber).trim();
+
+    const label = memberType || (lifeNumber ? `Life ${lifeNumber}` : "");
+    const value = lifeNumber || memberType;
+
+    if (label && value && !seen.has(`${label}:${value}`)) {
+      seen.add(`${label}:${value}`);
+      options.push({ label, value });
+    }
+  }
+
+  return options;
 }
 
 const GRIEVANCE_ROW_KEYS: (keyof GrievanceHistoryRow)[] = [
@@ -451,6 +487,7 @@ export function mapGroupDrsPayload(value: unknown): GroupDrsData {
       riders: readRiders(cardDetailsRaw),
     }),
     memberTypes: readMemberTypes(data.membersDetails),
+    profileOptions: readProfileOptions(data.membersDetails),
     quickLinks: mapMembersQuickLinks(data.membersDetails),
     rowDetails,
     applicantName: fieldValue(nameRow?.fields, "Name"),
@@ -1235,6 +1272,7 @@ export interface GuwDrsRecord {
   requirements: RequirementItem[];
   /** Distinct `membersDetails[].memberType` values; options for the requirement "Profile" field. */
   memberTypes: string[];
+  profileOptions: Array<{ label: string; value: string }>;
   /** `data.subSections[]` mapped for the Quick Links dialogs. */
   quickLinks: QuickLinksSubSections;
   /** `subSections[applicantProfile].product_details.value.rows[]` of the member. */
@@ -1792,6 +1830,7 @@ export function mapGuwDrsPayload(payload: unknown, memberId?: string): GuwDrsRec
     sections: dialogSections,
     requirements,
     memberTypes: readMemberTypes(root.membersDetails),
+    profileOptions: readProfileOptions(root.membersDetails),
     quickLinks: {
       ...mapMembersQuickLinks(root.membersDetails),
       raiseGrievance: mapRaiseGrievance(data.subSections),

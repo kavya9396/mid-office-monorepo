@@ -40,7 +40,10 @@ export type RetailDrsQueryArg = {
 export type SaveRetailDrsRequirementsArg = {
   applicationNo: string;
   requirements: RequirementItem[];
+  initialRequirements?: RequirementItem[];
   roleType?: string;
+  screenType?: string;
+  businessType?: string;
   lob?: string;
   userId?: string;
   queryArg: RetailDrsQueryArg;
@@ -96,24 +99,100 @@ export const toRequirementRequestItem = (item: RequirementItem) => {
     typeof item.id === "number" ||
     (typeof item.id === "string" && !item.id.startsWith("req-") && Number.isFinite(Number(item.id)) && Number(item.id) > 0);
 
+  const reqId =
+    typeof item.requirementId === "number"
+      ? item.requirementId
+      : isNumericId
+        ? Number(item.id)
+        : undefined;
+
   const payload: Record<string, unknown> = {
     status: item.status || "Pending",
-    profile: item.profile || "",
-    fupCode: item.fupCode || "",
-    category: item.category || "",
-    subCategory: item.subCategory || "",
-    document: item.document || "",
-    extraRemarks: item.extraRemarks || "",
+    ocrStatus: item.ocrStatus === "-" ? "" : (item.ocrStatus ?? ""),
+    team: item.team ?? "",
+    profile: item.profile ?? "",
+    category: item.category ?? "",
+    subCategory: item.subCategory ?? "",
+    document: item.document ?? "",
+    reason: item.reason ?? "",
+    fupCode: item.fupCode ?? "",
+    extraRemarks: item.extraRemarks ?? "",
+    description: item.description ?? "",
+    requirementPoolType: item.requirementPoolType || item.team || "",
   };
 
-  if (isNumericId) payload.requirementId = Number(item.id);
-  if (item.team) payload.team = item.team;
-  if (item.reason) payload.reason = item.reason;
-  if (item.description) payload.description = item.description;
-  if (item.ocrStatus) payload.ocrStatus = item.ocrStatus;
+  if (reqId !== undefined) payload.requirementId = reqId;
+  if (item.partyId !== undefined) payload.partyId = item.partyId;
+  if (item.memberType !== undefined) payload.memberType = item.memberType;
 
   return payload;
 };
+
+function isRequirementRowChangedOrNew(item: RequirementItem, initialList?: RequirementItem[]): boolean {
+  const isNew = Boolean(item.isNew) || (typeof item.id === "string" && item.id.startsWith("req-"));
+  if (isNew) return true;
+
+  if (!initialList || initialList.length === 0) {
+    return true;
+  }
+
+  const initial = initialList.find(
+    (init) =>
+      init.id === item.id ||
+      (typeof item.requirementId === "number" && typeof init.requirementId === "number" && init.requirementId === item.requirementId),
+  );
+
+  if (!initial) {
+    return true;
+  }
+
+  return (
+    toCleanString(item.status) !== toCleanString(initial.status) ||
+    toCleanString(item.extraRemarks) !== toCleanString(initial.extraRemarks) ||
+    toCleanString(item.description) !== toCleanString(initial.description) ||
+    toCleanString(item.reason) !== toCleanString(initial.reason) ||
+    toCleanString(item.profile) !== toCleanString(initial.profile) ||
+    toCleanString(item.fupCode) !== toCleanString(initial.fupCode) ||
+    toCleanString(item.category) !== toCleanString(initial.category) ||
+    toCleanString(item.subCategory) !== toCleanString(initial.subCategory) ||
+    toCleanString(item.document) !== toCleanString(initial.document) ||
+    toCleanString(item.team) !== toCleanString(initial.team) ||
+    toCleanString(item.ocrStatus) !== toCleanString(initial.ocrStatus) ||
+    toCleanString(item.requirementPoolType) !== toCleanString(initial.requirementPoolType)
+  );
+}
+
+export function buildRequirementsSavePayload(arg: SaveRetailDrsRequirementsArg) {
+  const sessionUser = getSessionUser();
+  const userId = arg.userId ?? sessionUser?.username ?? "cvt.user";
+  const taskType = arg.roleType ?? getDrsRoleType();
+  const taskConfig = getRetailDrsTaskConfig(taskType);
+  const roleType = arg.roleType ?? taskConfig.roleType ?? "CVT_TASK";
+  const screenType = arg.screenType ?? taskConfig.screenType ?? "CVT";
+  const businessType = arg.businessType ?? getSessionBusinessType() ?? taskConfig.businessType ?? "RETAIL";
+
+  const rowsToSave = arg.initialRequirements
+    ? arg.requirements.filter((item) => isRequirementRowChangedOrNew(item, arg.initialRequirements))
+    : arg.requirements;
+
+  const payload = {
+    applicationNo: arg.applicationNo,
+    userId,
+    roleType,
+    screenType,
+    businessType,
+    data: {
+      commonSection: [
+        {
+          name: "requirementManagement",
+          rows: rowsToSave.map(toRequirementRequestItem),
+        },
+      ],
+    },
+  };
+
+  return payload;
+}
 
 const PERSONAL_KYC_MAPPINGS: FieldMapping[] = [
   { key: "proposerSummary.dob", label: "Date Of Birth", field: "dob" },
@@ -244,17 +323,9 @@ export const retailDrsApi = createApi({
     }),
     saveRetailDrsRequirements: build.mutation<RequirementItem[], SaveRetailDrsRequirementsArg>({
       async queryFn(arg, api, _extra, baseQuery) {
-        const taskConfig = getRetailDrsTaskConfig(arg.roleType ?? getDrsRoleType());
-        const body = {
-          applicationNo: arg.applicationNo,
-          lob: arg.lob ?? "R",
-          userId: arg.userId ?? getSessionUser()?.username ?? "cvt.user",
-          roleType: arg.roleType ?? taskConfig.roleType,
-          sections: ["requirementManagement"],
-          data: {
-            requirementManagement: arg.requirements.map(toRequirementRequestItem),
-          },
-        };
+        const body = buildRequirementsSavePayload(arg);
+
+        console.log("[saveRetailDrsRequirements] PUT payload to send:", body);
 
         const applyToCache = (updated: RequirementItem[]): RequirementItem[] => {
           api.dispatch(

@@ -83,6 +83,7 @@ export type RetailDrsData = {
   requirements: RequirementItem[];
   pivvDetails: PivvDetailRow[];
   applicants: LifeAssuredApplicant[];
+  profileOptions: Array<{ label: string; value: string }>;
   /** Edit Applicant dialog initial values per applicant id. */
   editValues: Record<string, CvtEditApplicantValues>;
   applicantName: string;
@@ -292,8 +293,10 @@ function extractRequirementRows(rowsOrSection: unknown): unknown[] {
 export function mapRawRequirementRows(rowsOrSection: unknown): RequirementItem[] {
   return extractRequirementRows(rowsOrSection).map((row, index) => {
     const source = isRecord(row) ? row : {};
+    const reqId = typeof source.requirementId === "number" ? source.requirementId : index + 1;
     return {
-      id: typeof source.requirementId === "number" ? source.requirementId : index + 1,
+      id: reqId,
+      requirementId: reqId,
       status: normaliseStatus(readText(source.status)),
       ocrStatus: readText(source.ocrStatus),
       team: readText(source.team),
@@ -305,8 +308,43 @@ export function mapRawRequirementRows(rowsOrSection: unknown): RequirementItem[]
       fupCode: readText(source.fupCode),
       extraRemarks: readText(source.extraRemarks),
       description: readText(source.description),
+      requirementPoolType: readText(source.requirementPoolType) || readText(source.team),
+      partyId: readText(source.partyId),
+      memberType: readText(source.memberType),
     };
   });
+}
+
+export function readProfileOptions(membersDetails: unknown): Array<{ label: string; value: string }> {
+  if (!Array.isArray(membersDetails)) return [];
+  const options: Array<{ label: string; value: string }> = [];
+  const seen = new Set<string>();
+
+  for (const m of membersDetails) {
+    if (!isRecord(m)) continue;
+    const memberType = typeof m.memberType === "string" ? m.memberType.trim() : "";
+    const sections = Array.isArray(m.sections) ? m.sections : [];
+    const subSections = Array.isArray(m.subSections) ? m.subSections : [];
+    const allSections = [...sections, ...subSections];
+    const profileSection = allSections.find(
+      (s): s is Record<string, unknown> => isRecord(s) && s.name === "applicantProfile",
+    );
+    const profileVal = isRecord(profileSection?.value) ? profileSection.value : null;
+
+    const lifeNumber =
+      readText(profileVal?.lifeNumber).trim() ||
+      readText(m.lifeNumber).trim();
+
+    const label = memberType || (lifeNumber ? `Life ${lifeNumber}` : "");
+    const value = lifeNumber || memberType;
+
+    if (label && value && !seen.has(`${label}:${value}`)) {
+      seen.add(`${label}:${value}`);
+      options.push({ label, value });
+    }
+  }
+
+  return options;
 }
 
 const GRIEVANCE_ROW_KEYS: (keyof GrievanceHistoryRow)[] = [
@@ -459,6 +497,7 @@ export function mapRetailDrsPayload(value: unknown): RetailDrsData {
     requirements: mapRawRequirementRows(findSection(data.commonSection, "requirementManagement")),
     pivvDetails: readPivvDetails(membersDetails),
     applicants,
+    profileOptions: readProfileOptions(membersDetails),
     editValues,
     applicantName: fieldValue(nameRow?.fields, "Name"),
     grievanceHistoryTitle: readText(historySection?.label) || "Grievance History",

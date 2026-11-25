@@ -97,7 +97,7 @@ const SCREEN_BY_ROLE: Record<string, () => JSX.Element | null> = {
 
 export function GroupDrsPage() {
   const roleType = getDrsRoleType().trim().toUpperCase();
-  const Screen = SCREEN_BY_ROLE[roleType] ?? <div>Page not found</div>;
+  const Screen = SCREEN_BY_ROLE[roleType] ?? <DvtUser />;
   return <Screen />;
 }
 

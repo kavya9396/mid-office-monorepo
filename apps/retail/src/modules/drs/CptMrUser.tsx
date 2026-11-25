@@ -95,8 +95,11 @@ const CptMrUser = () => {
       await saveRetailDrsRequirements({
         applicationNo,
         roleType: drsTaskConfig.roleType,
+        screenType: drsTaskConfig.screenType,
+        businessType: drsTaskConfig.businessType,
         lob: RETAIL_LOB,
         requirements: updatedRequirements,
+        initialRequirements: drs.data?.requirements,
         queryArg: drsQueryArg,
       }).unwrap();
       setSnackbarMessage("Requirements saved successfully.");
@@ -161,6 +164,9 @@ const CptMrUser = () => {
         requirements={drs.data.requirements}
         statusOrder={requirementStatusOrder}
         statusVariants={requirementStatusVariants}
+        fieldOptions={{
+          profile: drs.data.profileOptions,
+        }}
         addButton={{ label: "+ Add Requirement" }}
         rowActions={[
           {

@@ -15,9 +15,24 @@ export type RequirementItem = {
   extraRemarks: string;
   description: string;
   isNew?: boolean;
+  requirementPoolType?: string;
+  requirementId?: number;
+  partyId?: string;
+  memberType?: string;
 };
 
-export type RequirementColumnKey = Exclude<keyof RequirementItem, "id" | "isNew">;
+export type RequirementColumnKey =
+  | "status"
+  | "ocrStatus"
+  | "team"
+  | "profile"
+  | "category"
+  | "subCategory"
+  | "document"
+  | "reason"
+  | "fupCode"
+  | "extraRemarks"
+  | "description";
 
 export type RequirementStatusOption = { label: string; value: string };
 
