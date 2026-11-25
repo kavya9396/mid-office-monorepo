@@ -1662,7 +1662,7 @@
                   "label": "Comments/Remarks"
                 }
               ],
-              "value": [
+              "rows": [
                 {
                   "userId": "SYSTEM",
                   "userName": "",

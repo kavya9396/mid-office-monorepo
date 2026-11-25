@@ -2149,20 +2149,24 @@ export function GuwUwPanel({
                               {row.label}
                             </td>
                             <td style={{ padding: "6px 8px", border: "1px solid #ded9d6" }}>
-                              <CustomSelect
-                                value={DISABLED_REASON_REFERRALS.includes(row.target) ? "" : row.reason}
-                                onChange={(val) => {
-                                  setReferralRows((prev) => {
-                                    const copy = [...prev];
-                                    copy[index] = { ...copy[index], reason: val };
-                                    return copy;
-                                  });
-                                }}
-                                options={isReasonDisabled ? [] : reasonOptions}
-                                disabled={isReasonDisabled}
-                                placeholder={DISABLED_REASON_REFERRALS.includes(row.target) ? "-" : "Select reason"}
-                                fullWidth
-                              />
+                              {hasReferralReasonOptions(row.target) ? (
+                                <CustomSelect
+                                  value={row.reason}
+                                  onChange={(val) => {
+                                    setReferralRows((prev) => {
+                                      const copy = [...prev];
+                                      copy[index] = { ...copy[index], reason: val };
+                                      return copy;
+                                    });
+                                  }}
+                                  options={isReasonDisabled ? [] : reasonOptions}
+                                  disabled={isReasonDisabled}
+                                  placeholder="Select reason"
+                                  fullWidth
+                                />
+                              ) : (
+                                "-"
+                              )}
                             </td>
                             <td style={{ padding: "6px 8px", border: "1px solid #ded9d6" }}>
                               <CustomTextField
@@ -2181,22 +2185,29 @@ export function GuwUwPanel({
                               />
                             </td>
                             <td style={{ padding: "6px 8px", border: "1px solid #ded9d6" }}>
-                              <CustomSelect
-                                value={row.assignedTo}
-                                onChange={(val) => {
-                                  setReferralRows((prev) => {
-                                    const copy = [...prev];
-                                    copy[index] = { ...copy[index], assignedTo: val };
-                                    return copy;
-                                  });
-                                }}
-                                options={assigneeOptionsForRole(assigneeRoleForReferralRow(row.target))}
-                                disabled={!canAssign || !row.selected || isRowDisabled}
-                                placeholder="Select User"
-                                fullWidth
-                              />
+                              {canAssign ? (
+                                <CustomSelect
+                                  value={row.assignedTo}
+                                  onChange={(val) => {
+                                    setReferralRows((prev) => {
+                                      const copy = [...prev];
+                                      copy[index] = { ...copy[index], assignedTo: val };
+                                      return copy;
+                                    });
+                                  }}
+                                  options={assigneeOptionsForRole(assigneeRoleForReferralRow(row.target))}
+                                  disabled={!row.selected || isRowDisabled}
+                                  placeholder="Select User"
+                                  fullWidth
+                                />
+                              ) : (
+                                "-"
+                              )}
                             </td>
                             <td style={{ padding: "6px 8px", border: "1px solid #ded9d6", textAlign: "center" }}>
+                              {!isReinsurer ? (
+                                "-"
+                              ) : (
                               <CustomButton
                                 variant={reinsurerEditOpen && isReinsurer ? "contained" : "outlined"}
                                 aria-label={isReinsurer && reinsurerEditOpen ? "Hide" : "Edit"}
@@ -2240,6 +2251,7 @@ export function GuwUwPanel({
                               >
                                 <EditIcon width={16} height={16} />
                               </CustomButton>
+                              )}
                             </td>
                           </tr>
                         );
