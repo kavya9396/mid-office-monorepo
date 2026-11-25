@@ -1304,6 +1304,25 @@ function mapRowDetails(rowDetails: unknown): BannerRowDetail[] {
   }));
 }
 
+/**
+ * GUW rows: id 0 = member line (Name, App No., Member, demographics), 1 = product, 2 = riders, 3 = sum at risk.
+ * Some payloads send Name / App No. as their own row and the member fields as the next row; fold that
+ * into row 0 and renumber the rest so the product and rider rows keep their expected ids.
+ */
+function mapGuwRowDetails(rowDetails: unknown): BannerRowDetail[] {
+  const rows = mapRowDetails(rowDetails);
+  const hasField = (row: BannerRowDetail | undefined, name: string) =>
+    row?.fields.some((f) => f.name === name) ?? false;
+  const [first, second, ...rest] = rows;
+  if (!first || !second || !hasField(first, "Name") || hasField(first, "Member") || !hasField(second, "Member")) {
+    return rows;
+  }
+  return [{ ...first, fields: [...first.fields, ...second.fields] }, ...rest].map((row, index) => ({
+    ...row,
+    id: index,
+  }));
+}
+
 /** Display text of a mock cell that may be a string or a list of strings. */
 function textOf(v: unknown): string {
   return Array.isArray(v) ? v.map(str).join(", ") : str(v);
@@ -1650,14 +1669,14 @@ function memberRecords(payload: unknown): Record<string, unknown>[] {
 
 /** Member id of one `membersDetails[]` object: the "Member" field of `rowDetails` id 0 (e.g. "Life Assured 1"). */
 function memberIdOf(member: Record<string, unknown>, index: number): string {
-  const memberFields = mapRowDetails(member.rowDetails).find((r) => r.id === 0)?.fields;
+  const memberFields = mapGuwRowDetails(member.rowDetails).find((r) => r.id === 0)?.fields;
   return fieldValue(memberFields, "Member") || `Life Assured ${index + 1}`;
 }
 
 /** Member rows for the member selection screen, from `rowDetails` id 0 (name, member and demographics). */
 export function mapGuwMembers(payload: unknown): GuwMemberSummary[] {
   return memberRecords(payload).map((data, index) => {
-    const rows = mapRowDetails(data.rowDetails);
+    const rows = mapGuwRowDetails(data.rowDetails);
     const memberFields = rows.find((r) => r.id === 0)?.fields;
     const detail = (name: string) => fieldValue(memberFields, name);
     const age = fieldValue(memberFields, "Age");
@@ -1706,7 +1725,7 @@ export async function fetchGuwMembers(applicationNo: string, roleType?: string):
 /** Product (id 1) and rider (id 2) rows of the first `membersDetails[]` object, for the member selection banner. */
 export function mapGuwProductRowDetails(payload: unknown): BannerRowDetail[] {
   const firstMember = memberRecords(payload)[0];
-  return mapRowDetails(firstMember?.rowDetails).filter((row) => row.id === 1 || row.id === 2);
+  return mapGuwRowDetails(firstMember?.rowDetails).filter((row) => row.id === 1 || row.id === 2);
 }
 
 export async function fetchGuwProductRowDetails(applicationNo: string, roleType?: string): Promise<BannerRowDetail[]> {
@@ -1744,7 +1763,7 @@ export function mapGuwDrsPayload(payload: unknown, memberId?: string): GuwDrsRec
   );
   const requirements: RequirementItem[] = mapRawRequirementRows(rawReqs);
 
-  const rowDetails = mapRowDetails(data.rowDetails);
+  const rowDetails = mapGuwRowDetails(data.rowDetails);
   const applicantName = fieldValue(rowDetails[0]?.fields, "Name");
 
   const riskCards: RiskCardData[] = Array.isArray(data.cardDetails)
