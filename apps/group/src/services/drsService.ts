@@ -803,8 +803,31 @@ export type GuwParallelDecisionBaseInput = Pick<GuwDecisionFormInput, "applicati
   instanceId?: string;
 };
 
+/** Master `GUW_REF_TO` value (lower case) of the Sr UW Opinion referral. */
+export const SR_UW_OPINION_MASTER_VALUE = "sr uw opinion";
+
+/**
+ * Referral code of Sr UW Opinion, read from the master `misc` type GUW_REF_TO (the entry whose value is
+ * "SR UW Opinion" and whose code is a `REF_` code, e.g. REF_SRUW). "" when the master has none.
+ * Read at call time because the master data is only in session after login.
+ */
+export function guwSrUwReferralCode(): string {
+  const entry = getMasterList("misc", "GUW_REF_TO").find(
+    (item) =>
+      item.isActive === "Y" &&
+      (item.value ?? item.description).trim().toLowerCase() === SR_UW_OPINION_MASTER_VALUE &&
+      item.code.toUpperCase().startsWith("REF_"),
+  );
+  return entry?.code ?? "";
+}
+
+export function isGuwSrUwReferral(target: string): boolean {
+  const code = guwSrUwReferralCode();
+  return code !== "" && target === code;
+}
+
 /** Referral rows whose Refer To is an opinion (Sr UW Opinion / HOD Opinion); every other row is a plain referral. */
-const OPINION_REFERRALS = ["REF_SR_UW", "REF_HOD"];
+const isOpinionReferral = (target: string) => isGuwSrUwReferral(target) || target === "REF_HOD";
 
 function toParallelDecisionRequest(
   base: GuwParallelDecisionBaseInput,
@@ -856,8 +879,8 @@ export function buildGuwReferralParallelDecisionRequests(
       ...(assignedTo ? { assignedTo: { name: assignedTo, description: assignedTo, value: ntid } } : {}),
     };
   };
-  const opinions = rows.filter((row) => OPINION_REFERRALS.includes(row.target)).map(toItem);
-  const referrals = rows.filter((row) => !OPINION_REFERRALS.includes(row.target)).map(toItem);
+  const opinions = rows.filter((row) => isOpinionReferral(row.target)).map(toItem);
+  const referrals = rows.filter((row) => !isOpinionReferral(row.target)).map(toItem);
   const requests: GuwParallelDecisionRequest[] = [];
   if (opinions.length > 0) requests.push(toParallelDecisionRequest(base, "OPINION", opinions));
   if (referrals.length > 0) {
@@ -959,7 +982,7 @@ export function assigneeRoleForReferTo(referTo: string): string {
 export function assigneeRoleForReferralRow(target: string): string {
   const key = target.trim().toLowerCase().replace(/[\s_.-]+/g, " ");
   if (key === "ref_hod" || key === "ref hod" || key === "hod opinion") return GUW_ASSIGNEE_ROLE.HOD;
-  if (key === "ref_sr_uw" || key === "ref sr uw" || key === "ref sruw" || key === "sr uw opinion") return GUW_ASSIGNEE_ROLE.SR_UW;
+  if (isGuwSrUwReferral(target) || key === "sr uw opinion") return GUW_ASSIGNEE_ROLE.SR_UW;
   return "";
 }
 
@@ -1854,7 +1877,7 @@ export function mapGuwDrsPayload(payload: unknown, memberId?: string): GuwDrsRec
       ...(caseDecisionVal
         ? {
             submittedDecision: {
-              decisionCode: GUW_DECISION_CODE_BY_LABEL[caseDecisionVal.toLowerCase()] ?? caseDecisionVal,
+              decisionCode: guwDecisionCodeOfLabel(caseDecisionVal),
               remarks: caseRemarksVal,
               fields: [
                 { label: "Case UW Decision", value: caseDecisionVal },
@@ -2098,7 +2121,6 @@ const GUW_DECISION_CODE_BY_LABEL: Record<string, string> = {
   "extra premium": "EP",
   "borderline standard": "BOR_STD",
   "refer to hod": "REF_HOD",
-  "refer to sr.uw": "REF_SR_UW",
   "refer to ho cmo": "REF_CMO",
   "refer to cmo": "REF_CMO",
   "refer to reinsurer": "REF_REINS",
@@ -2112,6 +2134,13 @@ const GUW_DECISION_CODE_BY_LABEL: Record<string, string> = {
   "counter sign": "APPROVER",
   "raise referral": "REFERRAL",
 };
+
+/** Decision code of a submitted Case UW Decision label; "Refer to Sr.UW" resolves to the master's Sr UW code. */
+function guwDecisionCodeOfLabel(label: string): string {
+  const key = label.toLowerCase();
+  if (key === "refer to sr.uw") return guwSrUwReferralCode() || label;
+  return GUW_DECISION_CODE_BY_LABEL[key] ?? label;
+}
 
 /** DTO -> domain. Unknown fields are dropped; missing lists become empty. */
 export function fromGuwValidationResponse(dto: unknown): GuwValidationResult {
