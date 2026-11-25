@@ -102,8 +102,11 @@ const DptMrUser = () => {
       await saveGroupDrsRequirements({
         applicationNo,
         roleType: drsTaskConfig.roleType,
+        screenType: drsTaskConfig.screenType,
+        businessType: drsTaskConfig.businessType,
         lob: GROUP_LOB,
         requirements: updatedRequirements,
+        initialRequirements: drs.data?.requirements,
         queryArg: drsQueryArg,
       }).unwrap();
       setSnackbarMessage("Requirements saved successfully.");
@@ -124,7 +127,7 @@ const DptMrUser = () => {
     );
   }
 
-  const profileOptions = (drs.data.memberTypes ?? []).map((type) => ({ label: type, value: type }));
+  const profileOptions = drs.data.profileOptions ?? (drs.data.memberTypes ?? []).map((type) => ({ label: type, value: type }));
   const applicants = drs.data.applicants ?? [];
   const selectedApplicant = applicants.find((applicant) => applicant.id === currentApplicantId) ?? applicants[0];
 

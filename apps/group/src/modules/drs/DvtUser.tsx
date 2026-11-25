@@ -168,7 +168,7 @@ const DvtUser = () => {
 
   const applicants = drs.data?.applicants ?? [];
   const memberTypes = drs.data?.memberTypes ?? [];
-  const profileOptions = memberTypes.map((type) => ({ label: type, value: type }));
+  const profileOptions = drs.data?.profileOptions ?? memberTypes.map((type) => ({ label: type, value: type }));
   const currentApplicantId = readApplicantId(locationState);
   const selectedApplicant =
     applicants.find((a) => a.id === currentApplicantId) ?? applicants[0];
@@ -386,8 +386,11 @@ const DvtUser = () => {
       await saveGroupDrsRequirements({
         applicationNo,
         roleType: drsTaskConfig.roleType,
+        screenType: drsTaskConfig.screenType,
+        businessType: drsTaskConfig.businessType,
         lob: "G",
         requirements: updatedRequirements,
+        initialRequirements: drs.data?.requirements,
         queryArg: {
           applicationNo: requestedApplicationNo,
           ...drsTaskConfig,

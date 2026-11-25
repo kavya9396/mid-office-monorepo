@@ -115,8 +115,11 @@ const DptNmrUser = () => {
       await saveGroupDrsRequirements({
         applicationNo,
         roleType: drsTaskConfig.roleType,
+        screenType: drsTaskConfig.screenType,
+        businessType: drsTaskConfig.businessType,
         lob: GROUP_LOB,
         requirements: updatedRequirements,
+        initialRequirements: drs.data?.requirements,
         queryArg: drsQueryArg,
       }).unwrap();
       setSnackbarMessage("Requirements saved successfully.");
@@ -137,7 +140,7 @@ const DptNmrUser = () => {
     );
   }
 
-  const profileOptions = (drs.data.memberTypes ?? []).map((type) => ({ label: type, value: type }));
+  const profileOptions = drs.data.profileOptions ?? (drs.data.memberTypes ?? []).map((type) => ({ label: type, value: type }));
 
   const closeSubPage = () => {
     void navigate({ pathname: drsBasePath, search });

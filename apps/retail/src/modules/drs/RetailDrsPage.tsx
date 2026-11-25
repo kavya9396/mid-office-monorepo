@@ -6,7 +6,6 @@ import {
   setDrsOpenContext,
 } from "@insurance-poc/utils";
 import { MmtGrievanceDrsPage } from "./MmtGrievanceDrsPage";
-import RetailDrsRecordPage from "./RetailDrsRecordPage";
 import CvtUser from "./CvtUser";
 import CptNmrUser from "./CptNmrUser";
 import CptMrUser from "./CptMrUser";
@@ -14,6 +13,7 @@ import TpaDrsPage from "./TpaDrsPage";
 import CuwUser from "./CuwUser";
 import { fetchCuwMembers } from "../../services/drsService";
 import { findRetailDrsTaskConfig } from "../../config/drsTaskConfig";
+import RetailDrsRecordPage from "./RetailDrsRecordPage";
 
 interface MemberEntryProps {
   /** Member selection page opened when the DRS payload holds more than one member. */
