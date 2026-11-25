@@ -860,7 +860,7 @@ export interface GuwParallelDecisionRequest {
   partyId: string;
   action: GuwParallelDecisionAction;
   /** Always sent, always an empty string. */
-  decision: "";
+  decision: string;
   /** Always sent, always a single space. */
   remarks: " ";
   userId: string;

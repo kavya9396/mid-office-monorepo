@@ -490,7 +490,7 @@ export const retailDrsApi = createApi({
         const fallbackUserId = sessionUser?.username ?? "";
         const payload: CuwParallelDecisionRequest = {
           ...arg,
-          decision: "",
+          decision: "Referral",
           remarks: " ",
           userId: arg.userId?.trim() || fallbackUserId,
         };
