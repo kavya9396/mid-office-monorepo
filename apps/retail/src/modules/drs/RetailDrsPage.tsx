@@ -11,6 +11,7 @@ import CptNmrUser from "./CptNmrUser";
 import CptMrUser from "./CptMrUser";
 import TpaDrsPage from "./TpaDrsPage";
 import CuwUser from "./CuwUser";
+import PivvUser from "./PivvUser";
 import { fetchCuwMembers } from "../../services/drsService";
 import { findRetailDrsTaskConfig } from "../../config/drsTaskConfig";
 import RetailDrsRecordPage from "./RetailDrsRecordPage";
@@ -77,6 +78,7 @@ const SCREEN_BY_SCREEN_TYPE: Record<string, () => JSX.Element | null> = {
   TPA: TpaDrsPage,
   CPT_NMR: CptNmrUser,
   CPT_MR: CptMrUser,
+  PIVV: PivvUser,
 };
 
 export function RetailDrsPage() {

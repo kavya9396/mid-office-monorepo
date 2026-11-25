@@ -42,6 +42,11 @@ export const RETAIL_DRS_TASK_CONFIG: Record<string, RetailDrsTaskConfig> = {
     screenType: "CPT_MR",
     businessType: "RETAIL",
   },
+  PIVV_TASK: {
+    roleType: "PIVV_TASK",
+    screenType: "PIVV",
+    businessType: "RETAIL",
+  },
   MMT_TASK: {
     roleType: "MMT_TASK",
     screenType: "MMT",

@@ -17,8 +17,6 @@ import type { LifeAssuredApplicant, RiderEditRow } from "@insurance-poc/common/l
 import type { RequirementItem } from "@insurance-poc/common/requirement-mgmt";
 import type { RiskCardData, RiskCardField } from "@insurance-poc/common/risk-cards";
 import type { ComparisonRow } from "@insurance-poc/common/decision-bar";
-import { store } from "../app/store";
-import { groupDrsApi } from "./drsApi";
 import { mapApplicants } from "../modules/drs/lifeAssuredData";
 import {
   mapMembersQuickLinks,
@@ -1766,6 +1764,10 @@ export function mapGuwMembers(payload: unknown): GuwMemberSummary[] {
  */
 async function loadGuwPayload(applicationNo: string, roleType?: string): Promise<unknown> {
   const taskType = roleType?.trim() || getDrsRoleType() || "GUW";
+  const [{ store }, { groupDrsApi }] = await Promise.all([
+    import("../app/store"),
+    import("./drsApi"),
+  ]);
   const request = store.dispatch(
     groupDrsApi.endpoints.getGuwDrsPayload.initiate({ applicationNo, taskType }),
   );
