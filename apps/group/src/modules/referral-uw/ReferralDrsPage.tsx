@@ -24,8 +24,16 @@ import {
   CustomLoader,
   CustomSnackbar,
   CustomTable,
+  DeleteIcon,
   type Column,
 } from "@insurance-poc/ui";
+import {
+  RequirementMgmt,
+  isNewRequirement,
+  type RequirementItem,
+} from "@insurance-poc/common/requirement-mgmt";
+import { requirementStatusOrder, requirementStatusVariants } from "../drs/requirementData";
+import { getGroupDrsTaskConfig } from "../../config/drsTaskConfig";
 import { useRetriggerGroupBreMutation } from "../../services/breRetriggerApi";
 import { formatBreTimestamp, splitDiscrepancies } from "../drs/breFormat";
 import { GuwSdtRow } from "../guw/GuwSdtRow";
@@ -36,7 +44,11 @@ import {
   type GuwClaimAuditSection,
   type GuwDrsRecord,
 } from "../../services/drsService";
-import { useGetGuwUwDecisionHistoryQuery, useLazyGetGuwClaimAuditListQuery } from "../../services/drsApi";
+import {
+  useGetGuwUwDecisionHistoryQuery,
+  useLazyGetGuwClaimAuditListQuery,
+  useSaveGroupDrsRequirementsMutation,
+} from "../../services/drsApi";
 import {
   readReferralDecisionOptions,
   type ReferralDecisionHistoryRow,
@@ -107,6 +119,8 @@ export function ReferralDrsPage({ config }: Readonly<ReferralDrsPageProps>) {
   const memberId = getDrsMemberId();
   const roleType = getDrsRoleType();
 
+  const drsTaskConfig = getGroupDrsTaskConfig(roleType);
+  const [saveGroupDrsRequirements] = useSaveGroupDrsRequirementsMutation();
   const [retriggerGroupBre, retriggerGroupBreState] = useRetriggerGroupBreMutation();
   const [fetchClaimAuditList] = useLazyGetGuwClaimAuditListQuery();
   // Underwriting Decision History: `uw-decision/fetch` on page load
@@ -124,6 +138,9 @@ export function ReferralDrsPage({ config }: Readonly<ReferralDrsPageProps>) {
   // Claim Audit rows from the claim-audit list API; null = use the rows that came with the DRS.
   const [claimAuditOverride, setClaimAuditOverride] = useState<GuwClaimAuditSection | null>(null);
   const [breDetailOpen, setBreDetailOpen] = useState(false);
+  const [requirementOpen, setRequirementOpen] = useState(false);
+  // Status of the BRE card chip that opened the Requirement Management dialog ("" = All).
+  const [requirementStatus, setRequirementStatus] = useState("");
   const [breRetriggerFinals, setBreRetriggerFinals] = useState<BreRetriggerFinalOverrides>({});
   const [breRetriggerBarDecision, setBreRetriggerBarDecision] = useState<string | null>(null);
   const [breRetriggerLimitDialogOpen, setBreRetriggerLimitDialogOpen] = useState(false);
@@ -146,6 +163,32 @@ export function ReferralDrsPage({ config }: Readonly<ReferralDrsPageProps>) {
     } catch (reason: unknown) {
       const message = readApiErrorMessage(reason);
       notify(message.length > 0 ? message : "Unable to load Claim Audit.");
+    }
+  };
+
+  const handleSaveRequirements = async (updatedRequirements: RequirementItem[]) => {
+    const initialRequirements = page.kind === "ready" ? page.record.requirements : undefined;
+    try {
+      const saved = await saveGroupDrsRequirements({
+        applicationNo,
+        roleType: drsTaskConfig.roleType,
+        screenType: drsTaskConfig.screenType,
+        businessType: drsTaskConfig.businessType,
+        lob: "G",
+        requirements: updatedRequirements,
+        initialRequirements,
+        ...(page.kind === "ready"
+          ? { drsData: page.record.drsData, caseType: page.record.caseType }
+          : {}),
+      }).unwrap();
+      setPage((prev) =>
+        prev.kind === "ready"
+          ? { kind: "ready", record: { ...prev.record, requirements: saved } }
+          : prev,
+      );
+      notify("Requirements saved successfully.");
+    } catch (err: unknown) {
+      notify(readApiErrorMessage(err) || "Failed to save requirements.");
     }
   };
 
@@ -271,6 +314,10 @@ export function ReferralDrsPage({ config }: Readonly<ReferralDrsPageProps>) {
                       label: c.label,
                       count: c.count,
                     }))}
+                    onStatusClick={(chip) => {
+                      setRequirementStatus(chip.label === "All" ? "" : chip.label);
+                      setRequirementOpen(true);
+                    }}
                     onViewDetail={() => setBreDetailOpen(true)}
                     onRefresh={handleBreRetrigger}
                   />
@@ -403,6 +450,53 @@ export function ReferralDrsPage({ config }: Readonly<ReferralDrsPageProps>) {
           </Box>
         ) : null}
       </Box>
+
+      {/* Requirement Management dialog — opens on BRE status chip click */}
+      {page.kind === "ready" && (
+        <CustomDialog
+          open={requirementOpen}
+          onClose={() => setRequirementOpen(false)}
+          title="Requirement Management"
+          maxWidth="xl"
+          fullWidth
+        >
+          <Box sx={{ p: 1 }}>
+            <RequirementMgmt
+              applicationKey={applicationNo}
+              requirements={page.record.requirements}
+              statusVariants={requirementStatusVariants}
+              statusOrder={requirementStatusOrder}
+              initialStatus={requirementStatus || undefined}
+              fieldOptions={{
+                profile:
+                  (page.record.profileOptions?.length ?? 0) > 0
+                    ? page.record.profileOptions
+                    : page.record.memberTypes.length > 0
+                      ? page.record.memberTypes.map((type) => ({ label: type, value: type }))
+                      : undefined,
+              }}
+              addButton={{
+                label: "+ Add Requirement",
+                onClick: () => console.log("Add Requirement clicked"),
+              }}
+              rowActions={[
+                {
+                  key: "delete",
+                  label: "Remove requirement",
+                  icon: <DeleteIcon width={16} height={16} />,
+                  tone: "danger",
+                  hidden: (row) => !isNewRequirement(row),
+                  onClick: (row, { removeRow }) => {
+                    console.log("Delete requirement", row.id);
+                    removeRow();
+                  },
+                },
+              ]}
+              onSave={handleSaveRequirements}
+            />
+          </Box>
+        </CustomDialog>
+      )}
 
       {/* BRE Detail dialog */}
       <CustomDialog

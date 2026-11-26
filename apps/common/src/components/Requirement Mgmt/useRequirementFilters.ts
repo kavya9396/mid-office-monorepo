@@ -13,6 +13,7 @@ type Options = {
   filterFields: RequirementFilterField[];
   statusOrder: string[];
   pageSize: number;
+  initialStatus?: string;
 };
 
 const statusRank = (order: string[], status: string) => {
@@ -50,8 +51,16 @@ const toggleValue = (selected: string[], value: string) =>
   selected.includes(value) ? selected.filter((item) => item !== value) : [...selected, value];
 
 /** Filtering, status counts and paging of the requirement rows. */
-export function useRequirementFilters({ rows, filterFields, statusOrder, pageSize }: Options) {
-  const [filters, setFilters] = useState<Filters>({});
+export function useRequirementFilters({
+  rows,
+  filterFields,
+  statusOrder,
+  pageSize,
+  initialStatus,
+}: Options) {
+  const [filters, setFilters] = useState<Filters>(() =>
+    initialStatus ? { status: [initialStatus] } : {},
+  );
   const [draftFilters, setDraftFilters] = useState<Filters>({});
   const [filterOpen, setFilterOpen] = useState(false);
   const [activeField, setActiveField] = useState<RequirementColumnKey | undefined>(

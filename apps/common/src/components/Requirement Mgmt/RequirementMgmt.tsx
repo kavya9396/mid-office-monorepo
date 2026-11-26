@@ -88,6 +88,7 @@ export function RequirementMgmt({
   statusOrder = NO_STATUS_ORDER,
   statusVariants = EMPTY_BADGE_VARIANTS,
   filter,
+  initialStatus,
   labels: labelOverrides,
   onSave,
   onDirtyChange,
@@ -120,6 +121,7 @@ export function RequirementMgmt({
     filterFields: filterConfig.fields,
     statusOrder,
     pageSize,
+    initialStatus,
   });
   const { pagination } = filtering;
 

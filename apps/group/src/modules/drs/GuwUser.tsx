@@ -132,6 +132,8 @@ const GuwUser = () => {
   const [breRetriggerBarDecision, setBreRetriggerBarDecision] = useState<string | null>(null);
   const [breRetriggerLimitDialogOpen, setBreRetriggerLimitDialogOpen] = useState(false);
   const [requirementOpen, setRequirementOpen] = useState(false);
+  // Status of the BRE card chip that opened the Requirement Management dialog ("" = All).
+  const [requirementStatus, setRequirementStatus] = useState("");
   const [applicantProfileOpen, setApplicantProfileOpen] = useState(false);
   const [raiseGrievanceOpen, setRaiseGrievanceOpen] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -346,7 +348,10 @@ const GuwUser = () => {
                       label: c.label,
                       count: c.count,
                     }))}
-                    onStatusClick={() => setRequirementOpen(true)}
+                    onStatusClick={(chip) => {
+                      setRequirementStatus(chip.label === "All" ? "" : chip.label);
+                      setRequirementOpen(true);
+                    }}
                     onViewDetail={() => setBreDetailOpen(true)}
                     onRefresh={handleBreRetrigger}
                   />
@@ -465,6 +470,7 @@ const GuwUser = () => {
               requirements={page.record.requirements}
               statusVariants={requirementStatusVariants}
               statusOrder={requirementStatusOrder}
+              initialStatus={requirementStatus || undefined}
               fieldOptions={{
                 profile:
                   (page.record.profileOptions?.length ?? 0) > 0

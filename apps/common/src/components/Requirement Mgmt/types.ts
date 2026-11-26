@@ -163,6 +163,8 @@ export type RequirementMgmtProps = {
   statusVariants?: Record<string, RequirementBadgeVariant>;
 
   filter?: RequirementFilterConfig;
+  /** Status pre-selected in the filter bar on mount (e.g. the BRE card chip that was clicked). */
+  initialStatus?: string;
   /** Overrides any of the built-in texts. */
   labels?: Partial<RequirementLabels>;
 

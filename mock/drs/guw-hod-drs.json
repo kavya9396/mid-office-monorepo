@@ -1,15 +1,17 @@
 {
     "success": true,
     "data": {
-        "applicationNo": "OS31229864",
-        "screenType": "HOD",
+        "applicationNo": "OS30416543",
+        "caseType": "Non-Medical",
+        "screenType": "GUW_INFORMAL",
         "businessType": "GROUP",
+        "roleType": "HOD_TASK",
         "commonSection": [
             {
                 "name": "latestBreDecision",
                 "label": "BRE Decision",
                 "value": {
-                    "title": "BRE Decision",
+                    "code": "AR",
                     "columns": [
                         {
                             "key": "label",
@@ -28,50 +30,32 @@
                         {
                             "id": "status",
                             "label": "BRE Status",
-                            "initial": "",
-                            "final": "NSTP"
+                            "initial": "SUCCESS",
+                            "final": "SUCCESS"
                         },
                         {
                             "id": "decision",
                             "label": "BRE Decision",
-                            "initial": "NSTP",
-                            "final": "NSTP"
+                            "initial": "ST",
+                            "final": "AR"
                         },
                         {
                             "id": "remarks",
                             "label": "BRE Remarks",
-                            "initial": "",
-                            "final": ""
+                            "initial": "ICICI Bank Limited Home Loan#HC#credit life cover with ICICI Pru only = 2210000#credit life with ICICI Pru only in last two years = 2210000#GCD Mandatory for Master Code.#GCD mandatory for Group/ MRTA login#TopCOs",
+                            "final": "HC#credit life cover with ICICI Pru only = 2210000#credit life with ICICI Pru only in last two years = 2210000#TSA gt 20lakhs height weight value blank received#TopCOs"
                         },
                         {
                             "id": "discrepancy",
                             "label": "BRE Discrepancy",
-                            "initial": "",
-                            "final": "-"
+                            "initial": "GCD",
+                            "final": "GCD"
                         },
                         {
                             "id": "timestamp",
                             "label": "BRE Timestamp",
-                            "initial": "",
-                            "final": "17/11/2026, 0814hrs"
-                        }
-                    ],
-                    "fields": [
-                        {
-                            "name": "BRE Overall Decision",
-                            "value": "NSTP"
-                        },
-                        {
-                            "name": "BRE Overall Remarks",
-                            "value": ""
-                        },
-                        {
-                            "name": "BRE Discrepancy",
-                            "value": "-"
-                        },
-                        {
-                            "name": "BRE Timestamp",
-                            "value": "17/11/2026, 0814hrs"
+                            "initial": "16/11/2026, 1847hrs",
+                            "final": "17/11/2026, 1759hrs"
                         }
                     ]
                 }
@@ -80,32 +64,128 @@
                 "name": "requirementManagement",
                 "label": "Requirement Management",
                 "columns": [
-                    "Actions",
-                    "Status",
-                    "OCR Status",
-                    "Team",
-                    "Profile",
-                    "Category",
-                    "Sub Category",
-                    "Document",
-                    "Reason",
-                    "FUP Code",
-                    "Extra Remarks",
-                    "Description"
+                    {
+                        "label": "Actions"
+                    },
+                    {
+                        "label": "Status"
+                    },
+                    {
+                        "label": "OCR Status"
+                    },
+                    {
+                        "label": "Team"
+                    },
+                    {
+                        "label": "Profile"
+                    },
+                    {
+                        "label": "Category"
+                    },
+                    {
+                        "label": "Sub Category"
+                    },
+                    {
+                        "label": "Document"
+                    },
+                    {
+                        "label": "Reason"
+                    },
+                    {
+                        "label": "FUP Code"
+                    },
+                    {
+                        "label": "Extra Remarks"
+                    },
+                    {
+                        "label": "Description"
+                    }
                 ],
                 "rows": [
                     {
-                        "status": "",
+                        "status": "Pending",
                         "ocrStatus": "",
-                        "team": "",
-                        "profile": "",
-                        "category": "",
-                        "subCategory": "",
-                        "document": "",
-                        "reason": "",
-                        "fupCode": "",
-                        "extraRemarks": "",
-                        "description": ""
+                        "team": "UW",
+                        "profile": "lifeassured1",
+                        "category": "Medicals",
+                        "subCategory": "Declaration",
+                        "document": "health Declaration",
+                        "reason": "Documents not submitted",
+                        "fupCode": "DGH",
+                        "extraRemarks": "test",
+                        "description": "DGH-Declaration for good health",
+                        "requirementPoolType": "UW",
+                        "requirementId": 18444,
+                        "partyId": "fa3c5676-bdb7-453f-89a6-2f60bce1f71c",
+                        "memberType": "LA"
+                    },
+                    {
+                        "status": "Pending",
+                        "ocrStatus": "",
+                        "team": "COPS",
+                        "profile": "lifeassured1",
+                        "category": "PIV",
+                        "subCategory": "Joint life",
+                        "document": "verification Call",
+                        "reason": "Verifcation Call",
+                        "fupCode": "JIV",
+                        "extraRemarks": "JIV - Kindly complete the identity verification via video of the person added as Joint Life Assured in the policy. To complete, visit www.iciciprulife.com > Track Application > Login with your Application no. and Date of Birth",
+                        "description": "JIV - Kindly complete the identity verification via video of the person added as Joint Life Assured in the policy. To complete, visit www.iciciprulife.com > Track Application > Login with your Application no. and Date of Birth",
+                        "requirementPoolType": "COPS",
+                        "requirementId": 18269,
+                        "partyId": "fa3c5676-bdb7-453f-89a6-2f60bce1f71c",
+                        "memberType": "LA"
+                    },
+                    {
+                        "status": "Pending",
+                        "ocrStatus": "",
+                        "team": "UW",
+                        "profile": "lifeassured1",
+                        "category": "Consent",
+                        "subCategory": "Digital consent",
+                        "document": "Consent",
+                        "reason": "Documents uploaded is not clear",
+                        "fupCode": "RLD",
+                        "extraRemarks": "RLD-Revised Digital consent of Life Assured",
+                        "description": "RLD-Revised Digital consent of Life Assured",
+                        "requirementPoolType": "UW",
+                        "requirementId": 17972,
+                        "partyId": "fa3c5676-bdb7-453f-89a6-2f60bce1f71c",
+                        "memberType": "LA"
+                    },
+                    {
+                        "status": "Pending",
+                        "ocrStatus": "",
+                        "team": "UW",
+                        "profile": "lifeassured1",
+                        "category": "Internal",
+                        "subCategory": "Approval",
+                        "document": "CSO/Level9/BM",
+                        "reason": "Approval Required",
+                        "fupCode": "RPD",
+                        "extraRemarks": "RPD- Previous policy renewal pending - Approval required from Level 9 & above of CSO Renewal Team",
+                        "description": "RPD-Previous policy renewal pending - Approval required from Level 9 & above of CSO Renewal Team",
+                        "requirementPoolType": "UW",
+                        "requirementId": 17933,
+                        "partyId": "fa3c5676-bdb7-453f-89a6-2f60bce1f71c",
+                        "memberType": "LA"
+                    },
+                    {
+                        "status": "Pass",
+                        "ocrStatus": "pass",
+                        "team": "UW",
+                        "profile": "lifeassured1",
+                        "category": "Consent",
+                        "subCategory": "Customer declaration form",
+                        "document": "Declaration form",
+                        "reason": "Document not uplaoded",
+                        "fupCode": "GCD",
+                        "extraRemarks": "Digital KYP",
+                        "description": "GCD-Customer declaration form not uploaded",
+                        "requirementPoolType": "UW",
+                        "requirementId": 17885,
+                        "partyId": "fa3c5676-bdb7-453f-89a6-2f60bce1f71c",
+                        "memberType": "LA"
                     }
                 ]
             }
@@ -118,11 +198,11 @@
                         "fields": [
                             {
                                 "name": "Name",
-                                "value": "Avinash Dwivedy"
+                                "value": "MADHURAMAN Damani"
                             },
                             {
                                 "name": "App No.",
-                                "value": "OS31229864"
+                                "value": "OS30416543"
                             }
                         ]
                     },
@@ -130,44 +210,48 @@
                         "id": 1,
                         "fields": [
                             {
-                                "name": "Profile",
+                                "name": "Member",
                                 "value": "Life Assured 1"
                             },
                             {
                                 "name": "Marital status",
-                                "value": ""
+                                "value": "Divorced"
                             },
                             {
                                 "name": "Gender",
-                                "value": "Male"
+                                "value": "MALE"
                             },
                             {
                                 "name": "Age",
-                                "value": "36"
+                                "value": "46"
                             },
                             {
                                 "name": "Education",
-                                "value": ""
+                                "value": "Graduate"
                             },
                             {
                                 "name": "Occupation",
-                                "value": "SAL"
+                                "value": "SPVT"
+                            },
+                            {
+                                "name": "Organisation",
+                                "value": "Tata Integration Systems"
                             },
                             {
                                 "name": "Declared income",
-                                "value": "12000"
+                                "value": "800000"
                             },
                             {
                                 "name": "City, State",
-                                "value": ""
+                                "value": "BELAGAVI, KRNT"
                             },
                             {
-                                "name": "Nationality",
-                                "value": "IN"
+                                "name": "Residence Status",
+                                "value": "RESIDENT I"
                             },
                             {
-                                "name": "Country",
-                                "value": "India"
+                                "name": "Residing Country",
+                                "value": "RESIDENT I"
                             }
                         ]
                     },
@@ -175,17 +259,82 @@
                         "id": 2,
                         "fields": [
                             {
-                                "name": "Product name",
-                                "value": "Demo Plan - P1"
+                                "name": "Product",
+                                "value": "ICICI PRU SUPER PROTECT CREDIT - GP1"
                             },
                             {
                                 "name": "Channel",
-                                "value": "Agency channel"
+                                "value": ""
                             },
                             {
-                                "name": "SA",
-                                "value": "1000000"
+                                "name": "Sum Assured",
+                                "value": "2210000"
                             },
+                            {
+                                "name": "MPH Name",
+                                "value": ""
+                            },
+                            {
+                                "name": "Policy Term",
+                                "value": "49"
+                            },
+                            {
+                                "name": "Annual Premium",
+                                "value": "127204"
+                            },
+                            {
+                                "name": "PAD",
+                                "value": ""
+                            },
+                            {
+                                "name": "Date of loan disbursement",
+                                "value": "2026-09-09T00:00"
+                            },
+                            {
+                                "name": "Coverage option",
+                                "value": "Reducing Cover"
+                            },
+                            {
+                                "name": "Loan type",
+                                "value": "L1"
+                            },
+                            {
+                                "name": "Bank type",
+                                "value": "B1"
+                            },
+                            {
+                                "name": "Loan term",
+                                "value": "360"
+                            },
+                            {
+                                "name": "Loan Account No.",
+                                "value": "7643665347"
+                            },
+                            {
+                                "name": "Share of loan",
+                                "value": "100"
+                            },
+                            {
+                                "name": "Applicant status",
+                                "value": "Primary Borrower"
+                            },
+                            {
+                                "name": "Loan amount",
+                                "value": "4000000"
+                            },
+                            {
+                                "name": "Master policy holder code",
+                                "value": ""
+                            },
+                            {
+                                "name": "Type of loan",
+                                "value": "Home Loan"
+                            }
+                        ]
+                    },
+                    {
+                        "id": 3,
+                        "fields": [
                             {
                                 "name": "WOP - SA",
                                 "value": ""
@@ -196,28 +345,28 @@
                             },
                             {
                                 "name": "TI Rider - SA",
-                                "value": "300000"
+                                "value": ""
                             },
                             {
                                 "name": "ADBR - SA",
-                                "value": "100000"
+                                "value": "0"
                             },
                             {
                                 "name": "CI Rider - SA",
-                                "value": "500000"
+                                "value": ""
                             }
                         ]
                     },
                     {
-                        "id": 3,
+                        "id": 4,
                         "fields": [
                             {
                                 "name": "TSA",
-                                "value": "1200000"
+                                "value": "2210000"
                             },
                             {
                                 "name": "TRSA",
-                                "value": "1100000"
+                                "value": "2210000"
                             },
                             {
                                 "name": "TPSA",
@@ -225,7 +374,7 @@
                             },
                             {
                                 "name": "TFSA",
-                                "value": "1.5"
+                                "value": "17.37366749473287"
                             },
                             {
                                 "name": "TSSA",
@@ -248,16 +397,8 @@
                                 "value": ""
                             },
                             {
-                                "name": "WOP TSA",
-                                "value": ""
-                            },
-                            {
                                 "name": "BTBB TSA",
                                 "value": ""
-                            },
-                            {
-                                "name": "Total Premium",
-                                "value": "0"
                             }
                         ]
                     }
@@ -268,7 +409,7 @@
                         "label": "Financial",
                         "attributes": [
                             {
-                                "name": "Financial Decision",
+                                "name": "BRE Financial decision",
                                 "value": ""
                             },
                             {
@@ -281,12 +422,16 @@
                             },
                             {
                                 "name": "Verified Income",
+                                "value": ""
+                            },
+                            {
+                                "name": "BIU Financial status (Match/Mismatch)",
                                 "value": ""
                             }
                         ],
                         "expandedAttributes": [
                             {
-                                "name": "Financial Decision",
+                                "name": "BRE Financial decision",
                                 "value": ""
                             },
                             {
@@ -302,15 +447,19 @@
                                 "value": ""
                             },
                             {
+                                "name": "BIU Financial status (Match/Mismatch)",
+                                "value": ""
+                            },
+                            {
+                                "name": "BRE Remark",
+                                "value": ""
+                            },
+                            {
                                 "name": "Counter Offer Value",
-                                "value": "1500000"
+                                "value": ""
                             },
                             {
                                 "name": "Additional SA",
-                                "value": "1200000"
-                            },
-                            {
-                                "name": "BIU Financial Status",
                                 "value": ""
                             },
                             {
@@ -319,10 +468,6 @@
                             },
                             {
                                 "name": "Reinsurer Case",
-                                "value": ""
-                            },
-                            {
-                                "name": "Financial Remark",
                                 "value": ""
                             }
                         ],
@@ -333,25 +478,33 @@
                         "label": "Medical",
                         "attributes": [
                             {
-                                "name": "Physical Medical Decision",
+                                "name": "BRE Physical Medical Decision",
+                                "value": ""
+                            },
+                            {
+                                "name": "MunichRe Medical decision",
+                                "value": ""
+                            },
+                            {
+                                "name": "BIU Medical status (Match/Mismatch)",
                                 "value": ""
                             }
                         ],
                         "expandedAttributes": [
                             {
-                                "name": "Physical Medical Decision",
+                                "name": "BRE Physical Medical Decision",
                                 "value": ""
                             },
                             {
-                                "name": "Tele/Video MER Decision",
+                                "name": "MunichRe Medical decision",
                                 "value": ""
                             },
                             {
-                                "name": "Tele/Video MER Remark",
+                                "name": "BIU Medical status (Match/Mismatch)",
                                 "value": ""
                             },
                             {
-                                "name": "MunichRe Medical Decision",
+                                "name": "BRE Tele/Video MER Decision",
                                 "value": ""
                             },
                             {
@@ -359,11 +512,11 @@
                                 "value": ""
                             },
                             {
-                                "name": "BIU Medical Status",
-                                "value": "N"
+                                "name": "BRE Physical Medical Remark",
+                                "value": ""
                             },
                             {
-                                "name": "Physical Medical Remark",
+                                "name": "BRE Tele/Video MER Remark",
                                 "value": ""
                             }
                         ],
@@ -374,33 +527,37 @@
                         "label": "Risk Parameters",
                         "attributes": [
                             {
-                                "name": "DRC Response",
+                                "name": "PEP Question Response (LA)",
                                 "value": ""
                             },
                             {
-                                "name": "Criminal Question Response LA",
-                                "value": "No"
+                                "name": "FATF/OFAC Country Login",
+                                "value": ""
                             },
                             {
-                                "name": "PEP Question Response LA",
-                                "value": "No"
+                                "name": "Health Question Positive",
+                                "value": ""
                             }
                         ],
                         "expandedAttributes": [
                             {
-                                "name": "DRC Response",
+                                "name": "PEP Question Response (LA)",
                                 "value": ""
                             },
                             {
-                                "name": "Criminal Question Response LA",
-                                "value": "No"
+                                "name": "FATF/OFAC Country Login",
+                                "value": ""
                             },
                             {
-                                "name": "PEP Question Response LA",
-                                "value": "No"
+                                "name": "Health Question Positive",
+                                "value": ""
                             },
                             {
-                                "name": "PTLR Response",
+                                "name": "PEP Question Response (PR)",
+                                "value": ""
+                            },
+                            {
+                                "name": "Claim Registered",
                                 "value": ""
                             },
                             {
@@ -408,12 +565,28 @@
                                 "value": ""
                             },
                             {
-                                "name": "Criminal Question Response PR",
-                                "value": "No"
+                                "name": "Adverse ACR",
+                                "value": ""
                             },
                             {
-                                "name": "PEP Question Response PR",
-                                "value": "No"
+                                "name": "Criminal Question Response (LA)",
+                                "value": ""
+                            },
+                            {
+                                "name": "Criminal Question Response (PR)",
+                                "value": ""
+                            },
+                            {
+                                "name": "Face Match Score < 75%",
+                                "value": ""
+                            },
+                            {
+                                "name": "Distance < acceptable range",
+                                "value": ""
+                            },
+                            {
+                                "name": "Adverse App OID",
+                                "value": ""
                             },
                             {
                                 "name": "Previous Policy Substandard",
@@ -424,59 +597,11 @@
                                 "value": ""
                             },
                             {
-                                "name": "Health Question Positive",
-                                "value": "Yes"
-                            },
-                            {
-                                "name": "Employment In Risky Industry",
-                                "value": "IMP"
-                            },
-                            {
-                                "name": "FATF/OFAC Country Login",
-                                "value": ""
-                            },
-                            {
                                 "name": "Hazardous Occupation",
                                 "value": ""
                             },
                             {
-                                "name": "EDD Flag",
-                                "value": ""
-                            },
-                            {
-                                "name": "Claim Risk Indicator",
-                                "value": ""
-                            },
-                            {
-                                "name": "Face Match Score",
-                                "value": "100"
-                            },
-                            {
-                                "name": "Tobacco",
-                                "value": ""
-                            },
-                            {
-                                "name": "Narcotics",
-                                "value": ""
-                            },
-                            {
-                                "name": "Third Party Payment",
-                                "value": ""
-                            },
-                            {
-                                "name": "Policy Bazar Risk Response",
-                                "value": ""
-                            },
-                            {
-                                "name": "Adverse ACR",
-                                "value": ""
-                            },
-                            {
-                                "name": "Distance < acceptable range",
-                                "value": ""
-                            },
-                            {
-                                "name": "Adverse App OID",
+                                "name": "Employment in Risky Industry",
                                 "value": ""
                             }
                         ],
@@ -485,10 +610,46 @@
                 ],
                 "sections": [
                     {
+                        "name": "grievanceHistory",
+                        "label": "Grievance History",
+                        "value": {
+                            "columns": [
+                                {
+                                    "label": "User Name"
+                                },
+                                {
+                                    "label": "User Role"
+                                },
+                                {
+                                    "label": "FUP Code"
+                                },
+                                {
+                                    "label": "Grievance Raised Remark"
+                                },
+                                {
+                                    "label": "Grievance Raised Date"
+                                },
+                                {
+                                    "label": "TPA Remarks"
+                                }
+                            ],
+                            "rows": [
+                                {
+                                    "userName": "",
+                                    "userRole": "",
+                                    "fupCode": "",
+                                    "grievanceRaisedRemark": "",
+                                    "grievanceRaisedDate": "",
+                                    "tpaRemarks": ""
+                                }
+                            ]
+                        }
+                    },
+                    {
                         "name": "latestBreDecision",
                         "label": "BRE Decision",
                         "value": {
-                            "title": "BRE Decision",
+                            "code": "AR",
                             "columns": [
                                 {
                                     "key": "label",
@@ -507,50 +668,109 @@
                                 {
                                     "id": "status",
                                     "label": "BRE Status",
-                                    "initial": "",
-                                    "final": "NSTP"
+                                    "initial": "SUCCESS",
+                                    "final": "SUCCESS"
                                 },
                                 {
                                     "id": "decision",
                                     "label": "BRE Decision",
-                                    "initial": "NSTP",
-                                    "final": "NSTP"
+                                    "initial": "ST",
+                                    "final": "AR"
                                 },
                                 {
                                     "id": "remarks",
                                     "label": "BRE Remarks",
-                                    "initial": "",
-                                    "final": ""
+                                    "initial": "ICICI Bank Limited Home Loan#HC#credit life cover with ICICI Pru only = 2210000#credit life with ICICI Pru only in last two years = 2210000#GCD Mandatory for Master Code.#GCD mandatory for Group/ MRTA login#TopCOs",
+                                    "final": "HC#credit life cover with ICICI Pru only = 2210000#credit life with ICICI Pru only in last two years = 2210000#TSA gt 20lakhs height weight value blank received#TopCOs"
                                 },
                                 {
                                     "id": "discrepancy",
                                     "label": "BRE Discrepancy",
-                                    "initial": "",
-                                    "final": "-"
+                                    "initial": "GCD",
+                                    "final": "GCD"
                                 },
                                 {
                                     "id": "timestamp",
                                     "label": "BRE Timestamp",
-                                    "initial": "",
-                                    "final": "17/11/2026, 0814hrs"
+                                    "initial": "16/11/2026, 1847hrs",
+                                    "final": "17/11/2026, 1759hrs"
                                 }
-                            ],
+                            ]
+                        }
+                    },
+                    {
+                        "name": "sdtDecision",
+                        "label": "SDT Decision",
+                        "value": {
                             "fields": [
                                 {
-                                    "name": "BRE Overall Decision",
-                                    "value": "NSTP"
+                                    "name": "Financial Decision",
+                                    "value": "NON-FSTP"
                                 },
                                 {
-                                    "name": "BRE Overall Remarks",
+                                    "name": "Medical Decision",
                                     "value": ""
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "claimAudit",
+                        "label": "Claim Audit",
+                        "value": {
+                            "title": "Claim Audit",
+                            "columns": [
+                                {
+                                    "label": "Policy Number"
                                 },
                                 {
-                                    "name": "BRE Discrepancy",
-                                    "value": "-"
+                                    "label": "Product Code"
                                 },
                                 {
-                                    "name": "BRE Timestamp",
-                                    "value": "17/11/2026, 0814hrs"
+                                    "label": "Claim Key"
+                                },
+                                {
+                                    "label": "Canonical ID"
+                                },
+                                {
+                                    "label": "Patient Name"
+                                },
+                                {
+                                    "label": "Ailment for Communication"
+                                },
+                                {
+                                    "label": "Claim Type"
+                                },
+                                {
+                                    "label": "Subtype"
+                                },
+                                {
+                                    "label": "Intimation Date"
+                                },
+                                {
+                                    "label": "DOA"
+                                },
+                                {
+                                    "label": "DOD"
+                                },
+                                {
+                                    "label": "Decision Status"
+                                }
+                            ],
+                            "rows": [
+                                {
+                                    "policyNumber": "",
+                                    "productCode": "",
+                                    "claimKey": "",
+                                    "canonicalId": "",
+                                    "patientName": "",
+                                    "ailmentForCommunication": "",
+                                    "claimType": "",
+                                    "subtype": "",
+                                    "intimationDate": "",
+                                    "doa": "",
+                                    "dod": "",
+                                    "decisionStatus": ""
                                 }
                             ]
                         }
@@ -579,74 +799,67 @@
                         }
                     },
                     {
-                        "name": "decisionHistory",
-                        "label": "Decision History",
+                        "name": "specialRemarks",
+                        "label": "Special Remarks",
                         "value": {
+                            "title": "Special Remarks",
                             "columns": [
                                 {
-                                    "label": "User Name"
+                                    "label": "Comments"
                                 },
                                 {
-                                    "label": "User Role"
+                                    "label": "Updated Date"
                                 },
                                 {
-                                    "label": "UW Decision"
-                                },
-                                {
-                                    "label": "UW Remarks"
-                                },
-                                {
-                                    "label": "Date"
-                                },
-                                {
-                                    "label": "Financial Decision"
-                                },
-                                {
-                                    "label": "Medical Decision"
-                                },
-                                {
-                                    "label": "Smoker Status"
-                                },
-                                {
-                                    "label": "Referral Reason"
-                                },
-                                {
-                                    "label": "Referral Remarks"
+                                    "label": "Updated By"
                                 }
                             ],
                             "rows": [
                                 {
-                                    "userName": "",
-                                    "userRole": "",
-                                    "decision": "",
-                                    "remarks": "",
-                                    "date": "",
-                                    "financialDecision": "",
-                                    "medicalDecision": "",
-                                    "smokerStatus": "",
-                                    "referralReason": "",
-                                    "referralRemarks": ""
+                                    "comments": "",
+                                    "updatedDate": "",
+                                    "updatedBy": ""
                                 }
                             ]
                         }
                     },
                     {
-                        "name": "hodDecision",
-                        "label": "HOD Decision",
+                        "name": "caseUwDecision",
+                        "label": "Case UW Decision",
                         "value": {
                             "fields": [
                                 {
-                                    "name": "Remarks",
+                                    "name": "BRE Overall Decision",
                                     "value": ""
                                 },
                                 {
-                                    "name": "Decision",
+                                    "name": "BRE Overall Remarks",
                                     "value": ""
                                 },
                                 {
-                                    "name": "Outliers",
+                                    "name": "Case UW Decision",
                                     "value": ""
                                 }
+                            ],
+                            "choices": [
+                                "Standard",
+                                "Counter Offer",
+                                "Decline",
+                                "Reject",
+                                "Postpone",
+                                "Hold",
+                                "Refer to Risk",
+                                "Refer to Accuity",
+                                "Refer to Reinsurer",
+                                "Refer to HO CMO",
+                                "Refer to Sr.UW",
+                                "Refer to HoD",
+                                "Refer to CUW Claim Audit",
+                                "Refer to IT",
+                                "Raise Requirements",
+                                "Refer to Tele MER",
+                                "Refer to Video MER",
+                                "Refer to DVT"
                             ]
                         }
                     }
@@ -659,11 +872,11 @@
                             "memberType": "lifeassured1",
                             "lifeType": "LA",
                             "customerType": null,
-                            "partyId": "41464d4d-b19f-46f1-93cb-86127a78dd8a",
+                            "partyId": "fa3c5676-bdb7-453f-89a6-2f60bce1f71c",
                             "jontFlag": false,
-                            "lifeNumber": "01",
-                            "clientId": "CL00012345",
-                            "proposerLaRelation": "Self",
+                            "lifeNumber": "",
+                            "clientId": "NA",
+                            "proposerLaRelation": "",
                             "jointLARelation": "",
                             "jointPRRelation": "",
                             "nriFlag": false,
@@ -688,9 +901,9 @@
                                     "rows": [
                                         {
                                             "document": "",
-                                            "faceMatchScore": "100",
+                                            "faceMatchScore": "",
                                             "imageQuality": "",
-                                            "remarks": "Face matched",
+                                            "remarks": "",
                                             "imageType": ""
                                         }
                                     ]
@@ -702,42 +915,42 @@
                                     [
                                         {
                                             "label": "Applicant Name",
-                                            "value": "Avinash Dwivedy"
+                                            "value": "MADHURAMAN Damani"
                                         },
                                         {
                                             "key": "proposerSummary.dob",
                                             "label": "Date Of Birth",
-                                            "value": "1990-01-15"
+                                            "value": "1980-11-08"
                                         },
                                         {
                                             "label": "Age",
-                                            "value": "36"
+                                            "value": "46"
                                         },
                                         {
                                             "key": "proposerSummary.gender",
                                             "label": "Gender",
-                                            "value": "Male"
+                                            "value": "MALE"
                                         },
                                         {
                                             "label": "Marital Status",
-                                            "value": ""
+                                            "value": "Divorced"
                                         },
                                         {
                                             "label": "Nationality",
-                                            "value": "IN"
-                                        },
-                                        {
-                                            "label": "Country Of Residence",
                                             "value": "India"
                                         },
                                         {
+                                            "label": "Country Of Residence",
+                                            "value": "RESIDENT I"
+                                        },
+                                        {
                                             "label": "Education",
-                                            "value": ""
+                                            "value": "Graduate"
                                         },
                                         {
                                             "key": "proposerSummary.residentStatus",
                                             "label": "Resident Status",
-                                            "value": "IND"
+                                            "value": "RESIDENT I"
                                         },
                                         {
                                             "label": "Designation",
@@ -745,39 +958,39 @@
                                         },
                                         {
                                             "label": "Disabled",
-                                            "value": "Y"
+                                            "value": ""
                                         },
                                         {
                                             "label": "Percentage Of Impairment",
-                                            "value": "70"
+                                            "value": ""
                                         },
                                         {
                                             "label": "Type Of Impairment",
-                                            "value": "Blindness"
+                                            "value": ""
                                         },
                                         {
                                             "label": "Udid Number",
-                                            "value": "ASAASDSA2345"
+                                            "value": ""
                                         }
                                     ],
                                     [
                                         {
                                             "label": "Uds Link",
-                                            "value": ""
+                                            "value": "https://udsviewer-uat.icicilife.com/App/UdsViewer/document-listing/split?roleid=bk8vQVBlanM1WVhjekE4a0d6emJnZz09&_uidtype=M1ZLSVhSY09scmVPQ1R2Nk9lSFM5UT09&_uidvalue=Z1YvUjRKY0dvaDRLYi9TM0NnU3RwUT09&ntid=UDSMIDOFFICE&token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJVMDRMRHBkTlk3QVpMR2FRTlNvQW4zTTN0bFpOcUlaZXp5TUdvYkJxVzVLbkVOSHQiLCJhdWQiOiJ1cm46Ly9jNjA1MTFjMC0xMmEyLTQ3M2MtODBmZC00MjUyOGViNjVhNmEiLCJudElkIjoiVURTTUlET0ZGSUNFIiwiYXV0aCI6ImlHUThsQU5kUkNBcGNBemtTQTVSMTN4bUFUTDIiLCJpc3MiOiJ1cm46Ly9hcGlnZWUtZWRnZS1KV1QtcG9saWN5LXRlc3QiLCJleHAiOjE3OTU2OTM3OTEsImlhdCI6MTc5NTY5MTk5MSwianRpIjoiNDk0MWNmOTQtYmU3Mi00YzFlLWI5NWQtNWU1MjhlYjUzZTYzIn0.JGgNFXiWld8JPhCI7-pwYa9qs0EDCRoMpCrhvZjw7xrEdKRXVAcQCZxi1LSBxBb81ySt7D3j2w4WXEBQRNcrzrE3t2hA5Z_zzljO-F3RcK4JxWdxs1PfMdUgebbvSXD4ClwNZlcEmaq4ruL58NpSWopnH9WPx-7dQMwGnnTYH3aGzkKpZL5nZtmU4rfGDBKIGBeEwMsJhGTFqmHA4utMC1X_n7TvSYszGSv8JH1D4xjpegY3TbwgzFUzsqoEbCUov77d9nZ0rd8TK0l643RpmYsjG9vD5uWzuUI9t_hevkA28SnIntxU5qw-c0UdJBhv3kyA7m_yNL98rItfNRhC3PGuC2avhDbZWN8zE4r9RBtwS1kfMqEnyXRbJLakxhEVC8HXVvEs2ye_sWIDuzIaVLMOkv2WnODTEgSW5nGQk5gV-4nk5e9jC6ZUddKV0PQIPM5htkVlMTmNHXOuHMAusNX4at4DRrT5rYJDa_0gZQmV3NlmgSdHjjjGzssAnRmT5HLGdEqZfirs_56tfvMo8VQQd6l_K0gbMzb7mfUJ831Oa0EC5pmV9AC-g_43J_FMO0Jvj_JJ2FXR8V03okAI_KoKEdZTpf-_KL4gsZpmy5ISwDbAU5hEfKff3UrWyt_af4h13k5Ce2mSTHARU5DsgWZq1vhYbEGLdtycANV-308"
                                         },
                                         {
                                             "key": "kycDetails.pranNo",
                                             "label": "Pran Number",
-                                            "value": "DMSPS4471R"
+                                            "value": ""
                                         },
                                         {
                                             "label": "Pran Number Verification",
-                                            "value": "Y"
+                                            "value": ""
                                         },
                                         {
                                             "key": "kycDetails.panNumber",
                                             "label": "Pan Number",
-                                            "value": "SHHDTE1242"
+                                            "value": "JHJGC7863P"
                                         },
                                         {
                                             "key": "kycDetails.isPanValid",
@@ -787,7 +1000,7 @@
                                         {
                                             "key": "kycDetails.aadharSeedingStatus",
                                             "label": "Pan Aadhar Seeding Status",
-                                            "value": "Y"
+                                            "value": ""
                                         },
                                         {
                                             "label": "Identity Proof Type",
@@ -799,15 +1012,15 @@
                                         },
                                         {
                                             "label": "Identity Proof Number",
-                                            "value": ""
+                                            "value": "AAAAA1111A"
                                         },
                                         {
                                             "label": "Address Proof",
-                                            "value": "Passport"
+                                            "value": "PAN"
                                         },
                                         {
                                             "label": "Income Proof",
-                                            "value": "Aadhaar"
+                                            "value": "PAN"
                                         },
                                         {
                                             "label": "Ckyc Number",
@@ -824,37 +1037,37 @@
                                         {
                                             "key": "personalDetails.applicantStatus",
                                             "label": "Applicant Status",
-                                            "value": "Active"
+                                            "value": ""
                                         },
                                         {
                                             "key": "kycDetails.immigrationStatus",
                                             "label": "Immigration Status",
-                                            "value": "N"
+                                            "value": "Indian Resident"
                                         },
                                         {
                                             "key": "kycDetails.nsdlNameMatching",
                                             "label": "Nsdl Name Matching",
-                                            "value": "Y"
+                                            "value": ""
                                         },
                                         {
                                             "key": "kycDetails.nsdlDobMatching",
                                             "label": "Nsdl Dob Matching",
-                                            "value": "Y"
+                                            "value": ""
                                         },
                                         {
                                             "key": "kycDetails.dobDocument",
                                             "label": "Dob Document",
-                                            "value": "AADHAAR"
+                                            "value": ""
                                         },
                                         {
                                             "key": "kycDetails.genderDocument",
                                             "label": "Gender Document",
-                                            "value": "PAN"
+                                            "value": ""
                                         },
                                         {
                                             "key": "kycDetails.pincodeDocument",
                                             "label": "Pincode Document",
-                                            "value": "AADHAAR"
+                                            "value": ""
                                         }
                                     ]
                                 ]
@@ -867,27 +1080,27 @@
                                         "value": [
                                             {
                                                 "label": "Address Line1",
-                                                "value": ""
+                                                "value": "244"
                                             },
                                             {
                                                 "label": "Address Line2",
-                                                "value": ""
+                                                "value": "basaweshwara villa"
                                             },
                                             {
                                                 "label": "Address Line3",
-                                                "value": ""
+                                                "value": "near ganesh temple"
                                             },
                                             {
                                                 "label": "Landmark",
-                                                "value": ""
+                                                "value": "Ganesh temple"
                                             },
                                             {
                                                 "label": "City",
-                                                "value": ""
+                                                "value": "BELAGAVI"
                                             },
                                             {
                                                 "label": "State",
-                                                "value": ""
+                                                "value": "KRNT"
                                             },
                                             {
                                                 "label": "Country",
@@ -896,7 +1109,7 @@
                                             {
                                                 "key": "address.communication.pinCode",
                                                 "label": "Pincode",
-                                                "value": "211008"
+                                                "value": "590003"
                                             }
                                         ]
                                     },
@@ -905,27 +1118,27 @@
                                         "value": [
                                             {
                                                 "label": "Address Line1",
-                                                "value": "12 Dummy Street"
+                                                "value": "244"
                                             },
                                             {
                                                 "label": "Address Line2",
-                                                "value": "Test Colony"
+                                                "value": "basaweshwara villa"
                                             },
                                             {
                                                 "label": "Address Line3",
-                                                "value": "Sector 5"
+                                                "value": "near ganesh temple"
                                             },
                                             {
                                                 "label": "Landmark",
-                                                "value": "Near Test Park"
+                                                "value": "Ganesh temple"
                                             },
                                             {
                                                 "label": "City",
-                                                "value": "NASHIK"
+                                                "value": "BELAGAVI"
                                             },
                                             {
                                                 "label": "State",
-                                                "value": "Maharashtra"
+                                                "value": "KRNT"
                                             },
                                             {
                                                 "label": "Country",
@@ -934,7 +1147,7 @@
                                             {
                                                 "key": "address.permanent.pinCode",
                                                 "label": "Pincode",
-                                                "value": "422002"
+                                                "value": "590003"
                                             }
                                         ]
                                     },
@@ -944,12 +1157,12 @@
                                             {
                                                 "key": "contactDetails.mobileNo",
                                                 "label": "Mobile No",
-                                                "value": ""
+                                                "value": "8123238881"
                                             },
                                             {
                                                 "key": "contactDetails.emailId",
                                                 "label": "Email Id",
-                                                "value": "test@test.com"
+                                                "value": "SAIREDDY655@GMAIL.COM"
                                             },
                                             {
                                                 "label": "Alternate Mobile",
@@ -957,11 +1170,11 @@
                                             },
                                             {
                                                 "label": "Std Isd Code",
-                                                "value": "0522"
+                                                "value": "56573"
                                             },
                                             {
                                                 "label": "Landline Number",
-                                                "value": "8860281235"
+                                                "value": "8753569873"
                                             },
                                             {
                                                 "label": "Email Pref",
@@ -999,43 +1212,17 @@
                                         ],
                                         "rows": [
                                             {
-                                                "nomineeId": "NOM0BF026CE03AD",
-                                                "name": "Pooja Kumari",
-                                                "firstName": "Pooja",
-                                                "lastName": "Kumari",
-                                                "dob": "1993-07-28T00:00",
-                                                "gender": "Female",
-                                                "relationship": "Wife",
-                                                "proposerNomineeRelation": "Wife",
-                                                "share": "50",
-                                                "accountNumber": "ABC12345232",
-                                                "ifsc": "ICICI66355"
-                                            },
-                                            {
-                                                "nomineeId": "NOM740832CEE7BD",
-                                                "name": "Abhijeet Sharma",
-                                                "firstName": "Abhijeet",
-                                                "lastName": "Sharma",
-                                                "dob": "2015-08-20T00:00",
+                                                "nomineeId": "935351ee-0b88-451a-befc-2cc2ad3a93d2",
+                                                "name": "MADHI",
+                                                "firstName": "MADHI",
+                                                "lastName": "",
+                                                "dob": "1999-12-13T00:00",
                                                 "gender": "Male",
                                                 "relationship": "Brother",
-                                                "proposerNomineeRelation": "Son",
-                                                "share": "0",
-                                                "accountNumber": "",
-                                                "ifsc": ""
-                                            },
-                                            {
-                                                "nomineeId": "abb2660f-363a-4504-9da7-4b60e11c6839",
-                                                "name": "Nom Inee",
-                                                "firstName": "Nom",
-                                                "lastName": "Inee",
-                                                "dob": "",
-                                                "gender": "",
-                                                "relationship": "",
-                                                "proposerNomineeRelation": "",
+                                                "proposerNomineeRelation": "Brother",
                                                 "share": "100",
-                                                "accountNumber": "",
-                                                "ifsc": ""
+                                                "accountNumber": "6765575",
+                                                "ifsc": "ICIC0000012"
                                             }
                                         ]
                                     },
@@ -1057,10 +1244,10 @@
                                         ],
                                         "rows": [
                                             {
-                                                "name": "Rajesh Kumar",
-                                                "dob": "1980-05-10T00:00",
-                                                "gender": "Male",
-                                                "relationship": "Uncle"
+                                                "name": "",
+                                                "dob": "",
+                                                "gender": "",
+                                                "relationship": ""
                                             }
                                         ]
                                     }
@@ -1073,15 +1260,15 @@
                                     "value": [
                                         {
                                             "label": "Existing Policy Number",
-                                            "value": "00012345678"
+                                            "value": "NA"
                                         },
                                         {
                                             "label": "Existing Policy Sum Assured",
-                                            "value": "1000000"
+                                            "value": ""
                                         },
                                         {
                                             "label": "Client Id",
-                                            "value": "CL00012345"
+                                            "value": "NA"
                                         },
                                         {
                                             "label": "Type Of Proposer",
@@ -1089,7 +1276,7 @@
                                         },
                                         {
                                             "label": "Relationship With Life Assured",
-                                            "value": "Self"
+                                            "value": ""
                                         },
                                         {
                                             "label": "Type of Proposal",
@@ -1117,42 +1304,12 @@
                                     ],
                                     "rows": [
                                         {
-                                            "productId": "1b0d8081-f3c0-43d5-bde7-16e8c74b693c",
-                                            "productCode": "P1",
-                                            "productName": "Demo Plan",
-                                            "productType": "base",
-                                            "sumAssured": "1000000",
-                                            "term": "20",
-                                            "foundSource": "",
-                                            "partnertype": ""
-                                        },
-                                        {
-                                            "productId": "PDT8F3B873E07ED",
-                                            "productCode": "ACCIDENTAL_DEATH",
-                                            "productName": "Accidental Death",
-                                            "productType": "rider",
-                                            "sumAssured": "100000",
-                                            "term": "15",
-                                            "foundSource": "",
-                                            "partnertype": ""
-                                        },
-                                        {
-                                            "productId": "C1A0443638814A859A3E163783500354",
-                                            "productCode": "CI",
-                                            "productName": "Critical Illness",
-                                            "productType": "rider",
-                                            "sumAssured": "500000",
-                                            "term": "",
-                                            "foundSource": "",
-                                            "partnertype": ""
-                                        },
-                                        {
-                                            "productId": "13E4CCA338744AE2BB15EE51A24A7E0F",
-                                            "productCode": "TI",
-                                            "productName": "Term Illness",
-                                            "productType": "rider",
-                                            "sumAssured": "300000",
-                                            "term": "",
+                                            "productId": "f38fba37-06a5-4e5d-ba84-676fa6eae18d",
+                                            "productCode": "GP1",
+                                            "productName": "ICICI PRU SUPER PROTECT CREDIT",
+                                            "productType": "Group",
+                                            "sumAssured": "2210000",
+                                            "term": "49",
                                             "foundSource": "",
                                             "partnertype": ""
                                         }
@@ -1204,32 +1361,143 @@
                                         "value": [
                                             {
                                                 "label": "Account Type",
-                                                "value": ""
+                                                "value": "Saving"
                                             },
                                             {
                                                 "label": "Bank Type",
-                                                "value": ""
+                                                "value": "ICICI BANK LTD                C SCHEME (CSJ) ICIC0000012"
                                             },
                                             {
                                                 "label": "Branch",
-                                                "value": ""
+                                                "value": "ICICI BANK LTD                C SCHEME (CSJ) ICIC0000012"
                                             },
                                             {
                                                 "label": "MICR Code",
-                                                "value": ""
+                                                "value": "302229002"
                                             },
                                             {
                                                 "label": "IFSC Code",
-                                                "value": ""
+                                                "value": "ICIC0000012"
                                             },
                                             {
                                                 "label": "Account Number",
-                                                "value": ""
+                                                "value": "6765575"
                                             }
                                         ]
                                     }
                                 ]
                             }
+                        }
+                    },
+                    {
+                        "name": "auditTrail",
+                        "label": "Audit Trail",
+                        "value": {
+                            "columns": [
+                                {
+                                    "label": "User ID"
+                                },
+                                {
+                                    "label": "User Name"
+                                },
+                                {
+                                    "label": "Pool Name"
+                                },
+                                {
+                                    "label": "Case Status"
+                                },
+                                {
+                                    "label": "Decision"
+                                },
+                                {
+                                    "label": "Date Updated On"
+                                },
+                                {
+                                    "label": "Comments/Remarks"
+                                }
+                            ],
+                            "rows": [
+                                {
+                                    "userId": "SYSTEM",
+                                    "userName": "",
+                                    "poolName": "ATS",
+                                    "caseStatus": "Completed",
+                                    "Decision": "",
+                                    "updatedDate": "2026-11-16T18:56:19",
+                                    "comments": ""
+                                },
+                                {
+                                    "userId": "SYSTEM",
+                                    "userName": "",
+                                    "poolName": "AMR Non Medical Task",
+                                    "caseStatus": "Completed",
+                                    "Decision": "",
+                                    "updatedDate": "2026-11-16T18:56:30",
+                                    "comments": ""
+                                },
+                                {
+                                    "userId": "NLVJ001",
+                                    "userName": "",
+                                    "poolName": "DVT Task",
+                                    "caseStatus": "Completed",
+                                    "Decision": "",
+                                    "updatedDate": "2026-11-26T16:50:08",
+                                    "comments": ""
+                                },
+                                {
+                                    "userId": "NLVJ001",
+                                    "userName": "",
+                                    "poolName": "GUW Task",
+                                    "caseStatus": "Completed",
+                                    "Decision": "",
+                                    "updatedDate": "2026-11-26T17:04:58",
+                                    "comments": ""
+                                },
+                                {
+                                    "userId": "",
+                                    "userName": "",
+                                    "poolName": "HOD Task",
+                                    "caseStatus": "Claimed",
+                                    "Decision": "",
+                                    "updatedDate": "2026-11-26T17:04:59",
+                                    "comments": ""
+                                },
+                                {
+                                    "userId": "",
+                                    "userName": "",
+                                    "poolName": "AMR Non Medical Task",
+                                    "caseStatus": "Assigned",
+                                    "Decision": "",
+                                    "updatedDate": "2026-11-26T17:04:59",
+                                    "comments": ""
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "raiseGrievance",
+                        "label": "Raise Grievance",
+                        "value": {
+                            "title": "Raise Grievance",
+                            "section": "Medical Requirements",
+                            "columns": [
+                                {
+                                    "label": "FUP Code"
+                                },
+                                {
+                                    "label": "Profile"
+                                },
+                                {
+                                    "label": "Remarks By User"
+                                }
+                            ],
+                            "rows": [
+                                {
+                                    "fupCode": "",
+                                    "profile": "",
+                                    "Remarks": ""
+                                }
+                            ]
                         }
                     },
                     {
@@ -1256,18 +1524,298 @@
                                 ],
                                 "ipru": [
                                     {
-                                        "policyNumber": "00012345678",
-                                        "productName": "",
-                                        "sumAssured": 1000000,
-                                        "policyStatus": "",
+                                        "policyNumber": "OS34889635",
+                                        "productName": "GP1-ICICI Pru Super Protect - Credit",
+                                        "sumAssured": 2210000,
+                                        "policyStatus": "IF",
                                         "uwDecision": "",
-                                        "applicationDate": "",
+                                        "applicationDate": "2026-11-08",
                                         "claimsFlag": "",
                                         "mortalityClass": "",
-                                        "installmentPremium": "",
-                                        "clientRole": "",
+                                        "installmentPremium": 12,
+                                        "clientRole": "LA",
                                         "companyName": "ICICI Prudential Life Insurance",
-                                        "yearOfIssueApplication": "",
+                                        "yearOfIssueApplication": "2026",
+                                        "riderDetails": [
+                                            {
+                                                "riderCode": "",
+                                                "riderName": "",
+                                                "riderSubType": "",
+                                                "faceValue": "",
+                                                "mortalityClass": "",
+                                                "uwMortalityClassBase": "",
+                                                "sumAssured": "",
+                                                "rating": "",
+                                                "sarConsideration": "",
+                                                "clientRole": ""
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "policyNumber": "OS34889633",
+                                        "productName": "GP1-ICICI Pru Super Protect - Credit",
+                                        "sumAssured": 2210000,
+                                        "policyStatus": "IF",
+                                        "uwDecision": "",
+                                        "applicationDate": "2026-11-08",
+                                        "claimsFlag": "",
+                                        "mortalityClass": "",
+                                        "installmentPremium": 12,
+                                        "clientRole": "LA",
+                                        "companyName": "ICICI Prudential Life Insurance",
+                                        "yearOfIssueApplication": "2026",
+                                        "riderDetails": [
+                                            {
+                                                "riderCode": "",
+                                                "riderName": "",
+                                                "riderSubType": "",
+                                                "faceValue": "",
+                                                "mortalityClass": "",
+                                                "uwMortalityClassBase": "",
+                                                "sumAssured": "",
+                                                "rating": "",
+                                                "sarConsideration": "",
+                                                "clientRole": ""
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "policyNumber": "OS3488933",
+                                        "productName": "GP1-ICICI Pru Super Protect - Credit",
+                                        "sumAssured": 2210000,
+                                        "policyStatus": "IF",
+                                        "uwDecision": "",
+                                        "applicationDate": "2026-11-08",
+                                        "claimsFlag": "",
+                                        "mortalityClass": "",
+                                        "installmentPremium": 12,
+                                        "clientRole": "LA",
+                                        "companyName": "ICICI Prudential Life Insurance",
+                                        "yearOfIssueApplication": "2026",
+                                        "riderDetails": [
+                                            {
+                                                "riderCode": "",
+                                                "riderName": "",
+                                                "riderSubType": "",
+                                                "faceValue": "",
+                                                "mortalityClass": "",
+                                                "uwMortalityClassBase": "",
+                                                "sumAssured": "",
+                                                "rating": "",
+                                                "sarConsideration": "",
+                                                "clientRole": ""
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "policyNumber": "OS34889035",
+                                        "productName": "GP1-ICICI Pru Super Protect - Credit",
+                                        "sumAssured": 2210000,
+                                        "policyStatus": "IF",
+                                        "uwDecision": "",
+                                        "applicationDate": "2026-11-08",
+                                        "claimsFlag": "",
+                                        "mortalityClass": "",
+                                        "installmentPremium": 12,
+                                        "clientRole": "LA",
+                                        "companyName": "ICICI Prudential Life Insurance",
+                                        "yearOfIssueApplication": "2026",
+                                        "riderDetails": [
+                                            {
+                                                "riderCode": "",
+                                                "riderName": "",
+                                                "riderSubType": "",
+                                                "faceValue": "",
+                                                "mortalityClass": "",
+                                                "uwMortalityClassBase": "",
+                                                "sumAssured": "",
+                                                "rating": "",
+                                                "sarConsideration": "",
+                                                "clientRole": ""
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "policyNumber": "OS34885135",
+                                        "productName": "GP1-ICICI Pru Super Protect - Credit",
+                                        "sumAssured": 2210000,
+                                        "policyStatus": "IF",
+                                        "uwDecision": "",
+                                        "applicationDate": "2026-11-08",
+                                        "claimsFlag": "",
+                                        "mortalityClass": "",
+                                        "installmentPremium": 12,
+                                        "clientRole": "LA",
+                                        "companyName": "ICICI Prudential Life Insurance",
+                                        "yearOfIssueApplication": "2026",
+                                        "riderDetails": [
+                                            {
+                                                "riderCode": "",
+                                                "riderName": "",
+                                                "riderSubType": "",
+                                                "faceValue": "",
+                                                "mortalityClass": "",
+                                                "uwMortalityClassBase": "",
+                                                "sumAssured": "",
+                                                "rating": "",
+                                                "sarConsideration": "",
+                                                "clientRole": ""
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "policyNumber": "OS34889935",
+                                        "productName": "GP1-ICICI Pru Super Protect - Credit",
+                                        "sumAssured": 2210000,
+                                        "policyStatus": "IF",
+                                        "uwDecision": "",
+                                        "applicationDate": "2026-11-08",
+                                        "claimsFlag": "",
+                                        "mortalityClass": "",
+                                        "installmentPremium": 12,
+                                        "clientRole": "LA",
+                                        "companyName": "ICICI Prudential Life Insurance",
+                                        "yearOfIssueApplication": "2026",
+                                        "riderDetails": [
+                                            {
+                                                "riderCode": "",
+                                                "riderName": "",
+                                                "riderSubType": "",
+                                                "faceValue": "",
+                                                "mortalityClass": "",
+                                                "uwMortalityClassBase": "",
+                                                "sumAssured": "",
+                                                "rating": "",
+                                                "sarConsideration": "",
+                                                "clientRole": ""
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "policyNumber": "OS30419933",
+                                        "productName": "GP1-ICICI Pru Super Protect - Credit",
+                                        "sumAssured": 2210000,
+                                        "policyStatus": "IF",
+                                        "uwDecision": "",
+                                        "applicationDate": "2026-11-08",
+                                        "claimsFlag": "",
+                                        "mortalityClass": "",
+                                        "installmentPremium": 0,
+                                        "clientRole": "LA",
+                                        "companyName": "ICICI Prudential Life Insurance",
+                                        "yearOfIssueApplication": "2026",
+                                        "riderDetails": [
+                                            {
+                                                "riderCode": "",
+                                                "riderName": "",
+                                                "riderSubType": "",
+                                                "faceValue": "",
+                                                "mortalityClass": "",
+                                                "uwMortalityClassBase": "",
+                                                "sumAssured": "",
+                                                "rating": "",
+                                                "sarConsideration": "",
+                                                "clientRole": ""
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "policyNumber": "OS30413799",
+                                        "productName": "GP1-ICICI Pru Super Protect - Credit",
+                                        "sumAssured": 2210000,
+                                        "policyStatus": "IF",
+                                        "uwDecision": "",
+                                        "applicationDate": "2026-11-08",
+                                        "claimsFlag": "",
+                                        "mortalityClass": "",
+                                        "installmentPremium": 0,
+                                        "clientRole": "LA",
+                                        "companyName": "ICICI Prudential Life Insurance",
+                                        "yearOfIssueApplication": "2026",
+                                        "riderDetails": [
+                                            {
+                                                "riderCode": "",
+                                                "riderName": "",
+                                                "riderSubType": "",
+                                                "faceValue": "",
+                                                "mortalityClass": "",
+                                                "uwMortalityClassBase": "",
+                                                "sumAssured": "",
+                                                "rating": "",
+                                                "sarConsideration": "",
+                                                "clientRole": ""
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "policyNumber": "OS30413789",
+                                        "productName": "GP1-ICICI Pru Super Protect - Credit",
+                                        "sumAssured": 2210000,
+                                        "policyStatus": "IF",
+                                        "uwDecision": "",
+                                        "applicationDate": "2026-11-08",
+                                        "claimsFlag": "",
+                                        "mortalityClass": "",
+                                        "installmentPremium": 0,
+                                        "clientRole": "LA",
+                                        "companyName": "ICICI Prudential Life Insurance",
+                                        "yearOfIssueApplication": "2026",
+                                        "riderDetails": [
+                                            {
+                                                "riderCode": "",
+                                                "riderName": "",
+                                                "riderSubType": "",
+                                                "faceValue": "",
+                                                "mortalityClass": "",
+                                                "uwMortalityClassBase": "",
+                                                "sumAssured": "",
+                                                "rating": "",
+                                                "sarConsideration": "",
+                                                "clientRole": ""
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "policyNumber": "OS30413733",
+                                        "productName": "GP1-ICICI Pru Super Protect - Credit",
+                                        "sumAssured": 2210000,
+                                        "policyStatus": "IF",
+                                        "uwDecision": "",
+                                        "applicationDate": "2026-11-08",
+                                        "claimsFlag": "",
+                                        "mortalityClass": "",
+                                        "installmentPremium": 0,
+                                        "clientRole": "LA",
+                                        "companyName": "ICICI Prudential Life Insurance",
+                                        "yearOfIssueApplication": "2026",
+                                        "riderDetails": [
+                                            {
+                                                "riderCode": "",
+                                                "riderName": "",
+                                                "riderSubType": "",
+                                                "faceValue": "",
+                                                "mortalityClass": "",
+                                                "uwMortalityClassBase": "",
+                                                "sumAssured": "",
+                                                "rating": "",
+                                                "sarConsideration": "",
+                                                "clientRole": ""
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "policyNumber": "OS34419933",
+                                        "productName": "GP1-ICICI Pru Super Protect - Credit",
+                                        "sumAssured": 2210000,
+                                        "policyStatus": "IF",
+                                        "uwDecision": "",
+                                        "applicationDate": "2026-11-08",
+                                        "claimsFlag": "",
+                                        "mortalityClass": "",
+                                        "installmentPremium": 12,
+                                        "clientRole": "LA",
+                                        "companyName": "ICICI Prudential Life Insurance",
+                                        "yearOfIssueApplication": "2026",
                                         "riderDetails": [
                                             {
                                                 "riderCode": "",
@@ -1378,9 +1926,9 @@
                         "label": "Risk Details",
                         "value": [
                             {
+                                "member": "Lifeassured1",
                                 "risk_details": {
                                     "label": "Risk Details",
-                                    "member": "Life Assured 1",
                                     "memberDetails": {
                                         "label": "Member Details",
                                         "value": [
@@ -1405,170 +1953,104 @@
                                                 "value": ""
                                             }
                                         ]
+                                    },
+                                    "riskAssessament": {
+                                        "label": "Risk Assessment",
+                                        "value": [
+                                            {
+                                                "label": "Name, address & stay confirmed",
+                                                "value": ""
+                                            },
+                                            {
+                                                "label": "Standard of living",
+                                                "value": ""
+                                            },
+                                            {
+                                                "label": "Life assured existence",
+                                                "value": ""
+                                            },
+                                            {
+                                                "label": "Educational qualification",
+                                                "value": ""
+                                            },
+                                            {
+                                                "label": "Contactability established",
+                                                "value": ""
+                                            },
+                                            {
+                                                "label": "Occupation category",
+                                                "value": ""
+                                            },
+                                            {
+                                                "label": "Computer applied for policy",
+                                                "value": ""
+                                            },
+                                            {
+                                                "label": "Annual income",
+                                                "value": ""
+                                            },
+                                            {
+                                                "label": "Met with whom",
+                                                "value": ""
+                                            },
+                                            {
+                                                "label": "Availability of LC at current address",
+                                                "value": ""
+                                            },
+                                            {
+                                                "label": "Hobbies",
+                                                "value": ""
+                                            },
+                                            {
+                                                "label": "Hobbies",
+                                                "value": ""
+                                            },
+                                            {
+                                                "label": "Previous medical history",
+                                                "value": ""
+                                            },
+                                            {
+                                                "label": "Photo availability of life assured",
+                                                "value": ""
+                                            },
+                                            {
+                                                "label": "Vitality check",
+                                                "value": ""
+                                            },
+                                            {
+                                                "label": "Geo tagging",
+                                                "value": ""
+                                            },
+                                            {
+                                                "label": "Type of house",
+                                                "value": ""
+                                            },
+                                            {
+                                                "label": "Face match",
+                                                "value": ""
+                                            },
+                                            {
+                                                "label": "Have Life Insurance",
+                                                "value": ""
+                                            },
+                                            {
+                                                "label": "Investigation score",
+                                                "value": ""
+                                            },
+                                            {
+                                                "label": "FE remarks",
+                                                "value": ""
+                                            }
+                                        ]
+                                    },
+                                    "riskDecision": {
+                                        "label": "Risk Decision",
+                                        "riskRemark": "",
+                                        "riskCode": ""
                                     }
-                                },
-                                "riskAssessament": {
-                                    "label": "Risk Assessment",
-                                    "value": [
-                                        {
-                                            "label": "Name, address & stay confirmed",
-                                            "value": ""
-                                        },
-                                        {
-                                            "label": "Standard of living",
-                                            "value": ""
-                                        },
-                                        {
-                                            "label": "Life assured existence",
-                                            "value": ""
-                                        },
-                                        {
-                                            "label": "Educational qualification",
-                                            "value": ""
-                                        },
-                                        {
-                                            "label": "Contactability established",
-                                            "value": ""
-                                        },
-                                        {
-                                            "label": "Occupation category",
-                                            "value": ""
-                                        },
-                                        {
-                                            "label": "Computer applied for policy",
-                                            "value": ""
-                                        },
-                                        {
-                                            "label": "Annual income",
-                                            "value": ""
-                                        },
-                                        {
-                                            "label": "Met with whom",
-                                            "value": ""
-                                        },
-                                        {
-                                            "label": "Availability of LC at current address",
-                                            "value": ""
-                                        },
-                                        {
-                                            "label": "Hobbies",
-                                            "value": ""
-                                        },
-                                        {
-                                            "label": "Hobbies",
-                                            "value": ""
-                                        },
-                                        {
-                                            "label": "Previous medical history",
-                                            "value": ""
-                                        },
-                                        {
-                                            "label": "Photo availability of life assured",
-                                            "value": ""
-                                        },
-                                        {
-                                            "label": "Vitality check",
-                                            "value": ""
-                                        },
-                                        {
-                                            "label": "Geo tagging",
-                                            "value": ""
-                                        },
-                                        {
-                                            "label": "Type of house",
-                                            "value": ""
-                                        },
-                                        {
-                                            "label": "Face match",
-                                            "value": ""
-                                        },
-                                        {
-                                            "label": "Have Life Insurance",
-                                            "value": ""
-                                        },
-                                        {
-                                            "label": "Investigation score",
-                                            "value": ""
-                                        },
-                                        {
-                                            "label": "FE remarks",
-                                            "value": ""
-                                        }
-                                    ]
-                                },
-                                "riskDecision": {
-                                    "label": "Risk Decision",
-                                    "riskRemark": "",
-                                    "riskCode": ""
                                 }
                             }
                         ]
-                    },
-                    {
-                        "name": "auditTrail",
-                        "label": "Audit Trail",
-                        "value": {
-                            "columns": [
-                                {
-                                    "label": "User ID"
-                                },
-                                {
-                                    "label": "User Name"
-                                },
-                                {
-                                    "label": "Pool Name"
-                                },
-                                {
-                                    "label": "Case Status"
-                                },
-                                {
-                                    "label": "Decision"
-                                },
-                                {
-                                    "label": "Date Updated On"
-                                },
-                                {
-                                    "label": "Comments/Remarks"
-                                }
-                            ],
-                            "value": [
-                                {
-                                    "userId": "",
-                                    "userName": "",
-                                    "poolName": "",
-                                    "caseStatus": "",
-                                    "Decision": "",
-                                    "updatedDate": "",
-                                    "comments": ""
-                                }
-                            ]
-                        }
-                    },
-                    {
-                        "name": "raiseGrievance",
-                        "label": "Raise Grievance",
-                        "value": {
-                            "title": "Raise Grievance",
-                            "section": "Medical Requirements",
-                            "columns": [
-                                {
-                                    "label": "FUP Code"
-                                },
-                                {
-                                    "label": "Profile"
-                                },
-                                {
-                                    "label": "Remarks By User"
-                                }
-                            ],
-                            "rows": [
-                                {
-                                    "fupCode": "",
-                                    "profile": "",
-                                    "Remarks": ""
-                                }
-                            ]
-                        }
                     }
                 ],
                 "sectionType": [
