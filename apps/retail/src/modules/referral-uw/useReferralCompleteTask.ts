@@ -1,5 +1,4 @@
 import { clearDrsTaskIds, readApiErrorMessage } from "@insurance-poc/utils";
-import type { DecisionSubmitPayload } from "@insurance-poc/common/decision-section";
 import { useCompleteRetailTaskMutation } from "../../services/completeTaskApi";
 
 /**
@@ -12,7 +11,7 @@ export function useReferralCompleteTask(
 ) {
   const [completeRetailTask, completeRetailTaskState] = useCompleteRetailTaskMutation();
 
-  const submit = async (payload: DecisionSubmitPayload): Promise<boolean> => {
+  const submit = async (payload: { remarks: string; decision: string }): Promise<boolean> => {
     const appNo = applicationNo.trim();
     if (appNo.length === 0) {
       notify("Application number is missing.");

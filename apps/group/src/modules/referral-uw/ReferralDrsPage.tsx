@@ -43,7 +43,7 @@ import {
   type ReferralRoleConfig,
 } from "../../services/drsService";
 import { useReferralCompleteTask } from "./useReferralCompleteTask";
-import { DecisionSection } from "@insurance-poc/common/decision-section";
+import { ReferralDecisionSection } from "./ReferralDecisionSection";
 import { REFERRAL_PROFILE_IMAGE_URL } from "./profileImage";
 
 // Row 0 is the member line (Name / App No. are shown in the banner header); row 1 is the product line (bold); row 2 is Riders; row 3 is Sum at Risk.
@@ -365,12 +365,10 @@ export function ReferralDrsPage({ config }: Readonly<ReferralDrsPageProps>) {
 
               {/* Role decision (HOD / Sr UW) */}
               <Box sx={{ mt: 0.75 }}>
-                <DecisionSection
-                  ariaLabel={`${config.label} Decision`}
-                  remarksLabel={`${config.label} Remarks`}
-                  decisionLabel={`${config.label} Decision`}
+                <ReferralDecisionSection
+                  roleLabel={config.label}
                   decisionOptions={readReferralDecisionOptions(config)}
-                  isSubmitting={referralCompleteTask.isSubmitting}
+                  disabled={referralCompleteTask.isSubmitting}
                   onSubmit={(payload) => {
                     void referralCompleteTask.submit(payload).then((done) => {
                       if (done) {

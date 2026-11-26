@@ -31,7 +31,7 @@ import {
   referralDecisionTone,
 } from "../../services/drsService";
 import { useReferralCompleteTask } from "../referral-uw/useReferralCompleteTask";
-import { DecisionSection } from "@insurance-poc/common/decision-section";
+import { ReferralDecisionSection } from "../referral-uw/ReferralDecisionSection";
 import { GuwDecisionDetailsDialog, GuwUwPanel } from "../guw/GuwUwPanel";
 
 /* ------------------------------------------------------------------ */
@@ -390,12 +390,10 @@ export function MemberSelection() {
       {/* HOD / Sr UW: role decision card — final submit goes to the inbox */}
       {referralConfig && (
         <Box sx={{ m: "8px 12px 0" }}>
-          <DecisionSection
-            ariaLabel={`${referralConfig.label} Decision`}
-            remarksLabel={`${referralConfig.label} Remarks`}
-            decisionLabel={`${referralConfig.label} Decision`}
+          <ReferralDecisionSection
+            roleLabel={referralConfig.label}
             decisionOptions={readReferralDecisionOptions(referralConfig)}
-            isSubmitting={referralCompleteTask.isSubmitting}
+            disabled={referralCompleteTask.isSubmitting}
             onSubmit={(payload) => {
               void referralCompleteTask.submit(payload).then((done) => {
                 if (done) replaceUrl(groupPaths.inbox);

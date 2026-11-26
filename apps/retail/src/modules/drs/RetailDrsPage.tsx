@@ -13,7 +13,8 @@ import TpaDrsPage from "./TpaDrsPage";
 import CuwUser from "./CuwUser";
 import PivvUser from "./PivvUser";
 import ReinsurerUser from "./ReinsurerUser";
-import { fetchCuwMembers } from "../../services/drsService";
+import { fetchCuwMembers, referralConfigForRoleType } from "../../services/drsService";
+import { ReferralDrsPage } from "../referral-uw/ReferralDrsPage";
 import { findRetailDrsTaskConfig } from "../../config/drsTaskConfig";
 import RetailDrsRecordPage from "./RetailDrsRecordPage";
 
@@ -68,6 +69,17 @@ function CuwEntry() {
   );
 }
 
+/** HOD / Sr UW: same member entry as CUW, then the referral DRS (prototype hod-drs / sr-uw-drs). */
+function ReferralEntry({ roleType }: Readonly<{ roleType: string }>) {
+  const config = referralConfigForRoleType(roleType);
+  if (!config) return null;
+  return (
+    <MemberEntry memberSelectionPath="/referral/member-selection">
+      <ReferralDrsPage config={config} />
+    </MemberEntry>
+  );
+}
+
 /**
  * `/app/{applicationNo}/drs` — the inbox session `roleType` (from the role-list response) is looked up in
  * `RETAIL_DRS_TASK_CONFIG`; its `screenType` picks the screen. A new task needs a config entry only.
@@ -84,7 +96,9 @@ const SCREEN_BY_SCREEN_TYPE: Record<string, () => JSX.Element | null> = {
 };
 
 export function RetailDrsPage() {
-  const taskConfig = findRetailDrsTaskConfig(getDrsRoleType());
+  const roleType = getDrsRoleType();
+  if (referralConfigForRoleType(roleType)) return <ReferralEntry roleType={roleType} />;
+  const taskConfig = findRetailDrsTaskConfig(roleType);
   const Screen = (taskConfig ? SCREEN_BY_SCREEN_TYPE[taskConfig.screenType] : undefined) ?? RetailDrsRecordPage;
   return <Screen />;
 }
