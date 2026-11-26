@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Box, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
 import {
+  CustomBox,
   CustomButton,
   CustomCheckbox,
   CustomDialog,
@@ -70,13 +71,13 @@ export function CuwRaiseGrievanceDialog({
   // Merge: Medicals requirements (fupCode + profile) not already returned by the fetch API.
   const knownKeys = new Set(apiRows.map((row) => rowKey(row.fupCode, row.profile)));
   const medicalRows: RaiseGrievanceRow[] = [];
-  (requirements ?? []).forEach((item, index) => {
+  (requirements ?? []).forEach((item) => {
     if (item.category?.trim().toLowerCase() !== MEDICALS_CATEGORY || !item.fupCode?.trim()) return;
     const key = rowKey(item.fupCode, item.profile ?? "");
     if (knownKeys.has(key)) return;
     knownKeys.add(key);
     medicalRows.push({
-      id: `medical-${index + 1}`,
+      id: `medical-${key}`,
       fupCode: item.fupCode,
       profile: item.profile ?? "",
       remarks: "",
@@ -205,38 +206,36 @@ export function CuwRaiseGrievanceDialog({
           {data?.title ?? "Raise Grievance"}
         </Typography>
       }
-      maxWidth="md"
+      maxWidth="lg"
       fullWidth
-      contentSx={{ p: 0 }}
+      actions={
+        <CustomButton
+          type="button"
+          disabled={rows.length === 0 || isLoadingRows || saveState.isLoading}
+          onClick={() => void handleRaise()}
+        >
+          Raise Grievance
+        </CustomButton>
+      }
+      actionsSx={{ justifyContent: "center" }}
     >
-      <Box sx={{ width: "100%", minWidth: 0, p: 1 }}>
+      <CustomBox sx={{ p: 1 }}>
         <CustomTable<RaiseGrievanceRow>
           columns={columns}
           data={rows}
           getRowId={(row) => row.id}
         />
-        <Typography
-          role="alert"
-          sx={{ minHeight: 18, mt: "8px", color: "#d32f2f", textAlign: "center", fontSize: "12px" }}
-        >
-          {error || loadError}
-        </Typography>
+        {error || loadError ? (
+          <Typography role="alert" sx={{ mt: 1, color: "#d32f2f", fontSize: "12px" }}>
+            {error || loadError}
+          </Typography>
+        ) : null}
         {isLoadingRows && !loadError ? (
-          <Typography sx={{ textAlign: "center", fontSize: "12px", color: "#7b716c" }}>
+          <Typography sx={{ mt: 1, fontSize: "12px", color: "#7b716c" }}>
             Loading grievances...
           </Typography>
         ) : null}
-        <Box sx={{ display: "flex", justifyContent: "center", mt: "10px" }}>
-          <CustomButton
-            type="button"
-            disabled={rows.length === 0 || isLoadingRows || saveState.isLoading}
-            onClick={() => void handleRaise()}
-            sx={{ minWidth: 180, borderRadius: "50px" }}
-          >
-            Raise Grievance
-          </CustomButton>
-        </Box>
-      </Box>
+      </CustomBox>
     </CustomDialog>
   );
 }
