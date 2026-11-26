@@ -37,6 +37,11 @@ export const GROUP_DRS_TASK_CONFIG: Record<string, GroupDrsTaskConfig> = {
     screenType: "MMT",
     businessType: "GROUP",
   },
+  REINSURER_TASK: {
+    roleType: "REINSURER_TASK",
+    screenType: "REINSURER",
+    businessType: "GROUP",
+  },
   GROUP_DATA_ENTRY_NMR_TASK: {
     roleType: "GROUP_DATA_ENTRY_NMR_TASK",
     screenType: "CPT_NMR",

@@ -1,0 +1,33 @@
+{
+  "records": [
+    {
+      "applicationNo": "OB90377122",
+      "applicantName": "Rudra Prakash Sangha",
+      "bannerLines": [
+        {
+          "text": "Life Assured 1 / Married / Male / 40 / Graduate / Salaried / 3I INFOTECH / ₹10,00,000 / Pune, Maharashtra / Indian / India"
+        },
+        {
+          "text": "Product Name & product code - ICICI Pru GIFT Pro / Channel - Agency / SA - ₹10,68,000",
+          "emphasis": true
+        },
+        {
+          "text": "Riders: WOP - SA ₹15,00,000 / BTBB - SA ₹25,00,000 / TI Rider - SA ₹25,00,000 / ADBR - SA ₹25,00,000 / CI Rider - SA ₹25,00,000"
+        },
+        {
+          "text": "Sum at Risk: TSA - ₹10,00,000 / TRSA - ₹5,00,000 / TPSA - ₹10,00,000 / TFSA - ₹10,00,000 / TFESA - ₹10,00,000 / TSSA - ₹10,00,000 / ADBR TSA - ₹5,00,000 / ATPD TSA - ₹5,00,000 / CI Rider TSA - ₹3,00,000 / CI Rider TRSA - ₹3,00,000 / WOP TSA - ₹10,00,000 / BTBB TSA - ₹5,00,000 / Total Premium - ₹10,000 / Total Premium Paid (AML) - ₹10,000"
+        }
+      ],
+      "reinsurerRows": [
+        { "id": "ABC", "productCode": "ABC", "reinsurerNameSystem": "Munich Re", "reinsurerNameUw": "" },
+        { "id": "CI", "productCode": "CI", "reinsurerNameSystem": "Scor RE", "reinsurerNameUw": "" }
+      ],
+      "documents": [
+        { "id": "application-form", "documentName": "Application Form", "assignedReinsurers": ["Munich Re"] },
+        { "id": "photo-id-proof", "documentName": "PhotoId Proof", "assignedReinsurers": [] },
+        { "id": "address-proof", "documentName": "Address Proof", "assignedReinsurers": ["Scor RE"] }
+      ],
+      "remarks": ""
+    }
+  ]
+}

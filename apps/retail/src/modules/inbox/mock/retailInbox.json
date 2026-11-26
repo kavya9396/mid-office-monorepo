@@ -190,6 +190,26 @@
         "role": "RETAIL_PIVV_USER",
         "roleType": "PIVV_TASK"
       }
+    ],
+    "REINSURER_TASK": [
+      {
+        "id": 10,
+        "applicationNo": "OB90377122",
+        "nameOfProposer": "Rudra Prakash Sangha",
+        "nameOfLifeAssured": "Rudra Prakash Sangha",
+        "productOpted": "ICICI Pru GIFT Pro",
+        "plan": null,
+        "medicalRaisedDate": null,
+        "dateAndTimeStamp": "2026-11-02T17:22:13.382022",
+        "taskId": "293",
+        "instanceId": "172",
+        "dueDate": "2026-11-03T12:00:00Z",
+        "startTime": "2026-11-02T17:02:33Z",
+        "atRiskTime": "2026-11-03T10:06:15Z",
+        "businessType": "RETAIL",
+        "role": "RETAIL_REINSURER_USER",
+        "roleType": "REINSURER_TASK"
+      }
     ]
   }
 }

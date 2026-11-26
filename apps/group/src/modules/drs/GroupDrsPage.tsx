@@ -11,6 +11,7 @@ import GuwUser from "./GuwUser";
 import { fetchGuwMembers } from "../../services/drsService";
 import DptNmrUser from "./DptNmrUser";
 import DptMrUser from "./DptMrUser";
+import ReinsurerUser from "./ReinsurerUser";
 import { findGroupDrsTaskConfig } from "../../config/drsTaskConfig";
 
 interface MemberEntryProps {
@@ -75,6 +76,7 @@ const SCREEN_BY_SCREEN_TYPE: Record<string, () => JSX.Element | null> = {
   MMT: MmtGrievanceDrsPage,
   CPT_NMR: DptNmrUser,
   CPT_MR: DptMrUser,
+  REINSURER: ReinsurerUser,
 };
 
 export function GroupDrsPage() {

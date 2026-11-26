@@ -52,6 +52,12 @@ export const RETAIL_DRS_TASK_CONFIG: Record<string, RetailDrsTaskConfig> = {
     screenType: "MMT",
     businessType: "RETAIL",
   },
+  // Reinsurer tasks open the Reinsurer screen, which loads its own record (no DRS task config needed).
+  REINSURER_TASK: {
+    roleType: "REINSURER_TASK",
+    screenType: "REINSURER",
+    businessType: "RETAIL",
+  },
   // Medical TPA tasks open the TPA screen, which loads its own record (no DRS task config needed).
   AMR_NON_MEDICAL: {
     roleType: "AMR_NON_MEDICAL",
