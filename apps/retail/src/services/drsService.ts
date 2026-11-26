@@ -567,6 +567,8 @@ export interface CuwDecisionRowInput {
   productName: string;
   productCode: string;
   isRider: boolean;
+  /** `productType` of the product_details row; sent as `lineType`. */
+  productType: string;
   type: string;
   bstdCode: string;
   sa: string;
@@ -623,7 +625,7 @@ export interface CuwUwDecisionProduct {
   applicationNumber: string;
   productCode: string;
   productName: string;
-  lineType: "BASE" | "RIDER";
+  lineType: string;
   deciType: string;
   bstdCode: string | null;
   sa: string | null;
@@ -718,7 +720,7 @@ export function buildCuwUwDecisionProducts(
     applicationNumber: applicationNo,
     productCode: row.productCode,
     productName: row.productName,
-    lineType: row.isRider ? "RIDER" : "BASE",
+    lineType: row.productType,
     deciType: row.type,
     bstdCode: orNull(row.bstdCode),
     sa: toAmount(row.sa),
@@ -1204,6 +1206,7 @@ export interface CuwSubmittedCounterOfferRow {
   id: string;
   productName: string;
   isRider: boolean;
+  productType: string;
   type: string;
   bstdCode: string;
   sa: string;
@@ -1321,6 +1324,8 @@ export interface CuwProductDetail {
   name: string;
   /** `productType` other than "base" */
   isRider: boolean;
+  /** `productType` of the row (e.g. "base"); sent as `lineType` in the `uw-decision` request. */
+  productType: string;
   /** `sumAssured`, formatted for display ("â€”" when absent). */
   sa: string;
   /** `term`, "â€”" when absent. */
@@ -1865,6 +1870,7 @@ export function mapCuwDrsPayload(payload: unknown, memberId?: string): CuwDrsRec
       code: str(r.productCode),
       name: str(r.productName),
       isRider: str(r.productType).trim().toLowerCase() !== "base",
+      productType: str(r.productType),
       sa: amount ? formatIndianCurrency(amount) : "â€”",
       pt: term || "â€”",
     };
@@ -1886,6 +1892,7 @@ export function mapCuwDrsPayload(payload: unknown, memberId?: string): CuwDrsRec
         code: str(r.riderCode),
         name: str(r.riderName).trim(),
         isRider: true,
+        productType: "rider",
         sa: amount ? formatIndianCurrency(amount) : "â€”",
         pt: "â€”",
       };

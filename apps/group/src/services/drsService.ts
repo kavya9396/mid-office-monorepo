@@ -558,6 +558,8 @@ export interface GuwDecisionRowInput {
   productName: string;
   productCode: string;
   isRider: boolean;
+  /** productType of the product_details row; sent as lineType. */
+  productType: string;
   type: string;
   bstdCode: string;
   sa: string;
@@ -614,7 +616,7 @@ export interface GuwUwDecisionProduct {
   applicationNumber: string;
   productCode: string;
   productName: string;
-  lineType: "BASE" | "RIDER";
+  lineType: string;
   deciType: string;
   bstdCode: string | null;
   sa: string | null;
@@ -709,7 +711,7 @@ export function buildGuwUwDecisionProducts(
     applicationNumber: applicationNo,
     productCode: row.productCode,
     productName: row.productName,
-    lineType: row.isRider ? "RIDER" : "BASE",
+    lineType: row.productType,
     deciType: row.type,
     bstdCode: orNull(row.bstdCode),
     sa: toAmount(row.sa),
@@ -1212,6 +1214,7 @@ export interface GuwSubmittedCounterOfferRow {
   id: string;
   productName: string;
   isRider: boolean;
+  productType: string;
   type: string;
   bstdCode: string;
   sa: string;
@@ -1329,6 +1332,8 @@ export interface GuwProductDetail {
   name: string;
   /** `productType` other than "base" */
   isRider: boolean;
+  /** `productType` of the row (e.g. "base"); sent as `lineType` in the `uw-decision` request. */
+  productType: string;
   /** `sumAssured`, formatted for display ("—" when absent). */
   sa: string;
   /** `term`, "—" when absent. */
@@ -1898,6 +1903,7 @@ export function mapGuwDrsPayload(payload: unknown, memberId?: string): GuwDrsRec
       code: str(r.productCode),
       name: str(r.productName),
       isRider: str(r.productType).trim().toLowerCase() !== "base",
+      productType: str(r.productType),
       sa: amount ? formatIndianCurrency(amount) : "—",
       pt: term || "—",
     };
@@ -1919,6 +1925,7 @@ export function mapGuwDrsPayload(payload: unknown, memberId?: string): GuwDrsRec
         code: str(r.riderCode),
         name: str(r.riderName).trim(),
         isRider: true,
+        productType: "rider",
         sa: amount ? formatIndianCurrency(amount) : "—",
         pt: "—",
       };

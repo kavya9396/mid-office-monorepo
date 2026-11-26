@@ -122,6 +122,7 @@ interface CounterOfferRow {
   id: string;
   productName: string;
   isRider: boolean;
+  productType: string;
   type: string;
   bstdCode: string;
   sa: string;
@@ -370,9 +371,9 @@ const REINSURER_UW_OPTIONS = ["Swiss Re", "Munich Re", "Scor Re", "Gen Re", "RGA
 const REFERRAL_DOCUMENTS = ["Application Form", "PhotoId Proof", "Address Proof"];
 
 const DEFAULT_PRODUCTS = [
-  { name: "iProtect Smart", code: "IPROTECT_SMART", sa: "₹50,00,000", pt: "20", isRider: false },
-  { name: "Accidental Death Rider", code: "ADB", sa: "₹10,00,000", pt: "20", isRider: true },
-  { name: "WOP Rider", code: "WOP", sa: "₹15,00,000", pt: "20", isRider: true },
+  { name: "iProtect Smart", code: "IPROTECT_SMART", sa: "₹50,00,000", pt: "20", isRider: false, productType: "base" },
+  { name: "Accidental Death Rider", code: "ADB", sa: "₹10,00,000", pt: "20", isRider: true, productType: "rider" },
+  { name: "WOP Rider", code: "WOP", sa: "₹15,00,000", pt: "20", isRider: true, productType: "rider" },
 ];
 
 export interface GuidelineRow {
@@ -783,6 +784,7 @@ export function GuwUwPanel({
           id: `dd-${idx}`,
           productName: prod.name,
           isRider: prod.isRider,
+          productType: prod.productType,
           type: "",
           bstdCode: "",
           sa: prod.sa,
@@ -970,6 +972,7 @@ export function GuwUwPanel({
           id: `dd-${idx}`,
           productName: prod.name,
           isRider: prod.isRider,
+          productType: prod.productType,
           type: "",
           bstdCode: "",
           sa: prod.sa,
@@ -1141,6 +1144,7 @@ export function GuwUwPanel({
       productName: row.productName,
       productCode: productList.find((p) => p.name === row.productName)?.code ?? "",
       isRider: row.isRider,
+      productType: row.productType,
       type: row.type,
       bstdCode: row.bstdCode,
       sa: row.sa,
@@ -1446,6 +1450,7 @@ export function GuwUwPanel({
         id: `dd-u${Date.now()}`,
         productName: "",
         isRider: false,
+        productType: "base",
         type: "",
         bstdCode: "",
         sa: "—",
@@ -1473,6 +1478,7 @@ export function GuwUwPanel({
         if (field === "productName") {
           const defaultProd = productList.find((p) => p.name === value);
           updated.isRider = defaultProd ? defaultProd.isRider : false;
+          updated.productType = defaultProd ? defaultProd.productType : "base";
           updated.sa = defaultProd ? defaultProd.sa : "—";
           updated.pt = defaultProd ? defaultProd.pt : "—";
           updated.type = "";
