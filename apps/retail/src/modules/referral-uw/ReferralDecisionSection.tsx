@@ -17,7 +17,8 @@ export interface ReferralDecisionSubmitPayload {
 export interface ReferralDecisionSectionProps {
   /** Role label used in the field labels: "<roleLabel> Remarks" / "<roleLabel> Decision" (HOD, Sr UW). */
   roleLabel: string;
-  decisionOptions: string[];
+  /** Options from the master misc list (HOD_TERM_DEC / SRUW_TERM_DEC): alue is the code sent on submit. */
+  decisionOptions: { label: string; value: string }[];
   /** Disables all fields and the Submit button. */
   disabled?: boolean;
   /** Fired after the user confirms the "Confirm Submission" dialog. */
@@ -80,7 +81,7 @@ export function ReferralDecisionSection({
           placeholder={`${roleLabel} Decision`}
           value={decision}
           onChange={setDecision}
-          options={decisionOptions.map((option) => ({ label: option, value: option }))}
+          options={decisionOptions}
           disabled={disabled}
           fullWidth
         />
