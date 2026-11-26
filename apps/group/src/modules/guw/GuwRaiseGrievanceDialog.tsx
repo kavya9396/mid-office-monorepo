@@ -9,6 +9,7 @@ import {
   type Column,
 } from "@insurance-poc/ui";
 import type { GrievanceHistoryRow } from "@insurance-poc/common/grievance-history";
+import type { RequirementItem } from "@insurance-poc/common/requirement-mgmt";
 import { readApiErrorMessage } from "@insurance-poc/utils";
 import {
   useLazyGetMmtGrievancesQuery,
@@ -24,10 +25,16 @@ export type GuwRaiseGrievanceDialogProps = {
   data?: RaiseGrievanceData;
   /** applicationNo / partyId / lifeNumber / transactionId sent with the save request. */
   context: MmtGrievanceMemberContext;
+  /** DRS `commonSection[requirementManagement]` rows; those with category "Medicals" are merged into the table. */
+  requirements?: readonly RequirementItem[];
   notify: (message: string) => void;
 };
 
 const REMARKS_REQUIRED_MESSAGE = "Remarks By User is mandatory for every selected requirement.";
+const MEDICALS_CATEGORY = "medicals";
+
+const rowKey = (fupCode: string, profile: string) =>
+  `${fupCode.trim().toLowerCase()}|${profile.trim().toLowerCase()}`;
 
 /**
  * Quick Links -> Raise Grievance (guw-drs-screen-prototype.html `openRaiseGrievance`).
@@ -42,6 +49,7 @@ export function GuwRaiseGrievanceDialog({
   onClose,
   data,
   context,
+  requirements,
   notify,
 }: Readonly<GuwRaiseGrievanceDialogProps>) {
   const [saveGrievances, saveState] = useSaveMmtGrievancesMutation();
@@ -51,7 +59,7 @@ export function GuwRaiseGrievanceDialog({
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
 
-  const fetchedRows: RaiseGrievanceRow[] = (fetchState.data?.openGrievances ?? []).map(
+  const apiRows: RaiseGrievanceRow[] = (fetchState.data?.openGrievances ?? []).map(
     (row, index) => ({
       id: `grievance-${index + 1}`,
       fupCode: row.fupCode,
@@ -59,6 +67,22 @@ export function GuwRaiseGrievanceDialog({
       remarks: row.grievanceRemarks,
     }),
   );
+  // Merge: Medicals requirements (fupCode + profile) not already returned by the fetch API.
+  const knownKeys = new Set(apiRows.map((row) => rowKey(row.fupCode, row.profile)));
+  const medicalRows: RaiseGrievanceRow[] = [];
+  (requirements ?? []).forEach((item, index) => {
+    if (item.category?.trim().toLowerCase() !== MEDICALS_CATEGORY || !item.fupCode?.trim()) return;
+    const key = rowKey(item.fupCode, item.profile ?? "");
+    if (knownKeys.has(key)) return;
+    knownKeys.add(key);
+    medicalRows.push({
+      id: `medical-${index + 1}`,
+      fupCode: item.fupCode,
+      profile: item.profile ?? "",
+      remarks: "",
+    });
+  });
+  const fetchedRows: RaiseGrievanceRow[] = [...apiRows, ...medicalRows];
   const rows: RaiseGrievanceRow[] = fetchedRows.map((row) => ({
     ...row,
     remarks: remarks[row.id] ?? row.remarks,
@@ -185,15 +209,12 @@ export function GuwRaiseGrievanceDialog({
       fullWidth
       contentSx={{ p: 0 }}
     >
-      <Box sx={{ width: "100%", minWidth: 0, p: "6px 4px" }}>
-        <Box sx={{ mt: "10px" }}>
-          <CustomTable<RaiseGrievanceRow>
-            title={data?.section ?? "Medical Requirements"}
-            columns={columns}
-            data={rows}
-            getRowId={(row) => row.id}
-          />
-        </Box>
+      <Box sx={{ width: "100%", minWidth: 0, p: 1 }}>
+        <CustomTable<RaiseGrievanceRow>
+          columns={columns}
+          data={rows}
+          getRowId={(row) => row.id}
+        />
         <Typography
           role="alert"
           sx={{ minHeight: 18, mt: "8px", color: "#d32f2f", textAlign: "center", fontSize: "12px" }}

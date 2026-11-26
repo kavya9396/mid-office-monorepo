@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ReactNode } from "react";
+import Typography from "@mui/material/Typography";
 import { ClaimAudit } from "@insurance-poc/common/claim-audit";
 import { GrievanceHistory } from "@insurance-poc/common/grievance-history";
 import { SpecialRemarks } from "@insurance-poc/common/special-remarks";
@@ -38,6 +39,13 @@ export interface CuwSectionDialogsProps {
   /** Context sent to `VITE_MMT_GRIEVANCE_FETCH_API` when fetching grievance history. */
   grievanceContext?: MmtGrievanceMemberContext;
 }
+
+/** Dialog title styled like the other dialogs (Raise Grievance, BRE Decision). */
+const dialogTitle = (text: ReactNode) => (
+  <Typography component="span" sx={{ fontSize: 12, fontWeight: 800 }}>
+    {text}
+  </Typography>
+);
 
 /**
  * Grievance History, Claim Audit, UW Guidelines and Special Remarks dialogs shared by every CUW-family
@@ -109,25 +117,28 @@ export function CuwSectionDialogs({
       <CustomDialog
         open={open === "grievanceHistory"}
         onClose={onClose}
+        title={dialogTitle(grievanceHistory.title)}
         maxWidth="xl"
         fullWidth
       >
-        <GrievanceHistory
-          title={grievanceHistory.title}
-          columns={grievanceHistory.columns}
-          rows={fetchGrievanceState.data?.grievanceHistory ?? grievanceHistory.rows}
-          paginationDisabled
-        />
+        <CustomBox sx={{ p: 1 }}>
+          <GrievanceHistory
+            title=""
+            columns={grievanceHistory.columns}
+            rows={fetchGrievanceState.data?.grievanceHistory ?? grievanceHistory.rows}
+            paginationDisabled
+          />
+        </CustomBox>
       </CustomDialog>
 
       <CustomDialog
         open={open === "claimAudit"}
         onClose={onClose}
-        title={claimAudit.title}
+        title={dialogTitle(claimAudit.title)}
         maxWidth="lg"
         fullWidth
       >
-        <CustomBox sx={{ p: 2 }}>
+        <CustomBox sx={{ p: 1 }}>
           <ClaimAudit
             variant={variant}
             rows={claimAudit.rows}
@@ -144,11 +155,11 @@ export function CuwSectionDialogs({
       <CustomDialog
         open={open === "specialRemarks"}
         onClose={onClose}
-        title={specialRemarks.title}
+        title={dialogTitle(specialRemarks.title)}
         maxWidth="md"
         fullWidth
       >
-        <CustomBox sx={{ p: 2 }}>
+        <CustomBox sx={{ p: 1 }}>
           <SpecialRemarks
             variant={variant}
             rows={specialRemarks.rows}
@@ -165,11 +176,11 @@ export function CuwSectionDialogs({
       <CustomDialog
         open={open === "uwGuidelines"}
         onClose={onClose}
-        title={uwGuidelines.title}
+        title={dialogTitle(uwGuidelines.title)}
         maxWidth="lg"
         fullWidth
       >
-        <CustomBox sx={{ p: 2 }}>
+        <CustomBox sx={{ p: 1 }}>
           <UwGuidelines
             variant={variant}
             rows={savedGuidelines ?? uwGuidelines.rows}

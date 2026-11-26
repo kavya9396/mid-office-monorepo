@@ -421,6 +421,7 @@ const GuwUser = () => {
                 lifeNumber: page.record.lifeNumber || undefined,
                 transactionId: page.record.transactionId || null,
               }}
+              requirements={page.record.requirements}
               notify={notify}
             />
 
