@@ -295,6 +295,81 @@
         "role": "GROUP_VENDOR_CMO_TMT_USER",
         "roleType": "VENDOR_CMO_TMT_TASK"
       }
+    ],
+    "GROUP_DATA_ENTRY_NMR_TASK": [
+      {
+        "id": 1,
+        "applicationNo": "OS30413099",
+        "productCode": "GP1",
+        "masterPlanNo": 49,
+        "poolTAT": null,
+        "productType": "base",
+        "product": "ICICI PRU SUPER PROTECT CREDIT",
+        "sumAssured": 2210000,
+        "caseReceivedDate": "2026-11-08",
+        "channelCode": "CABR",
+        "channel": null,
+        "breDecision": "ST",
+        "dateAndTimeStamp": "2026-11-14T12:27:20.912983",
+        "taskId": "1347",
+        "instanceId": "303",
+        "dueDate": "2026-11-16T12:00:00Z",
+        "startTime": "2026-11-14T06:57:54Z",
+        "atRiskTime": "2026-11-15T22:52:19Z",
+        "businessType": "GROUP",
+        "role": "GROUP_CPT_DATA_ENTRY_NMR_USER",
+        "roleType": "GROUP_DATA_ENTRY_NMR_TASK"
+      }
+    ],
+    "GROUP_DATA_ENTRY_MR_TASK": [
+      {
+        "id": 1,
+        "applicationNo": "OS30413098",
+        "productCode": "GP1",
+        "masterPlanNo": 49,
+        "poolTAT": null,
+        "productType": "base",
+        "product": "ICICI PRU SUPER PROTECT CREDIT",
+        "sumAssured": 2210000,
+        "caseReceivedDate": "2026-11-08",
+        "channelCode": "CABR",
+        "channel": null,
+        "breDecision": "ST",
+        "dateAndTimeStamp": "2026-11-14T12:27:20.912983",
+        "taskId": "1347",
+        "instanceId": "303",
+        "dueDate": "2026-11-16T12:00:00Z",
+        "startTime": "2026-11-14T06:57:54Z",
+        "atRiskTime": "2026-11-15T22:52:19Z",
+        "businessType": "GROUP",
+        "role": "GROUP_CPT_DATA_ENTRY_MR_USER",
+        "roleType": "GROUP_DATA_ENTRY_MR_TASK"
+      }
+    ],
+    "REINSURER_TASK": [
+      {
+        "id": 10,
+        "applicationNo": "OB90377122",
+        "productCode": "GP1",
+        "masterPlanNo": 49,
+        "poolTAT": null,
+        "productType": "base",
+        "product": "ICICI PRU SUPER PROTECT CREDIT",
+        "sumAssured": 2210000,
+        "caseReceivedDate": "2026-11-08",
+        "channelCode": "CABR",
+        "channel": null,
+        "breDecision": "ST",
+        "dateAndTimeStamp": "2026-11-14T12:27:20.912983",
+        "taskId": "1348",
+        "instanceId": "304",
+        "dueDate": "2026-11-16T12:00:00Z",
+        "startTime": "2026-11-14T06:57:54Z",
+        "atRiskTime": "2026-11-15T22:52:19Z",
+        "businessType": "GROUP",
+        "role": "GROUP_REINSURER_USER",
+        "roleType": "REINSURER_TASK"
+      }
     ]
   }
 }

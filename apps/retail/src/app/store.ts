@@ -8,6 +8,7 @@ import { retailDrsApi } from "../services/drsApi";
 import { retailMmtGrievanceApi } from "../services/mmtGrievanceService";
 import { retailFinancialApi } from "../services/financialApi";
 import { retailInboxApi } from "../services/inboxApi";
+import { retailNsdlApi } from "../services/nsdlApi";
 
 const listenerMiddleware = createListenerMiddleware();
 
@@ -21,6 +22,7 @@ listenerMiddleware.startListening({
     listenerApi.dispatch(retailBreRetriggerApi.util.resetApiState());
     listenerApi.dispatch(retailFinancialApi.util.resetApiState());
     listenerApi.dispatch(retailCvtValidationApi.util.resetApiState());
+    listenerApi.dispatch(retailNsdlApi.util.resetApiState());
   },
 });
 
@@ -35,6 +37,7 @@ export const store = configureStore({
     [retailBreRetriggerApi.reducerPath]: retailBreRetriggerApi.reducer,
     [retailFinancialApi.reducerPath]: retailFinancialApi.reducer,
     [retailCvtValidationApi.reducerPath]: retailCvtValidationApi.reducer,
+    [retailNsdlApi.reducerPath]: retailNsdlApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
@@ -48,6 +51,7 @@ export const store = configureStore({
         retailBreRetriggerApi.middleware,
         retailFinancialApi.middleware,
         retailCvtValidationApi.middleware,
+        retailNsdlApi.middleware,
       ),
 });
 

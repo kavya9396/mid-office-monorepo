@@ -42,6 +42,10 @@ export const retailPaths = {
   /** Legacy; prefer `drsUrl` / `drsRoutePath` with application number. */
   drs: `${retailBase}/drs`,
   previousPolicy: `${retailBase}/previous-policy`,
+  cuwMemberSelection: `${retailBase}/cuw/member-selection`,
+  cuwDrs: `${retailBase}/cuw/drs`,
+  referralMemberSelection: `${retailBase}/referral/member-selection`,
+  referralDrs: `${retailBase}/referral/drs`,
 } as const;
 
 export const groupPaths = {

@@ -1,19 +1,68 @@
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { createApi } from "@reduxjs/toolkit/query/react";
+import type { DecisionHistoryRow } from "@insurance-poc/common/decision-history";
 import type { RequirementItem } from "@insurance-poc/common/requirement-mgmt";
 import {
   absoluteApiBaseUrl,
+  buildAuthServiceGetHeaders,
   createBusinessBaseQuery,
   getDrsRoleType,
   getSessionBusinessType,
   getSessionUser,
   retailBusinessUrls,
   useMock,
+  userUrls,
 } from "@insurance-poc/utils";
 import { getRetailDrsTaskConfig } from "../config/drsTaskConfig";
 import retailDrsMock from "../modules/drs/mock/retailDrs.json";
+import retailUwDecisionHistoryMock from "../../../../mock/drs/retail-uw-decision-history.json";
+import cuwDrsMock from "../../../../mock/drs/cuw-informal-drs.json";
+import cuwHodDrsMock from "../../../../mock/drs/cuw-hod-drs.json";
+import cuwSrUwDrsMock from "../../../../mock/drs/cuw-sr-uw-drs.json";
+import cuwUwDecisionMock from "../../../../mock/drs/cuw-uw-decision.json";
+import cuwClaimAuditListMock from "../../../../mock/drs/cuw-claim-audit-list.json";
+import cuwUwDecisionHistoryMock from "../../../../mock/drs/cuw-uw-decision-history.json";
+import usersByRoleMock from "../../../../mock/drs/users-by-role.json";
 import type { CvtEditApplicantValues } from "../modules/drs/CvtEditApplicantDialog";
-import { mapRawRequirementRows, mapRetailDrsPayload, type RetailDrsData } from "./drsService";
+import {
+  CUW_LOB,
+  mapCuwUwDecisions,
+  mapDecisionHistory,
+  mapRawRequirementRows,
+  mapReferralDecisionHistory,
+  mapRetailDrsPayload,
+  mapUsersByRole,
+  type CuwAssigneeOption,
+  type CuwParallelDecisionRequest,
+  type CuwUwDecisionRequest,
+  type CuwUwDecisionResult,
+  type ReferralDecisionHistoryRow,
+  type RetailDrsData,
+} from "./drsService";
+
+/** `lob` sent to the UW decision fetch API for Retail. */
+const RETAIL_LOB = CUW_LOB;
+
+/** Request of `uw-decision/fetch` (HOD / Sr UW Underwriting Decision History). */
+export type CuwUwDecisionHistoryRequest = {
+  applicationNumber: string;
+};
+
+export type CuwClaimAuditListRequest = {
+  applicationNumber: string;
+  partyId: string;
+};
+
+/** `data.commonSection` and `data.membersDetails` of the DRS response, sent back as-is with the requirement save. */
+export type CuwDrsRequirementData = {
+  commonSection: unknown;
+  membersDetails: unknown;
+};
+
+/** Request of `uw-decision/fetch` (CVT Decision History). */
+export type RetailUwDecisionHistoryRequest = {
+  applicationNumber: string;
+};
 
 export type RetailDrsQueryArg = {
   applicationNo: string;
@@ -25,10 +74,16 @@ export type RetailDrsQueryArg = {
 export type SaveRetailDrsRequirementsArg = {
   applicationNo: string;
   requirements: RequirementItem[];
+  initialRequirements?: RequirementItem[];
   roleType?: string;
+  screenType?: string;
+  businessType?: string;
   lob?: string;
   userId?: string;
-  queryArg: RetailDrsQueryArg;
+  queryArg?: RetailDrsQueryArg;
+  /** CUW: when set, the whole DRS response (with the updated requirements) is sent instead of the `requirementManagement` section only. */
+  drsData?: CuwDrsRequirementData;
+  caseType?: string;
 };
 
 export type SaveRetailDrsApplicantArg = {
@@ -76,29 +131,105 @@ function buildDrsRequestBody(arg: RetailDrsQueryArg) {
   };
 }
 
+const isPersistedRequirementId = (item: RequirementItem): boolean =>
+  typeof item.id === "number" ||
+  (typeof item.id === "string" && !item.id.startsWith("req-") && Number.isFinite(Number(item.id)) && Number(item.id) > 0);
+
 export const toRequirementRequestItem = (item: RequirementItem) => {
-  const isNumericId =
-    typeof item.id === "number" ||
-    (typeof item.id === "string" && !item.id.startsWith("req-") && Number.isFinite(Number(item.id)) && Number(item.id) > 0);
+  let reqId: number | undefined;
+  if (typeof item.requirementId === "number") {
+    reqId = item.requirementId;
+  } else if (isPersistedRequirementId(item)) {
+    reqId = Number(item.id);
+  }
 
   const payload: Record<string, unknown> = {
     status: item.status || "Pending",
-    profile: item.profile || "",
-    fupCode: item.fupCode || "",
-    category: item.category || "",
-    subCategory: item.subCategory || "",
-    document: item.document || "",
-    extraRemarks: item.extraRemarks || "",
+    ocrStatus: item.ocrStatus === "-" ? "" : (item.ocrStatus ?? ""),
+    team: item.team ?? "",
+    profile: item.profile ?? "",
+    category: item.category ?? "",
+    subCategory: item.subCategory ?? "",
+    document: item.document ?? "",
+    reason: item.reason ?? "",
+    fupCode: item.fupCode ?? "",
+    extraRemarks: item.extraRemarks ?? "",
+    description: item.description ?? "",
+    requirementPoolType: item.requirementPoolType || item.team || "",
   };
 
-  if (isNumericId) payload.requirementId = Number(item.id);
-  if (item.team) payload.team = item.team;
-  if (item.reason) payload.reason = item.reason;
-  if (item.description) payload.description = item.description;
-  if (item.ocrStatus) payload.ocrStatus = item.ocrStatus;
+  if (reqId !== undefined) payload.requirementId = reqId;
+  if (item.partyId !== undefined) payload.partyId = item.partyId;
+  if (item.memberType !== undefined) payload.memberType = item.memberType;
 
   return payload;
 };
+
+function isRequirementRowChangedOrNew(item: RequirementItem, initialList?: RequirementItem[]): boolean {
+  const isNew = Boolean(item.isNew) || (typeof item.id === "string" && item.id.startsWith("req-"));
+  if (isNew) return true;
+
+  if (!initialList || initialList.length === 0) {
+    return true;
+  }
+
+  const initial = initialList.find(
+    (init) =>
+      init.id === item.id ||
+      (typeof item.requirementId === "number" && typeof init.requirementId === "number" && init.requirementId === item.requirementId),
+  );
+
+  if (!initial) {
+    return true;
+  }
+
+  return (
+    toCleanString(item.status) !== toCleanString(initial.status) ||
+    toCleanString(item.extraRemarks) !== toCleanString(initial.extraRemarks) ||
+    toCleanString(item.description) !== toCleanString(initial.description) ||
+    toCleanString(item.reason) !== toCleanString(initial.reason) ||
+    toCleanString(item.profile) !== toCleanString(initial.profile) ||
+    toCleanString(item.fupCode) !== toCleanString(initial.fupCode) ||
+    toCleanString(item.category) !== toCleanString(initial.category) ||
+    toCleanString(item.subCategory) !== toCleanString(initial.subCategory) ||
+    toCleanString(item.document) !== toCleanString(initial.document) ||
+    toCleanString(item.team) !== toCleanString(initial.team) ||
+    toCleanString(item.ocrStatus) !== toCleanString(initial.ocrStatus) ||
+    toCleanString(item.requirementPoolType) !== toCleanString(initial.requirementPoolType)
+  );
+}
+
+export function buildRequirementsSavePayload(arg: SaveRetailDrsRequirementsArg) {
+  const sessionUser = getSessionUser();
+  const userId = arg.userId ?? sessionUser?.username ?? "cvt.user";
+  const taskType = arg.roleType ?? getDrsRoleType();
+  const taskConfig = getRetailDrsTaskConfig(taskType);
+  const roleType = arg.roleType ?? taskConfig.roleType ?? "CVT_TASK";
+  const screenType = arg.screenType ?? taskConfig.screenType ?? "CVT";
+  const businessType = arg.businessType ?? getSessionBusinessType() ?? taskConfig.businessType ?? "RETAIL";
+
+  const rowsToSave = arg.initialRequirements
+    ? arg.requirements.filter((item) => isRequirementRowChangedOrNew(item, arg.initialRequirements))
+    : arg.requirements;
+
+  const payload = {
+    applicationNo: arg.applicationNo,
+    userId,
+    roleType,
+    screenType,
+    businessType,
+    data: {
+      commonSection: [
+        {
+          name: "requirementManagement",
+          rows: rowsToSave.map(toRequirementRequestItem),
+        },
+      ],
+    },
+  };
+
+  return payload;
+}
 
 const PERSONAL_KYC_MAPPINGS: FieldMapping[] = [
   { key: "proposerSummary.dob", label: "Date Of Birth", field: "dob" },
@@ -203,26 +334,197 @@ export const retailDrsApi = createApi({
         }
       },
     }),
-    saveRetailDrsRequirements: build.mutation<RequirementItem[], SaveRetailDrsRequirementsArg>({
-      async queryFn(arg, api, _extra, baseQuery) {
-        const taskConfig = getRetailDrsTaskConfig(arg.roleType ?? getDrsRoleType());
-        const body = {
-          applicationNo: arg.applicationNo,
-          lob: arg.lob ?? "R",
-          userId: arg.userId ?? getSessionUser()?.username ?? "cvt.user",
-          roleType: arg.roleType ?? taskConfig.roleType,
-          sections: ["requirementManagement"],
-          data: {
-            requirementManagement: arg.requirements.map(toRequirementRequestItem),
+    /** Decision History of the application (CVT page load). */
+    getRetailUwDecisionHistory: build.query<DecisionHistoryRow[], RetailUwDecisionHistoryRequest>({
+      async queryFn(arg, _api, _extra, baseQuery) {
+        if (useMock) return { data: mapDecisionHistory(retailUwDecisionHistoryMock) };
+        const fetchUrl = retailBusinessUrls.uwDecisionFetch;
+        if (fetchUrl.length === 0) {
+          return { error: customError("UW decision fetch API is not configured.") };
+        }
+
+        const result = await baseQuery({
+          url: fetchUrl,
+          method: "POST",
+          body: {
+            applicationNumber: arg.applicationNumber,
+            level: "application",
+            screenType: "CVT",
+            lob: RETAIL_LOB,
           },
+          headers: { accept: "*/*", "Content-Type": "application/json" },
+        });
+        if (result.error) return { error: result.error };
+        return { data: mapDecisionHistory(result.data) };
+      },
+    }),
+    /** Raw DRS payload for CUW / HOD / Sr UW; mapped by `drsService` (same request body as CVT). */
+    getCuwDrsPayload: build.query<unknown, RetailDrsQueryArg & { taskType?: string }>({
+      async queryFn(arg, _api, _extra, baseQuery) {
+        if (useMock) {
+          const mockRole = (arg.taskType ?? arg.roleType ?? getDrsRoleType())?.trim().toUpperCase();
+          if (mockRole === "HOD" || mockRole === "HOD_TASK") return { data: cuwHodDrsMock as unknown };
+          if (mockRole === "SR_UW" || mockRole === "SR_UW_TASK") return { data: cuwSrUwDrsMock as unknown };
+          return { data: cuwDrsMock as unknown };
+        }
+        const drsDataUrl = retailBusinessUrls.drsData;
+        if (drsDataUrl.length === 0) {
+          return { error: customError("Retail DRS data API is not configured.") };
+        }
+
+        const result = await baseQuery({
+          url: drsDataUrl,
+          method: "POST",
+          body: buildDrsRequestBody({ ...arg, roleType: arg.roleType ?? arg.taskType }),
+          headers: { accept: "*/*", "Content-Type": "application/json" },
+        });
+        if (result.error) return { error: result.error };
+        return { data: result.data };
+      },
+    }),
+    /** Underwriting Decision History of the application (HOD / Sr UW page load). */
+    getCuwUwDecisionHistory: build.query<ReferralDecisionHistoryRow[], CuwUwDecisionHistoryRequest>({
+      async queryFn(arg, _api, _extra, baseQuery) {
+        if (useMock) return { data: mapReferralDecisionHistory(cuwUwDecisionHistoryMock) };
+        const fetchUrl = retailBusinessUrls.uwDecisionFetch;
+        if (fetchUrl.length === 0) {
+          return { error: customError("UW decision fetch API is not configured.") };
+        }
+
+        const result = await baseQuery({
+          url: fetchUrl,
+          method: "POST",
+          body: {
+            applicationNumber: arg.applicationNumber,
+            level: "application",
+            screenType: "CUW",
+            lob: CUW_LOB,
+          },
+          headers: { accept: "*/*", "Content-Type": "application/json" },
+        });
+        if (result.error) return { error: result.error };
+        return { data: mapReferralDecisionHistory(result.data) };
+      },
+    }),
+    /** Claim Audit list of one member (CUW "Claim Audit" button). */
+    getCuwClaimAuditList: build.query<unknown, CuwClaimAuditListRequest>({
+      async queryFn(arg, _api, _extra, baseQuery) {
+        if (useMock) return { data: cuwClaimAuditListMock as unknown };
+        const listUrl = retailBusinessUrls.claimAuditList;
+        if (listUrl.length === 0) {
+          return { error: customError("Claim audit list API is not configured.") };
+        }
+
+        const result = await baseQuery({
+          url: listUrl,
+          method: "POST",
+          body: { applicationNumber: arg.applicationNumber, partyId: arg.partyId },
+          headers: { accept: "*/*", "Content-Type": "application/json" },
+        });
+        if (result.error) return { error: result.error };
+        return { data: result.data };
+      },
+    }),
+    /**
+     * Member-level UW decision (decision code + remarks) for the CUW screen.
+     * Raise Referral sends an array (one item per referral) and gets one saved decision per item back.
+     */
+    getCuwUwDecision: build.mutation<CuwUwDecisionResult[], CuwUwDecisionRequest | CuwUwDecisionRequest[]>({
+      async queryFn(arg, _api, _extra, baseQuery) {
+        const sessionUser = getSessionUser();
+        const fallbackUserId = sessionUser?.username ?? "";
+        const payload = Array.isArray(arg)
+          ? arg.map((item) => ({ ...item, userId: item.userId?.trim() || item.createdBy?.trim() || fallbackUserId }))
+          : { ...arg, userId: arg.userId?.trim() || arg.createdBy?.trim() || fallbackUserId };
+
+        if (useMock) return { data: mapCuwUwDecisions(cuwUwDecisionMock) };
+        const uwDecisionUrl = retailBusinessUrls.uwDecision;
+        if (uwDecisionUrl.length === 0) {
+          return { error: customError("Retail UW decision API is not configured.") };
+        }
+
+        const result = await baseQuery({
+          url: uwDecisionUrl,
+          method: "POST",
+          body: payload,
+          headers: { accept: "*/*", "Content-Type": "application/json" },
+        });
+        if (result.error) return { error: result.error };
+
+        try {
+          return { data: mapCuwUwDecisions(result.data) };
+        } catch (reason: unknown) {
+          return { error: customError(readError(reason)) };
+        }
+      },
+    }),
+    /** Users of a role (HOD / Sr UW) for the "Assigned To" dropdowns; `roleName` is the last path segment. */
+    getUsersByRole: build.query<CuwAssigneeOption[], string>({
+      async queryFn(roleName, _api, _extra, baseQuery) {
+        if (useMock) return { data: mapUsersByRole(usersByRoleMock) };
+        const baseUrl = userUrls.usersByRole;
+        if (baseUrl.length === 0) {
+          return { error: customError("Users by role API is not configured.") };
+        }
+
+        let headers: Record<string, string>;
+        try {
+          headers = buildAuthServiceGetHeaders();
+        } catch (reason: unknown) {
+          return { error: customError(readError(reason)) };
+        }
+
+        const result = await baseQuery({
+          url: `${baseUrl}/${encodeURIComponent(roleName)}`,
+          method: "GET",
+          headers,
+        });
+        if (result.error) return { error: result.error };
+        return { data: mapUsersByRole(result.data) };
+      },
+    }),
+    /** Parallel decision (Opinion / Counter Sign / Raise Referral) for the CUW screen. */
+    saveCuwParallelDecision: build.mutation<unknown, CuwParallelDecisionRequest>({
+      async queryFn(arg, _api, _extra, baseQuery) {
+        const sessionUser = getSessionUser();
+        const fallbackUserId = sessionUser?.username ?? "";
+        const payload: CuwParallelDecisionRequest = {
+          ...arg,
+          decision: "Referral",
+          remarks: " ",
+          userId: arg.userId?.trim() || fallbackUserId,
         };
 
+        if (useMock) return { data: null };
+        const parallelDecisionUrl = retailBusinessUrls.parallelDecision;
+        if (parallelDecisionUrl.length === 0) {
+          return { error: customError("Retail parallel decision API is not configured.") };
+        }
+
+        const result = await baseQuery({
+          url: parallelDecisionUrl,
+          method: "POST",
+          body: payload,
+          headers: { accept: "*/*", "Content-Type": "application/json" },
+        });
+        if (result.error) return { error: result.error };
+        return { data: result.data };
+      },
+    }),
+    saveRetailDrsRequirements: build.mutation<RequirementItem[], SaveRetailDrsRequirementsArg>({
+      async queryFn(arg, api, _extra, baseQuery) {
+        const body = buildRequirementsSavePayload(arg);
+
+        console.log("[saveRetailDrsRequirements] PUT payload to send:", body);
+
         const applyToCache = (updated: RequirementItem[]): RequirementItem[] => {
-          api.dispatch(
-            retailDrsApi.util.updateQueryData("getRetailDrs", arg.queryArg, (draft) => {
-              draft.requirements = updated;
-            }),
-          );
+          if (arg.queryArg) {
+            api.dispatch(
+              retailDrsApi.util.updateQueryData("getRetailDrs", arg.queryArg, (draft) => {
+                draft.requirements = updated;
+              }),
+            );
+          }
           return updated;
         };
 
@@ -303,6 +605,12 @@ export const retailDrsApi = createApi({
 
 export const {
   useGetRetailDrsQuery,
+  useGetCuwUwDecisionHistoryQuery,
+  useGetUsersByRoleQuery,
+  useLazyGetCuwClaimAuditListQuery,
+  useGetCuwUwDecisionMutation,
+  useSaveCuwParallelDecisionMutation,
+  useGetRetailUwDecisionHistoryQuery,
   useSaveRetailDrsRequirementsMutation,
   useSaveRetailDrsApplicantMutation,
 } = retailDrsApi;

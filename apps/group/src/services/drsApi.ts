@@ -71,13 +71,25 @@ export type GuwClaimAuditListRequest = {
   partyId: string;
 };
 
+/** `data.commonSection` and `data.membersDetails` of the DRS response, sent back as-is with the requirement save. */
+export type GuwDrsRequirementData = {
+  commonSection: unknown;
+  membersDetails: unknown;
+};
+
 export type SaveGroupDrsRequirementsArg = {
   applicationNo: string;
   requirements: RequirementItem[];
+  initialRequirements?: RequirementItem[];
   roleType?: string;
+  screenType?: string;
+  businessType?: string;
   lob?: string;
   userId?: string;
   queryArg?: GroupDrsQueryArg;
+  /** GUW: when set, the whole DRS response (with the updated requirements) is sent instead of the `requirementManagement` section only. */
+  drsData?: GuwDrsRequirementData;
+  caseType?: string;
 };
 
 export type SaveGroupDrsApplicantArg = {
@@ -147,31 +159,111 @@ function buildDrsRequestBody(arg: GroupDrsQueryArg) {
   };
 }
 
+const isPersistedRequirementId = (item: RequirementItem): boolean =>
+  typeof item.id === "number" ||
+  (typeof item.id === "string" && !item.id.startsWith("req-") && Number.isFinite(Number(item.id)) && Number(item.id) > 0);
+
 export const toRequirementRequestItem = (item: RequirementItem) => {
-  const isNumericId =
-    typeof item.id === "number" ||
-    (typeof item.id === "string" && !item.id.startsWith("req-") && Number.isFinite(Number(item.id)) && Number(item.id) > 0);
+  let reqId: number | undefined;
+  if (typeof item.requirementId === "number") {
+    reqId = item.requirementId;
+  } else if (isPersistedRequirementId(item)) {
+    reqId = Number(item.id);
+  }
 
   const payload: Record<string, unknown> = {
     status: item.status || "Pending",
-    profile: item.profile || "",
-    fupCode: item.fupCode || "",
-    category: item.category || "",
-    subCategory: item.subCategory || "",
-    document: item.document || "",
-    extraRemarks: item.extraRemarks || "",
+    ocrStatus: item.ocrStatus === "-" ? "" : (item.ocrStatus ?? ""),
+    team: item.team ?? "",
+    profile: item.profile ?? "",
+    category: item.category ?? "",
+    subCategory: item.subCategory ?? "",
+    document: item.document ?? "",
+    reason: item.reason ?? "",
+    fupCode: item.fupCode ?? "",
+    extraRemarks: item.extraRemarks ?? "",
+    description: item.description ?? "",
+    requirementPoolType: item.requirementPoolType || item.team || "",
   };
 
-  if (isNumericId) {
-    payload.requirementId = Number(item.id);
+  if (reqId !== undefined) {
+    payload.requirementId = reqId;
   }
-  if (item.team) payload.team = item.team;
-  if (item.reason) payload.reason = item.reason;
-  if (item.description) payload.description = item.description;
-  if (item.ocrStatus) payload.ocrStatus = item.ocrStatus;
+  if (item.partyId !== undefined) {
+    payload.partyId = item.partyId;
+  }
+  if (item.memberType !== undefined) {
+    payload.memberType = item.memberType;
+  }
 
   return payload;
 };
+
+function isRequirementRowChangedOrNew(item: RequirementItem, initialList?: RequirementItem[]): boolean {
+  const isNew = Boolean(item.isNew) || (typeof item.id === "string" && item.id.startsWith("req-"));
+  if (isNew) return true;
+
+  if (!initialList || initialList.length === 0) {
+    return true;
+  }
+
+  const initial = initialList.find(
+    (init) =>
+      init.id === item.id ||
+      (typeof item.requirementId === "number" && typeof init.requirementId === "number" && init.requirementId === item.requirementId),
+  );
+
+  if (!initial) {
+    return true;
+  }
+
+  return (
+    toCleanString(item.status) !== toCleanString(initial.status) ||
+    toCleanString(item.extraRemarks) !== toCleanString(initial.extraRemarks) ||
+    toCleanString(item.description) !== toCleanString(initial.description) ||
+    toCleanString(item.reason) !== toCleanString(initial.reason) ||
+    toCleanString(item.profile) !== toCleanString(initial.profile) ||
+    toCleanString(item.fupCode) !== toCleanString(initial.fupCode) ||
+    toCleanString(item.category) !== toCleanString(initial.category) ||
+    toCleanString(item.subCategory) !== toCleanString(initial.subCategory) ||
+    toCleanString(item.document) !== toCleanString(initial.document) ||
+    toCleanString(item.team) !== toCleanString(initial.team) ||
+    toCleanString(item.ocrStatus) !== toCleanString(initial.ocrStatus) ||
+    toCleanString(item.requirementPoolType) !== toCleanString(initial.requirementPoolType)
+  );
+}
+
+export function buildRequirementsSavePayload(arg: SaveGroupDrsRequirementsArg) {
+  const sessionUser = getSessionUser();
+  const userId = arg.userId ?? sessionUser?.username ?? "dvt.user";
+  const taskType = arg.roleType ?? getDrsRoleType();
+  const taskConfig = getGroupDrsTaskConfig(taskType);
+  const roleType = arg.roleType ?? taskConfig.roleType ?? "DVT_TASK";
+  const screenType = arg.screenType ?? taskConfig.screenType ?? "DVT_INFORMAL";
+  const businessType = arg.businessType ?? getSessionBusinessType() ?? taskConfig.businessType ?? "GROUP";
+
+  const rowsToSave = arg.initialRequirements
+    ? arg.requirements.filter((item) => isRequirementRowChangedOrNew(item, arg.initialRequirements))
+    : arg.requirements;
+
+  const payload = {
+    applicationNo: arg.applicationNo,
+    userId,
+    roleType,
+    screenType,
+    businessType,
+    data: {
+      commonSection: [
+        {
+          name: "requirementManagement",
+          rows: rowsToSave.map(toRequirementRequestItem),
+        },
+      ],
+    },
+  };
+
+  return payload;
+}
 
 type KeyValueField = { key: string; label: string; value: string };
 
@@ -718,6 +810,8 @@ export const groupDrsApi = createApi({
         const fallbackUserId = sessionUser?.username ?? "";
         const payload: GuwParallelDecisionRequest = {
           ...arg,
+          decision: "Referral",
+          remarks: " ",
           userId: arg.userId?.trim() || fallbackUserId,
         };
 
@@ -744,23 +838,7 @@ export const groupDrsApi = createApi({
     }),
     saveGroupDrsRequirements: build.mutation<RequirementItem[], SaveGroupDrsRequirementsArg>({
       async queryFn(arg, api, _extra, baseQuery) {
-        const sessionUser = getSessionUser();
-        const userId = arg.userId ?? sessionUser?.username ?? "uw.user";
-        const taskType = arg.roleType ?? getDrsRoleType();
-        const taskConfig = getGroupDrsTaskConfig(taskType);
-        const roleType = arg.roleType ?? taskConfig.roleType ?? "DVT_TASK";
-        const lob = arg.lob ?? "G";
-
-        const body = {
-          applicationNo: arg.applicationNo,
-          lob,
-          userId,
-          roleType,
-          sections: ["requirementManagement"],
-          data: {
-            requirementManagement: arg.requirements.map(toRequirementRequestItem),
-          },
-        };
+        const body = buildRequirementsSavePayload(arg);
 
         console.log("[saveGroupDrsRequirements] PUT payload to send:", body);
 
@@ -791,6 +869,9 @@ export const groupDrsApi = createApi({
         };
 
         if (useMock) {
+          if (arg.requirements && arg.requirements.length > 0) {
+            return { data: arg.requirements };
+          }
           return { data: applyResponseToCache(groupDrsApplicantSaveMock) };
         }
 

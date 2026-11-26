@@ -19,7 +19,7 @@ import {
   RequirementValueDialog,
 } from "./RequirementParts";
 import { useRequirementFilters } from "./useRequirementFilters";
-import { createEmptyRequirement, isNewRequirement, useRequirementRows } from "./useRequirementRows";
+import { isNewRequirement, useRequirementRows } from "./useRequirementRows";
 import { ensureRequirementMstApplicationKey, removeRequirementMstRowSession } from "./requirementMstSession";
 import { useRequirementMstCascade } from "./useRequirementMstCascade";
 
@@ -43,7 +43,7 @@ import type {
 
 export * from "./types";
 export { defaultRequirementColumns, defaultRequirementFilterFields } from "./defaults";
-export { createEmptyRequirement, isNewRequirement, useRequirementRows };
+export { createEmptyRequirement, isNewRequirement, useRequirementRows } from "./useRequirementRows";
 
 const EMPTY_BADGE_VARIANTS = {};
 

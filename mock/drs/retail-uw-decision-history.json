@@ -1,0 +1,16 @@
+[
+  {
+    "uwDecisionId": 201,
+    "level": "application",
+    "screenType": "CVT",
+    "applicationNumber": "OB90222471",
+    "roleType": "CVT_TASK",
+    "decision": "Accept",
+    "decisionCode": "ACCEPT",
+    "uwRemarks": "Applicant details reviewed and forwarded for decision.",
+    "createdAt": "2026-09-28T13:31:11",
+    "createdBy": "Priya Sharma",
+    "updatedAt": "2026-09-28T13:31:11",
+    "updatedBy": "Priya Sharma"
+  }
+]

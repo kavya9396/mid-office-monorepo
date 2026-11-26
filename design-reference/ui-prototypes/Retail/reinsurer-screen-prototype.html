@@ -318,6 +318,20 @@
     .cuw-error { display: block; margin-top: 5px; color: #b3262e; font-size: 11px; }
     .cuw-submit-row { display: flex; justify-content: center; margin-top: 18px; }
     .prototype-toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 150; max-width: calc(100vw - 32px); padding: 12px 18px; border-radius: 8px; background: #28743c; color: #fff; box-shadow: 0 4px 12px rgba(30, 50, 30, .2); font-size: 13px; }
+    .assignment-card { margin-top: 14px; }
+    .assignment-table { width: 100%; table-layout: fixed; border-collapse: collapse; }
+    .assignment-table th, .assignment-table td { height: 42px; padding: 8px 12px; border-right: 1px solid #eadfd9; border-bottom: 1px solid #eadfd9; text-align: center; overflow-wrap: anywhere; }
+    .assignment-table thead th { background: #ffead7; color: #5b261c; font-size: 12px; font-weight: 800; }
+    .assignment-table th:first-child, .assignment-table td:first-child { width: 40%; text-align: left; }
+    .assignment-table tr > :last-child { border-right: 0; }
+    .assignment-table tbody th { font-weight: 400; }
+    .assignment-table tbody tr:last-child > * { border-bottom: 0; }
+    .assignment-table tbody tr:nth-child(even) { background: #fffbf8; }
+    .assignment-table input[type="checkbox"] { width: 20px; height: 20px; margin: 0; vertical-align: middle; cursor: default; }
+    .referral-remarks { display: block; margin-top: 14px; padding: 12px; border: 1px solid #f1d8c8; border-radius: 8px; background: #fff; }
+    .referral-remarks label { display: block; margin-bottom: 8px; color: #5b261c; font-size: 12px; font-weight: 800; }
+    .referral-remarks textarea { display: block; width: 100%; min-height: 96px; padding: 10px 12px; border: 1px solid #d9d1cc; border-radius: 6px; background: #f7f5f3; color: #302a27; font: inherit; line-height: 1.5; resize: vertical; }
+    .referral-remarks textarea::placeholder { color: #746a64; }
   </style>
 </head>
 
@@ -410,6 +424,22 @@
           </table>
         </div>
       </section>
+      <section class="reinsurer-card assignment-card" aria-labelledby="assignment-title">
+        <h2 id="assignment-title">Assign Documents</h2>
+        <table class="assignment-table" aria-label="Assigned documents (read-only)">
+          <thead><tr><th scope="col">Document name</th><th scope="col">Munich Re</th><th scope="col">Scor RE</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Application Form</th><td><input type="checkbox" checked disabled aria-label="Application Form assigned to Munich Re"></td><td><input type="checkbox" disabled aria-label="Application Form not assigned to Scor RE"></td></tr>
+            <tr><th scope="row">PhotoId Proof</th><td><input type="checkbox" disabled aria-label="PhotoId Proof not assigned to Munich Re"></td><td><input type="checkbox" disabled aria-label="PhotoId Proof not assigned to Scor RE"></td></tr>
+            <tr><th scope="row">Address Proof</th><td><input type="checkbox" disabled aria-label="Address Proof not assigned to Munich Re"></td><td><input type="checkbox" checked disabled aria-label="Address Proof assigned to Scor RE"></td></tr>
+          </tbody>
+        </table>
+      </section>
+      <div class="referral-remarks">
+        <label for="reinsurer-remarks">Remarks</label>
+        <!-- The attached source initializes reinsurerRemarks to an empty string. -->
+        <textarea id="reinsurer-remarks" name="referral-remarks" rows="3" readonly aria-readonly="true" placeholder="No remarks provided"></textarea>
+      </div>
       <div class="reinsurer-actions" aria-label="Reinsurer actions">
         <button id="referral-sheet" class="reinsurer-action" type="button">Referral Sheet</button>
         <button id="back-to-cuw" class="reinsurer-action" type="button">Back TO CUW</button>

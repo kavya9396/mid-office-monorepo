@@ -62,6 +62,21 @@ export const GROUP_DRS_TASK_CONFIG: Record<string, GroupDrsTaskConfig> = {
     screenType: "VENDOR_CMO_TMT",
     businessType: "GROUP",
   },
+  REINSURER_TASK: {
+    roleType: "REINSURER_TASK",
+    screenType: "REINSURER",
+    businessType: "GROUP",
+  },
+  GROUP_DATA_ENTRY_NMR_TASK: {
+    roleType: "GROUP_DATA_ENTRY_NMR_TASK",
+    screenType: "CPT_NMR",
+    businessType: "GROUP",
+  },
+  GROUP_DATA_ENTRY_MR_TASK: {
+    roleType: "GROUP_DATA_ENTRY_MR_TASK",
+    screenType: "CPT_MR",
+    businessType: "GROUP",
+  },
 };
 
 export const DEFAULT_GROUP_DRS_TASK_CONFIG: GroupDrsTaskConfig = {
@@ -69,6 +84,12 @@ export const DEFAULT_GROUP_DRS_TASK_CONFIG: GroupDrsTaskConfig = {
   screenType: "DVT_INFORMAL",
   businessType: "Group",
 };
+
+/** Config of the `roleType` the role-list API returned; `undefined` when that role has no config entry. */
+export function findGroupDrsTaskConfig(roleType?: string): GroupDrsTaskConfig | undefined {
+  const key = roleType?.trim().toUpperCase() ?? "";
+  return key === "" ? undefined : GROUP_DRS_TASK_CONFIG[key];
+}
 
 export function getGroupDrsTaskConfig(roleOrTaskType?: string): GroupDrsTaskConfig {
   if (!roleOrTaskType) return DEFAULT_GROUP_DRS_TASK_CONFIG;

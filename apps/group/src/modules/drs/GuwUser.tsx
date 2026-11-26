@@ -204,12 +204,19 @@ const GuwUser = () => {
   };
 
   const handleSaveRequirements = async (updatedRequirements: RequirementItem[]) => {
+    const initialRequirements = page.kind === "ready" ? page.record.requirements : undefined;
     try {
       const saved = await saveGroupDrsRequirements({
         applicationNo,
         roleType: drsTaskConfig.roleType,
+        screenType: drsTaskConfig.screenType,
+        businessType: drsTaskConfig.businessType,
         lob: "G",
         requirements: updatedRequirements,
+        initialRequirements,
+        ...(page.kind === "ready"
+          ? { drsData: page.record.drsData, caseType: page.record.caseType }
+          : {}),
       }).unwrap();
       setPage((prev) =>
         prev.kind === "ready"
@@ -414,6 +421,7 @@ const GuwUser = () => {
                 lifeNumber: page.record.lifeNumber || undefined,
                 transactionId: page.record.transactionId || null,
               }}
+              requirements={page.record.requirements}
               notify={notify}
             />
 
@@ -459,9 +467,11 @@ const GuwUser = () => {
               statusOrder={requirementStatusOrder}
               fieldOptions={{
                 profile:
-                  page.record.memberTypes.length > 0
-                    ? page.record.memberTypes.map((type) => ({ label: type, value: type }))
-                    : undefined,
+                  (page.record.profileOptions?.length ?? 0) > 0
+                    ? page.record.profileOptions
+                    : page.record.memberTypes.length > 0
+                      ? page.record.memberTypes.map((type) => ({ label: type, value: type }))
+                      : undefined,
               }}
               addButton={{
                 label: "+ Add Requirement",

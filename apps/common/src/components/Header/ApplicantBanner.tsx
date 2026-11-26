@@ -67,7 +67,7 @@ export interface RowDetailsOptions {
 
 /**
  * Converts API `rowDetails` into banner rows, rendering each field as
- * "{name} - {value}" (an empty value renders "{name} -") joined by the row separator.
+ * "**{name}** - {value}" (the name in bold; an empty value renders "{name} -") joined by the row separator.
  */
 export function rowDetailsToBannerRows(
   rowDetails: readonly BannerRowDetail[] | null | undefined,
@@ -98,7 +98,9 @@ export function rowDetailsToBannerRows(
           }
           return {
             id: `${row.id}-${index}`,
-            value: value ? `${field.name}${nameValueSeparator}${value}` : `${field.name} -`,
+            label: field.name,
+            labelSeparator: value ? nameValueSeparator : " -",
+            value,
           };
         });
 
@@ -133,6 +135,11 @@ export interface ApplicantBannerProps {
   sx?: SxProps<Theme>;
 }
 
+function formatFieldValue(value: ReactNode): ReactNode {
+  if (typeof value !== "boolean") return value ?? "—";
+  return value ? "Yes" : "No";
+}
+
 function RowContent({ row }: Readonly<{ row: BannerRow }>) {
   return (
     <>
@@ -146,14 +153,120 @@ function RowContent({ row }: Readonly<{ row: BannerRow }>) {
               {field.labelSeparator ?? ": "}
             </Box>
           )}
-          {typeof field.value === "boolean"
-            ? field.value
-              ? "Yes"
-              : "No"
-            : (field.value ?? "—")}
+          {formatFieldValue(field.value)}
         </Box>
       ))}
     </>
+  );
+}
+
+interface BannerAvatarProps {
+  photoUrl?: string;
+  alt: string;
+}
+
+/** Gradient photo column: the applicant photo, or a default user icon when there is no photo. */
+function BannerAvatar({ photoUrl, alt }: Readonly<BannerAvatarProps>) {
+  return (
+    <Box
+      sx={{
+        display: "grid",
+        placeItems: "center",
+        background: "linear-gradient(135deg, #e45f14 0%, #c83c2f 100%)",
+      }}
+    >
+      {photoUrl ? (
+        <Box
+          component="img"
+          src={photoUrl}
+          alt={alt}
+          sx={{
+            width: "76px",
+            height: "76px",
+            boxSizing: "border-box",
+            border: "2px solid rgba(255, 255, 255, .55)",
+            borderRadius: "50%",
+            background: "rgba(255, 255, 255, .22)",
+            objectFit: "cover",
+          }}
+        />
+      ) : (
+        <Box
+          sx={{
+            width: "76px",
+            height: "76px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxSizing: "border-box",
+            border: "2px solid rgba(255, 255, 255, .45)",
+            borderRadius: "50%",
+            background: "rgba(255, 255, 255, .18)",
+            color: "#000",
+            fontSize: "44px",
+          }}
+        >
+          <UserProfileIcon width="1em" height="1em" />
+        </Box>
+      )}
+    </Box>
+  );
+}
+
+interface BannerHeadlineProps {
+  name?: string;
+  firstRow?: BannerRow;
+}
+
+/** The banner's first line: the applicant name, otherwise the first data row. */
+function BannerHeadline({ name, firstRow }: Readonly<BannerHeadlineProps>) {
+  if (name) {
+    return (
+      <Typography
+        component="div"
+        sx={{
+          mb: "4px",
+          fontSize: "16px",
+          fontWeight: 800,
+          lineHeight: 1.6,
+          color: "#000",
+        }}
+      >
+        {name}
+      </Typography>
+    );
+  }
+  return firstRow ? <RowContent row={firstRow} /> : null;
+}
+
+interface BannerApplicationBadgeProps {
+  applicationNo?: string;
+  applicationLabel?: string;
+  hasPhoto: boolean;
+}
+
+/** "App No. - …" badge pinned to the top-right corner of the banner. */
+function BannerApplicationBadge({ applicationNo, applicationLabel, hasPhoto }: Readonly<BannerApplicationBadgeProps>) {
+  const inset = hasPhoto ? "12px" : 0;
+  return (
+    <Box
+      sx={{
+        position: "absolute",
+        top: inset,
+        right: inset,
+        boxSizing: "border-box",
+      }}
+    >
+      <Badge
+        label={applicationLabel ?? `App No. - ${applicationNo || "-"}`}
+        variant="Neutral"
+        sx={{
+          color: "#9a2529",
+          fontSize: "13px",
+          fontWeight: 800,
+        }}
+      />
+    </Box>
   );
 }
 
@@ -178,6 +291,7 @@ export function ApplicantBanner({
   const visibleRows = [...rows, ...rowDetailsToBannerRows(rowDetails, rowDetailsOptions)].filter(
     (row) => row.fields.length > 0,
   );
+  const defaultPhotoAlt = hasName ? `${name} photo` : "Applicant photo";
   const firstRow = hasName ? undefined : visibleRows[0];
   const remainingRows = hasName ? visibleRows : visibleRows.slice(1);
 
@@ -211,50 +325,7 @@ export function ApplicantBanner({
           color: "#000",
         }}
       >
-        {hasPhoto && (
-          <Box
-            sx={{
-              display: "grid",
-              placeItems: "center",
-              background: "linear-gradient(135deg, #e45f14 0%, #c83c2f 100%)",
-            }}
-          >
-            {normalizedPhotoUrl ? (
-              <Box
-                component="img"
-                src={normalizedPhotoUrl}
-                alt={photoAlt ?? (hasName ? `${name} photo` : "Applicant photo")}
-                sx={{
-                  width: "76px",
-                  height: "76px",
-                  boxSizing: "border-box",
-                  border: "2px solid rgba(255, 255, 255, .55)",
-                  borderRadius: "50%",
-                  background: "rgba(255, 255, 255, .22)",
-                  objectFit: "cover",
-                }}
-              />
-            ) : (
-              <Box
-                sx={{
-                  width: "76px",
-                  height: "76px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  boxSizing: "border-box",
-                  border: "2px solid rgba(255, 255, 255, .45)",
-                  borderRadius: "50%",
-                  background: "rgba(255, 255, 255, .18)",
-                  color: "#000",
-                  fontSize: "44px",
-                }}
-              >
-                <UserProfileIcon width="1em" height="1em" />
-              </Box>
-            )}
-          </Box>
-        )}
+        {hasPhoto && <BannerAvatar photoUrl={normalizedPhotoUrl} alt={photoAlt ?? defaultPhotoAlt} />}
 
         <Box
           sx={{
@@ -267,42 +338,14 @@ export function ApplicantBanner({
           }}
         >
           <Box sx={{ pr: "180px", minWidth: 0, overflowWrap: "anywhere" }}>
-            {hasName ? (
-              <Typography
-                component="div"
-                sx={{
-                  mb: "4px",
-                  fontSize: "16px",
-                  fontWeight: 800,
-                  lineHeight: 1.6,
-                  color: "#000",
-                }}
-              >
-                {name}
-              </Typography>
-            ) : firstRow ? (
-              <RowContent row={firstRow} />
-            ) : null}
+            <BannerHeadline name={hasName ? name : undefined} firstRow={firstRow} />
           </Box>
 
-          <Box
-            sx={{
-              position: "absolute",
-              top: hasPhoto ? "12px" : 0,
-              right: hasPhoto ? "12px" : 0,
-              boxSizing: "border-box",
-            }}
-          >
-            <Badge
-              label={applicationLabel ?? `App No. - ${applicationNo || "-"}`}
-              variant="Neutral"
-              sx={{
-                color: "#9a2529",
-                fontSize: "13px",
-                fontWeight: 800,
-              }}
-            />
-          </Box>
+          <BannerApplicationBadge
+            applicationNo={applicationNo}
+            applicationLabel={applicationLabel}
+            hasPhoto={hasPhoto}
+          />
 
           {remainingRows.map((row) => (
             <Box

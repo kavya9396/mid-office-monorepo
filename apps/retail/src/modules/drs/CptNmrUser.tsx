@@ -9,7 +9,7 @@ import {
   DeleteIcon,
 } from "@insurance-poc/ui";
 import { drsRoutePath } from "@insurance-poc/routes";
-import { getDrsRoleLabel, readApiErrorMessage } from "@insurance-poc/utils";
+import { clearDrsTaskIds, getDrsRoleLabel, readApiErrorMessage } from "@insurance-poc/utils";
 import { Financial } from "@insurance-poc/common/financial";
 import { QuickLinksModule, type QuickLinkItem } from "@insurance-poc/common/quick-links";
 import { ApplicantProfile } from "@insurance-poc/common/applicant-profile";
@@ -21,6 +21,7 @@ import {
   type RequirementItem,
 } from "@insurance-poc/common/requirement-mgmt";
 import { getRetailDrsTaskConfig } from "../../config/drsTaskConfig";
+import { useCompleteRetailTaskMutation } from "../../services/completeTaskApi";
 import { useGetRetailDrsQuery, useSaveRetailDrsRequirementsMutation } from "../../services/drsApi";
 import {
   useGetRetailFinancialDetailsQuery,
@@ -37,6 +38,9 @@ const CPT_NMR_BANNER_OPTIONS: RowDetailsOptions = {
 const CPT_NMR_ROLE_TYPE = "CPT_DATA_ENTRY_NMR_TASK";
 
 const CPT_NMR_DEFAULT_ROLE_LABEL = "CPT Data Entry NMR User";
+
+/** Decision sent to the complete-task API when the Data Entry user submits (no decision field on this screen). */
+const CPT_NMR_SUBMIT_DECISION = "CLS_TASK";
 
 /** Only Applicant Profile is shown in Quick Links on the CPT NMR DRS. */
 const CPT_NMR_QUICK_LINKS: QuickLinkItem[] = [{ id: "applicant-profile", label: "Applicant Profile" }];
@@ -95,16 +99,36 @@ const CptNmrUser = () => {
   );
   const [saveFinancial] = useSaveRetailFinancialMutation();
   const [saveRetailDrsRequirements] = useSaveRetailDrsRequirementsMutation();
+  const [completeRetailTask, completeRetailTaskState] = useCompleteRetailTaskMutation();
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
   const [applicantProfileOpen, setApplicantProfileOpen] = useState(false);
+
+  const handleSubmit = async () => {
+    if (completeRetailTaskState.isLoading) return;
+    if (applicationNo.length === 0) {
+      setSnackbarMessage("Application number is missing.");
+      return;
+    }
+    const payload = { appNo: applicationNo, decision: CPT_NMR_SUBMIT_DECISION, remarks: "" };
+    try {
+      await completeRetailTask(payload).unwrap();
+      clearDrsTaskIds();
+      void navigate("/inbox", { replace: true });
+    } catch (reason: unknown) {
+      setSnackbarMessage(readApiErrorMessage(reason) || "Unable to complete the task.");
+    }
+  };
 
   const handleSaveRequirements = async (updatedRequirements: RequirementItem[]) => {
     try {
       await saveRetailDrsRequirements({
         applicationNo,
         roleType: drsTaskConfig.roleType,
+        screenType: drsTaskConfig.screenType,
+        businessType: drsTaskConfig.businessType,
         lob: RETAIL_LOB,
         requirements: updatedRequirements,
+        initialRequirements: drs.data?.requirements,
         queryArg: drsQueryArg,
       }).unwrap();
       setSnackbarMessage("Requirements saved successfully.");
@@ -199,6 +223,9 @@ const CptNmrUser = () => {
         requirements={drs.data.requirements}
         statusOrder={requirementStatusOrder}
         statusVariants={requirementStatusVariants}
+        fieldOptions={{
+          profile: drs.data.profileOptions,
+        }}
         addButton={{ label: "+ Add Requirement" }}
         rowActions={[
           {
@@ -224,7 +251,9 @@ const CptNmrUser = () => {
         >
           View Financial
         </CustomButton>
-        <CustomButton>Submit</CustomButton>
+        <CustomButton onClick={() => void handleSubmit()} disabled={completeRetailTaskState.isLoading}>
+          Submit
+        </CustomButton>
       </CustomBox>
 
       <CustomSnackbar

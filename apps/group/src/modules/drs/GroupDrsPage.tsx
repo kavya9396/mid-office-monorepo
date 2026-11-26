@@ -15,7 +15,10 @@ import { VendorCmoEcg } from "./VendorCmoEcg";
 import { VendorCmoTmt } from "./VendorCmoTmt";
 import { ReferralDrsPage } from "../referral-uw/ReferralDrsPage";
 import { fetchGuwMembers } from "../../services/drsService";
-import { HOD_CONFIG, SR_UW_CONFIG } from "../../services/drsService";
+import DptNmrUser from "./DptNmrUser";
+import DptMrUser from "./DptMrUser";
+import ReinsurerUser from "./ReinsurerUser";
+import { findGroupDrsTaskConfig } from "../../config/drsTaskConfig";
 
 interface MemberEntryProps {
   /** Member selection page opened when the DRS payload holds more than one member. */
@@ -28,7 +31,10 @@ interface MemberEntryProps {
  * the members. When it holds more than one member and no member is selected yet, go to the member selection
  * page; otherwise open the DRS directly.
  */
-function MemberEntry({ memberSelectionPath, children }: Readonly<MemberEntryProps>) {
+function MemberEntry({
+  memberSelectionPath,
+  children,
+}: Readonly<MemberEntryProps>) {
   const { applicationNo: applicationNoParam } = useParams();
   const navigate = useNavigate();
   const applicationNo = applicationNoParam?.trim() ?? "";
@@ -47,7 +53,7 @@ function MemberEntry({ memberSelectionPath, children }: Readonly<MemberEntryProp
           memberCount: members.length,
           memberId: "",
         });
-        navigate(memberSelectionPath, { replace: true });
+        void navigate(memberSelectionPath, { replace: true });
       } else {
         setDrsOpenContext({ applicationNo, memberCount: 1, memberId: "" });
         setChecked(true);
@@ -69,42 +75,61 @@ function GuwEntry() {
   );
 }
 
-function HodEntry() {
-  return (
-    <MemberEntry memberSelectionPath="/referral/member-selection">
-      <ReferralDrsPage config={HOD_CONFIG} />
-    </MemberEntry>
-  );
-}
+// function HodEntry() {
+//   return (
+//     <MemberEntry memberSelectionPath="/referral/member-selection">
+//       <ReferralDrsPage config={HOD_CONFIG} />
+//     </MemberEntry>
+//   );
+// }
 
-function SrUwEntry() {
-  return (
-    <MemberEntry memberSelectionPath="/referral/member-selection">
-      <ReferralDrsPage config={SR_UW_CONFIG} />
-    </MemberEntry>
-  );
-}
+// function SrUwEntry() {
+//   return (
+//     <MemberEntry memberSelectionPath="/referral/member-selection">
+//       <ReferralDrsPage config={SR_UW_CONFIG} />
+//     </MemberEntry>
+//   );
+// }
 
 /** `/app/{applicationNo}/drs` — screen picked from inbox session `roleType`. */
 /** Keys match `roleType` on inbox cases (see `groupInbox.json` poolData). */
-const SCREEN_BY_ROLE: Record<string, () => JSX.Element | null> = {
-  GUW_TASK: GuwEntry,
-  HOD_TASK: HodEntry,
-  HOD: HodEntry,
-  SR_UW_TASK: SrUwEntry,
-  SR_UW: SrUwEntry,
-  DVT_TASK: DvtUser,
-  MMT_TASK: MmtGrievanceDrsPage,
-  REF_CMO_TASK: RefCmoDrsPage,
-  HO_CMO_SPECIAL_TASK: HoCmoSpecial,
-  HO_CMO_REFERRAL_TASK: HoCmoReferral,
-  VENDOR_CMO_ECG_TASK: VendorCmoEcg,
-  VENDOR_CMO_TMT_TASK: VendorCmoTmt,
+// const SCREEN_BY_ROLE: Record<string, () => JSX.Element | null> = {
+//   GUW_TASK: GuwEntry,
+//   HOD_TASK: HodEntry,
+//   HOD: HodEntry,
+//   SR_UW_TASK: SrUwEntry,
+//   SR_UW: SrUwEntry,
+//   DVT_TASK: DvtUser,
+//   MMT_TASK: MmtGrievanceDrsPage,
+//   REF_CMO_TASK: RefCmoDrsPage,
+//   HO_CMO_SPECIAL_TASK: HoCmoSpecial,
+//   HO_CMO_REFERRAL_TASK: HoCmoReferral,
+//   VENDOR_CMO_ECG_TASK: VendorCmoEcg,
+//   VENDOR_CMO_TMT_TASK: VendorCmoTmt,
+/**
+ * `/app/{applicationNo}/drs` — the inbox session `roleType` (from the role-list response) is looked up in
+ * `GROUP_DRS_TASK_CONFIG`; its `screenType` picks the screen. A new task needs a config entry only.
+ */
+const SCREEN_BY_SCREEN_TYPE: Record<string, () => JSX.Element | null> = {
+  GUW_INFORMAL: GuwEntry,
+  DVT_INFORMAL: DvtUser,
+  MMT: MmtGrievanceDrsPage,
+  CPT_NMR: DptNmrUser,
+  CPT_MR: DptMrUser,
+  REINSURER: ReinsurerUser,
+  VENDOR_CMO_TMT: VendorCmoTmt,
+  REF_CMO: RefCmoDrsPage,
+  VENDOR_CMO_ECG: VendorCmoEcg,
+  HO_CMO_SPECIAL: HoCmoSpecial,
+  HO_CMO_REFERRAL: HoCmoReferral,
 };
 
 export function GroupDrsPage() {
-  const roleType = getDrsRoleType().trim().toUpperCase();
-  const Screen = SCREEN_BY_ROLE[roleType] ?? DvtUser;
+  const taskConfig = findGroupDrsTaskConfig(getDrsRoleType());
+  const Screen = taskConfig
+    ? SCREEN_BY_SCREEN_TYPE[taskConfig.screenType]
+    : undefined;
+  if (!Screen) return <div>Page not found</div>;
   return <Screen />;
 }
 

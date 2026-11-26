@@ -139,6 +139,11 @@
       "import": "./src/components/LifeAssured/LifeAssured.tsx",
       "default": "./src/components/LifeAssured/LifeAssured.tsx"
     },
+    "./reinsurer": {
+      "types": "./src/components/reinsurer.ts",
+      "import": "./src/components/reinsurer.ts",
+      "default": "./src/components/reinsurer.ts"
+    },
     "./pivv-details": {
       "types": "./src/components/PivvDetails.tsx",
       "import": "./src/components/PivvDetails.tsx",

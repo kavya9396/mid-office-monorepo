@@ -242,4 +242,8 @@ export const retailMmtGrievanceApi = createApi({
   }),
 });
 
-export const { useGetRetailMmtGrievancesQuery, useSaveRetailMmtGrievancesMutation } = retailMmtGrievanceApi;
+export const {
+  useGetRetailMmtGrievancesQuery,
+  useLazyGetRetailMmtGrievancesQuery,
+  useSaveRetailMmtGrievancesMutation,
+} = retailMmtGrievanceApi;
