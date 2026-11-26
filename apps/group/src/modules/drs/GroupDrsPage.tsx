@@ -8,6 +8,11 @@ import {
 import { MmtGrievanceDrsPage } from "./MmtGrievanceDrsPage";
 import DvtUser from "./DvtUser";
 import GuwUser from "./GuwUser";
+import { RefCmoDrsPage } from "./RefCmoDrsPage";
+import { HoCmoSpecial } from "./HoCmoSpecial";
+import { HoCmoReferral } from "./HoCmoReferral";
+import { VendorCmoEcg } from "./VendorCmoEcg";
+import { VendorCmoTmt } from "./VendorCmoTmt";
 import { fetchGuwMembers, referralConfigForRoleType } from "../../services/drsService";
 import { ReferralDrsPage } from "../referral-uw/ReferralDrsPage";
 import DptNmrUser from "./DptNmrUser";
@@ -89,6 +94,11 @@ const SCREEN_BY_SCREEN_TYPE: Record<string, () => JSX.Element | null> = {
   CPT_NMR: DptNmrUser,
   CPT_MR: DptMrUser,
   REINSURER: ReinsurerUser,
+  VENDOR_CMO_TMT: VendorCmoTmt,
+  REF_CMO: RefCmoDrsPage,
+  VENDOR_CMO_ECG: VendorCmoEcg,
+  HO_CMO_SPECIAL: HoCmoSpecial,
+  HO_CMO_REFERRAL: HoCmoReferral,
 };
 
 export function GroupDrsPage() {
