@@ -4,9 +4,11 @@
  * the "View Medical" module of design-reference/ui-prototypes/Group/DVT Informal/dvt-drs.html.
  */
 import {
+  getMedicalMasterOptions,
   MEDICAL_SCHEMA_EDUCATION,
   MEDICAL_SCHEMA_GENDER,
   MEDICAL_SCHEMA_OCCUPATION,
+  MEDICAL_SCHEMA_TELE_HEALTH_STATUS,
 } from "./medical.schema";
 
 /** [label, value, required?] */
@@ -29,6 +31,7 @@ export interface MedicalFamilyRow {
   age?: string;
   alive?: string;
   health?: string;
+  memberId?: number;
 }
 
 /**
@@ -48,6 +51,8 @@ export interface MedicalParameterValue {
   from: string;
   to: string;
   unit: string;
+  paramId?: number;
+  id?: string;
 }
 
 /** One answer option of a questionnaire question, as returned by the master. */
@@ -75,6 +80,8 @@ export interface MedicalQuestion {
   section: string;
   response: string | null;
   remarks: string | null;
+  /** Id of the stored answer, echoed back on save so the API updates it instead of inserting. */
+  responseId?: number | null;
 }
 
 export interface MedicalSection {
@@ -115,6 +122,15 @@ export interface MedicalSection {
   /** Number of columns for the field grid (default 3). */
   cols: number;
   fields: readonly MedicalFieldDef[];
+  /** Section and field metadata from API (retained for save operations). */
+  testDtlId?: number;
+  medAppDtlId?: number;
+  paramId?: number;
+  fieldIds?: Readonly<Record<string, number | null>>;
+  /** Habit sections fetched as an array: API `habitId` per habit (`HABITS[].api`), echoed back on save. */
+  habitIds?: Readonly<Record<string, number>>;
+  /** Blood pressure only: API `readingId` per reading sequence, echoed back on save. */
+  readingIds?: Readonly<Record<string, number>>;
 }
 
 export interface MedicalGroup {
@@ -126,6 +142,8 @@ export interface MedicalGroup {
 export type MedicalControlKind =
   | "text"
   | "number"
+  /** A plain number that is shown in Indian currency format when not being edited. */
+  | "currency"
   | "yesNo"
   | "gender"
   | "placeOfExamination"
@@ -173,12 +191,14 @@ export const MEDICAL_YES_NO_OPTIONS: MedicalOption[] = [
 const toMedicalOptions = (values: readonly string[]): MedicalOption[] =>
   values.map((value) => ({ label: value, value }));
 
+/** Hardcoded fallback; the screen reads the post-login master (see `getMedicalMasterOptions`). */
 export const MEDICAL_GENDER_OPTIONS: MedicalOption[] =
   toMedicalOptions(MEDICAL_SCHEMA_GENDER);
 
+/** The dropdown value is the code the API stores (`RES_OFFICE` in the save sample); the label is shown. */
 export const MEDICAL_PLACE_OF_EXAMINATION_OPTIONS: MedicalOption[] = [
-  { label: "Clinic", value: "Clinic" },
-  { label: "Res/Office", value: "Res/Office" },
+  { label: "Clinic", value: "CLINIC" },
+  { label: "Res/Office", value: "RES_OFFICE" },
 ];
 
 export const MEDICAL_EDUCATION_OPTIONS: MedicalOption[] =
@@ -186,6 +206,11 @@ export const MEDICAL_EDUCATION_OPTIONS: MedicalOption[] =
 
 export const MEDICAL_OCCUPATION_OPTIONS: MedicalOption[] =
   toMedicalOptions(MEDICAL_SCHEMA_OCCUPATION);
+
+/** Tele Family History "Health Status" dropdown (sample list, open question 14). */
+export const MEDICAL_TELE_HEALTH_STATUS_OPTIONS: MedicalOption[] = toMedicalOptions(
+  MEDICAL_SCHEMA_TELE_HEALTH_STATUS,
+);
 
 export const MEDICAL_DEAD_OR_ALIVE_OPTIONS: MedicalOption[] = [
   { label: "Alive", value: "Alive" },
@@ -310,24 +335,25 @@ export const MEDICAL_MER_SECTION: MedicalSection = {
 };
 
 export const MEDICAL_HABIT_ADDICTIONS_FIELDS: readonly MedicalFieldDef[] = [
-  ["Cigarettes/beedis/cigar", "", true],
-  ["Cigarettes/beedis/cigar Quant", "", false],
-  ["Cigarettes/beedis/cigar Year", "", false],
-  ["Gutka / snuff / paan etc.", "", true],
-  ["Gutka / snuff / paan etc. Quant", "", false],
-  ["Gutka / snuff / paan etc. Year", "", false],
-  ["Narcotic Consumption", "", true],
-  ["Narcotic Consumption Quant", "", false],
-  ["Narcotic Consumption Year", "", false],
-  ["Beer/Wine/Hard liquor", "", true],
-  ["Beer/Wine/Hard liquor Quant", "", false],
-  ["Beer/Wine/Hard liquor Year", "", false],
+  ["Cigarettes/beedis/cigar - Indicator", "", true],
+  ["Cigarettes/beedis/cigar - Quantity", "", false],
+  ["Cigarettes/beedis/cigar - No. of Year", "", false],
+  ["Gutka / snuff / paan etc. - Indicator", "", true],
+  ["Gutka / snuff / paan etc. - Quantity", "", false],
+  ["Gutka / snuff / paan etc. - No. of Year", "", false],
+  ["Narcotic Consumption - Indicator", "", true],
+  ["Narcotic Consumption - Quantity", "", false],
+  ["Narcotic Consumption - No. of Year", "", false],
+  ["Beer/Wine/Hard liquor - Indicator", "", true],
+  ["Beer/Wine/Hard liquor - Quantity", "", false],
+  ["Beer/Wine/Hard liquor - No. of Year", "", false],
 ];
 
 export const MEDICAL_HABIT_ADDICTIONS_SECTION: MedicalSection = {
   key: "habit_addictions",
   groupKey: "mer",
   title: "Habit and Addictions",
+  layout: "habitAddiction",
   cols: 3,
   selectPlaceholder: "--Select--",
   fields: MEDICAL_HABIT_ADDICTIONS_FIELDS,
@@ -417,13 +443,16 @@ export function parseMedicalQuestionnaire(raw: readonly unknown[]): readonly Med
     if (!isRecord(row)) {
       throw new Error(`Questionnaire row ${index} is not an object`);
     }
-    const questionType = QUESTION_TYPES.find((type) => type === row.questionType);
+    const inferredType =
+      QUESTION_TYPES.find((type) => type === row.questionType) ??
+      (Array.isArray(row.answerType) && row.answerType.length > 0
+        ? "SINGLESELECT"
+        : "TEXT");
     if (
       typeof row.id !== "string" ||
-      typeof row.questionDesc !== "string" ||
-      questionType === undefined
+      typeof row.questionDesc !== "string"
     ) {
-      throw new Error(`Questionnaire row ${index} has an invalid id, question or type`);
+      throw new Error(`Questionnaire row ${index} has an invalid id or question`);
     }
     const answerType = Array.isArray(row.answerType)
       ? row.answerType.map((option: Record<string, unknown>) => ({
@@ -432,7 +461,10 @@ export function parseMedicalQuestionnaire(raw: readonly unknown[]): readonly Med
           subQuestionIds: Array.isArray(option.subQuestionIds)
             ? option.subQuestionIds.map(String)
             : [],
-          ...(option.remarksMandatory === "Y" ? { remarksMandatory: "Y" } : {}),
+          // V4 sends `remarkMandatory: true`; the earlier contract sent `remarksMandatory: "Y"`.
+          ...(option.remarksMandatory === "Y" || option.remarkMandatory === true
+            ? { remarksMandatory: "Y" }
+            : {}),
         }))
       : null;
     return {
@@ -441,13 +473,20 @@ export function parseMedicalQuestionnaire(raw: readonly unknown[]): readonly Med
       parentOption: typeof row.parentOption === "string" ? row.parentOption : null,
       questionDesc: row.questionDesc,
       questionDetails: typeof row.questionDetails === "string" ? row.questionDetails : null,
-      questionGroup: Number(row.questionGroup),
+      questionGroup: Number(row.questionGroup ?? 0),
       mandatory: row.mandatory === true,
-      questionType,
+      questionType: inferredType,
       answerType,
       section: String(row.section),
-      response: typeof row.response === "string" ? row.response : null,
+      // The API joins multi-select option keys with `#`; the screen keeps them comma-joined.
+      response:
+        typeof row.response === "string"
+          ? inferredType === "MULTISELECT"
+            ? row.response.split("#").filter(Boolean).join(",")
+            : row.response
+          : null,
       remarks: typeof row.remarks === "string" ? row.remarks : null,
+      responseId: typeof row.responseId === "number" ? row.responseId : null,
     };
   });
 }
@@ -556,7 +595,7 @@ const MEDICAL_TELE_MER_CONTROL_KINDS: Readonly<Record<string, MedicalControlKind
   "Telephonic MER": "yesNo",
   Education: "education",
   Occupation: "occupation",
-  "Annual Income": "number",
+  "Annual Income": "currency",
   "Previous Insurance Declined": "yesNo",
   "Medical Treatment": "yesNo",
   Adversity: "yesNo",
@@ -1550,6 +1589,43 @@ export const MEDICAL_GROUPS: readonly MedicalGroup[] = [
   },
 ];
 
+export const TELEMER_SECTIONS: readonly MedicalSection[] = [
+  MEDICAL_APPLICATION_FORM_LIFESTYLE_SECTION,
+  MEDICAL_TELE_MER_SECTION,
+  MEDICAL_TELE_MEASUREMENT_SECTION,
+  MEDICAL_TELE_FAMILY_HISTORY_SECTION,
+  MEDICAL_TELE_HABIT_ADDICTION_SECTION,
+  MEDICAL_TELE_QUESTION_TABLE_SECTION,
+  MEDICAL_TELE_DISPOSITION_SECTION,
+];
+
+export const TELEMER_GROUPS: readonly MedicalGroup[] = [
+  {
+    key: "overview",
+    name: "Overview",
+    sections: [MEDICAL_APPLICATION_FORM_LIFESTYLE_SECTION],
+  },
+  {
+    key: "tele_video_mer",
+    name: "TELE-VIDEO MER",
+    sections: [
+      MEDICAL_TELE_MER_SECTION,
+      MEDICAL_TELE_MEASUREMENT_SECTION,
+      MEDICAL_TELE_FAMILY_HISTORY_SECTION,
+      MEDICAL_TELE_HABIT_ADDICTION_SECTION,
+      MEDICAL_TELE_QUESTION_TABLE_SECTION,
+      MEDICAL_TELE_DISPOSITION_SECTION,
+    ],
+  },
+];
+
+/**
+ * Groups edited as one unit: the group's first section (MER, Tele MER) carries the single
+ * Edit / Save / Reset, and the remaining sub sections follow it. Only the first section is
+ * offered in the document dropdown.
+ */
+export const MEDICAL_COMBINED_GROUP_KEYS: readonly string[] = ["mer", "tele_video_mer"];
+
 /** Sections that are display-only: no Edit / Save / Reset buttons and not offered in the document dropdown. */
 export const MEDICAL_NON_EDITABLE_SECTION_KEYS: readonly string[] = [
   MEDICAL_APPLICATION_FORM_LIFESTYLE_SECTION.key,
@@ -1603,6 +1679,9 @@ export const MEDICAL_MESSAGES = {
   documents: "Medical documents are available in the source application.",
   submitted: "Medical details submitted successfully.",
   sectionSaved: (title: string) => `${title} saved successfully.`,
+  saveFailed: "Unable to save the medical details.",
+  sessionMissing: "Your session has expired. Please sign in again.",
+  partyMissing: "Unable to save: the applicant's party id is missing.",
   sectionNotFound: "No medical section found.",
   validationFailed: "Please correct the highlighted fields.",
   noHistory: "No history available for this section.",
@@ -1715,7 +1794,10 @@ export function resolveMedicalControlKind(
   if (sectionKey === MEDICAL_TELE_MER_SECTION.key) {
     return MEDICAL_TELE_MER_CONTROL_KINDS[label] ?? "text";
   }
-  if (sectionKey === MEDICAL_TELE_HABIT_ADDICTION_SECTION.key) {
+  if (
+    sectionKey === MEDICAL_TELE_HABIT_ADDICTION_SECTION.key ||
+    sectionKey === MEDICAL_HABIT_ADDICTIONS_SECTION.key
+  ) {
     return label.endsWith(" - Indicator") ? "yesNo" : "number";
   }
 
@@ -1742,13 +1824,13 @@ export function getMedicalOptions(
     case "yesNo":
       return MEDICAL_YES_NO_OPTIONS;
     case "gender":
-      return MEDICAL_GENDER_OPTIONS;
+      return getMedicalMasterOptions("gender", MEDICAL_SCHEMA_GENDER);
     case "placeOfExamination":
       return MEDICAL_PLACE_OF_EXAMINATION_OPTIONS;
     case "education":
-      return MEDICAL_EDUCATION_OPTIONS;
+      return getMedicalMasterOptions("education", MEDICAL_SCHEMA_EDUCATION);
     case "occupation":
-      return MEDICAL_OCCUPATION_OPTIONS;
+      return getMedicalMasterOptions("occupation", MEDICAL_SCHEMA_OCCUPATION);
     case "deadOrAlive":
       return MEDICAL_DEAD_OR_ALIVE_OPTIONS;
     case "familyRelation":

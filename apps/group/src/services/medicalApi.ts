@@ -8,7 +8,12 @@ import {
   readApiErrorMessage,
   useMock,
 } from "@insurance-poc/utils";
-import { mapMedicalFetchPayload, type MedicalFetchResult } from "@insurance-poc/common/medical";
+import {
+  mapMedicalFetchPayload,
+  type MedicalFetchResult,
+  type MedicalSaveRequest,
+  type MedicalSaveResponse,
+} from "@insurance-poc/common/medical";
 import medicalDataFetchMock from "../../../../mock/medical/medical-data-fetch.json";
 
 const MOCK_MEDICAL_DELAY_MS = 100;
@@ -72,7 +77,69 @@ export const groupMedicalApi = createApi({
         return mapBody(result.data);
       },
     }),
+    saveGroupMedical: build.mutation<MedicalSaveResponse, MedicalSaveRequest>({
+      async queryFn(request, _api, _extra, baseQuery) {
+        if (useMock) {
+          await waitMs(MOCK_MEDICAL_DELAY_MS);
+          // Same envelope as `response_example_shape` in mock/medical/medical-data-save.json.
+          return {
+            data: {
+              response_code: 200,
+              error: false,
+              message: "Medical details saved successfully.",
+              data: {
+                applicationNumber: request.applicationNumber,
+                partyId: request.partyId,
+                sections: request.sections,
+              },
+            },
+          };
+        }
+        const saveUrl = groupBusinessUrls.medicalSave;
+        if (saveUrl.length === 0) {
+          return { error: customError("Medical save API is not configured.") };
+        }
+
+        const result = await baseQuery({
+          url: saveUrl,
+          method: "POST",
+          body: request,
+          headers: { accept: "*/*", "Content-Type": "application/json" },
+        });
+        // An HTTP error (e.g. 400 validation) carries the API envelope in its body: keep it, so the screen can
+        // show the message and the field-level errors in `data`.
+        if (result.error) {
+          const message = readApiErrorMessage(result.error, "Unable to save the medical details.");
+          const body: unknown = "data" in result.error ? result.error.data : undefined;
+          if (typeof body === "object" && body !== null && !Array.isArray(body)) {
+            return {
+              data: {
+                response_code: typeof result.error.status === "number" ? result.error.status : 400,
+                error: true,
+                message,
+                data: "data" in body ? body.data : undefined,
+              },
+            };
+          }
+          return { error: customError(message) };
+        }
+        // A 200 whose body says error / response_code >= 400 is a validation failure: keep the envelope
+        // so the screen shows the API's message and stays in edit mode.
+        if (isApiFailureBody(result.data)) {
+          const failure = result.data as Partial<MedicalSaveResponse>;
+          return {
+            data: {
+              response_code: typeof failure.response_code === "number" ? failure.response_code : 400,
+              error: true,
+              message: readApiErrorMessage(result.data, "Unable to save the medical details."),
+              data: failure.data,
+            },
+          };
+        }
+        return { data: result.data as MedicalSaveResponse };
+      },
+    }),
   }),
 });
 
-export const { useGetGroupMedicalDetailsQuery } = groupMedicalApi;
+export const { useGetGroupMedicalDetailsQuery, useSaveGroupMedicalMutation } = groupMedicalApi;

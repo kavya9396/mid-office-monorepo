@@ -6,7 +6,7 @@
  * Form values are strings (empty string = nothing entered / "--Select--").
  */
 import { z } from "zod";
-import { RegexPatterns } from "@insurance-poc/utils";
+import { getMasterList, RegexPatterns } from "@insurance-poc/utils";
 
 /* ------------------------------------------------------------------ */
 /* Shared field builders                                              */
@@ -89,10 +89,47 @@ const optionalDropdown = <const T extends readonly [string, ...string[]]>(
 /* Dropdown option values                                             */
 /* ------------------------------------------------------------------ */
 
+/**
+ * Dropdown options from a post-login master list (`gender`, `education`, `occupation`): the value is the
+ * master `code` (what the API sends and expects on save) and the label is its `description`. Duplicate
+ * descriptions keep the first entry. When the master has no active entries (not loaded, or empty), the
+ * hardcoded `fallback` labels are used as both label and value.
+ */
+export const getMedicalMasterOptions = (
+  masterType: string,
+  fallback: readonly string[],
+): { label: string; value: string }[] => {
+  const seen = new Set<string>();
+  const options = getMasterList(masterType)
+    .filter((entry) => entry.isActive === "Y")
+    .flatMap((entry) => {
+      const label = entry.description.trim();
+      const key = label.toLowerCase();
+      if (entry.code === "" || label === "" || seen.has(key)) return [];
+      seen.add(key);
+      return [{ label, value: entry.code }];
+    });
+  return options.length > 0 ? options : fallback.map((value) => ({ label: value, value }));
+};
+
+/** Dropdown whose valid values are the master codes (or the fallback labels) read when it is validated. */
+const masterDropdown = (
+  label: string,
+  masterType: string,
+  fallback: readonly string[],
+  required: boolean,
+) =>
+  (required ? mandatoryText(label) : z.string().trim()).refine(
+    (value) =>
+      value === "" ||
+      getMedicalMasterOptions(masterType, fallback).some((option) => option.value === value),
+    { message: `${label} has an invalid selection` },
+  );
 export const MEDICAL_SCHEMA_YES_NO = ["Yes", "No"] as const;
+/** API codes; the dropdown value is the code (see `MEDICAL_PLACE_OF_EXAMINATION_OPTIONS`). */
 export const MEDICAL_SCHEMA_PLACE_OF_EXAMINATION = [
-  "Clinic",
-  "Res/Office",
+  "CLINIC",
+  "RES_OFFICE",
 ] as const;
 export const MEDICAL_SCHEMA_GENDER = ["MALE", "FEMALE", "TRANSGENDER"] as const;
 export const MEDICAL_SCHEMA_EDUCATION = [
@@ -138,7 +175,7 @@ export const medicalMerSchema = z.object({
     "Place of Examination",
     MEDICAL_SCHEMA_PLACE_OF_EXAMINATION,
   ),
-  gender: mandatoryDropdown("Gender", MEDICAL_SCHEMA_GENDER),
+  gender: masterDropdown("Gender", "gender", MEDICAL_SCHEMA_GENDER, true),
   nameOfMe: mandatoryAlphabets("Name Of ME"),
   meCode: mandatoryText("ME Code"),
   isIdentityProofAndApplicationPhotoMatch: optionalDropdown(
@@ -146,14 +183,8 @@ export const medicalMerSchema = z.object({
     MEDICAL_SCHEMA_YES_NO,
   ),
   examineeDob: mandatoryDate("Examinee DOB"),
-  examineeEducationSd: optionalDropdown(
-    "Examinee Education SD",
-    MEDICAL_SCHEMA_EDUCATION,
-  ),
-  examineeOccupationSd: optionalDropdown(
-    "Examinee Occupation SD",
-    MEDICAL_SCHEMA_OCCUPATION,
-  ),
+  examineeEducationSd: masterDropdown("Examinee Education SD", "education", MEDICAL_SCHEMA_EDUCATION, false),
+  examineeOccupationSd: masterDropdown("Examinee Occupation SD", "occupation", MEDICAL_SCHEMA_OCCUPATION, false),
   examineeIncomeSd: optionalNumeric("Examinee Income SD"),
   previousPolicyDeclinedPostponedOrRevisedTermSd: optionalDropdown(
     "Any previous life Insurance policy decline/Postpone/or issued on revised term SD",
@@ -331,6 +362,23 @@ export const MEDICAL_SCHEMA_2DECHO_FINDINGS = [
   "Severe Changes",
 ] as const;
 export const MEDICAL_SCHEMA_NORMAL_ABNORMAL = ["Abnormal", "Normal"] as const;
+
+/**
+ * SAMPLE option lists (open questions 10 and 14): the master has not supplied the real lists yet.
+ * Replace these with the master's values; the mapper and the controls read only these constants.
+ * The first value of each list is what the V4 sample response sends.
+ */
+export const MEDICAL_SCHEMA_TELE_DISCLOSURE = ["Material", "Non Material"] as const;
+export const MEDICAL_SCHEMA_TELE_MER_DETAIL = ["Video MER", "Tele MER"] as const;
+export const MEDICAL_SCHEMA_TELE_TYPE = ["TMER", "VMER"] as const;
+export const MEDICAL_SCHEMA_TELE_HEALTH_STATUS = [
+  "Healthy",
+  "Good",
+  "Fair",
+  "Poor",
+  "Critical",
+  "Not Known",
+] as const;
 
 export const medical2DEchoSchema = z.object({
   medicalType: optionalDropdown(
@@ -578,7 +626,7 @@ export const medicalBloodSugarRandomSchema = z.object({
   date: optionalDate("Date"),
   examineeName: mandatoryText("Examinee Name"),
   examineeAge: optionalNumeric("Examinee Age"),
-  examineeGender: optionalDropdown("Examinee Gender", MEDICAL_SCHEMA_GENDER),
+  examineeGender: masterDropdown("Examinee Gender", "gender", MEDICAL_SCHEMA_GENDER, false),
   diagnosticCentreName: optionalText,
   diagnosticCentreAddress: optionalText,
   diagnosticCentrePincode: optionalNumeric("Diagnostic Centre Pincode"),
@@ -605,7 +653,7 @@ export const medicalCbcSchema = z.object({
   date: optionalDate("Date"),
   examineeName: mandatoryText("Examinee Name"),
   examineeAge: optionalNumeric("Examinee Age"),
-  examineeGender: optionalDropdown("Examinee Gender", MEDICAL_SCHEMA_GENDER),
+  examineeGender: masterDropdown("Examinee Gender", "gender", MEDICAL_SCHEMA_GENDER, false),
   diagnosticCentreName: optionalText,
   diagnosticCentreAddress: optionalText,
   diagnosticCentrePincode: optionalNumeric("Diagnostic Centre Pincode"),
@@ -687,7 +735,7 @@ export const medicalMicroalbuminuriaSchema = z.object({
   testDate: optionalDate("Test Date"),
   examineeName: mandatoryText("Examinee Name"),
   examineeAge: optionalNumeric("Examinee Age"),
-  examineeGender: optionalDropdown("Examinee Gender", MEDICAL_SCHEMA_GENDER),
+  examineeGender: masterDropdown("Examinee Gender", "gender", MEDICAL_SCHEMA_GENDER, false),
   diagnosticCentreName: optionalText,
   diagnosticCentreAddress: optionalText,
   diagnosticCentrePincode: optionalNumeric("Diagnostic Centre Pincode"),
@@ -747,11 +795,13 @@ export type MedicalTeleMeasurementValues = z.input<
 /* Section: Tele/Video MER                                            */
 /* ------------------------------------------------------------------ */
 
-/** Time in HH:MM (24-hour). */
+/** Time in 12-hour form, e.g. `04:26 PM`. */
+export const MEDICAL_TIME_12H = /^(0[1-9]|1[0-2]):[0-5]\d (AM|PM)$/;
+
 const mandatoryTime = (label: string) =>
   mandatoryText(label).regex(
-    RegexPatterns.timeHHMM,
-    `${label} must be a valid time (HH:MM)`,
+    MEDICAL_TIME_12H,
+    `${label} must be a valid time (hh:mm AM/PM)`,
   );
 
 export const medicalTeleMerSchema = z.object({
@@ -759,18 +809,18 @@ export const medicalTeleMerSchema = z.object({
   applicationNo: optionalText,
   firstName: mandatoryAlphabets("First Name"),
   lastName: optionalAlphabets("Last Name"),
-  gender: mandatoryDropdown("Gender", MEDICAL_SCHEMA_GENDER),
+  gender: masterDropdown("Gender", "gender", MEDICAL_SCHEMA_GENDER, true),
   dateOfBirth: mandatoryDate("Date of Birth"),
   telephonicMer: mandatoryDropdown("Telephonic MER", MEDICAL_SCHEMA_YES_NO),
   timeOfTeleCall: mandatoryTime("Time of Tele call"),
-  education: optionalDropdown("Education", MEDICAL_SCHEMA_EDUCATION),
-  occupation: optionalDropdown("Occupation", MEDICAL_SCHEMA_OCCUPATION),
-  disclosure: optionalText,
+  education: masterDropdown("Education", "education", MEDICAL_SCHEMA_EDUCATION, false),
+  occupation: masterDropdown("Occupation", "occupation", MEDICAL_SCHEMA_OCCUPATION, false),
+  disclosure: optionalDropdown("Disclosure", MEDICAL_SCHEMA_TELE_DISCLOSURE),
   adversity: optionalText,
   annualIncome: optionalNumeric("Annual Income"),
   examinerName: mandatoryAlphabets("Examiner Name"),
   registrationId: mandatoryText("Registration ID"),
-  merDetail: optionalText,
+  merDetail: optionalDropdown("MER Detail", MEDICAL_SCHEMA_TELE_MER_DETAIL),
   previousInsuranceDeclined: optionalDropdown(
     "Previous Insurance Declined",
     MEDICAL_SCHEMA_YES_NO,
@@ -779,7 +829,7 @@ export const medicalTeleMerSchema = z.object({
   address: optionalText,
   teleFindings: optionalText,
   teleMerFinalRemark: optionalText,
-  teleType: optionalText,
+  teleType: optionalDropdown("Tele Type", MEDICAL_SCHEMA_TELE_TYPE),
 });
 
 export type MedicalTeleMerValues = z.input<typeof medicalTeleMerSchema>;
@@ -870,14 +920,14 @@ export const MEDICAL_SECTION_FIELD_DEPENDENCIES: Readonly<
   Record<string, Readonly<Record<string, string>>>
 > = {
   habit_addictions: {
-    "Cigarettes/beedis/cigar Quant": "Cigarettes/beedis/cigar",
-    "Cigarettes/beedis/cigar Year": "Cigarettes/beedis/cigar",
-    "Gutka / snuff / paan etc. Quant": "Gutka / snuff / paan etc.",
-    "Gutka / snuff / paan etc. Year": "Gutka / snuff / paan etc.",
-    "Narcotic Consumption Quant": "Narcotic Consumption",
-    "Narcotic Consumption Year": "Narcotic Consumption",
-    "Beer/Wine/Hard liquor Quant": "Beer/Wine/Hard liquor",
-    "Beer/Wine/Hard liquor Year": "Beer/Wine/Hard liquor",
+    "Cigarettes/beedis/cigar - Quantity": "Cigarettes/beedis/cigar - Indicator",
+    "Cigarettes/beedis/cigar - No. of Year": "Cigarettes/beedis/cigar - Indicator",
+    "Gutka / snuff / paan etc. - Quantity": "Gutka / snuff / paan etc. - Indicator",
+    "Gutka / snuff / paan etc. - No. of Year": "Gutka / snuff / paan etc. - Indicator",
+    "Narcotic Consumption - Quantity": "Narcotic Consumption - Indicator",
+    "Narcotic Consumption - No. of Year": "Narcotic Consumption - Indicator",
+    "Beer/Wine/Hard liquor - Quantity": "Beer/Wine/Hard liquor - Indicator",
+    "Beer/Wine/Hard liquor - No. of Year": "Beer/Wine/Hard liquor - Indicator",
   },
   tele_habit_addiction: {
     "Cigarette/beedis/cigar - Quantity": "Cigarette/beedis/cigar - Indicator",
@@ -925,18 +975,18 @@ export const MEDICAL_SECTION_FIELD_KEYS: Readonly<
       "previousPolicyDeclinedPostponedOrRevisedTermSd",
   },
   habit_addictions: {
-    "Cigarettes/beedis/cigar": "cigarettes",
-    "Cigarettes/beedis/cigar Quant": "cigarettesQuant",
-    "Cigarettes/beedis/cigar Year": "cigarettesYear",
-    "Gutka / snuff / paan etc.": "gutka",
-    "Gutka / snuff / paan etc. Quant": "gutkaQuant",
-    "Gutka / snuff / paan etc. Year": "gutkaYear",
-    "Narcotic Consumption": "narcotic",
-    "Narcotic Consumption Quant": "narcoticQuant",
-    "Narcotic Consumption Year": "narcoticYear",
-    "Beer/Wine/Hard liquor": "alcohol",
-    "Beer/Wine/Hard liquor Quant": "alcoholQuant",
-    "Beer/Wine/Hard liquor Year": "alcoholYear",
+    "Cigarettes/beedis/cigar - Indicator": "cigarettes",
+    "Cigarettes/beedis/cigar - Quantity": "cigarettesQuant",
+    "Cigarettes/beedis/cigar - No. of Year": "cigarettesYear",
+    "Gutka / snuff / paan etc. - Indicator": "gutka",
+    "Gutka / snuff / paan etc. - Quantity": "gutkaQuant",
+    "Gutka / snuff / paan etc. - No. of Year": "gutkaYear",
+    "Narcotic Consumption - Indicator": "narcotic",
+    "Narcotic Consumption - Quantity": "narcoticQuant",
+    "Narcotic Consumption - No. of Year": "narcoticYear",
+    "Beer/Wine/Hard liquor - Indicator": "alcohol",
+    "Beer/Wine/Hard liquor - Quantity": "alcoholQuant",
+    "Beer/Wine/Hard liquor - No. of Year": "alcoholYear",
   },
   tele_habit_addiction: {
     "Cigarette/beedis/cigar - Indicator": "cigarettes",
@@ -1191,6 +1241,11 @@ export const MEDICAL_SECTION_FIELD_KEYS: Readonly<
 export const MEDICAL_SECTION_FIELD_OPTIONS: Readonly<
   Record<string, Readonly<Record<string, readonly string[]>>>
 > = {
+  tele_mer: {
+    Disclosure: MEDICAL_SCHEMA_TELE_DISCLOSURE,
+    "MER Detail": MEDICAL_SCHEMA_TELE_MER_DETAIL,
+    "Tele Type": MEDICAL_SCHEMA_TELE_TYPE,
+  },
   "2decho": {
     "Medical Type": MEDICAL_SCHEMA_SPECIAL_MEDICAL_TYPE,
     Findings: MEDICAL_SCHEMA_2DECHO_FINDINGS,
@@ -1249,92 +1304,71 @@ export const MEDICAL_SECTION_FIELD_OPTIONS: Readonly<
   hbsag: {
     "Medical Type": MEDICAL_SCHEMA_SPECIAL_MEDICAL_TYPE,
     Value: MEDICAL_SCHEMA_REACTIVE,
-    "Examinee Gender": MEDICAL_SCHEMA_GENDER,
   },
   hiv_elisa: {
     "Medical Type": MEDICAL_SCHEMA_SPECIAL_MEDICAL_TYPE,
     Value: MEDICAL_SCHEMA_REACTIVE,
-    "Examinee Gender": MEDICAL_SCHEMA_GENDER,
   },
   cot: {
     "Medical Type": MEDICAL_SCHEMA_SPECIAL_MEDICAL_TYPE,
     Value: MEDICAL_SCHEMA_REACTIVE,
-    "Examinee Gender": MEDICAL_SCHEMA_GENDER,
   },
   ghb: {
     "Medical Type": MEDICAL_SCHEMA_SPECIAL_MEDICAL_TYPE,
-    "Examinee Gender": MEDICAL_SCHEMA_GENDER,
   },
   hba1c: {
     "Medical Type": MEDICAL_SCHEMA_SPECIAL_MEDICAL_TYPE,
-    "Examinee Gender": MEDICAL_SCHEMA_GENDER,
   },
   lipids: {
     "Medical Type": MEDICAL_SCHEMA_SPECIAL_MEDICAL_TYPE,
-    "Examinee Gender": MEDICAL_SCHEMA_GENDER,
   },
   ogtt_group: {
     "Medical Type": MEDICAL_SCHEMA_SPECIAL_MEDICAL_TYPE,
-    "Examinee Gender": MEDICAL_SCHEMA_GENDER,
   },
   lft: {
     "Medical Type": MEDICAL_SCHEMA_SPECIAL_MEDICAL_TYPE,
-    "Examinee Gender": MEDICAL_SCHEMA_GENDER,
   },
   cbc_group: {
     "Medical Type": MEDICAL_SCHEMA_SPECIAL_MEDICAL_TYPE,
-    "Examinee Gender": MEDICAL_SCHEMA_GENDER,
   },
   blood_sugar_random: {
     "Medical Type": MEDICAL_SCHEMA_SPECIAL_MEDICAL_TYPE,
-    "Examinee Gender": MEDICAL_SCHEMA_GENDER,
   },
   tft_group: {
     "Medical Type": MEDICAL_SCHEMA_SPECIAL_MEDICAL_TYPE,
-    "Examinee Gender": MEDICAL_SCHEMA_GENDER,
   },
   s13_group: {
     "Medical Type": MEDICAL_SCHEMA_SPECIAL_MEDICAL_TYPE,
-    "Examinee Gender": MEDICAL_SCHEMA_GENDER,
   },
   sma12_group: {
     "Medical Type": MEDICAL_SCHEMA_SPECIAL_MEDICAL_TYPE,
-    "Examinee Gender": MEDICAL_SCHEMA_GENDER,
   },
   rua_group: {
     "Medical Type": MEDICAL_SCHEMA_SPECIAL_MEDICAL_TYPE,
-    "Examinee Gender": MEDICAL_SCHEMA_GENDER,
   },
   ppbs: {
     "Medical Type": MEDICAL_SCHEMA_SPECIAL_MEDICAL_TYPE,
-    "Examinee Gender": MEDICAL_SCHEMA_GENDER,
   },
   serum_cotinine: {
     "Medical Type": MEDICAL_SCHEMA_SPECIAL_MEDICAL_TYPE,
     Value: MEDICAL_SCHEMA_REACTIVE,
-    "Examinee Gender": MEDICAL_SCHEMA_GENDER,
   },
   fbs: {
     "Medical Type": MEDICAL_SCHEMA_SPECIAL_MEDICAL_TYPE,
-    "Examinee Gender": MEDICAL_SCHEMA_GENDER,
   },
   hiv_western_blot: {
     "Medical Type": MEDICAL_SCHEMA_SPECIAL_MEDICAL_TYPE,
     Value: MEDICAL_SCHEMA_REACTIVE,
-    "Examinee Gender": MEDICAL_SCHEMA_GENDER,
   },
   hcv: {
     "Medical Type": MEDICAL_SCHEMA_SPECIAL_MEDICAL_TYPE,
     Value: MEDICAL_SCHEMA_REACTIVE,
-    "Examinee Gender": MEDICAL_SCHEMA_GENDER,
   },
   microalbuminuria: {
     "Medical Type": MEDICAL_SCHEMA_SPECIAL_MEDICAL_TYPE,
-    "Examinee Gender": MEDICAL_SCHEMA_GENDER,
   },
   psa: {
     "Medical Type": MEDICAL_SCHEMA_SPECIAL_MEDICAL_TYPE,
-    "Examinee Gender": MEDICAL_SCHEMA_GENDER,
   },
 };
 

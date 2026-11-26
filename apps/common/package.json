@@ -99,6 +99,11 @@
       "import": "./src/modules/Medical/Medical.tsx",
       "default": "./src/modules/Medical/Medical.tsx"
     },
+    "./telemer": {
+      "types": "./src/modules/Telemer/index.ts",
+      "import": "./src/modules/Telemer/index.ts",
+      "default": "./src/modules/Telemer/index.ts"
+    },
     "./life-assured": {
       "types": "./src/components/LifeAssured/LifeAssured.tsx",
       "import": "./src/components/LifeAssured/LifeAssured.tsx",

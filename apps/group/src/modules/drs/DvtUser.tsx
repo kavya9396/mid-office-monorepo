@@ -53,7 +53,10 @@ import {
   useGetGroupFinancialDetailsQuery,
   useSaveGroupFinancialMutation,
 } from "../../services/financialApi";
-import { useGetGroupMedicalDetailsQuery } from "../../services/medicalApi";
+import {
+  useGetGroupMedicalDetailsQuery,
+  useSaveGroupMedicalMutation,
+} from "../../services/medicalApi";
 import type { CardType } from "../../services/drsService";
 import { useValidateNsdlPanMutation } from "../../services/nsdlApi";
 import { createNsdlPanValidateRequest, resolveNsdlOutcome } from "../../services/nsdlService";
@@ -152,6 +155,7 @@ const DvtUser = () => {
     { applicationNumber: applicationNo, partyId: activePartyId },
     { skip: !isMedicalRoute || !applicationNo || !activePartyId },
   );
+  const [saveMedical] = useSaveGroupMedicalMutation();
 
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
   const [applicantProfileOpen, setApplicantProfileOpen] = useState(false);
@@ -388,12 +392,16 @@ const DvtUser = () => {
         // A new key per applicant resets the form state held inside Medical.
         key={`${activePartyId}`}
         summary={detailCards}
+        applicationNumber={applicationNo}
+        partyId={activePartyId}
         applicants={medicalApplicants.length > 0 ? medicalApplicants : undefined}
         initialApplicantKey={currentApplicantId}
         groups={medicalQuery.data?.groups}
         sections={medicalQuery.data?.sections}
+        history={medicalQuery.data?.history}
         onApplicantChange={handleMedicalApplicantChange}
         onBack={closeMedical}
+        onSaveSection={(saveRequest) => saveMedical(saveRequest).unwrap()}
         onSubmit={(payload) => console.log("Submit medical", payload)}
       />
     );

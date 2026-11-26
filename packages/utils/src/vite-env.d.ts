@@ -31,6 +31,7 @@ interface ImportMetaEnv {
   readonly VITE_NSDL_PAN_VALIDATE_API?: string;
   readonly VITE_MEDICAL_SERVICE?: string;
   readonly VITE_MEDICAL_FETCH_API?: string;
+  readonly VITE_MEDICAL_SAVE_API?: string;
   readonly VITE_BRE_SERVICE?: string;
   readonly VITE_BRE_RETRIGGER_API?: string;
 }
