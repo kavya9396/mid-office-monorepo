@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   CustomBox,
   CustomButton,
@@ -13,60 +13,7 @@ import {
 
 import AddMedicalReportDialog from "./AddMedicalReportDialog";
 import { CMO_DECISION_MASTER_EMPTY_MESSAGE, getCmoDecisionOptions } from "./cmoDecisionOptions";
-import { type DecisionHistoryRow } from "./types";
-
-const SAMPLE_ROWS: DecisionHistoryRow[] = [
-  {
-    id: "1",
-    fupCode: "2DE",
-    profile: "Life Assured",
-    medicalTest: "2D ECHO",
-    raisedDate: "1 Sep 2026",
-    receivedDate: "2 Sep 2026",
-    repeatTestCounter: "0",
-    cmoRemarks: "",
-    cmoDecision: "",
-    remarksHistory: [
-      {
-        role: "Vendor CMO",
-        name: "Dr. Meera Shah",
-        ntid: "IPRU11021",
-        date: "02 Sep 2026, 11:20",
-        decision: "STD",
-        remarks: "All medical parameters are within acceptable limits.",
-      },
-      {
-        role: "HO CMO",
-        name: "Dr. Alpana Gandhi",
-        ntid: "IPRU84213",
-        date: "03 Sep 2026, 09:15",
-        decision: "STD",
-        remarks: "Vendor CMO opinion accepted.",
-      },
-    ],
-  },
-  {
-    id: "2",
-    fupCode: "CXR",
-    profile: "Life Assured",
-    medicalTest: "CXR",
-    raisedDate: "1 Sep 2026",
-    receivedDate: "3 Sep 2026",
-    repeatTestCounter: "0",
-    cmoRemarks: "",
-    cmoDecision: "",
-    remarksHistory: [
-      {
-        role: "Vendor CMO",
-        name: "Dr. Meera Shah",
-        ntid: "IPRU11021",
-        date: "03 Sep 2026, 16:40",
-        decision: "Refer to 2nd Opinion",
-        remarks: "Borderline ECG findings; cardiology review advised.",
-      },
-    ],
-  },
-];
+import { cmoDecisionFieldKey, type CmoRemarksHistoryEntry, type DecisionHistoryRow } from "./types";
 
 const formatRaisedDate = (isoDate: string) => {
   if (!isoDate) return "-";
@@ -79,88 +26,144 @@ const formatRaisedDate = (isoDate: string) => {
   });
 };
 
+type ViewRow = Record<string, string>;
+
 type DecisionHistoryProps = Readonly<{
-  rows?: DecisionHistoryRow[];
+  title: string;
+  columns: readonly string[];
+  rows?: DecisionHistoryRow[] | null;
   readOnly?: boolean;
+  /** Decision fetch in progress. Spinner stays in the table body. */
+  loading?: boolean;
+  /** API failure text, shown in the table body. */
+  statusMessage?: string;
 }>;
 
-const DecisionHistory = ({ rows, readOnly = false }: DecisionHistoryProps) => {
-  const [items, setItems] = useState<DecisionHistoryRow[]>(rows ?? SAMPLE_ROWS);
-  const [addOpen, setAddOpen] = useState(false);
-  const [historyRow, setHistoryRow] = useState<DecisionHistoryRow | null>(null);
+const REMARKS_FIELD = cmoDecisionFieldKey("CMO Remarks");
+const DECISION_FIELD = cmoDecisionFieldKey("CMO Decision");
+const HISTORY_FIELD = cmoDecisionFieldKey("Remarks History");
+const MEDICAL_TYPE_FIELD = cmoDecisionFieldKey("Medical Type");
+const RAISED_DATE_FIELD = cmoDecisionFieldKey("Raised Date");
 
-  const updateRow = (id: string, patch: Partial<DecisionHistoryRow>) => {
-    setItems((current) => current.map((row) => (row.id === id ? { ...row, ...patch } : row)));
+function safeRows(rows: DecisionHistoryRow[] | null | undefined): DecisionHistoryRow[] {
+  if (!Array.isArray(rows)) return [];
+  return rows.flatMap((row) => {
+    if (!row || typeof row !== "object") return [];
+    const id = typeof row.id === "string" && row.id.length > 0 ? row.id : "";
+    if (id.length === 0) return [];
+    const fields: Record<string, string> = {};
+    if (row.fields && typeof row.fields === "object") {
+      for (const [key, value] of Object.entries(row.fields)) {
+        fields[key] = value == null ? "" : String(value);
+      }
+    }
+    return [{
+      id,
+      fields,
+      remarksHistory: Array.isArray(row.remarksHistory) ? row.remarksHistory : [],
+    }];
+  });
+}
+
+const DecisionHistory = ({
+  title,
+  columns,
+  rows,
+  readOnly = false,
+  loading = false,
+  statusMessage = "",
+}: DecisionHistoryProps) => {
+  const [items, setItems] = useState<DecisionHistoryRow[]>(() => safeRows(rows));
+  const [addOpen, setAddOpen] = useState(false);
+  const [historyRow, setHistoryRow] = useState<{ label: string; entries: CmoRemarksHistoryEntry[] } | null>(null);
+
+  useEffect(() => {
+    setItems(safeRows(rows));
+  }, [rows]);
+
+  const updateField = (id: string, field: string, value: string) => {
+    setItems((current) =>
+      current.map((row) =>
+        row.id === id ? { ...row, fields: { ...row.fields, [field]: value } } : row,
+      ),
+    );
   };
   const cmoDecisionOptions = getCmoDecisionOptions();
   const missingCmoDecisions = cmoDecisionOptions.length === 0;
+  const viewRows: ViewRow[] = items.map((row) => ({ id: row.id, ...(row.fields ?? {}) }));
+  const columnLabels = Array.isArray(columns) ? columns.filter((label) => label.trim().length > 0) : [];
 
-  const columns: Column<DecisionHistoryRow>[] = [
-    { key: "fupCode", header: "FUP Code", width: "6%" },
-    { key: "profile", header: "Profile", width: "8%" },
-    { key: "medicalTest", header: "Medical Test", width: "8%" },
-    { key: "raisedDate", header: "Raised Date", width: "8%" },
-    { key: "receivedDate", header: "Received Date", width: "8%" },
-    { key: "repeatTestCounter", header: "Repeat test counter", width: "11%" },
-    {
-      key: "cmoRemarks",
-      header: "CMO Remarks",
-      width: "25%",
-      render: (_value, row) => (
-        <CustomTextField
-          fullWidth
-          placeholder="Enter CMO remarks"
-          disabled={readOnly}
-          value={row.cmoRemarks}
-          onChange={(event) => updateRow(row.id, { cmoRemarks: event.target.value })}
-          sx={{
-            "& .MuiOutlinedInput-root": { height: 40, minHeight: 40 },
-          }}
-        />
-      ),
-    },
-    {
-      key: "cmoDecision",
-      header: "CMO Decision",
-      width: "20%",
-      render: (_value, row) => (
-        <CustomSelect
-          fullWidth
-          placeholder={missingCmoDecisions ? CMO_DECISION_MASTER_EMPTY_MESSAGE : "Select decision"}
-          disabled={readOnly || missingCmoDecisions}
-          error={missingCmoDecisions}
-          value={row.cmoDecision}
-          options={cmoDecisionOptions}
-          onChange={(value) => updateRow(row.id, { cmoDecision: value })}
-        />
-      ),
-    },
-    {
-      key: "remarksHistory",
-      header: "Remarks History",
-      width: "8%",
-      render: (_value, row) => (
-        <CustomBox sx={{ display: "flex", justifyContent: "center" }}>
-          <CustomButton
-            variant="text"
-            aria-label="Remarks history"
-            disabled={row.remarksHistory.length === 0}
-            onClick={() => setHistoryRow(row)}
-            sx={{ minWidth: 0, p: 0.5 }}
-          >
-            <EyeIcon />
-          </CustomButton>
-        </CustomBox>
-      ),
-    },
-  ];
+  const tableColumns: Column<ViewRow>[] = columnLabels.map((label) => {
+    const field = cmoDecisionFieldKey(label);
+    if (field === REMARKS_FIELD) {
+      return {
+        key: field,
+        header: label,
+        render: (_value, row) => (
+          <CustomTextField
+            fullWidth
+            placeholder="Enter CMO remarks"
+            disabled={readOnly}
+            value={row[field] ?? ""}
+            onChange={(event) => updateField(row.id, field, event.target.value)}
+            sx={{
+              "& .MuiOutlinedInput-root": { height: 40, minHeight: 40 },
+            }}
+          />
+        ),
+      };
+    }
+    if (field === DECISION_FIELD) {
+      return {
+        key: field,
+        header: label,
+        render: (_value, row) => (
+          <CustomSelect
+            fullWidth
+            placeholder={missingCmoDecisions ? CMO_DECISION_MASTER_EMPTY_MESSAGE : "Select decision"}
+            disabled={readOnly || missingCmoDecisions}
+            error={missingCmoDecisions}
+            value={row[field] ?? ""}
+            options={cmoDecisionOptions}
+            onChange={(value) => updateField(row.id, field, value)}
+          />
+        ),
+      };
+    }
+    if (field === HISTORY_FIELD) {
+      return {
+        key: field,
+        header: label,
+        render: (_value, row) => {
+          const history = items.find((item) => item.id === row.id)?.remarksHistory;
+          const entries = Array.isArray(history) ? history : [];
+          return (
+            <CustomBox sx={{ display: "flex", justifyContent: "center" }}>
+              <CustomButton
+                variant="text"
+                aria-label={label}
+                disabled={entries.length === 0}
+                onClick={() => setHistoryRow({ label, entries })}
+                sx={{ minWidth: 0, p: 0.5 }}
+              >
+                <EyeIcon />
+              </CustomButton>
+            </CustomBox>
+          );
+        },
+      };
+    }
+    return { key: field, header: label };
+  });
 
   return (
     <>
       <CustomTable
-        title="Decision History"
-        columns={columns}
-        data={items}
+        title={title}
+        columns={tableColumns}
+        data={loading || statusMessage.length > 0 ? [] : viewRows}
+        loading={loading}
+        emptyMessage={statusMessage.length > 0 ? statusMessage : "No data available"}
         getRowId={(row) => row.id}
         headerAction={
           readOnly ? null : (
@@ -190,14 +193,11 @@ const DecisionHistory = ({ rows, readOnly = false }: DecisionHistoryProps) => {
             ...current,
             {
               id: `${Date.now()}`,
-              fupCode: "-",
-              profile: "Life Assured",
-              medicalTest: draft.medicalTest,
-              raisedDate: formatRaisedDate(draft.testDate),
-              receivedDate: "-",
-              repeatTestCounter: "0",
-              cmoRemarks: draft.remarks,
-              cmoDecision: "",
+              fields: {
+                [MEDICAL_TYPE_FIELD]: draft.medicalTest,
+                [RAISED_DATE_FIELD]: formatRaisedDate(draft.testDate),
+                [REMARKS_FIELD]: draft.remarks,
+              },
               remarksHistory: [],
             },
           ]);
@@ -208,20 +208,20 @@ const DecisionHistory = ({ rows, readOnly = false }: DecisionHistoryProps) => {
       <CustomDialog
         open={historyRow !== null}
         onClose={() => setHistoryRow(null)}
-        title="Remarks History"
+        title={historyRow?.label ?? ""}
         maxWidth="sm"
       >
         <CustomBox sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-          {historyRow?.remarksHistory.map((entry) => (
-            <CustomBox key={`${entry.ntid}-${entry.date}`}>
+          {historyRow?.entries.map((entry, index) => (
+            <CustomBox key={`${entry?.ntid ?? ""}-${entry?.date ?? ""}-${index}`}>
               <CustomTypography sx={{ fontSize: "12px", fontWeight: 700 }}>
-                {entry.role} · {entry.name} · {entry.ntid}
+                {entry?.role ?? ""} · {entry?.name ?? ""} · {entry?.ntid ?? ""}
               </CustomTypography>
               <CustomTypography sx={{ fontSize: "11px", color: "#4A4A4A" }}>
-                {entry.date}
+                {entry?.date ?? ""}
               </CustomTypography>
               <CustomTypography sx={{ fontSize: "12px", mt: 0.5 }}>
-                {entry.decision} - {entry.remarks}
+                {entry?.decision ?? ""} - {entry?.remarks ?? ""}
               </CustomTypography>
             </CustomBox>
           ))}

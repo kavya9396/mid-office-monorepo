@@ -8,11 +8,13 @@ import { QuickLinksModule } from "@insurance-poc/common/quick-links";
 import { RiskCards, type RiskCardData } from "@insurance-poc/common/risk-cards";
 import { drsRoutePath } from "@insurance-poc/routes";
 import { CustomBox, CustomButton, CustomLoader, CustomSnackbar } from "@insurance-poc/ui";
-import { getDrsApplicationNo, getDrsMemberId, getDrsRoleLabel, getDrsRoleType } from "@insurance-poc/utils";
+import { getDrsApplicationNo, getDrsMemberId, getDrsRoleLabel, getDrsRoleType, readApiErrorMessage } from "@insurance-poc/utils";
 import { getGroupDrsTaskConfig } from "../../config/drsTaskConfig";
 import { GuwRaiseGrievanceDialog } from "../guw/GuwRaiseGrievanceDialog";
 import { GROUP_QUICK_LINKS_CONFIG } from "../config/quickLinks.config";
+import { readCmoDecisionSection } from "./cmoDecisionSection";
 import { buildQuickLinkItems } from "./guwQuickLinks";
+import { useGetCmoDecisionQuery } from "../../services/cmoDecisionApi";
 import { useGetCmoDrsQuery } from "../../services/drsApi";
 
 const PROFILE_IMAGE_URL = `data:image/svg+xml;utf8,${encodeURIComponent(
@@ -29,8 +31,8 @@ const BANNER_OPTIONS: RowDetailsOptions = {
 const CARD_IDS = ["MEDICAL", "RISK_PARAMETERS"] as const;
 const quickLinksConfig = GROUP_QUICK_LINKS_CONFIG.refCmo;
 
-/** Vendor CMO ECG DRS screen. */
-export function VendorCmoEcg() {
+/** Vendor CMO DRS. ECG and TMT both open this screen. */
+export function VendorCmoDrs() {
   const navigate = useNavigate();
   const { pathname, search } = useLocation();
   const { applicationNo: applicationNoParam } = useParams();
@@ -60,6 +62,16 @@ export function VendorCmoEcg() {
         : drs.isError || !record
           ? "not-found"
           : "ready";
+  const decisionRequest = {
+    applicationNumber: record?.applicationNo?.trim() ?? "",
+    partyId: record?.partyId?.trim() ?? "",
+  };
+  const decision = useGetCmoDecisionQuery(decisionRequest, {
+    skip:
+      pageKind !== "ready" ||
+      decisionRequest.applicationNumber.length === 0 ||
+      decisionRequest.partyId.length === 0,
+  });
   const [applicantProfileOpen, setApplicantProfileOpen] = useState(false);
   const [raiseGrievanceOpen, setRaiseGrievanceOpen] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -69,6 +81,7 @@ export function VendorCmoEcg() {
     setSnackbarOpen(true);
   };
 
+  const decisionSection = readCmoDecisionSection(record?.drsData.membersDetails);
   const riskCards: RiskCardData[] =
     pageKind === "ready" && record
       ? CARD_IDS.flatMap((id) => record.riskCards.filter((card) => card.id === id))
@@ -81,11 +94,7 @@ export function VendorCmoEcg() {
   };
 
   return (
-    <CustomBox
-      component="main"
-      data-testid="vendor-cmo-ecg-drs-main"
-      sx={{ minHeight: "100%", background: "#fff8f3" }}
-    >
+    <CustomBox component="main" sx={{ minHeight: "100%", background: "#fff8f3" }}>
       {pageKind === "loading" ? <CustomLoader message="Loading application" /> : null}
 
       {pageKind === "ready" && record ? (
@@ -111,7 +120,13 @@ export function VendorCmoEcg() {
           ) : (
             <CustomBox sx={{ p: "6px 4px 20px", display: "flex", flexDirection: "column", gap: 1.5 }}>
               <RiskCards cards={riskCards} onView={openMedical} viewCardIds={["MEDICAL"]} />
-              <DecisionHistory />
+              <DecisionHistory
+                title={decisionSection.title}
+                columns={decisionSection.columns}
+                rows={decision.data}
+                loading={decision.isLoading}
+                statusMessage={decision.isError ? readApiErrorMessage(decision.error) : ""}
+              />
               <CustomBox
                 sx={{
                   display: "flex",
@@ -203,4 +218,4 @@ export function VendorCmoEcg() {
   );
 }
 
-export default VendorCmoEcg;
+export default VendorCmoDrs;

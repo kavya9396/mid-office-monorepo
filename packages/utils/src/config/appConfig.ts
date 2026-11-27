@@ -105,6 +105,13 @@ export const breUrls = {
   },
 };
 
+/** CMO decision fetch (HO CMO and Vendor CMO). Empty when unset — mock mode skips it. */
+export const cmoDecisionUrls = {
+  get fetch(): string {
+    return configuredUrl(import.meta.env.VITE_CMO_DECISION_FETCH_API);
+  },
+};
+
 /** MMT grievance fetch / save. Empty when unset — mock mode skips them. */
 export const mmtGrievanceUrls = {
   get fetch(): string {
