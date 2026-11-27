@@ -328,11 +328,6 @@ function buildBloodPressure(section: MedicalSection, values: Readonly<Record<str
   return { readings, ...plain };
 }
 
-/** The screen holds a multi-select answer comma-joined; the API takes the option keys joined by `#`. */
-function toApiResponse(questionType: string, value: string): string {
-  return questionType === "MULTISELECT" ? value.split(",").filter(Boolean).join("#") : value;
-}
-
 function buildQuestions(section: MedicalSection, values: Readonly<Record<string, string>>): Json {
   const questions = section.questionnaire ?? [];
   const responseOf = (id: string) => values[`${section.key}-q-${id}-response`] ?? "";
@@ -346,7 +341,7 @@ function buildQuestions(section: MedicalSection, values: Readonly<Record<string,
         parentId: question.parentId,
         section: question.section,
         responseId: question.responseId ?? null,
-        response: visible ? orNull(toApiResponse(question.questionType, responseOf(question.id))) : null,
+        response: visible ? orNull(responseOf(question.id)) : null,
         remarks: visible ? orNull(values[`${section.key}-q-${question.id}-remarks`] ?? "") : null,
       };
     }),

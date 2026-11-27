@@ -40,6 +40,8 @@ import {
   type MedicalCmoDecision,
   type MedicalFamilyRow,
   getVisibleMedicalQuestions,
+  MULTI_SELECT_SEPARATOR,
+  splitMultiSelect,
   MEDICAL_GROUPS,
   MEDICAL_LOCKED_FIELDS,
   MEDICAL_MESSAGES,
@@ -644,7 +646,7 @@ const MedicalControl = memo(function MedicalControl({
     value.trim() === "";
 
   if (readOnly) {
-    const selectedKeys = multiple ? value.split(",").filter(Boolean) : [value];
+    const selectedKeys = multiple ? splitMultiSelect(value) : [value];
     const readOnlyText = selectedKeys
       .map((key) => optionsOverride?.find((option) => option.value === key)?.label)
       .filter((label): label is string => label !== undefined)
@@ -669,7 +671,7 @@ const MedicalControl = memo(function MedicalControl({
 
   const options = optionsOverride ?? getMedicalOptions(kind);
   if (multiple && options.length > 0) {
-    const selectedKeys = value.split(",").filter(Boolean);
+    const selectedKeys = splitMultiSelect(value);
     const toggle = (key: string) => {
       const isSelected = selectedKeys.includes(key);
       // "NO" is exclusive: picking it clears every other option, and picking any other option clears "NO".
@@ -678,7 +680,12 @@ const MedicalControl = memo(function MedicalControl({
         : key === MULTI_SELECT_NONE_KEY
           ? [key]
           : [...selectedKeys.filter((item) => item !== MULTI_SELECT_NONE_KEY), key];
-      onChange(options.map((option) => option.value).filter((item) => next.includes(item)).join(","));
+      onChange(
+        options
+          .map((option) => option.value)
+          .filter((item) => next.includes(item))
+          .join(MULTI_SELECT_SEPARATOR),
+      );
     };
     return (
       <Box sx={EDITABLE_CONTROL_SX} data-field={id} aria-label={ariaLabel}>

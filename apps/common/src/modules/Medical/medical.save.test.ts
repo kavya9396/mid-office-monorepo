@@ -248,7 +248,7 @@ describe("buildMedicalSaveRequest", () => {
     expect(edited.placeOfExamination).toBe("RES_OFFICE");
   });
 
-  it("sends a multi-select answer with the option keys joined by #", () => {
+  it("sends a multi-select answer with the option keys joined by #, unchanged", () => {
     const section = sectionOf("tele_question_table");
     const multi = section.questionnaire?.find(
       (question) => question.questionType === "MULTISELECT" && (question.answerType?.length ?? 0) >= 2,
@@ -256,14 +256,14 @@ describe("buildMedicalSaveRequest", () => {
     if (!multi?.answerType) throw new Error("no multi-select question in the mock");
     const [a, b] = multi.answerType;
     const request = build(["tele_question_table"], {
-      [`tele_question_table-q-${multi.id}-response`]: `${a.key},${b.key}`,
+      [`tele_question_table-q-${multi.id}-response`]: `${a.key}#${b.key}`,
     });
     const questions = (request.sections.tele_mer as { question_table: { questions: Record<string, unknown>[] } })
       .question_table.questions;
     expect(questions.find((question) => question.id === multi.id)?.response).toBe(`${a.key}#${b.key}`);
   });
 
-  it("reads a stored #-joined multi-select answer back as separate selections", () => {
+  it("keeps a stored #-joined multi-select answer as is", () => {
     const raw = [
       {
         id: "9",
@@ -277,7 +277,7 @@ describe("buildMedicalSaveRequest", () => {
         response: "Chest Pain#Palpitations",
       },
     ];
-    expect(parseMedicalQuestionnaire(raw)[0].response).toBe("Chest Pain,Palpitations");
+    expect(parseMedicalQuestionnaire(raw)[0].response).toBe("Chest Pain#Palpitations");
   });
 
   it("sends parameter rows with computed findings", () => {

@@ -430,6 +430,14 @@ const QUESTION_TYPES: readonly MedicalQuestion["questionType"][] = [
   "MULTISELECT",
 ];
 
+/** Multi-select option keys are joined with `#`, both on the screen and in the API. */
+export const MULTI_SELECT_SEPARATOR = "#";
+
+/** Splits a multi-select answer into its option keys. */
+export function splitMultiSelect(value: string): string[] {
+  return value.split(MULTI_SELECT_SEPARATOR).filter(Boolean);
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -478,13 +486,7 @@ export function parseMedicalQuestionnaire(raw: readonly unknown[]): readonly Med
       questionType: inferredType,
       answerType,
       section: String(row.section),
-      // The API joins multi-select option keys with `#`; the screen keeps them comma-joined.
-      response:
-        typeof row.response === "string"
-          ? inferredType === "MULTISELECT"
-            ? row.response.split("#").filter(Boolean).join(",")
-            : row.response
-          : null,
+      response: typeof row.response === "string" ? row.response : null,
       remarks: typeof row.remarks === "string" ? row.remarks : null,
       responseId: typeof row.responseId === "number" ? row.responseId : null,
     };
@@ -494,7 +496,9 @@ export function parseMedicalQuestionnaire(raw: readonly unknown[]): readonly Med
 /**
  * Returns the questions to show for a questionnaire. A question with a `parentId` is shown only when
  * its parent is shown and its trigger is met: `parentOption` must be among the parent's selected keys
- * (multi-select), or, when `parentOption` is null, the parent's response must be "Y".
+ * (multi-select). When `parentOption` is null, the question is shown when the parent's response is "Y",
+ * when a selected option of the parent lists the question in its `subQuestionIds`, or when the parent has
+ * no options (text / number) and is itself shown.
  * `responseOf` returns the stored response for a question id ("" when unanswered).
  */
 export function getVisibleMedicalQuestions(
@@ -513,9 +517,16 @@ export function getVisibleMedicalQuestions(
       if (!parent || !isVisible(parent)) {
         result = false;
       } else if (question.parentOption === null) {
-        result = ["Y", "YES"].includes(responseOf(parent.id));
+        const response = responseOf(parent.id);
+        const selected = splitMultiSelect(response);
+        const hasOptions = (parent.answerType?.length ?? 0) > 0;
+        const listedBySelectedOption =
+          parent.answerType?.some(
+            (option) => selected.includes(option.key) && option.subQuestionIds.includes(question.id),
+          ) ?? false;
+        result = ["Y", "YES"].includes(response) || listedBySelectedOption || !hasOptions;
       } else {
-        result = responseOf(parent.id).split(",").includes(question.parentOption);
+        result = splitMultiSelect(responseOf(parent.id)).includes(question.parentOption);
       }
     }
     visible.set(question.id, result);
