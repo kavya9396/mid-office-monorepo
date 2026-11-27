@@ -69,12 +69,12 @@ export const GROUP_DRS_TASK_CONFIG: Record<string, GroupDrsTaskConfig> = {
   },
   GROUP_DATA_ENTRY_NMR_TASK: {
     roleType: "GROUP_DATA_ENTRY_NMR_TASK",
-    screenType: "CPT_NMR",
+    screenType: "GRP_DE_NMR",
     businessType: "GROUP",
   },
   GROUP_DATA_ENTRY_MR_TASK: {
     roleType: "GROUP_DATA_ENTRY_MR_TASK",
-    screenType: "CPT_MR",
+    screenType: "GRP_DE_MR",
     businessType: "GROUP",
   },
 };
