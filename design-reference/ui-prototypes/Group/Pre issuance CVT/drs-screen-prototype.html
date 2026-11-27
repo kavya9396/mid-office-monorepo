@@ -1,0 +1,2396 @@
+<!DOCTYPE html>
+
+
+
+<html lang="en">
+
+
+
+<head>
+
+    <meta charset="utf-8" />
+
+    <meta content="width=device-width,initial-scale=1" name="viewport" />
+
+    <title>Pre Issuance Servicing Task</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;600;700;800;900&amp;display=swap"
+
+        rel="stylesheet" />
+
+    <style>
+
+        :root {
+
+            font-family: Mulish, Arial, sans-serif;
+
+            color: #302a27;
+
+            background: #fff8f3
+
+        }
+
+
+
+        * {
+
+            box-sizing: border-box
+
+        }
+
+
+
+        body {
+
+            margin: 0;
+
+            font-size: 12px
+
+        }
+
+
+
+        button,
+
+        input,
+
+        select {
+
+            font: inherit
+
+        }
+
+
+
+        button {
+
+            cursor: pointer
+
+        }
+
+
+
+        [hidden] {
+
+            display: none !important
+
+        }
+
+
+
+        .app-header {
+
+            height: 57px;
+
+            position: sticky;
+
+            top: 0;
+
+            z-index: 100;
+
+            display: flex;
+
+            align-items: stretch;
+
+            color: #fff;
+
+            background: linear-gradient(to bottom, #f58220 0%, #e65318 42%, #c92e27 72%, #98252b 100%);
+
+            box-shadow: 0 3px 12px rgba(111, 24, 24, .25)
+
+        }
+
+
+
+        .back {
+
+            width: 44px;
+
+            border: 0;
+
+            border-right: 1px solid #ffffff40;
+
+            border-radius: 0;
+
+            background: #7e161f6b;
+
+            color: #fff;
+
+            display: grid;
+
+            place-items: center
+
+        }
+
+
+
+        .back:hover {
+
+            background: #7e161f9e
+
+        }
+
+
+
+        .logo {
+
+            display: block;
+
+            width: 150px;
+
+            height: 57px;
+
+            object-fit: cover
+
+        }
+
+
+
+        .header-spacer {
+
+            flex: 1
+
+        }
+
+
+
+        .header-date {
+
+            align-self: center;
+
+            min-width: 175px;
+
+            padding-right: 12px;
+
+            text-align: right;
+
+            border-right: 1px solid #ffffff59;
+
+            line-height: 1.4
+
+        }
+
+
+
+        .header-date div:last-child {
+
+            margin-top: 2px;
+
+            font-size: 11px;
+
+            font-weight: 700
+
+        }
+
+
+
+        .user-menu-wrap {
+
+            position: relative;
+
+            align-self: stretch;
+
+            display: flex;
+
+            align-items: center;
+
+            margin: 0 16px 0 12px
+
+        }
+
+
+
+        .user-button {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 9px;
+
+            background: transparent;
+
+            border: 0;
+
+            color: #fff
+
+        }
+
+
+
+        .user-avatar {
+
+            display: grid;
+
+            place-items: center;
+
+            width: 35px;
+
+            height: 35px;
+
+            border: 1px solid #ffffff73;
+
+            border-radius: 50%;
+
+            background: #ffffff33
+
+        }
+
+
+
+        .user-name {
+
+            min-width: 80px;
+
+            max-width: 150px;
+
+            text-align: left;
+
+            overflow: hidden;
+
+            white-space: nowrap;
+
+            text-overflow: ellipsis;
+
+            font-weight: 700
+
+        }
+
+
+
+        .user-popover {
+
+            position: absolute;
+
+            top: 65px;
+
+            right: 0;
+
+            width: 240px;
+
+            z-index: 110;
+
+            background: #fff;
+
+            color: #323232;
+
+            border: 1px solid #f1d7d0;
+
+            border-radius: 8px;
+
+            overflow: hidden;
+
+            box-shadow: 0 8px 24px #4614142e
+
+        }
+
+
+
+        .user-popover button {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            width: 100%;
+
+            padding: 12px 16px;
+
+            background: #fff;
+
+            border: 0;
+
+            color: #323232;
+
+            text-align: left;
+
+            font-size: 14px
+
+        }
+
+
+
+        .user-popover button+button {
+
+            border-top: 1px solid #eee
+
+        }
+
+
+
+        .user-popover button:hover {
+
+            background: #fff3ee
+
+        }
+
+
+
+        main {
+
+            height: calc(100dvh - 57px);
+
+            overflow: auto;
+
+            background: #fff8f3
+
+        }
+
+
+
+        .banner-shell {
+
+            padding: 6px 4px 0;
+
+            background: #fff
+
+        }
+
+
+
+        .banner {
+
+            display: grid;
+
+            grid-template-columns: 150px minmax(0, 1fr);
+
+            margin-bottom: 6px;
+
+            overflow: hidden;
+
+            background: #ffead7;
+
+            color: #000;
+
+            border-radius: 12px;
+
+            box-shadow: 0 3px 10px #a9212929
+
+        }
+
+
+
+        .banner-avatar {
+
+            min-height: 138px;
+
+            display: grid;
+
+            place-items: center;
+
+            background: linear-gradient(145deg, #e45f14, #c83c2f)
+
+        }
+
+
+
+        .banner-avatar span {
+
+            width: 76px;
+
+            height: 76px;
+
+            display: grid;
+
+            place-items: center;
+
+            border: 2px solid #ffffff73;
+
+            border-radius: 50%;
+
+            background: #ffffff2e
+
+        }
+
+
+
+        .banner-avatar svg {
+
+            width: 44px;
+
+            height: 44px
+
+        }
+
+
+
+        .banner-content {
+
+            padding: 12px 18px;
+
+            min-width: 0
+
+        }
+
+
+
+        .banner-title {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            gap: 16px;
+
+            margin-bottom: 4px
+
+        }
+
+
+
+        .banner-title strong {
+
+            font-size: 16px;
+
+            font-weight: 900;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+
+            white-space: nowrap
+
+        }
+
+
+
+        .app-pill {
+
+            padding: 4px 9px;
+
+            flex: none;
+
+            border: 1px solid #a921292e;
+
+            border-radius: 16px;
+
+            background: #fff;
+
+            color: #a92129;
+
+            font-size: 13px;
+
+            font-weight: 900
+
+        }
+
+
+
+        .banner-line {
+
+            font-size: 11.5px;
+
+            line-height: 1.6;
+
+            margin: 4px 0
+
+        }
+
+
+
+        .banner-line.product {
+
+            font-size: 10px;
+
+            font-weight: 800
+
+        }
+
+
+
+        .content {
+
+            padding: 6px 4px 12px
+
+        }
+
+
+
+        .summary-wrap {
+
+            padding: 6px;
+
+            border: 1px solid #f1d8c8;
+
+            border-radius: 6px;
+
+            background: #fff8f3
+
+        }
+
+
+
+        .pre-issuance-table-wrap {
+
+            overflow: auto;
+
+            border: 1px solid #eadfd9;
+
+            border-radius: 10px;
+
+            background: #fff
+
+        }
+
+
+
+        .pre-issuance-table {
+
+            width: 100%;
+
+            min-width: 860px;
+
+            border-collapse: collapse;
+
+            font-size: 11px
+
+        }
+
+
+
+        .pre-issuance-table th,
+
+        .pre-issuance-table td {
+
+            padding: 11px 12px;
+
+            border-right: 1px solid #eee4df;
+
+            border-bottom: 1px solid #eee4df;
+
+            text-align: left;
+
+            vertical-align: middle
+
+        }
+
+
+
+        .pre-issuance-table th {
+
+            background: #ffead7;
+
+            color: #5b261c;
+
+            font-size: 10px;
+
+            font-weight: 900;
+
+            white-space: nowrap
+
+        }
+
+
+
+        .pre-issuance-table tr:last-child td {
+
+            border-bottom: 0
+
+        }
+
+
+
+        .pre-issuance-table th:last-child,
+
+        .pre-issuance-table td:last-child {
+
+            border-right: 0
+
+        }
+
+
+
+        .pre-issuance-table th:nth-child(1) { width: 17% }
+
+        .pre-issuance-table th:nth-child(2) { width: 15% }
+
+        .pre-issuance-table th:nth-child(3),
+
+        .pre-issuance-table th:nth-child(4) { width: 8% }
+
+        .pre-issuance-table th:nth-child(5) { width: 25% }
+
+        .pre-issuance-table th:nth-child(6) { width: 15% }
+
+        .pre-issuance-table th:last-child,
+
+        .pre-issuance-table td:last-child {
+
+            width: 12%;
+
+            text-align: center
+
+        }
+
+
+
+        .view-change-details {
+
+            display: inline-grid;
+
+            place-items: center;
+
+            width: 28px;
+
+            height: 28px;
+
+            padding: 0;
+
+            border: 1px solid #e45f14;
+
+            border-radius: 50%;
+
+            background: #fff;
+
+            color: #c94f0d
+
+        }
+
+
+
+        .view-change-details:hover {
+
+            background: #fff0e5
+
+        }
+
+
+
+        .quick-fab {
+
+            position: fixed;
+
+            right: 3%;
+
+            bottom: 10%;
+
+            z-index: 80;
+
+            display: grid;
+
+            place-items: center;
+
+            width: 50px;
+
+            height: 50px;
+
+            border: 0;
+
+            border-radius: 50%;
+
+            background: #9a2529;
+
+            color: #fff;
+
+            box-shadow: 0 3px 7px #00000026;
+
+            transition: transform .3s
+
+        }
+
+
+
+        .quick-fab:hover {
+
+            background: #822026
+
+        }
+
+
+
+        .quick-fab.open {
+
+            transform: rotate(45deg)
+
+        }
+
+
+
+        .quick-panel {
+
+            position: fixed;
+
+            right: 3%;
+
+            bottom: calc(10% + 66px);
+
+            z-index: 80;
+
+            width: 276px;
+
+            max-height: 65vh;
+
+            overflow: auto;
+
+            border-radius: 8px;
+
+            background: #fff;
+
+            box-shadow: 0 4px 12px #0000001f
+
+        }
+
+
+
+        .quick-panel h2 {
+
+            margin: 0;
+
+            padding: 12px 16px;
+
+            background: #f5f5f5;
+
+            color: #1e1e1e;
+
+            font-size: 14px
+
+        }
+
+
+
+        .quick-panel button {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            width: 100%;
+
+            padding: 12px 16px;
+
+            border: 0;
+
+            border-top: 1px solid #e5e5e5;
+
+            background: #fff;
+
+            color: #444;
+
+            font-size: 14px;
+
+            text-align: left
+
+        }
+
+
+
+        .quick-panel button:hover {
+
+            background: #fff3ee
+
+        }
+
+
+
+        .modal-backdrop {
+
+            position: fixed;
+
+            inset: 0;
+
+            z-index: 200;
+
+            display: grid;
+
+            place-items: center;
+
+            padding: 16px;
+
+            background: #1c16137a;
+
+            backdrop-filter: blur(2px)
+
+        }
+
+
+
+        .dialog {
+
+            position: relative;
+
+            width: min(700px, 100%);
+
+            max-height: 86vh;
+
+            display: flex;
+
+            flex-direction: column;
+
+            border-radius: 16px;
+
+            overflow: hidden;
+
+            background: #fff;
+
+            box-shadow: 0 18px 54px #2d231e3d
+
+        }
+
+
+
+        .dialog.history-dialog {
+
+            width: min(1100px, 100%)
+
+        }
+
+
+
+        .dialog-title {
+
+            min-height: 56px;
+
+            display: flex;
+
+            align-items: center;
+
+            padding: 8px 56px 8px 20px;
+
+            border-bottom: 1px solid #e5dad2;
+
+            color: #292421;
+
+            font-size: 17px;
+
+            font-weight: 700
+
+        }
+
+
+
+        .dialog-close {
+
+            position: absolute;
+
+            top: 6px;
+
+            right: 6px;
+
+            display: grid;
+
+            place-items: center;
+
+            width: 40px;
+
+            height: 40px;
+
+            border: 0;
+
+            border-radius: 50%;
+
+            background: transparent;
+
+            color: #9a2529;
+
+            font-size: 26px
+
+        }
+
+
+
+        .dialog-close:hover {
+
+            background: #9a25290a
+
+        }
+
+
+
+        .dialog-content {
+
+            padding: 16px;
+
+            overflow: auto
+
+        }
+
+
+
+        .rider-table-title { padding: 11px 13px; font-weight: 800; color: #5b261c; background: #fffaf6; }
+        .rider-details-scroll { width: 100%; overflow-x: auto; }
+        .rider-details-table { min-width: 690px; table-layout: fixed; }
+        .rider-details-table th:nth-child(2) { width: 26%; }
+        .rider-details-table th:nth-child(3) { width: 22%; }
+        .rider-details-table th:nth-child(4), .rider-details-table th:nth-child(5) { width: 22%; }
+        .rider-details-table .rider-name { font-weight: 700; color: #5b261c; vertical-align: top; background: #fffaf7; }
+        .rider-details-table .rider-index { vertical-align: top; }
+        .rider-details-table tr.change-group-start td { border-top: 2px solid #e4d5cc; }
+        .rider-details-table th:first-child { width: 55px; }
+        .rider-details-table td:first-child { text-align: center; }
+        .rider-details-table tbody tr:nth-child(even) { background: #fffaf7; }
+        .change-details-table {
+
+            width: 100%;
+
+            table-layout: fixed;
+
+            border-collapse: collapse;
+
+            font-size: 11px
+
+        }
+
+
+
+        .change-details-panel {
+
+            overflow: hidden;
+
+            border: 1px solid #eadfd9;
+
+            border-radius: 10px;
+
+            background: #fff
+
+        }
+
+
+
+        .change-details-context {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            gap: 12px;
+
+            padding: 9px 12px;
+
+            border-bottom: 1px solid #eadfd9;
+
+            background: #fff8f3;
+
+            color: #6b625d;
+
+            font-size: 10px
+
+        }
+
+
+
+        .change-details-context strong {
+
+            color: #7b3924;
+
+            font-size: 11px
+
+        }
+
+
+
+        .change-details-table th,
+
+        .change-details-table td {
+
+            padding: 10px 12px;
+
+            overflow-wrap: anywhere;
+
+            border: 1px solid #eee4df;
+
+            text-align: left
+
+        }
+
+
+
+        .change-details-table th {
+
+            background: #ffead7;
+
+            color: #5b261c;
+
+            font-weight: 900
+
+        }
+
+
+
+        .field-label {
+
+            display: block;
+
+            margin-bottom: 5px
+
+        }
+
+
+
+        .select {
+
+            width: 100%;
+
+            min-height: 34px;
+
+            padding: 5px 10px;
+
+            border: 1px solid #c4c4c4;
+
+            border-radius: 6px;
+
+            background: #fff
+
+        }
+
+
+
+        .contained {
+
+            min-height: 28px;
+
+            padding: 5px 14px;
+
+            border: 0;
+
+            border-radius: 6px;
+
+            background: #e45f14;
+
+            color: #fff;
+
+            font-weight: 700
+
+        }
+
+
+
+        @media(max-width:720px) {
+
+            .banner {
+
+                grid-template-columns: 80px minmax(0, 1fr)
+
+            }
+
+
+
+            .banner-avatar {
+
+                min-height: 100px
+
+            }
+
+
+
+            .banner-avatar span {
+
+                width: 56px;
+
+                height: 56px
+
+            }
+
+
+
+            .banner-avatar svg {
+
+                width: 34px;
+
+                height: 34px
+
+            }
+
+
+
+            .banner-content {
+
+                padding: 10px
+
+            }
+
+
+
+            .banner-title {
+
+                flex-wrap: wrap
+
+            }
+
+
+
+            .header-date {
+
+                min-width: auto
+
+            }
+
+
+
+            .user-name {
+
+                min-width: 0;
+
+                max-width: 80px
+
+            }
+
+
+
+            .logo {
+
+                width: 100px;
+
+                object-fit: contain
+
+            }
+
+        }
+
+
+
+        /* Compact applicant banner without photograph */
+
+        .banner-shell {
+
+            padding: 7px 0 0;
+
+            background: #fff8f3
+
+        }
+
+
+
+        .banner.compact-banner {
+
+            display: block;
+
+            width: 100%;
+
+            margin-bottom: 6px;
+
+            border: 1px solid #f1d0b7;
+
+            border-radius: 11px;
+
+            box-shadow: 0 2px 10px rgba(169, 33, 41, .08);
+
+            background: #ffead7
+
+        }
+
+
+
+        .compact-banner .banner-content {
+
+            padding: 10px 18px 9px
+
+        }
+
+
+
+        .compact-banner .banner-title-row {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            gap: 16px
+
+        }
+
+
+
+        .compact-banner .banner-line {
+
+            margin: 4px 0 8px;
+
+            font-size: 12px;
+
+            line-height: 1.4;
+
+            font-weight: 400
+
+        }
+
+
+
+        .compact-banner .banner-line strong {
+
+            font-weight: 900
+
+        }
+
+
+
+        .compact-banner .banner-content>.banner-line:last-child {
+
+            margin-bottom: 4px
+
+        }
+
+
+
+        .compact-banner .banner-title-row .banner-line {
+
+            margin: 0 0 8px;
+
+            min-width: 0
+
+        }
+
+
+
+        .compact-banner .app-pill {
+
+            white-space: nowrap;
+
+            padding: 5px 11px;
+
+            border: 1px solid #f1d3d8;
+
+            background: #fff;
+
+            color: #b11c2a;
+
+            font-size: 12px;
+
+            font-weight: 900
+
+        }
+
+
+
+        @media(max-width:900px) {
+
+            .compact-banner .banner-title-row {
+
+                align-items: flex-start;
+
+                flex-wrap: wrap
+
+            }
+
+
+
+            .compact-banner .banner-line {
+
+                font-size: 11px
+
+            }
+
+
+
+            .compact-banner .app-pill {
+
+                font-size: 11px
+
+            }
+
+
+
+            .compact-banner .banner-content {
+
+                padding: 12px 16px
+
+            }
+
+        }
+
+
+
+        .servicing-card {
+
+            margin-top: 10px;
+
+            border: 1px solid #eadfd9;
+
+            border-radius: 10px;
+
+            background: white;
+
+            overflow: hidden
+
+        }
+
+
+
+        .servicing-heading {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            gap: 12px;
+
+            background: #fff3e9;
+
+            color: #5b261c;
+
+            font-size: 13px;
+
+            font-weight: 900;
+
+            padding: 11px 14px;
+
+            border-bottom: 1px solid #eadfd9
+
+        }
+
+
+
+        .servicing-content {
+
+            padding: 14px
+
+        }
+
+
+
+        .servicing-overview {
+
+            display: grid;
+
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+
+            gap: 0;
+
+            margin-bottom: 14px
+
+        }
+
+
+
+        .servicing-meta {
+
+            display: flex;
+
+            align-items: baseline;
+
+            gap: 6px;
+
+            min-width: 0;
+
+            padding: 2px 14px
+
+        }
+
+
+
+        .servicing-meta:first-child {
+
+            padding-left: 0
+
+        }
+
+
+
+        .servicing-meta:not(:last-child)::after {
+
+            content: '|';
+
+            margin-left: auto;
+
+            color: #d7bdb2;
+
+            font-weight: 400
+
+        }
+
+
+
+        .servicing-meta span {
+
+            display: inline;
+
+            color: #82736b;
+
+            font-size: 10px;
+
+            white-space: nowrap
+
+        }
+
+
+
+        .servicing-meta strong {
+
+            font-size: 12px;
+
+            color: #332d2a;
+
+            white-space: nowrap
+
+        }
+
+
+
+        .servicing-table-wrap {
+
+            border: 1px solid #e4d5cc;
+
+            border-radius: 10px;
+
+            overflow: hidden;
+
+            background: #fff
+
+        }
+
+
+
+        .servicing-profile-title {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            gap: 12px;
+
+            padding: 10px 14px;
+
+            border-bottom: 1px solid #e4d5cc;
+
+            background: #fff3e9;
+
+            color: #5b261c;
+
+            font-size: 12px;
+
+            font-weight: 900
+
+        }
+
+
+
+        .servicing-profile-title span {
+
+            padding: 3px 9px;
+
+            border: 1px solid #e8c8b6;
+
+            border-radius: 14px;
+
+            background: #fff;
+
+            color: #8f3a25;
+
+            font-size: 10px;
+
+            white-space: nowrap
+
+        }
+
+
+
+        .servicing-table-scroll {
+
+            overflow-x: auto
+
+        }
+
+
+
+        .servicing-table {
+
+            width: 100%;
+
+            border-collapse: collapse;
+
+            font-size: 11px;
+
+            table-layout: fixed
+
+        }
+
+
+
+        .servicing-table th {
+
+            background: #ffead7;
+
+            color: #5b261c;
+
+            padding: 7px 10px;
+
+            text-align: left;
+
+            font-weight: 900
+
+        }
+
+
+
+        .servicing-table td {
+
+            padding: 7px 10px;
+
+            border-top: 1px solid #eee6e1;
+
+            vertical-align: middle;
+
+            overflow-wrap: anywhere
+
+        }
+
+
+
+        .servicing-table td:first-child {
+
+            color: #453731
+
+        }
+
+
+
+        .servicing-table th:nth-child(2),
+
+        .servicing-table th:nth-child(3) {
+
+            width: 32.5%
+
+        }
+
+
+
+        .servicing-table tr:nth-child(even) td {
+
+            background: #fffaf7
+
+        }
+
+
+
+        .servicing-table.consolidated-changes {
+
+            min-width: 760px
+
+        }
+
+
+
+        .servicing-table.consolidated-changes th:nth-child(1) { width: 19% }
+
+        .servicing-table.consolidated-changes th:nth-child(2) { width: 21% }
+
+        .servicing-table.consolidated-changes th:nth-child(3),
+
+        .servicing-table.consolidated-changes th:nth-child(4) { width: 30% }
+
+
+
+        .servicing-table .change-type {
+
+            background: #fff3e9 !important;
+
+            color: #7b3924;
+
+            font-weight: 900;
+
+            vertical-align: top
+
+        }
+
+
+
+        .servicing-table tr.change-group-start td {
+
+            border-top: 2px solid #e4d5cc
+
+        }
+
+
+
+        .servicing-old {
+
+            color: #77706c
+
+        }
+
+
+
+        .servicing-new {
+
+            font-weight: 800;
+
+            color: #9a2529
+
+        }
+
+
+
+        .servicing-actions {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: flex-end;
+
+            gap: 9px;
+
+            margin-top: 14px
+
+        }
+
+
+
+        .servicing-actions button {
+
+            min-width: 96px;
+
+            border-radius: 7px;
+
+            padding: 8px 18px;
+
+            font-size: 11px;
+
+            font-weight: 800
+
+        }
+
+
+
+        .servicing-actions button:disabled {
+
+            opacity: .45;
+
+            cursor: not-allowed
+
+        }
+
+
+
+        .servicing-accept {
+
+            border: 1px solid #c94f0d;
+
+            background: #e45f14;
+
+            color: white
+
+        }
+
+
+
+        .servicing-accept:hover {
+
+            background: #c94f0d
+
+        }
+
+
+
+        .servicing-reject {
+
+            border: 1px solid #b3262e;
+
+            color: #b3262e;
+
+            background: #fff
+
+        }
+
+
+
+        .servicing-history {
+
+            border: 1px solid #d7bdb2;
+
+            border-radius: 7px;
+
+            background: #fff;
+
+            color: #7b3924;
+
+            padding: 6px 14px;
+
+            font-size: 11px;
+
+            font-weight: 800
+
+        }
+
+
+
+        .servicing-history:hover {
+
+            background: #fff8f3
+
+        }
+
+
+
+        .servicing-status {
+
+            font-weight: 800;
+
+            color: #6b625d;
+
+            font-size: 11px;
+
+            min-height: 15px
+
+        }
+
+
+
+        @media(max-width:720px) {
+
+            .servicing-overview {
+
+                grid-template-columns: repeat(2, 1fr)
+
+            }
+
+
+
+            .servicing-meta:nth-child(odd) {
+
+                padding-left: 0
+
+            }
+
+
+
+            .servicing-actions {
+
+                flex-wrap: wrap
+
+            }
+
+
+
+            .servicing-table {
+
+                min-width: 550px
+
+            }
+
+
+
+        }
+
+
+        /* Complete before/after rider snapshots */
+        .rider-before-after { padding: 12px; display: grid; gap: 16px; }
+        .rider-state-section { border: 1px solid #eadfd9; border-radius: 8px; overflow: hidden; }
+        .rider-table-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .rider-count { font-size: 10px; background: white; border: 1px solid #e4d5cc; color: #7b3924; border-radius: 12px; padding: 3px 10px; white-space: nowrap; }
+        .rider-state-table { min-width: 760px; table-layout: auto; }
+        .rider-state-table th, .rider-state-table td { padding: 9px 10px; }
+        .rider-state-table th:first-child { width: 54px; }
+        .rider-state-table th:nth-child(2) { width: 28%; }
+        .rider-state-table th:nth-child(3) { width: 12%; }
+        .rider-state-table td:first-child { text-align: center; }
+
+    </style>
+
+</head>
+
+
+
+<body>
+
+    <header class="app-header">
+
+        <button aria-label="Back to Inbox" class="back" title="Back to Inbox" type="button"><svg aria-hidden="true"
+
+                fill="none" height="16" viewbox="0 0 24 24" width="16">
+
+                <path
+
+                    d="M15 20.67C14.81 20.67 14.62 20.6 14.47 20.45L7.95 13.93C6.89 12.87 6.89 11.13 7.95 10.07L14.47 3.55C14.76 3.26 15.24 3.26 15.53 3.55C15.82 3.84 15.82 4.32 15.53 4.61L9.01 11.13C8.53 11.61 8.53 12.39 9.01 12.87L15.53 19.39C15.82 19.68 15.82 20.16 15.53 20.45C15.38 20.59 15.19 20.67 15 20.67Z"
+
+                    fill="currentColor"></path>
+
+            </svg></button>
+
+        <img alt="ICICI Life Logo" class="logo" src="ICICI%20Logo.svg" />
+
+        <div class="header-spacer"></div>
+
+        <div class="header-date">
+
+            <div id="current-time"></div>
+
+            <div>Session: <span id="session-time">15:00</span></div>
+
+        </div>
+
+        <div class="user-menu-wrap">
+
+            <button aria-expanded="false" aria-label="User menu" class="user-button" id="user-button"
+
+                type="button"><span class="user-avatar"><svg aria-hidden="true" fill="none" height="24"
+
+                        viewbox="0 0 24 24" width="24">
+
+                        <path
+
+                            d="M12 12.75C8.83 12.75 6.25 10.17 6.25 7C6.25 3.83 8.83 1.25 12 1.25C15.17 1.25 17.75 3.83 17.75 7C17.75 10.17 15.17 12.75 12 12.75ZM12 2.75C9.66 2.75 7.75 4.66 7.75 7C7.75 9.34 9.66 11.25 12 11.25C14.34 11.25 16.25 9.34 16.25 7C16.25 4.66 14.34 2.75 12 2.75Z"
+
+                            fill="currentColor"></path>
+
+                        <path
+
+                            d="M20.59 22.75C20.18 22.75 19.84 22.41 19.84 22C19.84 18.55 16.32 15.75 12 15.75C7.68 15.75 4.16 18.55 4.16 22C4.16 22.41 3.82 22.75 3.41 22.75C3 22.75 2.66 22.41 2.66 22C2.66 17.73 6.85 14.25 12 14.25C17.15 14.25 21.34 17.73 21.34 22C21.34 22.41 21 22.75 20.59 22.75Z"
+
+                            fill="currentColor"></path>
+
+                    </svg></span><span class="user-name" id="header-user-name"></span><span>⌄</span></button>
+
+            <div class="user-popover" hidden="" id="user-popover"><button data-action="break" type="button">◷  
+
+                    Breaktime
+
+                    <b>30 mins ›</b></button><button data-action="logout" type="button">⇥   Logout</button></div>
+
+        </div>
+
+    </header>
+
+    <div class="banner-shell">
+
+        <div class="banner compact-banner">
+
+            <div class="banner-content">
+
+                <div class="banner-title-row">
+
+                    <p class="banner-line"><strong>Product:</strong> ICICI Pru GIFT Pro - E36 /
+
+                        <strong>Channel:</strong> Agency / <strong>SA</strong> - ₹10,68,000 / <strong>Face
+
+                            Value</strong> - ₹10,68,000</p>
+
+                    <span class="app-pill">App No. - OB90322247</span>
+
+                </div>
+
+                <p class="banner-line"><strong>Policy Type:</strong> Individual / <strong>Agent Name:</strong> Rajesh
+
+                    Sharma / <strong>Agent Code:</strong> AGT10234 / <strong>Customer Type:</strong> Existing Customer
+
+                </p>
+
+                <p class="banner-line"><strong>Riders:</strong> WOP - SA 15,00,000 / BTBB - SA 25,00,000 / TI Rider - SA
+
+                    25,00,000 / ADBR - SA 25,00,000 / CI Rider - SA 25,00,000</p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <main>
+
+        <div class="content">
+
+            <div class="summary-wrap">
+
+                <section aria-label="Pre Issuance Servicing Details" class="servicing-card">
+
+                    <div class="servicing-heading"><span>Pre Issuance Servicing Details</span><button
+
+                            class="servicing-history" id="servicing-history" type="button">History (12)</button></div>
+
+                    <div class="servicing-content">
+
+                        <div class="servicing-overview">
+
+                            <div class="servicing-meta"><span>Service ID</span><strong>SC-PI-10245</strong></div>
+
+                            <div class="servicing-meta"><span>CT</span><strong>Pre-Issuance</strong></div>
+
+                            <div class="servicing-meta"><span>ST</span><strong>Change in Address/Pin Code</strong></div>
+
+                            <div class="servicing-meta"><span>Received Date</span><strong>30 Sep 2026</strong></div>
+
+                        </div>
+
+                        <div class="servicing-table-wrap">
+
+                            <div class="servicing-profile-title">LA1 - Rajesh Kumar&#x20;
+
+                            </div>
+
+                            <div class="servicing-table-scroll">
+
+                                <table class="servicing-table consolidated-changes">
+
+                                    <thead><tr><th>Change Type</th><th>Field Name</th><th>Old Value</th><th>New Value</th></tr></thead>
+
+                                    <tbody>
+
+                                        <tr><td class="change-type" rowspan="9">Address / Pin Code</td><td>Address Type</td><td class="servicing-old">Communication Address</td><td class="servicing-new">Communication Address</td></tr>
+
+                                        <tr><td>Address Line 1</td><td class="servicing-old">Flat 12, Shanti Apartments</td><td class="servicing-new">Flat 24, Orchid Residency</td></tr>
+
+                                        <tr><td>Address Line 2</td><td class="servicing-old">M. G. Road</td><td class="servicing-new">Park Street</td></tr>
+
+                                        <tr><td>Address Line 3</td><td class="servicing-old">Fort</td><td class="servicing-new">Koregaon Park</td></tr>
+
+                                        <tr><td>Landmark</td><td class="servicing-old">Near Central Library</td><td class="servicing-new">Near City Mall</td></tr>
+
+                                        <tr><td>City</td><td class="servicing-old">Mumbai</td><td class="servicing-new">Pune</td></tr>
+
+                                        <tr><td>State</td><td class="servicing-old">Maharashtra</td><td class="servicing-new">Maharashtra</td></tr>
+
+                                        <tr><td>Country</td><td class="servicing-old">India</td><td class="servicing-new">India</td></tr>
+
+                                        <tr><td>Pincode</td><td class="servicing-old">400001</td><td class="servicing-new">411001</td></tr>
+
+                                        <!-- <tr class="change-group-start"><td class="change-type">Frequency</td><td>Premium Frequency</td><td class="servicing-old">Yearly</td><td class="servicing-new">Monthly</td></tr>
+
+                                        <tr class="change-group-start"><td class="change-type" rowspan="3">Deletion of Rider</td><td>Rider Name</td><td class="servicing-old">WOP</td><td class="servicing-new">Removed</td></tr>
+
+                                        <tr><td>Sum Assured</td><td class="servicing-old">₹15,00,000</td><td class="servicing-new">—</td></tr>
+
+                                        <tr><td>Policy Term</td><td class="servicing-old">20 Years</td><td class="servicing-new">—</td></tr>
+
+                                        <tr class="change-group-start"><td class="change-type" rowspan="2">Gender</td><td>Name</td><td class="servicing-old">Rajesh Kumar</td><td class="servicing-new">Riya Kumar</td></tr>
+
+                                        <tr><td>Gender</td><td class="servicing-old">Male</td><td class="servicing-new">Female</td></tr> -->
+
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+                        </div>
+
+                        <div class="servicing-actions"><span aria-live="polite" class="servicing-status"
+
+                                id="servicing-status"></span><button
+
+                                class="servicing-reject" id="servicing-reject" type="button">Reject</button><button
+
+                                class="servicing-accept" id="servicing-accept" type="button">Accept</button></div>
+
+                    </div>
+
+                </section>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <div class="quick-panel" hidden="" id="quick-panel">
+
+        <h2>Quick Links</h2>
+
+        <div id="quick-items"></div>
+
+    </div><button aria-expanded="false" aria-label="Quick Links" class="quick-fab" id="quick-fab" title="Quick Links"
+
+        type="button"><svg aria-hidden="true" fill="none" height="24" viewbox="0 0 32 32" width="24">
+
+            <path
+
+                d="M11.9836 28.6681C9.77031 28.6681 7.54365 27.8281 5.85031 26.1348C2.47698 22.7481 2.47698 17.2548 5.85031 13.8815C6.23698 13.4948 6.87698 13.4948 7.26365 13.8815C7.65031 14.2681 7.65031 14.9081 7.26365 15.2948C4.66365 17.8948 4.66365 22.1215 7.26365 24.7215C9.86365 27.3215 14.0903 27.3215 16.6903 24.7215C17.9436 23.4681 18.637 21.7881 18.637 20.0015C18.637 18.2281 17.9436 16.5481 16.6903 15.2815C16.3036 14.8948 16.3036 14.2548 16.6903 13.8681C17.077 13.4815 17.717 13.4815 18.1036 13.8681C19.7436 15.5081 20.637 17.6815 20.637 20.0015C20.637 22.3215 19.7303 24.4948 18.1036 26.1348C16.4236 27.8281 14.2103 28.6681 11.9836 28.6681Z"
+
+                fill="white"></path>
+
+            <path
+
+                d="M25.4268 18.8777C25.1734 18.8777 24.9201 18.7844 24.7201 18.5844C24.3334 18.1977 24.3334 17.5577 24.7201 17.171C27.4534 14.4377 27.4534 9.99771 24.7201 7.27771C21.9868 4.54438 17.5468 4.54438 14.8268 7.27771C13.5068 8.59771 12.7734 10.3577 12.7734 12.2244C12.7734 14.091 13.5068 15.851 14.8268 17.171C15.2134 17.5577 15.2134 18.1977 14.8268 18.5844C14.4401 18.971 13.8001 18.971 13.4134 18.5844C11.7201 16.891 10.7734 14.6244 10.7734 12.2244C10.7734 9.82438 11.7068 7.55771 13.4134 5.86438C16.9201 2.35771 22.6268 2.35771 26.1468 5.86438C29.6534 9.37104 29.6534 15.091 26.1468 18.5977C25.9468 18.7844 25.6801 18.8777 25.4268 18.8777Z"
+
+                fill="white"></path>
+
+        </svg></button>
+
+    <div class="modal-backdrop" hidden="" id="modal-root">
+
+        <div aria-labelledby="dialog-title" aria-modal="true" class="dialog" role="dialog">
+
+            <div class="dialog-title"><span id="dialog-title"></span><button aria-label="Close dialog"
+
+                    class="dialog-close" id="dialog-close" type="button">×</button></div>
+
+            <div class="dialog-content" id="dialog-content"></div>
+
+        </div>
+
+    </div>
+
+    <script>const $ = (selector) => document.querySelector(selector);
+
+        const dialogStack = [];
+
+        function setDialogCloseLabel(isReturn) { $('#dialog-close').setAttribute('aria-label', isReturn ? 'Back to previous dialog' : 'Close dialog'); $('#dialog-close').title = isReturn ? 'Back to previous dialog' : 'Close dialog' }
+
+        function openDialog(title, html, dialogClass = '', preserveCurrent = false) { if (preserveCurrent && !$('#modal-root').hidden) dialogStack.push({ title: $('#dialog-title').textContent, html: $('#dialog-content').innerHTML, dialogClass: $('.dialog').className, contentScrollTop: $('#dialog-content').scrollTop, tableScrollLeft: $('#dialog-content').querySelector('.pre-issuance-table-wrap')?.scrollLeft || 0 }); else if ($('#modal-root').hidden) dialogStack.length = 0; $('#dialog-title').textContent = title; $('#dialog-content').innerHTML = html; $('.dialog').className = 'dialog' + (dialogClass ? ' ' + dialogClass : ''); $('#modal-root').hidden = false; setDialogCloseLabel(dialogStack.length > 0); $('#dialog-close').focus() }
+
+        function closeDialog() { const previous = dialogStack.pop(); if (previous) { $('#dialog-title').textContent = previous.title; $('#dialog-content').innerHTML = previous.html; $('.dialog').className = previous.dialogClass; $('#dialog-content').scrollTop = previous.contentScrollTop; const tableWrap = $('#dialog-content').querySelector('.pre-issuance-table-wrap'); if (tableWrap) tableWrap.scrollLeft = previous.tableScrollLeft; setDialogCloseLabel(dialogStack.length > 0); $('#dialog-close').focus(); return } $('#modal-root').hidden = true; $('#dialog-content').innerHTML = ''; $('.dialog').className = 'dialog'; setDialogCloseLabel(false) }
+
+        $('#dialog-close').addEventListener('click', closeDialog);
+
+        $('#modal-root').addEventListener('click', e => { if (e.target.id === 'modal-root') closeDialog() });
+
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeDialog(); closeQuickLinks(); $('#user-popover').hidden = true } });
+
+        const preIssuanceChangeRecords = [
+    {
+        "callDate": "30/09/2026 10:32 AM",
+        "serviceId": "SC-PI-10245 - LA1 Rajesh Kumar",
+        "st": "Changes in Frequency",
+        "details": "Customer requested premium frequency change.",
+        "source": "Customer Service",
+        "rows": [
+            [
+                "Premium Frequency",
+                "Yearly",
+                "Monthly"
+            ]
+        ]
+    },
+    {
+        "callDate": "28/09/2026 03:18 PM",
+        "serviceId": "SC-PI-10192 - LA1 Rajesh Kumar",
+        "st": "Deletion of Rider",
+        "riders": [{"name": "Waiver of Premium Rider", "code": "WOP", "sumAssured": "₹15,00,000", "policyTerm": "20 Years", "premiumPayingTerm": "15 Years"}, {"name": "Accidental Death Benefit Rider", "code": "ADBR", "sumAssured": "₹25,00,000", "policyTerm": "20 Years", "premiumPayingTerm": "15 Years"}, {"name": "Term Insurance Rider", "code": "TI", "sumAssured": "₹25,00,000", "policyTerm": "20 Years", "premiumPayingTerm": "15 Years"}, {"name": "Critical Illness Rider", "code": "CI", "sumAssured": "₹10,00,000", "policyTerm": "20 Years", "premiumPayingTerm": "15 Years"}],
+        "details": "Customer requested deletion of existing rider.",
+        "source": "Customer Service",
+        "rows": [
+            [
+                "Rider Name",
+                "WOP",
+                "Removed"
+            ],
+            [
+                "Rider Code",
+                "WOP",
+                "—"
+            ],
+            [
+                "Sum Assured",
+                "₹15,00,000",
+                "—"
+            ],
+            [
+                "Policy Term",
+                "20 Years",
+                "—"
+            ]
+        ]
+    },
+    {
+        "callDate": "27/09/2026 11:45 AM",
+        "serviceId": "SC-PI-10185 - LA1 Rajesh Kumar",
+        "st": "Correction and updation of Account details",
+        "details": "Customer requested bank account details correction.",
+        "source": "Branch",
+        "rows": [
+            [
+                "Bank Name",
+                "ABC Bank",
+                "ICICI Bank"
+            ],
+            [
+                "Account Number",
+                "XXXX1234",
+                "XXXX5678"
+            ],
+            [
+                "IFSC",
+                "ABCD0001234",
+                "ICIC0005678"
+            ]
+        ]
+    },
+    {
+        "callDate": "26/09/2026 02:20 PM",
+        "serviceId": "SC-PI-10178 - LA1 Rajesh Kumar",
+        "st": "Changes in PT/PPT",
+        "details": "Customer requested policy term and premium paying term changes.",
+        "source": "Customer Service",
+        "rows": [
+            [
+                "Policy Term",
+                "20 Years",
+                "25 Years"
+            ],
+            [
+                "Premium Paying Term",
+                "10 Years",
+                "15 Years"
+            ]
+        ]
+    },
+    {
+        "callDate": "25/09/2026 09:15 AM",
+        "serviceId": "SC-PI-10165 - LA1 Rajesh Kumar",
+        "st": "Changes in SA",
+        "details": "Customer requested change in Sum Assured.",
+        "source": "Sales",
+        "rows": [
+            [
+                "Sum Assured",
+                "₹10,68,000",
+                "₹15,00,000"
+            ]
+        ]
+    },
+    {
+        "callDate": "24/09/2026 04:50 PM",
+        "serviceId": "SC-PI-10154 - LA1 Rajesh Kumar",
+        "st": "Change in Gender",
+        "details": "Customer requested gender correction.",
+        "source": "Branch",
+        "rows": [
+            [
+                "Gender",
+                "Male",
+                "Female"
+            ]
+        ]
+    },
+    {
+        "callDate": "23/09/2026 12:35 PM",
+        "serviceId": "SC-PI-10143 - LA1 Rajesh Kumar",
+        "st": "Correction/ Updation of residential status",
+        "details": "Customer requested residential status update.",
+        "source": "Customer Service",
+        "rows": [
+            [
+                "Residential Status",
+                "Resident Indian",
+                "Non-Resident Indian"
+            ]
+        ]
+    },
+    {
+        "callDate": "22/09/2026 10:10 AM",
+        "serviceId": "SC-PI-10132 - LA1 Rajesh Kumar",
+        "st": "Email ID updation / Correction",
+        "details": "Customer requested email address correction.",
+        "source": "Branch",
+        "rows": [
+            [
+                "Email ID",
+                "old@example.com",
+                "updated@example.com"
+            ]
+        ]
+    },
+    {
+        "callDate": "21/09/2026 03:25 PM",
+        "serviceId": "SC-PI-10121 - LA1 Rajesh Kumar",
+        "st": "Mobile number correction",
+        "details": "Customer requested mobile number update.",
+        "source": "Customer Service",
+        "rows": [
+            [
+                "Mobile Number",
+                "XXXXXX1234",
+                "XXXXXX5678"
+            ]
+        ]
+    },
+    {
+        "callDate": "19/09/2026 01:40 PM",
+        "serviceId": "SC-PI-10110 - LA1 Rajesh Kumar",
+        "st": "Change in DOB",
+        "details": "Customer requested correction in date of birth.",
+        "source": "Sales",
+        "rows": [
+            [
+                "Date of Birth",
+                "12/06/1988",
+                "12/06/1989"
+            ]
+        ]
+    },
+    {
+        "callDate": "18/09/2026 11:55 AM",
+        "serviceId": "SC-PI-10098",
+        "st": "Addition of Rider",
+        "riders": [{"name": "Waiver of Premium Rider", "code": "WOP", "sumAssured": "₹15,00,000", "policyTerm": "20 Years", "premiumPayingTerm": "15 Years"}, {"name": "Accidental Death Benefit Rider", "code": "ADBR", "sumAssured": "₹25,00,000", "policyTerm": "20 Years", "premiumPayingTerm": "15 Years"}, {"name": "Term Insurance Rider", "code": "TI", "sumAssured": "₹25,00,000", "policyTerm": "20 Years", "premiumPayingTerm": "15 Years"}, {"name": "Critical Illness Rider", "code": "CI", "sumAssured": "₹10,00,000", "policyTerm": "20 Years", "premiumPayingTerm": "15 Years"}],
+        "details": "Customer requested addition of a new rider.",
+        "source": "Branch",
+        "rows": [
+            [
+                "Rider Name",
+                "—",
+                "Critical Illness Rider"
+            ],
+            [
+                "Rider Code",
+                "—",
+                "CI"
+            ],
+            [
+                "Sum Assured",
+                "—",
+                "₹5,00,000"
+            ]
+        ]
+    },
+    {
+        "callDate": "17/09/2026 02:05 PM",
+        "serviceId": "SC-PI-10087",
+        "st": "PAN / Aadhar corrections",
+        "details": "Customer requested PAN and Aadhaar details correction.",
+        "source": "Customer Service",
+        "rows": [
+            [
+                "PAN",
+                "ABCDE1234F",
+                "ABCDE1235F"
+            ],
+            [
+                "Aadhaar",
+                "XXXX XXXX 1234",
+                "XXXX XXXX 5678"
+            ]
+        ]
+    }
+];
+
+        const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+
+        function renderChangeDetails(record) {
+            const context = '<div class="change-details-context"><strong>' + escapeHtml(record.serviceId) +
+                '</strong><span>' + escapeHtml(record.callDate) + '</span></div>';
+            if (Array.isArray(record.riders)) {
+                const isAddition = record.st === 'Addition of Rider';
+                // Show complete before/after policy rider lists, not field-by-field change rows.
+                const originalRiders = isAddition ? record.riders.slice(0, 3) : record.riders;
+                const revisedRiders = isAddition ? record.riders : record.riders.slice(0, 3);
+                const renderRiderTable = (title, riders, variant) => {
+                    const rows = riders.map((rider, index) => `<tr>
+                        <td>${index + 1}</td>
+                        <td>${escapeHtml(rider.name)}</td>
+                        <td>${escapeHtml(rider.code)}</td>
+                        <td>${escapeHtml(rider.sumAssured)}</td>
+                        <td>${escapeHtml(rider.policyTerm)}</td>
+                        <td>${escapeHtml(rider.premiumPayingTerm)}</td>
+                    </tr>`).join('');
+                    return `<section class="rider-state-section ${variant}">
+                        <div class="rider-table-title">${title} <span class="rider-count">${riders.length} Riders</span></div>
+                        <div class="rider-details-scroll"><table class="change-details-table rider-details-table rider-state-table">
+                            <thead><tr><th>Sr. No.</th><th>Rider Name</th><th>Rider Code</th><th>Sum Assured</th><th>Policy Term</th><th>Premium Paying Term</th></tr></thead>
+                            <tbody>${rows}</tbody>
+                        </table></div>
+                    </section>`;
+                };
+                return `<div class="change-details-panel">${context}
+                    <div class="rider-before-after">
+                        ${renderRiderTable('Old Value — Before Change', originalRiders, 'rider-before')}
+                        ${renderRiderTable('New Value — After Change', revisedRiders, 'rider-after')}
+                    </div>
+                </div>`;
+            }
+            const rows = record.rows.map(row => '<tr>' + row.map(v => '<td>' + escapeHtml(v) + '</td>').join('') + '</tr>').join('');
+            return '<div class="change-details-panel">' + context + '<table class="change-details-table"><thead><tr><th>Field Name</th><th>Old Value</th><th>New Value</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+        }
+
+        document.addEventListener('click', e => {
+            const trigger = e.target.closest('[data-pre-issuance-change]');
+            if (!trigger) return;
+            const record = preIssuanceChangeRecords[Number(trigger.dataset.preIssuanceChange)];
+            if (!record) return;
+            openDialog(record.st, renderChangeDetails(record), 'history-dialog', true);
+        });
+
+        $('#dialog-content').addEventListener('click', e => { if (e.target.id === 'break-confirm') closeDialog() });
+
+        const quickItems = ['Applicant Profile', 'Proposal Form & Documents', 'Previous Policies', 'Open Tasks', 'Risk Details', 'Audit Trail', 'Raise Grievance'];
+
+        $('#quick-items').innerHTML = quickItems.map(label => `<button type="button" data-quick="${escapeHtml(label)}">${escapeHtml(label)} <span>›</span></button>`).join('');
+
+        const quickIcon = $('#quick-fab').innerHTML;
+
+        function closeQuickLinks() { $('#quick-panel').hidden = true; $('#quick-fab').classList.remove('open'); $('#quick-fab').setAttribute('aria-expanded', 'false'); $('#quick-fab').innerHTML = quickIcon }
+
+        $('#quick-fab').addEventListener('click', () => { const panel = $('#quick-panel'); panel.hidden = !panel.hidden; $('#quick-fab').classList.toggle('open', !panel.hidden); $('#quick-fab').setAttribute('aria-expanded', String(!panel.hidden)) });
+
+        $('#quick-items').addEventListener('click', e => { const label = e.target.closest('[data-quick]')?.dataset.quick; if (!label) return; const routes = { 'Previous Policies': './previous-policy.html?role=CUW_TASK', 'Open Tasks': './open-tasks.html?role=CUW_TASK', 'Risk Details': './risk-details.html?role=CUW_TASK', 'Audit Trail': './audit-trail.html' }; if (routes[label]) { window.location.href = routes[label]; return } closeQuickLinks(); openDialog(label, '<p>This quick-link destination is not included in the trimmed prototype.</p>') });
+
+        $('#user-button').addEventListener('click', () => { const el = $('#user-popover'); el.hidden = !el.hidden; $('#user-button').setAttribute('aria-expanded', String(!el.hidden)) });
+
+        $('#user-popover').addEventListener('click', e => { const action = e.target.closest('[data-action]')?.dataset.action; if (action === 'logout') { window.location.href = './login.html'; return } if (action === 'break') openDialog('Set Break Time', '<label><span class="field-label">Break Duration</span><select class="select"><option>Select</option><option>15 minutes</option><option>30 minutes</option><option>45 minutes</option><option>60 minutes</option></select></label><label style="display:block;margin-top:10px"><span class="field-label">Break Reason</span><select class="select"><option>Select</option><option>Tea / Coffee Break</option><option>Lunch Break</option><option>Personal Work</option><option>Meeting</option></select></label><div style="text-align:center;margin-top:16px"><button class="contained" id="break-confirm">Confirm</button></div>'); $('#user-popover').hidden = true });
+
+        $('.back').addEventListener('click', () => window.location.href = './landing-prototype.html');
+
+        try { $('#header-user-name').textContent = localStorage.getItem('username') || 'ipru75474' } catch { $('#header-user-name').textContent = 'ipru75474' }
+
+        function updateClock() { const parts = Object.fromEntries(new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }).formatToParts(new Date()).map(p => [p.type, p.value])); $('#current-time').textContent = `${Number(parts.day)} ${parts.month} ${parts.year}, ${parts.hour}:${parts.minute}:${parts.second} ${String(parts.dayPeriod).toLowerCase()}` }
+
+        updateClock(); setInterval(updateClock, 1000); let sessionSeconds = 900; setInterval(() => { sessionSeconds = Math.max(0, sessionSeconds - 1); $('#session-time').textContent = `${String(Math.floor(sessionSeconds / 60)).padStart(2, '0')}:${String(sessionSeconds % 60).padStart(2, '0')}` }, 1000);
+
+
+
+
+
+        let servicingDecision = '';
+
+        function renderServicingDecision() {
+
+            document.getElementById('servicing-status').textContent = servicingDecision ? 'Decision: ' + servicingDecision : '';
+
+            document.getElementById('servicing-accept').disabled = !!servicingDecision;
+
+            document.getElementById('servicing-reject').disabled = !!servicingDecision;
+
+        }
+
+        function decideServicing(decision) {
+
+            openDialog(decision + ' Servicing Request', '<p>Do you want to ' + decision.toLowerCase() + ' all displayed changes for <strong>LA1 - Rajesh Kumar</strong>?</p>' + (decision === 'Reject' ? '<label class="field-label" for="service-reject-reason">Rejection Remarks <span style="color:#b3262e">*</span></label><textarea class="text-input" id="service-reject-reason" style="min-height:75px;resize:vertical" placeholder="Enter rejection remarks"></textarea>' : '') + '<p id="servicing-decision-error" style="color:#b3262e"></p><div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px"><button class="servicing-reject" id="service-decision-cancel" style="padding:7px 16px">Cancel</button><button class="contained" id="service-decision-confirm">Confirm ' + decision + '</button></div>');
+
+            document.getElementById('service-decision-cancel').onclick = closeDialog;
+
+            document.getElementById('service-decision-confirm').onclick = () => {
+
+                const remarks = document.getElementById('service-reject-reason')?.value.trim() || '';
+
+                if (decision === 'Reject' && !remarks) { document.getElementById('servicing-decision-error').textContent = 'Rejection remarks are required.'; return }
+
+                servicingDecision = decision; closeDialog(); renderServicingDecision();
+
+            };
+
+        }
+
+        document.getElementById('servicing-accept').addEventListener('click', () => decideServicing('Accept'));
+
+        document.getElementById('servicing-reject').addEventListener('click', () => decideServicing('Reject'));
+
+        document.getElementById('servicing-history').addEventListener('click', () => {
+            const eyeIcon = `<svg aria-hidden="true" fill="none" height="16" width="16" viewBox="0 0 24 24"><path d="M2.2 12S5.7 5.5 12 5.5 21.8 12 21.8 12 18.3 18.5 12 18.5 2.2 12 2.2 12Z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.8" stroke="currentColor" stroke-width="1.8"/></svg>`;
+            const bodyRows = preIssuanceChangeRecords.map((record, index) => `
+                <tr>
+                    <td>${escapeHtml(record.callDate)}</td>
+                    <td>${escapeHtml(record.serviceId)}</td>
+                    <td>Pre issuance</td>
+                    <td>${escapeHtml(record.st)}</td>
+                    <td>${escapeHtml(record.details)}</td>
+                    <td>${escapeHtml(record.source)}</td>
+                    <td><button type="button" class="view-change-details" data-pre-issuance-change="${index}"
+                        aria-label="View change details for ${escapeHtml(record.serviceId)}"
+                        title="View change details">${eyeIcon}</button></td>
+                </tr>`).join('');
+            const tableHtml = `<div class="pre-issuance-table-wrap">
+                <table class="pre-issuance-table">
+                    <thead><tr><th>Call Log Date</th><th>Service Call ID</th><th>CT</th><th>ST</th><th>Call Details</th><th>Source</th><th>View Change Details</th></tr></thead>
+                    <tbody>${bodyRows}</tbody>
+                </table></div>`;
+            openDialog('Pre Issuance Servicing History', tableHtml, 'history-dialog');
+        });
+
+        renderServicingDecision();
+
+    </script>
+
+</body>
+
+
+
+</html>

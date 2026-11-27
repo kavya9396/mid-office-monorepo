@@ -1,0 +1,606 @@
+import { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import {
+  CustomBox,
+  CustomButton,
+  CustomDialog,
+  CustomLoader,
+  CustomSnackbar,
+  CustomTypography,
+  DeleteIcon,
+} from "@insurance-poc/ui";
+import { drsRoutePath } from "@insurance-poc/routes";
+import {
+  canInvokeBreRetrigger,
+  clearBreRetriggerCount,
+  clearDrsTaskIds,
+  formatDateTime,
+  getDrsRoleLabel,
+  getDrsRoleType,
+  getMasterList,
+  getSessionUser,
+  readApiErrorMessage,
+  setBreRetriggerCount,
+} from "@insurance-poc/utils";
+import { Financial } from "@insurance-poc/common/financial";
+import { Medical } from "@insurance-poc/common/medical";
+import { QuickLinksModule, type QuickLinkItem } from "@insurance-poc/common/quick-links";
+import { DecisionHistory } from "@insurance-poc/common/decision-history";
+import { PivvDetails } from "@insurance-poc/common/pivv-details";
+import {
+  DecisionBar,
+  DecisionComparisonTable,
+  type ComparisonRow,
+} from "@insurance-poc/common/decision-bar";
+import { ApplicantBanner, type RowDetailsOptions } from "@insurance-poc/common/applicant-banner";
+import { DecisionSection, type DecisionSubmitPayload } from "@insurance-poc/common/decision-section";
+import { ValidationList, type ValidationRow } from "@insurance-poc/common/validation-list";
+import {
+  hasPendingPanPendcode,
+  LifeAssured,
+  type LifeAssuredTab,
+  type PanValidationInput,
+  type PanValidationResult,
+} from "@insurance-poc/common/life-assured";
+import {
+  RequirementMgmt,
+  isNewRequirement,
+  type RequirementItem,
+} from "@insurance-poc/common/requirement-mgmt";
+import { getRetailDrsTaskConfig } from "../../config/drsTaskConfig";
+import { useRetriggerRetailBreMutation } from "../../services/breRetriggerApi";
+import { useCompleteRetailTaskMutation } from "../../services/completeTaskApi";
+import { useFetchCvtValidationMutation } from "../../services/cvtValidationApi";
+import {
+  useGetRetailDrsQuery,
+  useGetRetailUwDecisionHistoryQuery,
+  useSaveRetailDrsApplicantMutation,
+  useSaveRetailDrsRequirementsMutation,
+} from "../../services/drsApi";
+import { useValidateNsdlPanMutation } from "../../services/nsdlApi";
+import { createNsdlPanValidateRequest, resolveNsdlOutcome } from "../../services/nsdlService";
+import {
+  useGetRetailFinancialDetailsQuery,
+  useSaveRetailFinancialMutation,
+} from "../../services/financialApi";
+import { RETAIL_FINANCIAL_ACTIONS_CONFIG } from "../config/financialActions.config";
+import { CvtEditApplicantDialog } from "./CvtEditApplicantDialog";
+import { requirementStatusOrder, requirementStatusVariants } from "./requirementData";
+
+/** Row 0 is the product / loan line, row 1 the policy / agent line, row 2 the rider sums assured. */
+const CVT_BANNER_OPTIONS: RowDetailsOptions = {
+  rowLabels: { 2: "Riders" },
+};
+
+/** Quick links shown on the CVT DRS. Open Tasks and Audit Trail open their page; the other only notifies. */
+const CVT_QUICK_LINKS: QuickLinkItem[] = [
+  { id: "proposal-documents", label: "Proposal Form & Documents" },
+  { id: "open-tasks", label: "Open Tasks" },
+  { id: "audit-trail", label: "Audit Trail" },
+];
+
+const CVT_DEFAULT_ROLE_TYPE = "CVT User";
+
+/** `misc` master row type holding the CVT decision options. */
+const CVT_DECISION_MISC_TYPE = "CVT_TERM_DESC";
+
+/** Requirement save `lob` for Retail (see `resolveBreRetriggerLob` in `apps/common`). */
+const RETAIL_LOB = "R";
+
+/** Life assured profile tabs shown on the CVT DRS (as in the prototype). */
+const CVT_LIFE_ASSURED_TABS: LifeAssuredTab[] = ["imageDetails", "personalKyc", "contactAddress", "paymentPayout"];
+
+// Which BRE rows highlight differences between Initial and Final (as in the prototype)
+const BRE_DIFF_BY_ROW_ID: Record<string, ComparisonRow["diff"]> = {
+  decision: "value",
+  discrepancy: "tokens",
+};
+
+type BreRetriggerFinalOverrides = Partial<
+  Record<"status" | "decision" | "remarks" | "discrepancy" | "timestamp", string>
+>;
+
+/** The selected applicant travels in the router's navigation state, so the URL stays `/financial` / `/medical`. */
+type ApplicantRouteState = { applicantId?: string };
+
+const readApplicantId = (state: unknown): string | undefined => {
+  if (typeof state !== "object" || state === null || !("applicantId" in state)) return undefined;
+  const { applicantId } = state as ApplicantRouteState;
+  return typeof applicantId === "string" && applicantId.trim().length > 0 ? applicantId.trim() : undefined;
+};
+
+function readQueryError(error: unknown): string {
+  if (typeof error === "object" && error !== null) {
+    if ("error" in error && typeof error.error === "string" && error.error.length > 0) {
+      return error.error;
+    }
+    if ("message" in error && typeof error.message === "string" && error.message.length > 0) {
+      return error.message;
+    }
+  }
+  return "Unable to load the Retail DRS.";
+}
+
+/** Retail DRS for `roleType` `CVT_TASK`. */
+const CvtUser = () => {
+  const { applicationNo: applicationNoParam } = useParams();
+  const applicationNo = applicationNoParam?.trim() ?? "";
+  const navigate = useNavigate();
+  const { pathname, search, state: locationState } = useLocation();
+  const lowerPath = pathname.toLowerCase();
+  const isFinancialRoute = lowerPath.includes("/drs/financial");
+  const isMedicalRoute = lowerPath.includes("/drs/medical");
+  const drsBasePath = applicationNo.length > 0 ? drsRoutePath(applicationNo) : "";
+  const financialPath = applicationNo.length > 0 ? drsRoutePath(applicationNo, "financial") : "";
+  const medicalPath = applicationNo.length > 0 ? drsRoutePath(applicationNo, "medical") : "";
+  const currentApplicantId = readApplicantId(locationState);
+
+  const drsTaskConfig = getRetailDrsTaskConfig(getDrsRoleType());
+  const drsQueryArg = { applicationNo, ...drsTaskConfig };
+  const drs = useGetRetailDrsQuery(drsQueryArg, {
+    skip: applicationNo.length === 0,
+    // Always hit the DRS API when the screen mounts instead of serving the cached result.
+    refetchOnMountOrArgChange: true,
+  });
+  // Decision History: `uw-decision/fetch` on page load
+  const decisionHistoryQuery = useGetRetailUwDecisionHistoryQuery(
+    { applicationNumber: applicationNo },
+    { skip: applicationNo.length === 0 },
+  );
+  const applicants = drs.data?.applicants ?? [];
+  const selectedApplicant = applicants.find((applicant) => applicant.id === currentApplicantId) ?? applicants[0];
+  const activePartyId = selectedApplicant?.partyId ?? "";
+  const financialQuery = useGetRetailFinancialDetailsQuery(
+    { applicationNumber: applicationNo, partyId: activePartyId },
+    { skip: !isFinancialRoute || !applicationNo || !activePartyId },
+  );
+  const [saveFinancial] = useSaveRetailFinancialMutation();
+  const [saveRetailDrsRequirements] = useSaveRetailDrsRequirementsMutation();
+  const [saveRetailDrsApplicant] = useSaveRetailDrsApplicantMutation();
+  const [validateNsdlPan] = useValidateNsdlPanMutation();
+  const [completeRetailTask, completeRetailTaskState] = useCompleteRetailTaskMutation();
+  const [fetchCvtValidation, fetchCvtValidationState] = useFetchCvtValidationMutation();
+  const [validationRows, setValidationRows] = useState<ValidationRow[]>([]);
+  const [retriggerRetailBre, retriggerRetailBreState] = useRetriggerRetailBreMutation();
+
+  const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
+  const [breDetailOpen, setBreDetailOpen] = useState(false);
+  const [breRetriggerFinals, setBreRetriggerFinals] = useState<BreRetriggerFinalOverrides>({});
+  const [breRetriggerBarDecision, setBreRetriggerBarDecision] = useState<string | null>(null);
+  const [breRetriggerLimitDialogOpen, setBreRetriggerLimitDialogOpen] = useState(false);
+  // Requirement Management has edits that were not saved yet.
+  const [requirementsDirty, setRequirementsDirty] = useState(false);
+  const [saveRequirementsNoticeOpen, setSaveRequirementsNoticeOpen] = useState(false);
+  const decisionOptions = useMemo(
+    () =>
+      getMasterList("misc", CVT_DECISION_MISC_TYPE)
+        .filter((entry) => entry.isActive === "Y")
+        .map((entry) => ({ label: entry.description, value: entry.code })),
+    [],
+  );
+  const [decision, setDecision] = useState("");
+  const [remarks, setRemarks] = useState("");
+
+  useEffect(() => {
+    setBreRetriggerFinals({});
+    setBreRetriggerBarDecision(null);
+  }, [applicationNo]);
+
+  const goToInbox = () => {
+    clearBreRetriggerCount();
+    void navigate("/inbox", { replace: true });
+  };
+
+  const handleBreRetrigger = async () => {
+    if (applicationNo.length === 0) {
+      setSnackbarMessage("Application number is missing.");
+      return;
+    }
+    if (retriggerRetailBreState.isLoading) return;
+
+    if (!canInvokeBreRetrigger()) {
+      setBreRetriggerLimitDialogOpen(true);
+      return;
+    }
+
+    try {
+      const mapped = await retriggerRetailBre({ applicationNumber: applicationNo }).unwrap();
+      setBreRetriggerCount(mapped.reTriggerCount);
+      setBreRetriggerBarDecision(mapped.barDecision);
+      setBreRetriggerFinals(mapped.rows);
+    } catch (reason: unknown) {
+      setBreRetriggerFinals((previous) => ({ ...previous, status: "" }));
+      const message = readApiErrorMessage(reason);
+      setSnackbarMessage(message.length > 0 ? message : "Unable to retrigger BRE.");
+    }
+  };
+
+  const handleDecisionSubmit = async (payload: DecisionSubmitPayload) => {
+    if (requirementsDirty) {
+      setSaveRequirementsNoticeOpen(true);
+      return;
+    }
+    if (applicationNo.length === 0) {
+      setSnackbarMessage("Application number is missing.");
+      return;
+    }
+    // Validation API first; the complete-task API is called only when it returns no validations.
+    try {
+      const validation = await fetchCvtValidation({
+        userId: getSessionUser()?.username ?? "",
+        role: "CVT",
+        applicationNo,
+        partyDecision: applicants.map((applicant) => ({
+          partyId: applicant.partyId ?? "",
+          decision: payload.decision,
+        })),
+      }).unwrap();
+      const rows: ValidationRow[] = validation.partyValidations.flatMap((party) =>
+        party.validations.map((item) => ({
+          memberType: party.memberType,
+          reason: item.reason,
+          remarks: item.remarks,
+        })),
+      );
+      if (rows.length > 0) {
+        setValidationRows(rows);
+        return;
+      }
+    } catch (reason: unknown) {
+      const apiMessage = readApiErrorMessage(reason);
+      setSnackbarMessage(apiMessage.length > 0 ? apiMessage : "Unable to validate the CVT decision.");
+      return;
+    }
+    try {
+      await completeRetailTask({
+        appNo: applicationNo,
+        decision: payload.decision,
+        remarks: payload.remarks,
+      }).unwrap();
+      clearDrsTaskIds();
+      goToInbox();
+    } catch (reason: unknown) {
+      const apiMessage = readApiErrorMessage(reason);
+      if (apiMessage.length > 0) setSnackbarMessage(apiMessage);
+    }
+  };
+
+  const handleSaveRequirements = async (updatedRequirements: RequirementItem[]) => {
+    try {
+      await saveRetailDrsRequirements({
+        applicationNo,
+        roleType: drsTaskConfig.roleType,
+        screenType: drsTaskConfig.screenType,
+        businessType: drsTaskConfig.businessType,
+        lob: RETAIL_LOB,
+        requirements: updatedRequirements,
+        initialRequirements: drs.data?.requirements,
+        queryArg: drsQueryArg,
+      }).unwrap();
+      setSnackbarMessage("Requirements saved successfully.");
+    } catch (reason: unknown) {
+      setSnackbarMessage(readApiErrorMessage(reason) || "Failed to save requirements.");
+    }
+  };
+
+  if (drs.isLoading) {
+    return <CustomLoader message="Loading application" />;
+  }
+
+  if (drs.isError || !drs.data) {
+    return (
+      <CustomBox sx={{ p: 2 }}>
+        <CustomTypography>{readQueryError(drs.error)}</CustomTypography>
+      </CustomBox>
+    );
+  }
+
+  const { rowDetails, breDecision, requirements, pivvDetails, editValues } = drs.data;
+  const applicantOptions = applicants.map((applicant) => ({ key: applicant.id, label: applicant.label }));
+
+  const handleSaveEditApplicant = async (applicantId: string, values: Parameters<typeof saveRetailDrsApplicant>[0]["values"]) => {
+    const applicant = applicants.find((item) => item.id === applicantId);
+    try {
+      await saveRetailDrsApplicant({
+        applicationNo,
+        applicantId,
+        partyId: applicant?.partyId,
+        memberType: applicant?.memberType ?? applicantId,
+        values,
+        initialValues: editValues[applicantId],
+        roleType: drsTaskConfig.roleType,
+        screenType: drsTaskConfig.screenType,
+        businessType: drsTaskConfig.businessType,
+        queryArg: drsQueryArg,
+      }).unwrap();
+      setSnackbarMessage("Applicant details updated successfully.");
+    } catch (reason: unknown) {
+      setSnackbarMessage(readApiErrorMessage(reason) || "Failed to update applicant details.");
+    }
+  };
+
+  const handleValidatePan = async (applicantId: string, input: PanValidationInput): Promise<PanValidationResult> => {
+    const applicant = applicants.find((item) => item.id === applicantId);
+    const applicantName = applicant?.personalFields.find((field) => field.label === "Applicant Name")?.value;
+    const request = createNsdlPanValidateRequest({
+      applicationNumber: applicationNo,
+      pan: input.panNumber,
+      name: applicantName === null || applicantName === undefined ? "" : String(applicantName),
+      dob: input.dob,
+      fatherName: "",
+    });
+    const response = await validateNsdlPan(request);
+    // A failed call is an API error: the message is the API's, or the error text.
+    const result =
+      "data" in response && response.data
+        ? response.data
+        : {
+            apiSuccess: false,
+            panValid: false,
+            message: readApiErrorMessage(response.error),
+            matches: { nameMatching: false, dobMatching: false, aadharSeeding: false },
+          };
+    const outcome = resolveNsdlOutcome(result, hasPendingPanPendcode(requirements));
+    return {
+      apiFailed: !result.apiSuccess,
+      message: result.message,
+      matches: result.matches,
+      panValid: outcome === "apiErrorShowMessage" ? undefined : outcome === "success",
+      raisePendcode: outcome === "apiErrorRaisePendcode",
+    };
+  };
+
+  const openFinancial = (applicantId: string) => {
+    void navigate({ pathname: financialPath, search }, { state: { applicantId } satisfies ApplicantRouteState });
+  };
+  const openMedical = (applicantId: string) => {
+    void navigate({ pathname: medicalPath, search }, { state: { applicantId } satisfies ApplicantRouteState });
+  };
+  const closeSubPage = () => {
+    void navigate({ pathname: drsBasePath, search });
+  };
+  const handleFinancialApplicantChange = (applicantKey: string) => {
+    void navigate(
+      { pathname: financialPath, search },
+      { replace: true, state: { applicantId: applicantKey } satisfies ApplicantRouteState },
+    );
+  };
+
+  const applicantBanner = (
+    <ApplicantBanner
+      applicationNo={applicationNo}
+      rowDetails={rowDetails}
+      rowDetailsOptions={CVT_BANNER_OPTIONS}
+    />
+  );
+
+  if (isFinancialRoute) {
+    return (
+      <Financial
+        applicationNumber={applicationNo}
+        partyId={selectedApplicant?.partyId}
+        summary={applicantBanner}
+        applicants={applicantOptions.map((option) => ({
+          ...option,
+          partyId: applicants.find((applicant) => applicant.id === option.key)?.partyId,
+        }))}
+        initialApplicantKey={selectedApplicant?.id}
+        sections={financialQuery.data}
+        actions={RETAIL_FINANCIAL_ACTIONS_CONFIG.cvt}
+        onApplicantChange={handleFinancialApplicantChange}
+        onBack={closeSubPage}
+        onSaveSection={(saveRequest) => saveFinancial(saveRequest).unwrap()}
+        onSubmit={closeSubPage}
+      />
+    );
+  }
+
+  if (isMedicalRoute) {
+    return (
+      <Medical
+        summary={applicantBanner}
+        applicants={applicantOptions}
+        initialApplicantKey={selectedApplicant?.id}
+        onBack={closeSubPage}
+        onSubmit={(payload) => console.log("Submit medical", payload)}
+      />
+    );
+  }
+
+  const readBreRowFinal = (rowId: string, defaultFinal: string): string => {
+    if (Object.hasOwn(breRetriggerFinals, rowId)) {
+      return breRetriggerFinals[rowId as keyof BreRetriggerFinalOverrides] ?? "";
+    }
+    return defaultFinal;
+  };
+
+  const breRows: ComparisonRow[] = breDecision.rows.map((row) => {
+    const finalRaw = readBreRowFinal(row.id, row.final);
+    return {
+      label: row.label,
+      initial: row.id === "timestamp" ? formatDateTime(row.initial) : row.initial,
+      final: row.id === "timestamp" ? formatDateTime(finalRaw) : finalRaw,
+      diff: BRE_DIFF_BY_ROW_ID[row.id],
+    };
+  });
+  const breDiscrepancyRow = breDecision.rows.find((row) => row.id === "discrepancy");
+
+  return (
+    <CustomBox
+      sx={{
+        position: "relative",
+        minHeight: "100%",
+        p: 2,
+        display: "flex",
+        gap: 2,
+        flexDirection: "column",
+      }}
+    >
+      {retriggerRetailBreState.isLoading && <CustomLoader message="Retriggering BRE" fullScreen />}
+
+      {applicantBanner}
+
+      <QuickLinksModule
+        items={CVT_QUICK_LINKS}
+        applicationNo={applicationNo}
+        roleType={getDrsRoleLabel() || CVT_DEFAULT_ROLE_TYPE}
+        onNavigate={(path) => {
+          void navigate(path);
+        }}
+        onNotify={(message) => setSnackbarMessage(message)}
+        title="Quick Links"
+      />
+
+      <DecisionBar
+        title="BRE Decision"
+        items={[
+          { label: "Initial", value: breDecision.initialDecision },
+          { label: "Final", value: breRetriggerBarDecision ?? breDecision.decision, tone: "success" },
+        ]}
+        onRefresh={handleBreRetrigger}
+        refreshLabel="BRE Retrigger"
+        onViewDetail={() => setBreDetailOpen(true)}
+      />
+
+      <DecisionBar
+        title="BRE Discrepancy"
+        items={[{ label: "Final", value: breDiscrepancyRow?.final ?? "", tone: "success" }]}
+      />
+
+      <RequirementMgmt
+        applicationKey={applicationNo}
+        requirements={requirements}
+        statusOrder={requirementStatusOrder}
+        statusVariants={requirementStatusVariants}
+        fieldOptions={{
+          profile: drs.data?.profileOptions,
+        }}
+        addButton={{
+          label: "+ Add Requirement",
+          onClick: () => console.log("Add Requirement clicked"),
+        }}
+        rowActions={[
+          {
+            key: "delete",
+            label: "Remove requirement",
+            icon: <DeleteIcon width={16} height={16} />,
+            tone: "danger",
+            hidden: (row) => !isNewRequirement(row),
+            onClick: (row, { removeRow }) => {
+              console.log("Delete requirement", row.id);
+              removeRow();
+            },
+          },
+        ]}
+        onSave={handleSaveRequirements}
+        onDirtyChange={setRequirementsDirty}
+      />
+
+      <LifeAssured
+        applicants={applicants}
+        tabs={CVT_LIFE_ASSURED_TABS}
+        onViewMedical={openMedical}
+        onViewFinancial={openFinancial}
+        renderEditDialog={(applicant, onClose) => {
+          const initialValues = editValues[applicant.id];
+          if (!initialValues) return null;
+          return (
+            <CvtEditApplicantDialog
+              key={applicant.id}
+              initialValues={initialValues}
+              onClose={onClose}
+              onSave={(values) => {
+                void handleSaveEditApplicant(applicant.id, values);
+                onClose();
+              }}
+              onValidatePan={(input) => handleValidatePan(applicant.id, input)}
+            />
+          );
+        }}
+      />
+
+      <PivvDetails rows={pivvDetails} />
+
+      <DecisionHistory rows={decisionHistoryQuery.data ?? []} />
+
+      <DecisionSection
+        ariaLabel="CVT Decision"
+        remarksLabel="CVT Remarks"
+        decisionLabel="CVT Decision"
+        decisionOptions={decisionOptions}
+        decision={decision}
+        remarks={remarks}
+        onDecisionChange={setDecision}
+        onRemarksChange={setRemarks}
+        onSubmit={handleDecisionSubmit}
+        isSubmitting={fetchCvtValidationState.isLoading || completeRetailTaskState.isLoading}
+      />
+
+      <CustomDialog
+        open={validationRows.length > 0}
+        onClose={() => setValidationRows([])}
+        title={
+          <CustomTypography
+            component="span"
+            sx={{ fontSize: 16, fontWeight: 700 }}
+          >
+            Validations
+          </CustomTypography>
+        }
+        maxWidth="md"
+        fullWidth
+      >
+        <ValidationList rows={validationRows} />
+      </CustomDialog>
+
+      <CustomSnackbar
+        open={Boolean(snackbarMessage)}
+        message={snackbarMessage ?? ""}
+        onClose={() => setSnackbarMessage(null)}
+      />
+
+      <CustomSnackbar
+        open={saveRequirementsNoticeOpen}
+        message="Please save the requirements before submitting."
+        severity="warning"
+        onClose={() => setSaveRequirementsNoticeOpen(false)}
+      />
+
+      <CustomDialog
+        open={breDetailOpen}
+        onClose={() => setBreDetailOpen(false)}
+        title={
+          <CustomTypography
+            component="span"
+            sx={{ fontSize: 16, fontWeight: 700 }}
+          >
+            BRE Decision
+          </CustomTypography>
+        }
+        maxWidth="lg"
+      >
+        <DecisionComparisonTable
+          headers={breDecision.headers}
+          rows={breRows}
+        />
+      </CustomDialog>
+
+      <CustomDialog
+        open={breRetriggerLimitDialogOpen}
+        onClose={() => setBreRetriggerLimitDialogOpen(false)}
+        showCloseIcon={false}
+        disableEscapeKeyDown
+        title="BRE Retrigger"
+        actions={
+          <CustomButton variant="contained" onClick={goToInbox}>
+            Ok
+          </CustomButton>
+        }
+      >
+        Kindly raise ticket with IT team
+      </CustomDialog>
+    </CustomBox>
+  );
+};
+
+export default CvtUser;

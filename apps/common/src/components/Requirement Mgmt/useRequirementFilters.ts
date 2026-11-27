@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { usePagination } from "./usePagination";
+import { isNewRequirement } from "./useRequirementRows";
 import type {
   Filters,
   RequirementColumnKey,
@@ -12,9 +13,11 @@ type Options = {
   filterFields: RequirementFilterField[];
   statusOrder: string[];
   pageSize: number;
+  initialStatus?: string;
 };
 
 const statusRank = (order: string[], status: string) => {
+  if (!status) return -1;
   const index = order.indexOf(status);
   return index === -1 ? order.length : index;
 };
@@ -48,8 +51,16 @@ const toggleValue = (selected: string[], value: string) =>
   selected.includes(value) ? selected.filter((item) => item !== value) : [...selected, value];
 
 /** Filtering, status counts and paging of the requirement rows. */
-export function useRequirementFilters({ rows, filterFields, statusOrder, pageSize }: Options) {
-  const [filters, setFilters] = useState<Filters>({});
+export function useRequirementFilters({
+  rows,
+  filterFields,
+  statusOrder,
+  pageSize,
+  initialStatus,
+}: Options) {
+  const [filters, setFilters] = useState<Filters>(() =>
+    initialStatus ? { status: [initialStatus] } : {},
+  );
   const [draftFilters, setDraftFilters] = useState<Filters>({});
   const [filterOpen, setFilterOpen] = useState(false);
   const [activeField, setActiveField] = useState<RequirementColumnKey | undefined>(
@@ -63,11 +74,15 @@ export function useRequirementFilters({ rows, filterFields, statusOrder, pageSiz
       rows
         .map((row, index) => ({ row, index }))
         .filter(({ row }) => matchesFilters(row, filters))
-        .sort(
-          (a, b) =>
+        .sort((a, b) => {
+          const aNew = isNewRequirement(a.row) ? 0 : 1;
+          const bNew = isNewRequirement(b.row) ? 0 : 1;
+          if (aNew !== bNew) return aNew - bNew;
+          return (
             statusRank(statusOrder, a.row.status) - statusRank(statusOrder, b.row.status) ||
-            a.index - b.index,
-        )
+            a.index - b.index
+          );
+        })
         .map(({ row }) => row),
     [rows, filters, statusOrder],
   );

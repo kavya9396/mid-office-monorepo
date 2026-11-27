@@ -1,242 +1,106 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getDrsRoleType } from "@insurance-poc/utils";
+import {
+  getDrsMemberId,
+  getDrsRoleType,
+  setDrsOpenContext,
+} from "@insurance-poc/utils";
 import { MmtGrievanceDrsPage } from "./MmtGrievanceDrsPage";
-import { TpaDrsPage } from "./TpaDrsPage";
-import Alert from "@mui/material/Alert";
-import Box from "@mui/material/Box";
-import Container from "@mui/material/Container";
-import Paper from "@mui/material/Paper";
-import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
-import { CustomButton, CustomLoader, CustomSnackbar } from "@insurance-poc/ui";
-import { formatIndianCurrency } from "@insurance-poc/utils";
-import {
-  QuickLinksModule,
-  type QuickLinkItem,
-} from "@insurance-poc/common/quick-links";
-import {
-  fetchRetailDrsRecord,
-  type DrsRecord,
-} from "../../services/drsService";
+import CvtUser from "./CvtUser";
+import CptNmrUser from "./CptNmrUser";
+import CptMrUser from "./CptMrUser";
+import TpaDrsPage from "./TpaDrsPage";
+import CuwUser from "./CuwUser";
+import PivvUser from "./PivvUser";
+import ReinsurerUser from "./ReinsurerUser";
+import { fetchCuwMembers, referralConfigForRoleType } from "../../services/drsService";
+import { ReferralDrsPage } from "../referral-uw/ReferralDrsPage";
+import { findRetailDrsTaskConfig } from "../../config/drsTaskConfig";
+import RetailDrsRecordPage from "./RetailDrsRecordPage";
 
-type Status =
-  | { kind: "missing-id" }
-  | { kind: "loading" }
-  | { kind: "error"; message: string }
-  | { kind: "not-found" }
-  | { kind: "ready"; record: DrsRecord };
-
-function readErrorMessage(reason: unknown, fallback: string): string {
-  if (reason instanceof Error) {
-    return reason.message;
-  }
-  return fallback;
+interface MemberEntryProps {
+  /** Member selection page opened when the DRS payload holds more than one member. */
+  memberSelectionPath: string;
+  children: JSX.Element;
 }
 
-function formatYears(years: number | undefined): string {
-  if (years === undefined) {
-    return "-";
-  }
-  return `${years} years`;
-}
-
-function DetailItem({
-  label,
-  value,
-}: Readonly<{ label: string; value: string }>) {
-  return (
-    <Box
-      sx={{
-        display: "flex",
-        justifyContent: "space-between",
-        gap: 2,
-        py: 1.25,
-        borderBottom: "1px solid",
-        borderColor: "divider",
-      }}
-    >
-      <Typography color="text.secondary">{label}</Typography>
-      <Typography sx={{ fontWeight: 600, textAlign: "right" }}>{value}</Typography>
-    </Box>
-  );
-}
-
-function RecordDetails({ record }: Readonly<{ record: DrsRecord }>) {
-  return (
-    <Paper sx={{ p: 3 }}>
-      <Typography variant="overline" color="text.secondary">
-        Applied sum assured
-      </Typography>
-      <Typography variant="h4" component="p" sx={{ mb: 2 }}>
-        {formatIndianCurrency(record.appliedSa)}
-      </Typography>
-      <DetailItem label="Application number" value={record.applicationNo} />
-      <DetailItem label="Task ID" value={record.taskId} />
-      <DetailItem label="Customer" value={record.customerName} />
-      <DetailItem label="Product" value={record.productName} />
-      <DetailItem label="Business type" value={record.businessType} />
-      <DetailItem label="Status" value={record.status ?? "-"} />
-      <DetailItem
-        label="Annual premium"
-        value={formatIndianCurrency(record.annualPremium)}
-      />
-      <DetailItem label="Policy term" value={formatYears(record.policyTerm)} />
-      <DetailItem
-        label="Premium paying term"
-        value={formatYears(record.premiumPayingTerm)}
-      />
-    </Paper>
-  );
-}
-
-function DrsBody({
-  status,
-  applicationNo,
-  onRetry,
-}: Readonly<{
-  status: Status;
-  applicationNo: string;
-  onRetry: () => void;
-}>) {
-  switch (status.kind) {
-    case "loading":
-      return <CustomLoader message="Loading application" />;
-    case "missing-id":
-      return (
-        <Alert severity="info">
-          No application was selected. Open a task from the Retail Inbox.
-        </Alert>
-      );
-    case "not-found":
-      return (
-        <Alert severity="warning">
-          No Retail DRS record was found for application {applicationNo}.
-        </Alert>
-      );
-    case "error":
-      return (
-        <Alert
-          severity="error"
-          action={
-            <CustomButton size="small" onClick={onRetry}>
-              Retry
-            </CustomButton>
-          }
-        >
-          {status.message}
-        </Alert>
-      );
-    case "ready":
-      return <RecordDetails record={status.record} />;
-  }
-}
-
-const RETAIL_QUICK_LINKS: QuickLinkItem[] = [
-  { id: "applicant-profile", label: "Applicant Profile" },
-  { id: "previous-policies", label: "Previous Policies" },
-  { id: "open-tasks", label: "Open Tasks" },
-  { id: "risk-details", label: "Risk Details" },
-  { id: "audit-trail", label: "Audit Trail" },
-];
-
-const SCREEN_BY_ROLE: Record<string, () => JSX.Element> = {
-  "MMT TASK": MmtGrievanceDrsPage,
-  MMT_TASK: MmtGrievanceDrsPage,
-  AMR_NON_MEDICAL: TpaDrsPage,
-  MEDICAL_TPA_ERROR: TpaDrsPage,
-};
-
-export function RetailDrsPage() {
-  const roleType = getDrsRoleType().trim().toUpperCase();
-  const Screen = SCREEN_BY_ROLE[roleType];
-  if (Screen) {
-    return <Screen />;
-  }
-  return <RetailDrsRecordPage />;
-}
-
-function RetailDrsRecordPage() {
-  const navigate = useNavigate();
+/**
+ * CUW / HOD / Sr UW entry: the DRS API (`roleType` from the task config) returns the members. When it holds
+ * more than one member and no member is selected yet, go to the member selection page; otherwise open the DRS.
+ */
+function MemberEntry({ memberSelectionPath, children }: Readonly<MemberEntryProps>) {
   const { applicationNo: applicationNoParam } = useParams();
+  const navigate = useNavigate();
   const applicationNo = applicationNoParam?.trim() ?? "";
-  const [reloadKey, setReloadKey] = useState(0);
-  const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
-  const [status, setStatus] = useState<Status>(
-    applicationNo ? { kind: "loading" } : { kind: "missing-id" },
-  );
+  const memberId = getDrsMemberId();
+  const needsCheck = memberId === "" && applicationNo !== "";
+  const [checked, setChecked] = useState(!needsCheck);
 
   useEffect(() => {
-    if (!applicationNo) {
-      setStatus({ kind: "missing-id" });
-      return;
-    }
-
+    if (!needsCheck) return;
     let active = true;
-    setStatus({ kind: "loading" });
-
-    async function loadRecord(): Promise<void> {
-      try {
-        const record = await fetchRetailDrsRecord(applicationNo);
-        if (!active) {
-          return;
-        }
-        setStatus(record ? { kind: "ready", record } : { kind: "not-found" });
-      } catch (reason: unknown) {
-        if (!active) {
-          return;
-        }
-        setStatus({
-          kind: "error",
-          message: readErrorMessage(reason, "Unable to load Retail DRS."),
+    void fetchCuwMembers(applicationNo, getDrsRoleType()).then((members) => {
+      if (!active) return;
+      if (members.length > 1) {
+        setDrsOpenContext({
+          applicationNo,
+          memberCount: members.length,
+          memberId: "",
         });
+        void navigate(memberSelectionPath, { replace: true });
+      } else {
+        setDrsOpenContext({ applicationNo, memberCount: 1, memberId: "" });
+        setChecked(true);
       }
-    }
-
-    void loadRecord();
-
+    });
     return () => {
       active = false;
     };
-  }, [applicationNo, reloadKey]);
+  }, [needsCheck, applicationNo, memberSelectionPath, navigate]);
 
-  const retry = () => setReloadKey((value) => value + 1);
+  return checked ? children : null;
+}
 
+function CuwEntry() {
   return (
-    <Container maxWidth="sm" sx={{ py: 3, position: "relative" }}>
-      <Typography variant="h4" component="h1" sx={{ mb: 2 }}>
-        Retail DRS
-      </Typography>
-      <Stack spacing={2}>
-        <DrsBody
-          status={status}
-          applicationNo={applicationNo}
-          onRetry={retry}
-        />
-        <Stack direction="row" spacing={1}>
-          <CustomButton variant="outlined" onClick={() => navigate("/inbox")}>
-            Back to Inbox
-          </CustomButton>
-        </Stack>
-      </Stack>
-
-      {/* QuickLinks Module in Retail */}
-      <QuickLinksModule
-        items={RETAIL_QUICK_LINKS}
-        applicationNo={applicationNo}
-        roleType="Retail Underwriter"
-        onNavigate={(path) => navigate(path)}
-        onNotify={(message) => setSnackbarMessage(message)}
-        title="Quick Links"
-      />
-
-      <CustomSnackbar
-        open={Boolean(snackbarMessage)}
-        message={snackbarMessage ?? ""}
-        onClose={() => setSnackbarMessage(null)}
-      />
-    </Container>
+    <MemberEntry memberSelectionPath="/cuw/member-selection">
+      <CuwUser />
+    </MemberEntry>
   );
+}
+
+/** HOD / Sr UW: same member entry as CUW, then the referral DRS (prototype hod-drs / sr-uw-drs). */
+function ReferralEntry({ roleType }: Readonly<{ roleType: string }>) {
+  const config = referralConfigForRoleType(roleType);
+  if (!config) return null;
+  return (
+    <MemberEntry memberSelectionPath="/referral/member-selection">
+      <ReferralDrsPage config={config} />
+    </MemberEntry>
+  );
+}
+
+/**
+ * `/app/{applicationNo}/drs` — the inbox session `roleType` (from the role-list response) is looked up in
+ * `RETAIL_DRS_TASK_CONFIG`; its `screenType` picks the screen. A new task needs a config entry only.
+ */
+const SCREEN_BY_SCREEN_TYPE: Record<string, () => JSX.Element | null> = {
+  CUW: CuwEntry,
+  CVT: CvtUser,
+  MMT: MmtGrievanceDrsPage,
+  TPA: TpaDrsPage,
+  CPT_NMR: CptNmrUser,
+  CPT_MR: CptMrUser,
+  PIVV: PivvUser,
+  REINSURER: ReinsurerUser,
+};
+
+export function RetailDrsPage() {
+  const roleType = getDrsRoleType();
+  if (referralConfigForRoleType(roleType)) return <ReferralEntry roleType={roleType} />;
+  const taskConfig = findRetailDrsTaskConfig(roleType);
+  const Screen = (taskConfig ? SCREEN_BY_SCREEN_TYPE[taskConfig.screenType] : undefined) ?? RetailDrsRecordPage;
+  return <Screen />;
 }
 
 export default RetailDrsPage;

@@ -11,7 +11,7 @@ import Divider from "@mui/material/Divider";
 import Menu from "@mui/material/Menu";
 import Typography from "@mui/material/Typography";
 import { useLocation, useNavigate } from "react-router-dom";
-import { assignUrl, businessInboxUrl, commonPaths } from "@insurance-poc/routes";
+import { assignUrl, businessInboxUrl, commonPaths, parseDrsApplicationNo } from "@insurance-poc/routes";
 import {
   CustomSnackbar,
   CustomTooltip,
@@ -27,6 +27,8 @@ import {
   clearSession,
   clearToken,
   clearDrsTaskIds,
+  getDrsApplicationNo,
+  getDrsRoleLabel,
   getSessionBusinessType,
   getSessionUser,
   setSessionBusinessType,
@@ -609,8 +611,19 @@ export function Header({
   const normalizedPathname = normalizePath(location.pathname).toLowerCase();
   const showBack = !HIDDEN_TASK_PATHS.has(normalizedPathname);
   const showTaskIdentity = showBack;
-  const visibleRole = showTaskIdentity ? presentText(role) : undefined;
-  const visibleApplicationNo = showTaskIdentity ? presentText(applicationNo) : undefined;
+  const sessionRole = getDrsRoleLabel();
+  const sessionAppNo = getDrsApplicationNo();
+  const pathAppNo = parseDrsApplicationNo(location.pathname);
+  const searchParams = new URLSearchParams(location.search);
+  const queryRole = searchParams.get("role")?.trim() || searchParams.get("roleType")?.trim();
+  const queryAppNo = searchParams.get("applicationNo")?.trim();
+
+  const visibleRole = showTaskIdentity
+    ? presentText(role) || presentText(sessionRole) || (queryRole ? presentText(queryRole) : undefined)
+    : undefined;
+  const visibleApplicationNo = showTaskIdentity
+    ? presentText(applicationNo) || presentText(pathAppNo ?? undefined) || presentText(sessionAppNo) || (queryAppNo ? presentText(queryAppNo) : undefined)
+    : undefined;
   const sessionUser = getSessionUser();
   const username = sessionUser?.username ?? "";
 

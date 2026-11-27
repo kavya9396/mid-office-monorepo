@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, Typography } from "@mui/material";
 import { Calendar, CustomButton, CustomDialog, CustomSelect, CustomSnackbar, CustomTextField } from "@insurance-poc/ui";
 import { isNomineeBlank, NomineeDetails, type NomineeEditRow } from "./NomineeDetails";
-import { isRiderBlank, RiderDetails, type RiderEditRow } from "./RiderDetails";
+import { getRiderErrors, isRiderBlank, RiderDetails, type RiderEditRow, type RiderFormErrors } from "./RiderDetails";
 import { EMPTY_LOAN, LoanDetails, type LoanEditValues } from "./LoanDetails";
 import {
   buildNsdlNotice,
@@ -25,11 +25,13 @@ import {
 import {
   BLANK_NOMINEE_MESSAGE,
   BLANK_RIDER_MESSAGE,
+  PAN_API_FAILED_MESSAGE,
   PAN_NOT_VALIDATED_MESSAGE,
   PAN_VALIDATION_FAILED_MESSAGE,
 } from "./editApplicant.messages";
 
 export type { NomineeEditRow, RiderEditRow, LoanEditValues, EditApplicantValues };
+export { nomineeSchema } from "./NomineeDetails";
 
 export type EditSelectOption = { label: string; value: string };
 
@@ -44,6 +46,8 @@ export type EditApplicantOptions = {
   genderDocument: EditSelectOption[];
   pincodeDocument: EditSelectOption[];
   residentStatus: EditSelectOption[];
+  applicantStatus: EditSelectOption[];
+  riders: EditSelectOption[];
 };
 
 export type EditApplicantDialogProps = {
@@ -80,7 +84,7 @@ type FieldName = keyof EditApplicantValues;
 type FieldConfig = {
   name: FieldName;
   label: string;
-  select?: "gender" | "dobDocument" | "genderDocument" | "pincodeDocument" | "residentStatus" | "yesNo";
+  select?: "gender" | "dobDocument" | "genderDocument" | "pincodeDocument" | "residentStatus" | "yesNo" | "applicantStatus";
   type?: "date";
   maxLength?: number;
   numeric?: boolean;
@@ -110,10 +114,10 @@ const EMPTY_VALUES: EditFormValues = {
   emailId: "",
   height: "",
   weight: "",
-  lifestyleHabits: "",
   annualIncome: "",
   applicantStatus: "",
   loan: EMPTY_LOAN,
+  nominees: [],
 };
 
 // Same order as the prototype's "Audit Fields" grid (the NSDL button follows nsdlDobMatching)
@@ -145,9 +149,8 @@ const PROFILE_FIELDS: FieldConfig[] = [
   { name: "emailId", label: "Email ID" },
   { name: "height", label: "Height" },
   { name: "weight", label: "Weight" },
-  { name: "lifestyleHabits", label: "Lifestyle Habits" },
   { name: "annualIncome", label: "Annual Income" },
-  { name: "applicantStatus", label: "Applicant Status" },
+  { name: "applicantStatus", label: "Applicant Status", select: "applicantStatus" },
 ];
 
 // Prototype input sanitising (T handler)
@@ -182,9 +185,15 @@ export function EditApplicantDialog({
   panStatusRef.current = panStatus;
   const onValidatePanRef = useRef(onValidatePan);
   onValidatePanRef.current = onValidatePan;
-  const [nominees, setNominees] = useState<NomineeEditRow[]>([]);
   const [riders, setRiders] = useState<RiderEditRow[]>([]);
-  const [notice, setNotice] = useState<{ message: string; severity: "error" | "success" } | null>(null);
+  const [riderErrors, setRiderErrors] = useState<RiderFormErrors>({});
+  const changeRiders = (next: RiderEditRow[]) => {
+    setRiders(next);
+    setRiderErrors({});
+  };
+  const [notice, setNotice] = useState<{ message: string; severity: "error" | "success" | "info" } | null>(null);
+  // The last NSDL call failed (`error` true or HTTP status not 200): Save is allowed without a validated PAN.
+  const [panApiFailed, setPanApiFailed] = useState(false);
   const [validatingPan, setValidatingPan] = useState(false);
   const notifyError = (message: string) => setNotice({ message, severity: "error" });
   const {
@@ -202,28 +211,30 @@ export function EditApplicantDialog({
 
   useEffect(() => {
     if (open) {
-      const status = panStatusRef.current;
+      const { apiFailed, ...status }: Partial<PanStatus> = panStatusRef.current ?? {};
+      setPanApiFailed(Boolean(apiFailed));
       reset({
         ...EMPTY_VALUES,
         ...initialValues,
         ...(onValidatePanRef.current
           ? {
-              // Only the last NSDL response may fill these; values from initialValues are dropped.
-              nsdlNameMatching: status?.nsdlNameMatching ?? "",
-              nsdlDobMatching: status?.nsdlDobMatching ?? "",
-              aadharSeedingStatus: status?.aadharSeedingStatus ?? "",
+              // The last NSDL response wins; otherwise the DRS values from initialValues are used.
+              nsdlNameMatching: status.nsdlNameMatching ?? initialValues?.nsdlNameMatching ?? "",
+              nsdlDobMatching: status.nsdlDobMatching ?? initialValues?.nsdlDobMatching ?? "",
+              aadharSeedingStatus: status.aadharSeedingStatus ?? initialValues?.aadharSeedingStatus ?? "",
             }
           : {}),
         ...status,
         loan: initialLoan ?? EMPTY_LOAN,
+        nominees: initialNominees ?? [],
       });
-      setNominees(initialNominees ?? []);
       setRiders(initialRiders ?? []);
+      setRiderErrors({});
     }
   }, [open, initialValues, initialNominees, initialRiders, initialLoan, reset]);
 
-  const submit = handleSubmit(({ loan, ...values }) => {
-    if (nominees.some((nominee) => isNomineeBlank(nominee))) {
+  const submit = handleSubmit(({ loan, nominees: formNominees, ...values }) => {
+    if (formNominees.some((nominee) => isNomineeBlank(nominee))) {
       notifyError(BLANK_NOMINEE_MESSAGE);
       return;
     }
@@ -231,13 +242,21 @@ export function EditApplicantDialog({
       notifyError(BLANK_RIDER_MESSAGE);
       return;
     }
-    onSave(values, nominees, riders, loan);
+    onSave(values, formNominees, riders, loan);
   });
 
   const handleSave = async () => {
     // Inline field validation first; the PAN-not-validated notice only shows once the fields are valid.
-    if (!(await trigger())) return;
-    if (onValidatePan && !isPanValidated(getValues("isPanValid"))) {
+    // Rider rows are validated like nominee rows: every empty field gets its own message.
+    const nextRiderErrors: RiderFormErrors = {};
+    riders.forEach((rider, index) => {
+      const fieldErrors = getRiderErrors(rider);
+      if (Object.keys(fieldErrors).length > 0) nextRiderErrors[index] = fieldErrors;
+    });
+    setRiderErrors(nextRiderErrors);
+    const fieldsValid = await trigger();
+    if (!fieldsValid || Object.keys(nextRiderErrors).length > 0) return;
+    if (onValidatePan && !panApiFailed && !isPanValidated(getValues("isPanValid"))) {
       notifyError(PAN_NOT_VALIDATED_MESSAGE);
       return;
     }
@@ -251,15 +270,23 @@ export function EditApplicantDialog({
     const current = getValues();
     const flag = current.isPanValid === PAN_VALID_YES ? resetPanFlagOnChange(current, next) : current.isPanValid;
     if (flag !== current.isPanValid) setValue("isPanValid", flag);
+    // PAN is not valid after an edit, so the three NSDL selects are NO as well (keeps them from being mandatory errors).
+    const flagIsNo = flag === PAN_VALID_NO;
+    const nsdl = flagIsNo
+      ? { nsdlNameMatching: PAN_VALID_NO, nsdlDobMatching: PAN_VALID_NO, aadharSeedingStatus: PAN_VALID_NO }
+      : {
+          nsdlNameMatching: current.nsdlNameMatching,
+          nsdlDobMatching: current.nsdlDobMatching,
+          aadharSeedingStatus: current.aadharSeedingStatus,
+        };
+    if (flagIsNo) {
+      setValue("nsdlNameMatching", nsdl.nsdlNameMatching);
+      setValue("nsdlDobMatching", nsdl.nsdlDobMatching);
+      setValue("aadharSeedingStatus", nsdl.aadharSeedingStatus);
+    }
     const known = panStatusRef.current;
     if (known && (known.panNumber !== next.panNumber || known.dob !== next.dob)) {
-      onPanStatusChange?.({
-        ...next,
-        isPanValid: flag,
-        nsdlNameMatching: current.nsdlNameMatching,
-        nsdlDobMatching: current.nsdlDobMatching,
-        aadharSeedingStatus: current.aadharSeedingStatus,
-      });
+      onPanStatusChange?.({ ...next, isPanValid: flag, ...nsdl, apiFailed: panApiFailed });
     }
   };
 
@@ -273,6 +300,19 @@ export function EditApplicantDialog({
     setValidatingPan(true);
     try {
       const result = await onValidatePan({ panNumber, dob });
+      // First priority: an API failure never blocks Save. The mandatory selects are set to NO so they pass validation.
+      if (result.apiFailed) {
+        const failed = nsdlSelectValues(undefined);
+        setValue("nsdlNameMatching", failed.nsdlNameMatching);
+        setValue("nsdlDobMatching", failed.nsdlDobMatching);
+        setValue("aadharSeedingStatus", failed.aadharSeedingStatus);
+        setValue("isPanValid", PAN_VALID_NO);
+        setPanApiFailed(true);
+        onPanStatusChange?.({ panNumber, dob, isPanValid: PAN_VALID_NO, ...failed, apiFailed: true });
+        setNotice({ message: PAN_API_FAILED_MESSAGE, severity: "info" });
+        return;
+      }
+      setPanApiFailed(false);
       // The three NSDL selects follow the response; data that is not available gives NO (add-on #17).
       const matched = nsdlSelectValues(result.matches);
       setValue("nsdlNameMatching", matched.nsdlNameMatching);
@@ -303,6 +343,8 @@ export function EditApplicantDialog({
         return options?.pincodeDocument ?? [];
       case "residentStatus":
         return options?.residentStatus ?? [];
+      case "applicantStatus":
+        return options?.applicantStatus ?? [];
       case "yesNo":
         return YES_NO_OPTIONS;
     }
@@ -416,11 +458,28 @@ export function EditApplicantDialog({
 
         <Box sx={{ my: 2, borderTop: "1px solid rgba(0, 0, 0, 0.12)" }} />
 
-        <NomineeDetails nominees={nominees} onChange={setNominees} onNotify={notifyError} />
+        <Controller
+          name="nominees"
+          control={control}
+          render={({ field }) => (
+            <NomineeDetails
+              nominees={field.value ?? []}
+              onChange={field.onChange}
+              errors={errors.nominees}
+              onNotify={notifyError}
+            />
+          )}
+        />
 
         <Box sx={{ my: 2, borderTop: "1px solid rgba(0, 0, 0, 0.12)" }} />
 
-        <RiderDetails riders={riders} onChange={setRiders} onNotify={notifyError} />
+        <RiderDetails
+          riders={riders}
+          onChange={changeRiders}
+          onNotify={notifyError}
+          options={options?.riders}
+          errors={riderErrors}
+        />
 
         <Box sx={{ my: 2, borderTop: "1px solid rgba(0, 0, 0, 0.12)" }} />
 

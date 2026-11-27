@@ -153,7 +153,7 @@ const AUDIT_TRAIL_COLUMNS: Column<AuditTrailItem>[] = [
     width: "8%",
     render: (value) => (
       <Typography component="span" sx={{ fontSize: "11px", color: "#4A4A4A" }}>
-        {String(value ?? "-")}
+        {String(value ?? "")}
       </Typography>
     ),
   },
@@ -163,7 +163,7 @@ const AUDIT_TRAIL_COLUMNS: Column<AuditTrailItem>[] = [
     width: "10%",
     render: (value) => (
       <Typography component="span" sx={{ fontSize: "11px", color: "#4A4A4A" }}>
-        {String(value ?? "-")}
+        {String(value ?? "")}
       </Typography>
     ),
   },
@@ -180,7 +180,7 @@ const AUDIT_TRAIL_COLUMNS: Column<AuditTrailItem>[] = [
           color: POOL_COLOR_MAP[String(value)]?.text ?? "#4A4A4A",
         }}
       >
-        {String(value ?? "-")}
+        {String(value ?? "")}
       </Typography>
     ),
   },
@@ -190,7 +190,7 @@ const AUDIT_TRAIL_COLUMNS: Column<AuditTrailItem>[] = [
     width: "9%",
     render: (value) => (
       <Typography component="span" sx={{ fontSize: "11px", color: "#4A4A4A" }}>
-        {String(value ?? "-")}
+        {String(value ?? "")}
       </Typography>
     ),
   },
@@ -212,7 +212,7 @@ const AUDIT_TRAIL_COLUMNS: Column<AuditTrailItem>[] = [
                 : "#4A4A4A",
         }}
       >
-        {String(value ?? "-")}
+        {String(value ?? "")}
       </Typography>
     ),
   },
@@ -222,7 +222,7 @@ const AUDIT_TRAIL_COLUMNS: Column<AuditTrailItem>[] = [
     width: "12%",
     render: (value) => (
       <Typography component="span" sx={{ fontSize: "11px", color: "#4A4A4A" }}>
-        {String(value ?? "-")}
+        {String(value ?? "")}
       </Typography>
     ),
   },
@@ -242,7 +242,7 @@ const AUDIT_TRAIL_COLUMNS: Column<AuditTrailItem>[] = [
           wordBreak: "break-word",
         }}
       >
-        {String(value ?? "-")}
+        {String(value ?? "")}
       </Typography>
     ),
   },

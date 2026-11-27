@@ -2,12 +2,30 @@ function readText(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
-/** Builds `Basic base64(username:password)` from env for Apigee gateway calls. */
-export function apigeeBasicAuthorization(): string {
-  const username = readText(import.meta.env.VITE_AUTH_BASIC_USERNAME);
-  const password = readText(import.meta.env.VITE_AUTH_BASIC_PASSWORD);
-  if (username.length === 0 || password.length === 0) {
-    throw new Error("Auth credentials are not configured.");
+function basicAuthorization(username: unknown, password: unknown, label: string): string {
+  const user = readText(username);
+  const pass = readText(password);
+  if (user.length === 0 || pass.length === 0) {
+    throw new Error(`${label} credentials are not configured.`);
   }
-  return `Basic ${btoa(`${username}:${password}`)}`;
+  const credentials = `${user}:${pass}`;
+  return `Basic ${btoa(credentials)}`;
+}
+
+/** Mid-office Basic credential for `X-Apigee-Authorization`. */
+export function apigeeBasicAuthorization(): string {
+  return basicAuthorization(
+    import.meta.env.VITE_AUTH_BASIC_USERNAME,
+    import.meta.env.VITE_AUTH_BASIC_PASSWORD,
+    "Mid-office auth",
+  );
+}
+
+/** Apigee gateway Basic credential for `Authorization` when `VITE_USE_APIGEE=true`. */
+export function apigeeGatewayAuthorization(): string {
+  return basicAuthorization(
+    import.meta.env.VITE_APIGEE_BASIC_USERNAME,
+    import.meta.env.VITE_APIGEE_BASIC_PASSWORD,
+    "Apigee",
+  );
 }

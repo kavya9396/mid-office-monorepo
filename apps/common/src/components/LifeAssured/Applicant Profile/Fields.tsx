@@ -8,7 +8,7 @@ export type FieldData = {
 };
 
 export const displayValue = (value?: string | number | null) =>
-  value === null || value === undefined || value === "" ? "-" : String(value);
+  value === null || value === undefined ? "" : String(value);
 
 const TRUNCATE_AT = 30;
 

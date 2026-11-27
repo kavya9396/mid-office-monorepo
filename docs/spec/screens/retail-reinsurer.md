@@ -85,3 +85,29 @@ Body: {
 - Reuse shared `AppHeader`, `ApplicantBanner`, `DecisionFooter`.
 - Reinsurer data may contain commercially sensitive terms — do not log or cache
   reinsurer-specific API responses in browser storage.
+
+---
+
+## Implementation notes (Reinsurer task, Retail + Group)
+
+- Inbox pool key / DRS `roleType`: `REINSURER_TASK` → `screenType: "REINSURER"` in
+  `apps/retail/src/config/drsTaskConfig.ts` and `apps/group/src/config/drsTaskConfig.ts`.
+  Opened through the existing `/app/{applicationNo}/drs` dispatcher (`RetailDrsPage` / `GroupDrsPage`).
+- Shared UI in `apps/common/src/components/` (`@insurance-poc/common/reinsurer`):
+  `ReinsurerPanel` (Reinsurer Details, Assign Documents, Remarks, actions, Back dialog) and
+  `ReinsurerDrsScreen` (banner + load/not-found/error states + snackbar).
+- Retail and Group each own `ReinsurerUser.tsx`, `services/reinsurerService.ts` and a mock in
+  `mock/drs/{retail,group}-reinsurer-drs.json`. Only mock mode is wired.
+- The Group back action is labelled "Back TO GUW" (prototype only defines "Back TO CUW").
+
+## Open questions
+
+1. Real endpoints, request/response bodies and the complete-task decision code for the Reinsurer task
+   (the routes in this file predate the DRS dispatcher and are not used). Live mode currently throws.
+2. Group wording: is "Back TO GUW" correct, and does the Group Reinsurer screen use the same fields?
+3. Are "Reinsurer Decision" and "Reinsurer-UW Decision Match" options (`Standard / Non Standard /
+   Decline / Postpone`, `Yes / No`) and the Back reasons static, or from masters?
+4. Required-field rules for the Reinsurer Details inputs and for Save & close (prototype defines none).
+5. "Referral Sheet" action: the prototype has no behaviour; the button is rendered without a handler.
+6. Mock inbox rows use `role: RETAIL_REINSURER_USER` / `GROUP_REINSURER_USER` — confirm real role names.
+

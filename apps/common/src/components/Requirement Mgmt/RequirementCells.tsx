@@ -8,12 +8,15 @@ import {
   CustomTooltip,
   EyeIcon,
 } from "@insurance-poc/ui";
+import { getMasterList } from "@insurance-poc/utils";
 import type {
   RequirementColumnConfig,
+  RequirementColumnKey,
   RequirementItem,
   RequirementLabels,
   RequirementStatusOption,
 } from "./types";
+import { isNewRequirement } from "./useRequirementRows";
 
 const CELL_MIN_HEIGHT = 27; // 27 + 2 x 4px cell padding + 1px border = 36px row, as in the prototype
 
@@ -39,6 +42,18 @@ const compactSelectSx = {
     fontSize: "10px",
   },
   "& .MuiOutlinedInput-notchedOutline": { borderColor: colors.borderInput },
+  "& .MuiOutlinedInput-root:hover:not(.Mui-disabled) .MuiOutlinedInput-notchedOutline": {
+    borderColor: colors.primary,
+  },
+  "& .MuiOutlinedInput-root.Mui-disabled": {
+    cursor: "default",
+  },
+  "& .MuiOutlinedInput-root.Mui-disabled .MuiOutlinedInput-notchedOutline": {
+    borderColor: colors.borderInput,
+  },
+  "& .MuiOutlinedInput-root.Mui-disabled:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: colors.borderInput,
+  },
   "& .MuiSelect-select": {
     fontSize: "10px",
     px: 0.6,
@@ -85,10 +100,58 @@ export type CellContext = {
   /** False when the table or the column is read-only. */
   editable: boolean;
   statusOptions: RequirementStatusOption[];
+  rows?: RequirementItem[];
+  fieldOptions?: Partial<Record<RequirementColumnKey, RequirementStatusOption[]>>;
+  resolveRowFieldOptions?: (
+    row: RequirementItem,
+    key: RequirementColumnKey,
+  ) => RequirementStatusOption[] | undefined;
+  isRowFieldDisabled?: (row: RequirementItem, key: RequirementColumnKey) => boolean;
   labels: RequirementLabels;
   onValueChange: (row: RequirementItem, key: RequirementColumnConfig["key"], value: string) => void;
   onOpenDialog: (title: string, value: string) => void;
 };
+
+export const DROPDOWN_FIELDS: ReadonlySet<RequirementColumnKey> = new Set([
+  "team",
+  "profile",
+  "category",
+  "subCategory",
+  "document",
+  "reason",
+  "fupCode",
+]);
+
+export function resolveFieldOptions(
+  key: RequirementColumnKey,
+  rows: RequirementItem[] = [],
+  customOptions?: RequirementStatusOption[],
+): RequirementStatusOption[] {
+  if (customOptions && customOptions.length > 0) return customOptions;
+
+  if (key === "team") {
+    const masterTeams = getMasterList("requirement_mst", "team");
+    const teams = masterTeams.length > 0 ? masterTeams : getMasterList("requirement_mst");
+    if (teams.length > 0) {
+      return teams
+        .filter((entry) => entry.isActive.toUpperCase() !== "N")
+        .map((entry) => ({
+          label: entry.description || entry.code,
+          value: entry.code || entry.description,
+        }));
+    }
+  }
+
+  const fromRows = Array.from(
+    new Set(
+      rows
+        .map((r) => r[key])
+        .filter((val): val is string => typeof val === "string" && val.trim().length > 0 && val !== "-"),
+    ),
+  );
+
+  return fromRows.map((val) => ({ label: val, value: val }));
+}
 
 function TextCell({ value }: Readonly<{ value: string }>) {
   return cellBox(
@@ -105,24 +168,44 @@ function TextCell({ value }: Readonly<{ value: string }>) {
           textOverflow: "ellipsis",
         }}
       >
-        {value || "-"}
+        {value}
       </Box>
     </CustomTooltip>,
   );
 }
 
-function selectOptions({ config, statusOptions }: CellContext) {
-  if (config.options) return config.options;
-  return config.key === "status" ? statusOptions : [];
+function selectOptions(ctx: CellContext): RequirementStatusOption[] {
+  const { config, row, statusOptions, rows = [], fieldOptions, resolveRowFieldOptions } = ctx;
+  if (config.options && config.options.length > 0) return config.options;
+  if (config.key === "status") return statusOptions;
+
+  const rowList = resolveRowFieldOptions?.(row, config.key);
+  if (rowList !== undefined) return rowList;
+
+  const custom = fieldOptions?.[config.key];
+  const list = resolveFieldOptions(config.key, rows, custom);
+
+  const currentValue = row[config.key]?.trim();
+  if (currentValue && currentValue !== "-" && !list.some((opt) => opt.value === currentValue)) {
+    return [{ label: currentValue, value: currentValue }, ...list];
+  }
+
+  return list;
 }
 
 function SelectCell(ctx: Readonly<CellContext>) {
-  const { row, config, onValueChange } = ctx;
+  const { row, config, onValueChange, isRowFieldDisabled } = ctx;
+  const options = selectOptions(ctx);
+  const value = row[config.key] ?? "";
+  const disabled = isRowFieldDisabled?.(row, config.key) ?? false;
   return cellBox(
-    <Box sx={compactSelectSx}>
+    <Box sx={{ ...compactSelectSx, width: "100%" }}>
       <CustomSelect
-        options={selectOptions(ctx)}
-        value={row[config.key]}
+        fullWidth
+        placeholder="Select"
+        options={options}
+        value={value}
+        disabled={disabled}
         onChange={(next) => onValueChange(row, config.key, next)}
       />
     </Box>,
@@ -177,6 +260,23 @@ export function renderRequirementCell(ctx: CellContext): ReactNode {
   const { config, row, editable } = ctx;
   if (config.render) return config.render(row);
 
-  const editor = editable ? EDITORS[config.type ?? "text"] : undefined;
-  return editor ? editor(ctx) : <TextCell value={row[config.key].trim()} />;
+  if (config.type === "dialog") {
+    return <DialogCell {...ctx} />;
+  }
+
+  const isNew = isNewRequirement(row);
+  const isDropdownField = DROPDOWN_FIELDS.has(config.key);
+
+  const effectiveType =
+    config.type ?? (isNew && isDropdownField ? "select" : "text");
+
+  const isCellEditable =
+    editable && (isNew || config.type === "select" || config.type === "input");
+
+  if (isNew && config.key === "ocrStatus" && (!row.ocrStatus || row.ocrStatus.trim() === "")) {
+    return <TextCell value="-" />;
+  }
+
+  const editor = isCellEditable ? EDITORS[effectiveType] : undefined;
+  return editor ? editor(ctx) : <TextCell value={row[config.key]?.trim() || ""} />;
 }

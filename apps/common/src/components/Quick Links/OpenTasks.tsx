@@ -103,7 +103,7 @@ const OPEN_TASKS_COLUMNS: Column<OpenTaskItem>[] = [
     width: "15%",
     render: (value) => (
       <Typography component="span" sx={{ fontSize: "10.5px", color: "#393330" }}>
-        {String(value ?? "-")}
+        {String(value ?? "")}
       </Typography>
     ),
   },
@@ -121,7 +121,7 @@ const OPEN_TASKS_COLUMNS: Column<OpenTaskItem>[] = [
           whiteSpace: "nowrap",
         }}
       >
-        {String(value ?? "-")}
+        {String(value ?? "")}
       </Typography>
     ),
   },
@@ -146,7 +146,7 @@ const OPEN_TASKS_COLUMNS: Column<OpenTaskItem>[] = [
           fontWeight: 800,
         }}
       >
-        {String(value ?? "-")}
+        {String(value ?? "")}
       </Box>
     ),
   },
@@ -171,7 +171,7 @@ const OPEN_TASKS_COLUMNS: Column<OpenTaskItem>[] = [
           fontWeight: 800,
         }}
       >
-        {String(value ?? "-")}
+        {String(value ?? "")}
       </Box>
     ),
   },
@@ -188,7 +188,7 @@ const OPEN_TASKS_COLUMNS: Column<OpenTaskItem>[] = [
           color: "#393330",
         }}
       >
-        {String(value ?? "-")}
+        {String(value ?? "")}
       </Typography>
     ),
   },
@@ -213,7 +213,7 @@ const OPEN_TASKS_COLUMNS: Column<OpenTaskItem>[] = [
           whiteSpace: "nowrap",
         }}
       >
-        {String(value ?? "-")}
+        {String(value ?? "")}
       </Box>
     ),
   },
@@ -230,7 +230,7 @@ const OPEN_TASKS_COLUMNS: Column<OpenTaskItem>[] = [
           color: "#5c5551",
         }}
       >
-        {String(value ?? "-")}
+        {String(value ?? "")}
       </Typography>
     ),
   },

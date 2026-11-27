@@ -30,8 +30,24 @@ export function getMasterList(masterType: string, type?: string): MasterListEntr
   const payload = getMasterData();
   if (!payload) return [];
 
-  const list = payload.data[key];
-  if (!Array.isArray(list) || list.length === 0) return [];
+  const rawEntry = (payload.data as Record<string, unknown>)[key];
+  let list: MasterListEntry[] = [];
+  if (Array.isArray(rawEntry)) {
+    list = rawEntry;
+  } else if (typeof rawEntry === "object" && rawEntry !== null) {
+    const record = rawEntry as Record<string, unknown>;
+    if (Array.isArray(record.teams)) {
+      list = record.teams.map((team) => ({
+        code: String(team),
+        description: String(team),
+        value: String(team),
+        isActive: "Y",
+        type: typeof record.level === "string" ? record.level : "team",
+      }));
+    }
+  }
+
+  if (list.length === 0) return [];
 
   const filterType = type === undefined ? "" : normalizeKey(type);
   if (filterType.length === 0) return [...list];

@@ -7,7 +7,7 @@ import {
 import { sessionExpired } from "../auth/authSlice";
 import { clearToken } from "../auth/session";
 import { applyBusinessApiAuthHeaders } from "./httpAuthHeaders";
-import { decryptPayload, encryptPayload } from "./payloadCrypto";
+// import { decryptPayload, encryptPayload } from "./payloadCrypto";
 
 export type BusinessRequest = FetchArgs & {
   encryptRequest?: boolean;
@@ -31,17 +31,17 @@ function customError(error: string): { error: FetchBaseQueryError } {
   return { error: { status: "CUSTOM_ERROR", error } };
 }
 
-function withPlainTextContent(headers: FetchArgs["headers"]): FetchArgs["headers"] {
-  if (headers instanceof Headers) {
-    const next = new Headers(headers);
-    next.set("Content-Type", "text/plain");
-    return next;
-  }
-  if (Array.isArray(headers)) {
-    return [...headers, ["Content-Type", "text/plain"]];
-  }
-  return { ...headers, "Content-Type": "text/plain" };
-}
+// function withPlainTextContent(headers: FetchArgs["headers"]): FetchArgs["headers"] {
+//   if (headers instanceof Headers) {
+//     const next = new Headers(headers);
+//     next.set("Content-Type", "text/plain");
+//     return next;
+//   }
+//   if (Array.isArray(headers)) {
+//     return [...headers, ["Content-Type", "text/plain"]];
+//   }
+//   return { ...headers, "Content-Type": "text/plain" };
+// }
 
 function isExpired(error: FetchBaseQueryError): boolean {
   if (error.status === 401) return true;
@@ -76,14 +76,14 @@ export function createBusinessBaseQuery(baseUrl: string): BaseQueryFn<
       fetchArgs.body = request.body;
     }
 
-    if (request.encryptRequest !== false && method !== "GET" && fetchArgs.body !== undefined) {
-      try {
-        fetchArgs.body = await encryptPayload(fetchArgs.body);
-        fetchArgs.headers = withPlainTextContent(fetchArgs.headers);
-      } catch {
-        return customError("Unable to encrypt the request.");
-      }
-    }
+    // if (request.encryptRequest !== false && method !== "GET" && fetchArgs.body !== undefined) {
+    //   try {
+    //     fetchArgs.body = fetchArgs.body;
+    //     fetchArgs.headers = fetchArgs.headers;
+    //   } catch {
+    //     return customError("Unable to encrypt the request.");
+    //   }
+    // }
 
     if (request.decryptResponse !== false) {
       fetchArgs.responseHandler = "text";
@@ -112,7 +112,8 @@ export function createBusinessBaseQuery(baseUrl: string): BaseQueryFn<
     }
 
     try {
-      return { data: await decryptPayload(payload) };
+      // return { data: await decryptPayload(payload) };
+      return { data: payload };
     } catch {
       return customError("Unable to decrypt the response.");
     }

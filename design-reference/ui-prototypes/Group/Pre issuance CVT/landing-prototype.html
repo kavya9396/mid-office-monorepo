@@ -1,0 +1,582 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inbox</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mulish:ital,wght@0,200..1000;1,200..1000&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; font-family: Mulish, Arial, sans-serif; }
+    body { background: #f0f3f8; color: #333; }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, [role="button"]:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid #9a2529; outline-offset: 1px; }
+    .hidden { display: none !important; }
+
+    /* Header follows Header.tsx: the logo has its own 150px slot. */
+    .header { height: 57px; display: flex; align-items: stretch; position: relative; z-index: 3; overflow: visible; background: linear-gradient(to bottom, #f58220 0%, #e65318 42%, #c92e27 72%, #98252b 100%); box-shadow: 0 3px 12px rgba(111,24,24,.25); }
+    .header-logo { display: block; width: 150px; height: 57px; object-fit: cover; flex: none; }
+    .header-right { flex: 1; min-width: 0; display: flex; justify-content: flex-end; align-items: center; padding: 0 16px; color: white; }
+    .header-details { display: flex; align-items: center; gap: 12px; }
+    .header-datetime { min-width: 175px; padding-right: 12px; text-align: right; border-right: 1px solid rgba(255,255,255,.35); }
+    .header-date { font-size: 12px; line-height: 1.4; color: rgba(255,255,255,.9); white-space: nowrap; }
+    .session { margin-top: 2px; font-size: 11px; font-weight: 700; letter-spacing: .2px; }
+    .profile-button { display: flex; align-items: center; min-width: 0; padding: 4px 8px; border: 0; border-radius: 8px; color: white; background: transparent; text-transform: none; }
+    .profile-button:hover { background: rgba(255,255,255,.14); }
+    .profile-avatar { display: grid; place-items: center; width: 35px; height: 35px; margin-right: 8px; flex: none; background: rgba(255,255,255,.2); border: 1px solid rgba(255,255,255,.45); border-radius: 50%; }
+    .profile-name { max-width: 150px; min-width: 80px; margin-right: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; font-size: 12px; font-weight: 700; }
+    .profile-menu { position: absolute; top: 65px; right: 16px; width: 240px; background: #fff; border: 1px solid #f1d7d0; border-radius: 8px; box-shadow: 0 8px 24px rgba(70,20,20,.18); overflow: hidden; }
+    .profile-menu button { width: 100%; min-height: 48px; padding: 10px 16px; display: flex; align-items: center; gap: 12px; border: 0; background: #fff; color: #323232; text-align: left; font-size: 14px; }
+    .profile-menu button:hover { background: #fff3ee; }
+    .profile-menu button + button { border-top: 1px solid #e0e0e0; }
+    .menu-icon { color: #9a2529; display: inline-flex; }
+    .menu-spacer { flex: 1; }
+    .break-note { color: #9a2529; font-size: 12px; font-weight: 700; white-space: nowrap; }
+
+    /* LeftTask.tsx keeps a fixed-height, independently scrolling task rail. */
+    .inbox { display: flex; flex-wrap: nowrap; min-height: calc(100dvh - 57px); }
+    .sidebar { width: 220px; flex: 0 0 220px; height: calc(100dvh - 57px); overflow: hidden; background: white; display: flex; flex-direction: column; transition: width .25s ease, flex-basis .25s ease; }
+    .sidebar.collapsed { width: 60px; flex-basis: 60px; }
+    .collapse-row { height: 40px; min-height: 40px; display: flex; align-items: center; justify-content: flex-end; padding: 0 12px; cursor: pointer; border-bottom: 1px solid #eee; color: #9a2529; }
+    .collapsed .collapse-row { justify-content: center; }
+    .collapse-row svg { transition: transform .25s ease; transform: rotate(180deg); }
+    .collapsed .collapse-row svg { transform: none; }
+    .sidebar-scroll { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; }
+    .sidebar-scroll::-webkit-scrollbar { width: 5px; }
+    .sidebar-scroll::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+    .rail-section { border-bottom: 1px solid #eee; }
+    .rail-row { display: flex; align-items: center; justify-content: space-between; width: 100%; border: 0; border-left: 3px solid transparent; background: transparent; color: #333; text-align: left; padding: 0 12px; white-space: nowrap; overflow: hidden; }
+    .rail-row:hover { background: #f8f8f8; }
+    .rail-row.active { border-left-color: #9a2529; background: #fdf2f2; color: #9a2529; }
+    .section-row, .task-row { height: 38px; }
+    .role-row, .dashboard-row { height: 34px; padding-left: 20px; color: #555; }
+    .search-row, .all-row, .upload-row { height: 40px; border-bottom: 1px solid #eee; }
+    .rail-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; font-size: 11px; }
+    .section-row .rail-label { font-weight: 700; }
+    .search-row .rail-label, .all-row .rail-label, .upload-row .rail-label { font-weight: 600; }
+    .task-row.active .rail-label, .role-row.active .rail-label, .dashboard-row.active .rail-label { font-weight: 600; }
+    .rail-end { display: inline-flex; align-items: center; flex: none; color: #777; font-size: 10px; }
+    .all-count-wrap { display: flex; align-items: center; gap: 2px; padding: 2px 3px 2px 6px; border-radius: 4px; background: #f3f4f6; }
+    .all-row.active .all-count-wrap { background: rgba(154,37,41,.1); }
+    .count { min-width: 24px; height: 20px; padding: 0 5px; margin-left: 8px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; background: #eee; color: #555; font-size: 10px; font-weight: 600; }
+    .all-count-wrap .count { margin-left: 0; }
+    .active .count { background: #9a2529; color: #fff; }
+    .initials { display: none; font-size: 12px; font-weight: 700; }
+    .collapsed .rail-row { justify-content: center; }
+    .collapsed .rail-label, .collapsed .rail-end, .collapsed .count, .collapsed .last-login { display: none; }
+    .collapsed .initials { display: inline; }
+    .last-login { flex: none; padding: 8px; border-top: 1px solid #eee; background: #ffead7; color: #000; font-size: 12px; font-weight: 500; }
+    .search-icon { color: #9a2529; width: 32px; height: 32px; display: grid; place-items: center; }
+
+    /* DynamicRoleTable.tsx: 16px outer spacing, 38px title, 36px toolbar. */
+    .main-area { flex: 1; min-width: 0; }
+    .table-card { display: flex; flex-direction: column; margin: 16px; max-height: calc(100vh - 100px); border-radius: 10px; background: #fff; box-shadow: 0 8px 24px rgba(0,0,0,.18); overflow: hidden; }
+    .table-title { height: 38px; min-height: 38px; padding: 0 12px; display: flex; align-items: center; border-radius: 10px 10px 0 0; background: #e45f14; color: #fff; font-size: 13px; font-weight: 600; }
+    .toolbar { min-height: 36px; height: 36px; padding: 0 8px; display: flex; align-items: center; justify-content: space-between; gap: 8px; border-bottom: 1px solid #e3e6e8; background: white; }
+    .toolbar-left, .toolbar-right, .priority-legend, .priority-item { display: flex; align-items: center; }
+    .toolbar-left { min-width: 0; gap: 12px; }
+    .priority-legend { gap: 10px; white-space: nowrap; }
+    .priority-item { gap: 4px; font-size: 10px; line-height: 1; color: #4b5055; }
+    .priority-item svg { width: 14px; height: 14px; }
+    .priority-count { min-width: 16px; height: 16px; padding: 0 4px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; font-size: 10px; font-weight: 700; }
+    .high { color: #d32f2f; }.high .priority-count { background: #d32f2f14; }.risk { color: #ed8a00; }.risk .priority-count { background: #ed8a0014; }.normal { color: #155a87; }.normal .priority-count { background: #155a8714; }
+    .download { flex: none; padding: 3px 8px; min-height: 24px; border: 1px solid #9a2529; border-radius: 4px; background: white; color: #9a2529; font-size: 10px; font-weight: 700; text-transform: none; }
+    .download:hover { background: #fdf2f2; }
+    .toolbar-right { flex: none; gap: 4px; }
+    .table-search { width: 200px; height: 28px; padding: 5px 8px; border: 1px solid #c4c4c4; border-radius: 5px; background: #fff; font-size: 11px; }
+    .table-search:hover { border-color: #333; }
+    .filter-layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 12px; margin-top: 16px; }
+    .filter-column-list, .filter-value-list { min-height: 300px; max-height: 380px; overflow: auto; border: 1px solid #dfe3e8; border-radius: 8px; }
+    .filter-column-button { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 38px; padding: 7px 10px; border: 0; border-bottom: 1px solid #edf0f2; background: #fff; color: #444; text-align: left; font-size: 11px; }
+    .filter-column-button:hover, .filter-column-button.active { background: #fff0e5; color: #9a2529; }
+    .filter-selection-count { min-width: 18px; height: 18px; display: inline-grid; place-items: center; border-radius: 9px; background: #f1f3f5; color: #666; font-size: 10px; font-weight: 700; }
+    .filter-column-button.active .filter-selection-count { background: #9a2529; color: #fff; }
+    .filter-value-heading { position: sticky; top: 0; padding: 10px 12px; border-bottom: 1px solid #e5e7eb; background: #f3f5f7; color: #444; font-size: 12px; font-weight: 700; }
+    .filter-value-list label { display: flex; align-items: center; min-height: 38px; gap: 9px; padding: 7px 12px; border-bottom: 1px solid #f0f1f2; color: #444; font-size: 11px; }
+    .filter-value-list label:hover { background: #fafafa; }
+    .filter-actions { display: flex; justify-content: center; gap: 8px; margin-top: 18px; }
+    .filter-actions button { min-height: 28px; padding: 4px 12px; border: 1px solid #9a2529; border-radius: 5px; background: #fff; color: #9a2529; font-size: 11px; font-weight: 700; }
+    .filter-actions .apply-filter { background: #9a2529; color: #fff; }
+    .filter-active { color: #9a2529; background: #fdf2f2; border-radius: 4px; }
+    .filter-status { display: inline-flex; align-items: center; gap: 6px; height: 25px; padding: 0 8px; border: 1px solid #efc6b4; border-radius: 13px; background: #fff4ed; color: #9a2529; font-size: 10px; font-weight: 700; white-space: nowrap; }
+    .filter-status button { padding: 0; border: 0; background: transparent; color: #9a2529; font-size: 10px; font-weight: 800; text-decoration: underline; }
+    .icon-button { width: 32px; height: 32px; display: grid; place-items: center; border: 0; background: transparent; color: #5b5b5b; padding: 0; }
+    .icon-button:hover { background: #f4f6f7; border-radius: 4px; }
+    .icon-button svg { width: 26px; height: 26px; }
+    .customize-icon-button {
+      width: 40px;
+      height: 32px;
+      border: 1px solid #d9dde1;
+      border-radius: 7px;
+      background: #fff;
+      color: #6f7478;
+    }
+    .customize-icon-button:hover {
+      border-color: #c7ccd1;
+      background: #f8f9fa;
+    }
+    .customize-icon-button svg { width: 20px; height: 20px; }
+    .prototype-hidden { display: none !important; }
+    .table-scroll { width: 100%; height: calc(100vh - 180px); flex: 1; overflow: auto; }
+    .table-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+    .table-scroll::-webkit-scrollbar-thumb { background: #c7cdd3; border-radius: 10px; }
+    .table-scroll::-webkit-scrollbar-track { background: #f7f8f9; }
+    table { width: 100%; table-layout: fixed; border-collapse: collapse; }
+    th { height: 30px; position: sticky; top: 0; z-index: 1; padding: 0 5px; border-bottom: 1px solid #d9dde1; background: #eef1f4; color: #20252a; text-align: left; font-size: 11px; font-weight: 600; white-space: nowrap; overflow: hidden; cursor: pointer; user-select: none; }
+    th:hover { background: #e7ebee; }
+    th.application-heading { padding-left: 22px; }
+    .head-inner { display: flex; align-items: center; min-width: 0; }
+    .head-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .sort-icon { width: 14px; height: 14px; margin-left: 3px; flex: none; color: #8a8f94; opacity: .65; }
+    th.sorted, th.sorted .sort-icon { color: #0d4c7d; opacity: 1; }
+    th.desc .sort-icon { transform: rotate(180deg); }
+    tbody tr { height: 30px; }
+    tbody tr:nth-child(even) { background: #fafafa; }
+    tbody tr:hover { background: #f3f7fa; }
+    td { height: 30px; padding: 0 10px; border-bottom: 1px solid #eee; color: #4b5055; font-size: 11px; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    tbody tr:last-child td { border-bottom: 0; }
+    .app-number { display: inline-flex; align-items: center; gap: 4px; color: #155a87; font-weight: 500; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+    .app-number:hover { color: #9a2529; }
+    .app-number.overdue { color: #d32f2f; }
+    .app-number.at-risk { color: #c05600; }
+    .app-number.overdue:hover, .app-number.at-risk:hover { color: inherit; }
+    .app-icon-slot { width: 14px; height: 14px; flex: none; }
+    .priority-snackbar { position: fixed; z-index: 50; right: 24px; bottom: 24px; display: flex; align-items: center; gap: 10px; max-width: min(420px, calc(100vw - 32px)); padding: 13px 16px; border-radius: 6px; background: #323232; box-shadow: 0 8px 22px rgba(0,0,0,.24); color: #fff; font-size: 13px; opacity: 0; pointer-events: none; transform: translateY(12px); transition: opacity .2s ease, transform .2s ease; }
+    .priority-snackbar.show { opacity: 1; transform: translateY(0); }
+    .priority-snackbar svg { color: #ffb74d; flex: none; }
+    .empty-row { height: 80px; color: #8a8f94; text-align: center; }
+    .pagination { height: 34px; min-height: 34px; display: flex; align-items: center; justify-content: flex-end; gap: 20px; padding: 0 8px 0 16px; border-top: 1px solid #e3e6e8; background: #fff; color: #555; font-size: 11px; }
+    .pagination select { border: 0; background: transparent; color: #333; font-size: 11px; cursor: pointer; }
+    .page-actions { display: flex; gap: 2px; margin-left: 8px; }
+    .page-actions button { width: 25px; height: 25px; padding: 3px; border: 0; border-radius: 50%; background: transparent; color: #555; font-size: 19px; line-height: 1; }
+    .page-actions button:hover:not(:disabled) { background: #f1f3f5; }
+    .page-actions button:disabled { color: #c6c6c6; cursor: default; }
+    .simple-panel { margin: 16px; padding: 16px; min-height: 80px; background: white; box-shadow: 0 3px 10px rgba(0,0,0,.1); text-align: center; font-size: 14px; }
+    .role-card { border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; background: #fff; }
+    .role-header { height: 44px; padding: 0 16px; display: flex; justify-content: space-between; align-items: center; background: #0d4c7d; color: #fff; font-size: 13px; font-weight: 600; }
+    .role-header button { min-width: 52px; height: 27px; border: 0; border-radius: 6px; background: #fff; color: #0d4c7d; font-size: 11px; }
+    .role-table th, .role-table td { width: auto; height: auto; padding: 7px 12px; font-size: 11px; }
+    .role-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 16px; }
+    .role-form label { display: block; color: #555; font-size: 11px; }
+    .role-form input { display: block; width: 100%; height: 36px; margin-top: 4px; padding: 6px 8px; border: 1px solid #bfc5cb; border-radius: 4px; }
+    .role-actions { display: flex; justify-content: flex-end; gap: 8px; padding: 0 16px 16px; }
+    .role-actions button { border: 0; background: transparent; color: #555; font-size: 11px; }
+    .role-actions button:last-child { padding: 7px 15px; border-radius: 4px; background: #0d4c7d; color: #fff; }
+
+    .modal-backdrop { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; background: rgba(0,0,0,.5); }
+    .dialog { width: min(760px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); overflow: auto; padding: 20px 24px; border-radius: 8px; background: white; box-shadow: 0 11px 36px rgba(0,0,0,.3); }
+    .dialog.small { width: min(420px, calc(100vw - 32px)); }
+    .dialog-title { color: #9a2529; font-size: 14px; font-weight: 700; text-transform: uppercase; }
+    .dialog-close { float: right; border: 0; background: transparent; color: #777; font-size: 22px; }
+    .dialog-actions { display: flex; justify-content: center; gap: 8px; margin-top: 16px; }
+    .dialog-actions button, .transfer-button { min-height: 30px; padding: 5px 16px; border: 1px solid #9a2529; border-radius: 8px; background: #fff; color: #9a2529; font-size: 12px; font-weight: 700; }
+    .dialog-actions button.primary { background: #9a2529; color: #fff; }
+    .column-layout { display: flex; align-items: center; gap: 12px; width: 100%; margin-top: 16px; }
+    .column-list { flex: 1; min-width: 0; border: 1px solid #dfe3e8; border-radius: 8px; overflow: hidden; }
+    .column-list-title { padding: 8px 12px; border-bottom: 1px solid #e5e7eb; background: #f3f5f7; font-size: 12px; font-weight: 600; }
+    .column-list-title small { display: block; margin-top: 2px; color: #777; font-size: 10px; font-weight: 400; }
+    .column-list-body { height: 300px; padding: 8px; overflow-y: auto; }
+    .column-list-body label { display: flex; align-items: center; min-height: 32px; gap: 8px; padding: 0 8px; font-size: 11px; color: #444; }
+    .column-list-body label:hover { background: #f6f6f6; }
+    .transfer-controls { display: flex; flex-direction: column; gap: 8px; }
+    .transfer-button { min-width: 36px; padding: 5px; }
+    .break-field { display: block; margin-top: 14px; color: #444; font-size: 12px; }
+    .break-field select { display: block; width: 100%; height: 34px; margin-top: 5px; padding: 5px 8px; border: 1px solid #bbb; border-radius: 4px; background: #fff; }
+    @media (max-width: 599px) { .header-right { padding: 0 8px; }.header-details { gap: 4px; }.header-datetime, .profile-name { display: none; }.profile-button { padding: 4px; }.sidebar { flex-shrink: 0; }.toolbar { overflow-x: auto; }.table-card { min-width: 650px; }.main-area { overflow-x: auto; }.filter-layout { grid-template-columns: 1fr; }.filter-column-list { min-height: 110px; max-height: 150px; } }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <img class="header-logo" src="ICICI%20Logo.svg" alt="ICICI Life Logo">
+    <div class="header-right"><div class="header-details">
+      <div class="header-datetime"><div class="header-date" id="currentTime"></div><div class="session">Session: <span id="sessionTime">15:00</span></div></div>
+      <button class="profile-button" id="profileButton" aria-label="User menu" aria-haspopup="true" aria-expanded="false">
+        <span class="profile-avatar"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg></span>
+        <span class="profile-name" id="profileName">ipru75474</span><span id="profileArrow">⌄</span>
+      </button>
+    </div></div>
+    <div class="profile-menu hidden" id="profileMenu">
+      <button id="breakButton"><span class="menu-icon">◷</span><span>Breaktime</span><span class="menu-spacer"></span><span class="break-note">30 mins</span><span class="menu-icon">›</span></button>
+      <button id="logoutButton"><span class="menu-icon">↪</span><span>Logout</span></button>
+    </div>
+  </header>
+
+  <main class="inbox">
+    <aside class="sidebar" id="sidebar">
+      <div class="collapse-row" id="collapseButton" role="button" tabindex="0" aria-label="Toggle sidebar"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 5 7 7-7 7"/></svg></div>
+      <div class="sidebar-scroll">
+        <div class="rail-section prototype-hidden">
+          <button class="rail-row section-row" id="userHandleButton"><span class="rail-label">User Handle</span><span class="initials">UH</span><span class="rail-end" id="userHandleArrow">⌃</span></button>
+          <div id="userHandleList"></div>
+        </div>
+        <button class="rail-row search-row" id="searchApplicationsButton" title="Search Application"><span class="rail-label">Search Application</span><span class="initials">SA</span><span class="search-icon"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg></span></button>
+        <button class="rail-row all-row active" id="allCasesButton"><span class="rail-label">All Cases</span><span class="initials">AC</span><span class="all-count-wrap" id="allCountWrap"><span class="count" id="allCount">2</span><span id="allArrow">⌃</span></span></button>
+        <div id="taskList"></div>
+        <div class="rail-section prototype-hidden">
+          <button class="rail-row section-row" id="dashboardButton"><span class="rail-label">Admin Screens Utility</span><span class="initials">AU</span><span class="rail-end"><span id="refreshButton" title="Refresh inbox" style="padding:0 3px">⟳</span><span id="dashboardArrow">⌄</span></span></button>
+          <div id="dashboardList"></div>
+        </div>
+        <button class="rail-row upload-row prototype-hidden" title="Bulk Upload"><span class="rail-label">Bulk Upload</span><span class="initials">BU</span></button>
+      </div>
+      <div class="last-login">Last login: 6th August ’26 ; 7:11 am</div>
+    </aside>
+    <section class="main-area" id="mainArea"></section>
+  </main>
+
+  <div class="modal-backdrop hidden" id="columnBackdrop" role="presentation">
+    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="columnTitle">
+      <button class="dialog-close" id="columnClose" aria-label="Close">×</button><div class="dialog-title" id="columnTitle">Configure Columns</div>
+      <div class="column-layout"><div class="column-list"><div class="column-list-title">Available Columns<small id="availableCount"></small></div><div class="column-list-body" id="availableList"></div></div>
+      <div class="transfer-controls"><button class="transfer-button" id="addColumns" title="Add columns">›</button><button class="transfer-button" id="removeColumns" title="Remove columns">‹</button></div>
+      <div class="column-list"><div class="column-list-title">Selected Columns<small id="selectedCount"></small></div><div class="column-list-body" id="selectedList"></div></div></div>
+      <div class="dialog-actions"><button id="columnReset">Reset</button><button class="primary" id="columnSave">Save</button></div>
+    </div>
+  </div>
+  <div class="modal-backdrop hidden" id="filterBackdrop" role="presentation">
+    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="filterTitle">
+      <button class="dialog-close" id="filterClose" aria-label="Close">×</button><div class="dialog-title" id="filterTitle">Filter Cases</div>
+      <form id="filterForm"><div class="filter-layout"><div class="filter-column-list" id="filterColumns"></div><div class="filter-value-list" id="filterValues"></div></div><div class="filter-actions"><button type="button" id="clearFilters">Clear</button><button type="submit" class="apply-filter">Apply Filters</button></div></form>
+    </div>
+  </div>
+  <div class="modal-backdrop hidden" id="breakBackdrop" role="presentation"><div class="dialog small" role="dialog" aria-modal="true" aria-labelledby="breakTitle">
+    <button class="dialog-close" id="breakClose" aria-label="Close">×</button><div class="dialog-title" id="breakTitle">Set Break Time</div>
+    <label class="break-field">Break Duration<select id="breakDuration"><option value="">Select</option><option>15</option><option>30</option><option>45</option><option>60</option><option>90</option><option>120</option></select></label>
+    <label class="break-field">Break Reason<select id="breakReason"><option value="">Select</option><option>Tea / Coffee Break</option><option>Lunch Break</option><option>Personal Work</option><option>Internal Meeting</option><option>System Issue</option></select></label>
+    <div class="dialog-actions"><button class="primary" id="breakConfirm">Confirm</button></div>
+  </div></div>
+  <div class="priority-snackbar" id="prioritySnackbar" role="status" aria-live="polite"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v6m0 4h.01"/></svg><span>Please complete priority task first.</span></div>
+
+  <script>
+    // This is the same pool inventory and visible data shape as mock/inbox/roleList.json.
+    const poolKeys = [
+      "CVT_TASK", "CPT_DATA_ENTRY_NMR_TASK", "CPT_DATA_ENTRY_MR_TASK", "PIVV_TASK",
+      "PRE_ISSUANCE_SERVICING_TASK", "EXCEPTIONAL_TASK", "SYSTEM_WAIT_POOL_AMR_MEDICAL",
+      "SYSTEM_WAIT_POOL_AMR_NON_MEDICAL", "RECONSIDERATION_TASK", "REJECT_TASK",
+      "READY_FOR_ISSUANCE_TASK", "ISSUANCE_TASK", "REASSIGN_TRANSFER_TASK", "FORCE_CLOSE_TASK",
+      "ALLOCATION_TASK", "LEAVE_MANAGEMENT_TASK", "PRE_ISSUANCE_CVT_TASK", "HOD_TASK", "SR_UW_TASK",
+      "CMO_TASK", "RI_TASK", "RISK_TASK", "REQUIREMENT_POOL", "PRE_LOGIN_CUW_TASK",
+      "MMT_TASK", "GRIEVANCE_TASK", "CUW_CLAIM_AUDIT_TASK", "SUW_TASK", "VENDOR_CMO_TASK",
+      "TELE_VIDEO_TASK", "AMR_MEDICAL_TASK", "IT_TASK", "ACCUITY_TASK"
+    ];
+    const oneCasePools = new Set(["PRE_ISSUANCE_SERVICING_TASK", "EXCEPTIONAL_TASK", "LEAVE_MANAGEMENT_TASK"]);
+    const poolData = Object.fromEntries(poolKeys.map((pool, index) => [pool, Array.from({ length: oneCasePools.has(pool) ? 1 : 2 }, (_, rowIndex) => {
+      const sparse = pool === "PRE_ISSUANCE_SERVICING_TASK" || pool === "EXCEPTIONAL_TASK";
+      if (sparse) return { taskId: "2078.18771", applicationNo: "OB90222471", isMedical: false, roleType: pool, role: `RETAIL_${pool.replace(/_TASK$/, "")}_USER`, businessType: "RETAIL", poolName: pool };
+      const row = {
+        id: index * 2 + rowIndex + 1,
+        taskId: String(18763 + index * 2 + rowIndex),
+        instanceId: "1234",
+        applicationNo: `OB90222471${rowIndex + (pool === "LEAVE_MANAGEMENT_TASK" ? 2 : 1)}`,
+        callId: `CALL-${10021 + rowIndex}`,
+        sumAssured: 1000000,
+        product: "ICICI Pru iProtect Smart",
+        premium: 24500 + rowIndex * 1500,
+        clientType: "Individual",
+        appliedSa: 1000000,
+        callType: "Tele",
+        subType: "Fresh",
+        tsa: 1500000,
+        annualPremium: 876863872,
+        productCode: "I19",
+        drc: "Low",
+        hniFlag: "Yes",
+        medicalNonMedicalTele: "Medical",
+        breOverallDecision: "STD",
+        poolTat: "04:30 hrs",
+        munichReMedicalDecision: "STD",
+        ptlr: "Low",
+        channel: "0TTB",
+        policyType: "Individual",
+        caseType: "Fresh Business",
+        priorityFlag: rowIndex === 0 ? "High" : "Normal",
+        roleType: pool,
+        role: "RETAIL_CVT_USER",
+        businessType: "GROUP",
+        createdDateAndTime: "2026-10-09T19:45:29.847589",
+      };
+      if (pool === "RECONSIDERATION_TASK") Object.assign(row, { sumAssured: 121212, clientType: "client", caseType: "Individual", lastPool: "HOD", product: "ICICI", premium: 12121 });
+      if (pool === "RISK_TASK") Object.assign(row, { due_date: rowIndex === 0 ? "2026-07-21T07:08:37Z" : "2026-07-23T07:08:37Z", start_time: "2026-07-16T06:08:37Z", at_risk_time: rowIndex === 0 ? "2026-07-20T06:40:16Z" : "2026-07-22T06:40:16Z" });
+      // Keep the active pre-issuance CVT prototype visibly representative using the inbox
+      // API fields: due_date, start_time and at_risk_time.
+      if (pool === "PRE_ISSUANCE_CVT_TASK") Object.assign(row, rowIndex === 0
+        ? { due_date: new Date(Date.now() - 60 * 60 * 1000).toISOString(), start_time: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), at_risk_time: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() }
+        : { due_date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), start_time: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), at_risk_time: new Date(Date.now() - 30 * 60 * 1000).toISOString() });
+      return row;
+    })]));
+    // The prototype exposes pre-issuance CVT as the only active pool, so “All Cases” must
+    // reflect the same two displayed cases rather than every sample pool.
+    const allRows = poolData.PRE_ISSUANCE_CVT_TASK || [];
+    const dashboardKeys = new Set(["AMR_MEDICAL_TASK", "AMR_NON_MEDICAL_TASK", "ACCUITY_TASK", "RISK_TASK", "IIFL_TASK", "PAYATS_TASK"]);
+    const dashboardItems = [
+      ["AMR Medical", "AMR_MEDICAL_TASK"], ["AMR Non Medical", "AMR_NON_MEDICAL_TASK"],
+      ["Acuity", "ACCUITY_TASK"], ["Risk", "RISK_TASK"], ["IIFL", "IIFL_TASK"],
+      ["Reconsideration", "RECONSIDERATION_TASK"], ["Hold", "HOLD_TASK"],
+      ["Payment & ATS", "PAYMENT_ATS_TASK"], ["Wait for Combo Policy", "WAIT_FOR_COMBO_POLICY_TASK"],
+      ["Post Issuance Doc Wait", "POST_ISSUANCE_DOC_WAIT_TASK"], ["Pre Issuance Doc Wait", "PRE_ISSUANCE_DOC_WAIT_TASK"],
+      ["SPC DE", "SPC_DE_TASK"]
+    ];
+    const menuKeys = ["PRE_ISSUANCE_CVT_TASK"];
+    const uppercaseParts = new Set(["ACCUITY", "AMR", "CMO", "COPS", "CPT", "CUW", "CVT", "DVT", "ECG", "GOPS", "GUW", "HOD", "IT", "MMT", "MR", "NMR", "PIVV", "RI", "SR", "SUW", "TMT", "UW"]);
+    const excludedColumns = new Set(["id", "taskId", "roleType", "instanceId", "createdBy", "updatedBy", "role", "businessType", "displayName", "status", "start_time", "at_risk_time", "startTime", "atRiskTime", "poolName", "pool_name", "poolKey"]);
+    const state = { selectedTask: "PRE_ISSUANCE_CVT_TASK", selectedRole: null, userOpen: true, allOpen: true, dashboardOpen: false, collapsed: false, page: 0, pageSize: 25, searchOpen: false, search: "", filterOpen: false, filters: {}, filterColumn: null, sortColumn: null, sortDirection: "asc", columnsByTask: {}, tempSelected: [], tempAvailable: [], leaveFormOpen: false, leaves: [{ employeeName: "John Smith", leaveType: "Annual Leave", fromDate: "2026-08-10", toDate: "2026-08-12", numberOfDays: 3, reason: "Personal work", status: "Pending" }] };
+    const $ = id => document.getElementById(id);
+    const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
+    const displayLabel = key => key.replace(/_/g, " ").split(" ").filter(Boolean).map(part => uppercaseParts.has(part.toUpperCase()) ? part.toUpperCase() : part[0].toUpperCase() + part.slice(1).toLowerCase()).join(" ");
+    const uppercaseColumnLabels = {
+      applicationNo: "Application No.",
+      callId: "Call ID",
+      sumAssured: "Sum Assured",
+      product: "Product",
+      premium: "Premium",
+      clientType: "Client Type",
+      appliedSa: "Applied SA",
+      callType: "Call Type",
+      subType: "Sub Type",
+      tsa: "TSA",
+      annualPremium: "Annual Premium",
+      productCode: "Product Code",
+      drc: "DRC",
+      hniFlag: "HNI Flag",
+      medicalNonMedicalTele: "Medical / Non Medical / Tele",
+      breOverallDecision: "BRE Overall Decision",
+      poolTat: "Pool TAT",
+      ptlr: "PTLR",
+      channel: "Channel",
+      munichReMedicalDecision: "Munich Re Decision",
+      policyType: "Policy Type",
+      caseType: "Case Type",
+      priorityFlag: "Priority Flag",
+      createdDateAndTime: "Creation Date",
+      due_date: "Due Date"
+    };
+    const columnLabel = key => uppercaseColumnLabels[key] || key.replace(/_/g, " ").replace(/([a-z])([A-Z])/g, "$1 $2").replace(/\b\w/g, char => char.toUpperCase());
+    const initials = key => { const parts = displayLabel(key).split(" "); return parts.length > 1 ? (parts[0][0] + parts[1][0]).toUpperCase() : parts[0].slice(0, 2).toUpperCase(); };
+    const currentRows = () => state.selectedTask === "ALL_CASES" ? allRows : (poolData[state.selectedTask] || []);
+    const allColumns = rows => [...new Set(rows.flatMap(row => Object.keys(row)))].filter(column => !excludedColumns.has(column));
+    const applicationFirst = columns => columns.includes("applicationNo") ? ["applicationNo", ...columns.filter(column => column !== "applicationNo")] : columns;
+    const cvtColumns = ["applicationNo", "callId", "channel", "sumAssured", "product", "premium", "clientType", "caseType", "createdDateAndTime", "due_date", "callType", "subType"];
+    const visibleColumns = rows => applicationFirst(state.columnsByTask[state.selectedTask] || cvtColumns.slice(0, 8));
+    const formatCell = value => {
+      if (value === null || value === undefined || value === "") return "-";
+      if (typeof value === "boolean") return value ? "Yes" : "No";
+      if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}T/.test(value)) return new Date(value).toLocaleDateString("en-GB");
+      return String(value);
+    };
+    const timingStatus = row => {
+      const now = Date.now();
+      const due = row.due_date;
+      const risk = row.at_risk_time;
+      if (due && now > new Date(due).getTime()) return "high";
+      if (risk && now > new Date(risk).getTime()) return "risk";
+      return "normal";
+    };
+    const priorityRank = row => ({ high: 0, risk: 1, normal: 2 })[timingStatus(row)];
+    const hasOverduePriority = () => allRows.some(row => timingStatus(row) === "high");
+    let snackbarTimer;
+    const showPrioritySnackbar = () => {
+      const snackbar = $("prioritySnackbar");
+      snackbar.classList.add("show");
+      clearTimeout(snackbarTimer);
+      snackbarTimer = setTimeout(() => snackbar.classList.remove("show"), 3500);
+    };
+
+    function renderSidebar() {
+      $("sidebar").classList.toggle("collapsed", state.collapsed);
+      $("userHandleArrow").textContent = state.userOpen ? "⌃" : "⌄";
+      $("allArrow").textContent = state.allOpen ? "⌃" : "⌄";
+      $("dashboardArrow").textContent = state.dashboardOpen ? "⌃" : "⌄";
+      $("allCount").textContent = allRows.length;
+      $("allCasesButton").classList.toggle("active", state.selectedTask === "ALL_CASES");
+      $("userHandleList").innerHTML = state.userOpen && !state.collapsed ? [
+        ["USERMANAGEMENT", "User Management"], ["LEAVEMANAGEMENT", "Leave Management"]
+      ].map(([role, label]) => `<button class="rail-row role-row ${state.selectedRole === role ? "active" : ""}" data-role="${role}"><span class="rail-label">${label}</span></button>`).join("") : "";
+      $("taskList").innerHTML = state.allOpen ? menuKeys.map(key => `<button class="rail-row task-row ${state.selectedTask === key ? "active" : ""}" data-task="${key}" title="${key === "PRE_ISSUANCE_CVT_TASK" ? "Pre Issuance CVT" : displayLabel(key)}"><span class="rail-label">${key === "PRE_ISSUANCE_CVT_TASK" ? "Pre Issuance CVT" : displayLabel(key)}</span><span class="initials">${initials(key)}</span><span class="count">${(poolData[key] || []).length}</span></button>`).join("") : "";
+      $("dashboardList").innerHTML = state.dashboardOpen && !state.collapsed ? dashboardItems.map(([label, key]) => `<button class="rail-row dashboard-row ${state.selectedTask === key ? "active" : ""}" data-task="${key}"><span class="rail-label">${label}</span></button>`).join("") : "";
+    }
+
+    function selectedData() {
+      const rows = currentRows();
+      const columns = allColumns(rows);
+      const query = state.search.trim().toLowerCase();
+      const filtered = rows.filter(row => {
+        const matchesSearch = !query || columns.some(column => String(row[column] ?? "").toLowerCase().includes(query));
+        const matchesFilters = Object.entries(state.filters).every(([column, values]) => !values?.length || values.includes(String(row[column] ?? "")));
+        return matchesSearch && matchesFilters;
+      });
+      filtered.sort((a, b) => {
+        const priority = priorityRank(a) - priorityRank(b);
+        if (priority || !state.sortColumn) return priority;
+        const av = a[state.sortColumn], bv = b[state.sortColumn];
+        if (av === null || av === undefined || av === "") return bv === null || bv === undefined || bv === "" ? 0 : 1;
+        if (bv === null || bv === undefined || bv === "") return -1;
+        const an = Number(av), bn = Number(bv);
+        const compared = !Number.isNaN(an) && !Number.isNaN(bn) ? an - bn : String(av).toLowerCase().localeCompare(String(bv).toLowerCase(), undefined, { numeric: true, sensitivity: "base" });
+        return state.sortDirection === "asc" ? compared : -compared;
+      });
+      return filtered;
+    }
+
+    function renderTable(preserveSearchFocus = false) {
+      if (state.selectedRole) {
+        if (state.selectedRole === "LEAVEMANAGEMENT") renderLeaveManagement();
+        else $("mainArea").innerHTML = `<div class="simple-panel">${state.selectedRole}</div>`;
+        return;
+      }
+      const rows = currentRows();
+      const columns = visibleColumns(rows);
+      const filtered = selectedData();
+      const pageCount = Math.max(1, Math.ceil(filtered.length / state.pageSize));
+      state.page = Math.min(state.page, pageCount - 1);
+      const visibleRows = filtered.slice(state.page * state.pageSize, (state.page + 1) * state.pageSize);
+      const counts = rows.reduce((result, row) => { result[timingStatus(row)]++; return result; }, { high: 0, risk: 0, normal: 0 });
+      const title = state.selectedTask === "ALL_CASES" ? "All Cases Details" : "Pre Issuance CVT Details";
+      const legend = `<div class="priority-legend"><span class="priority-item"><svg class="high" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 1 21h22L12 2Zm-1 7h2v6h-2v-6Zm0 8h2v2h-2v-2Z"/></svg>High Priority <span class="priority-count high">${counts.high}</span></span><span class="priority-item"><svg class="risk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/></svg>At Risk <span class="priority-count risk">${counts.risk}</span></span><span class="priority-item"><svg class="normal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="m7 12 3 3 6-6"/></svg>Normal <span class="priority-count normal">${counts.normal}</span></span></div>`;
+      const activeFilterCount = Object.values(state.filters).filter(values => values?.length).length;
+      const filterStatus = activeFilterCount ? `<span class="filter-status" title="${activeFilterCount} column filter${activeFilterCount === 1 ? "" : "s"} applied">${activeFilterCount} filter${activeFilterCount === 1 ? "" : "s"} applied <button id="clearFiltersToolbar" type="button">Clear</button></span>` : "";
+      $("mainArea").innerHTML = `<div class="table-card"><div class="table-title">${escapeHtml(title)}</div><div class="toolbar"><div class="toolbar-left"><button class="download" id="downloadButton">Download Excel</button>${filterStatus}${legend}</div><div class="toolbar-right">${state.searchOpen ? `<input class="table-search" id="tableSearch" placeholder="Search..." value="${escapeHtml(state.search)}" aria-label="Search table">` : ""}<button class="icon-button" id="searchToggle" title="Search" aria-label="Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg></button><button class="icon-button ${activeFilterCount ? "filter-active" : ""}" id="filterButton" title="Filter${activeFilterCount ? ` (${activeFilterCount} active)` : ""}" aria-label="Filter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5h18l-7 8v6l-4 2v-8L3 5Z"/></svg></button>${state.selectedTask !== "ALL_CASES" ? `<button class="icon-button customize-icon-button" id="settingsButton" title="Customize Columns" aria-label="Customize Columns"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3v7M5 14v7M12 3v3M12 10v11M19 3v9M19 16v5"/><path d="M2.5 10h5M9.5 6h5M16.5 12h5"/></svg></button>` : ""}</div></div><div class="table-scroll"><table><thead><tr>${columns.map(column => `<th class="${column === "applicationNo" ? "application-heading" : ""} ${state.sortColumn === column ? `sorted ${state.sortDirection}` : ""}" data-sort="${column}" title="${columnLabel(column)}"><span class="head-inner"><span class="head-text">${columnLabel(column)}</span><svg class="sort-icon" viewBox="0 0 24 24" fill="currentColor"><path d="m7 10 5 5 5-5H7Z"/></svg></span></th>`).join("")}</tr></thead><tbody>${visibleRows.length ? visibleRows.map(row => `<tr>${columns.map(column => { const cell = formatCell(row[column]); return `<td title="${escapeHtml(cell)}">${column === "applicationNo" ? `<span class="app-number" data-priority-status="${timingStatus(row)}" role="button" tabindex="0"><span class="app-icon-slot"></span>${escapeHtml(cell)}</span>` : escapeHtml(cell)}</td>`; }).join("")}</tr>`).join("") : `<tr><td class="empty-row" colspan="${columns.length || 1}">No data available</td></tr>`}</tbody></table></div><div class="pagination"><span>Show</span><select id="pageSize" aria-label="Rows per page">${[10, 25, 50, 100].map(size => `<option ${size === state.pageSize ? "selected" : ""}>${size}</option>`).join("")}</select><span>${filtered.length ? state.page * state.pageSize + 1 : 0}–${Math.min((state.page + 1) * state.pageSize, filtered.length)} of ${filtered.length}</span><span class="page-actions"><button id="previousPage" aria-label="Previous page" ${state.page === 0 ? "disabled" : ""}>‹</button><button id="nextPage" aria-label="Next page" ${state.page >= pageCount - 1 ? "disabled" : ""}>›</button></span></div></div>`;
+      // The application cell always reserves 14px; only timed cases fill it.
+      $("mainArea").querySelectorAll(".app-number").forEach((link, index) => {
+        const status = timingStatus(visibleRows[index]);
+        if (status === "normal") return;
+        link.classList.add(status === "high" ? "overdue" : "at-risk");
+        link.title = status === "high" ? "Due date crossed" : "At-risk time crossed";
+        link.querySelector(".app-icon-slot").innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 2 1 21h22L12 2Zm-1 7h2v6h-2v-6Zm0 8h2v2h-2v-2Z"/></svg>';
+      });
+      if (preserveSearchFocus && state.searchOpen) { const input = $("tableSearch"); input.focus(); input.setSelectionRange(input.value.length, input.value.length); }
+    }
+
+    function selectTask(key) { state.selectedTask = key; state.selectedRole = null; state.page = 0; state.search = ""; state.searchOpen = false; state.filterOpen = false; state.filters = {}; state.sortColumn = null; renderSidebar(); renderTable(); }
+    function render() { renderSidebar(); renderTable(); }
+    function renderLeaveManagement() {
+      if (state.leaveFormOpen) {
+        const fields = [["Employee Name", "employeeName", "text"], ["Leave Type", "leaveType", "text"], ["From Date", "fromDate", "date"], ["To Date", "toDate", "date"], ["Number of Days", "numberOfDays", "number"], ["Reason", "reason", "text"]];
+        $("mainArea").innerHTML = `<div class="role-card"><div class="role-header">Add Leave<button id="cancelLeaveTop">Cancel</button></div><form id="leaveForm"><div class="role-form">${fields.map(([label, name, type]) => `<label>${label}<input name="${name}" type="${type}"></label>`).join("")}</div><div class="role-actions"><button type="button" id="cancelLeave">Cancel</button><button type="submit">Save</button></div></form></div>`;
+        return;
+      }
+      $("mainArea").innerHTML = `<div class="role-card"><div class="role-header">Leave Management<button id="addLeave">Add</button></div><table class="role-table"><thead><tr>${["Employee", "Leave Type", "From", "To", "Days", "Reason", "Status"].map(label => `<th>${label}</th>`).join("")}</tr></thead><tbody>${state.leaves.map(leave => `<tr>${[leave.employeeName, leave.leaveType, leave.fromDate, leave.toDate, leave.numberOfDays, leave.reason, leave.status].map(value => `<td>${escapeHtml(value)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+    }
+    $("collapseButton").addEventListener("click", () => { state.collapsed = !state.collapsed; renderSidebar(); });
+    $("collapseButton").addEventListener("keydown", event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); $("collapseButton").click(); } });
+    $("userHandleButton").addEventListener("click", () => { state.userOpen = !state.userOpen; renderSidebar(); });
+    $("allCasesButton").addEventListener("click", () => selectTask("ALL_CASES"));
+    $("searchApplicationsButton").addEventListener("click", () => {
+      state.selectedTask = "ALL_CASES";
+      state.selectedRole = null;
+      state.page = 0;
+      state.searchOpen = true;
+      state.sortColumn = null;
+      renderSidebar();
+      renderTable(true);
+    });
+    $("allCountWrap").addEventListener("click", event => { event.stopPropagation(); state.allOpen = !state.allOpen; renderSidebar(); });
+    $("dashboardButton").addEventListener("click", () => { state.dashboardOpen = !state.dashboardOpen; renderSidebar(); });
+    $("refreshButton").addEventListener("click", event => { event.stopPropagation(); render(); });
+    $("sidebar").addEventListener("click", event => {
+      const task = event.target.closest("[data-task]");
+      const role = event.target.closest("[data-role]");
+      if (task) selectTask(task.dataset.task);
+      if (role) { state.selectedRole = role.dataset.role; state.selectedTask = null; render(); }
+    });
+    $("mainArea").addEventListener("click", event => {
+      const target = event.target.closest("button, th, .app-number");
+      if (!target) return;
+      if (target.id === "addLeave") { state.leaveFormOpen = true; renderTable(); }
+      else if (target.id === "cancelLeave" || target.id === "cancelLeaveTop") { state.leaveFormOpen = false; renderTable(); }
+      else if (target.id === "searchToggle") { state.searchOpen = !state.searchOpen; if (!state.searchOpen) { state.search = ""; state.page = 0; } renderTable(state.searchOpen); }
+      else if (target.id === "filterButton") openFilters();
+      else if (target.id === "clearFiltersToolbar") { state.filters = {}; state.page = 0; renderTable(); }
+      else if (target.id === "settingsButton") openColumns();
+      else if (target.id === "downloadButton") downloadExcel();
+      else if (target.id === "previousPage") { state.page--; renderTable(); }
+      else if (target.id === "nextPage") { state.page++; renderTable(); }
+      else if (target.dataset.sort) { state.sortDirection = state.sortColumn === target.dataset.sort && state.sortDirection === "asc" ? "desc" : "asc"; state.sortColumn = target.dataset.sort; renderTable(); }
+      else if (target.classList.contains("app-number")) {
+        if (hasOverduePriority() && target.dataset.priorityStatus !== "high") { showPrioritySnackbar(); return; }
+        window.location.href = "./drs-screen-prototype.html";
+      }
+    });
+    $("mainArea").addEventListener("keydown", event => {
+      if ((event.key === "Enter" || event.key === " ") && event.target.classList.contains("app-number")) {
+        event.preventDefault();
+        if (hasOverduePriority() && event.target.dataset.priorityStatus !== "high") { showPrioritySnackbar(); return; }
+        window.location.href = "./drs-screen-prototype.html";
+      }
+    });
+    $("mainArea").addEventListener("input", event => { if (event.target.id === "tableSearch") { state.search = event.target.value; state.page = 0; renderTable(true); } });
+    $("mainArea").addEventListener("change", event => { if (event.target.id === "pageSize") { state.pageSize = Number(event.target.value); state.page = 0; renderTable(); } });
+    $("mainArea").addEventListener("submit", event => { if (event.target.id !== "leaveForm") return; event.preventDefault(); const data = Object.fromEntries(new FormData(event.target)); state.leaves.push({ ...data, numberOfDays: Number(data.numberOfDays), status: "Pending" }); state.leaveFormOpen = false; renderTable(); });
+
+    function downloadExcel() {
+      const rows = selectedData(), columns = cvtColumns;
+      if (!rows.length || !columns.length) return;
+      const safe = value => escapeHtml(value === null || value === undefined ? "" : typeof value === "boolean" ? value ? "Yes" : "No" : value);
+      const html = `<html><head><meta charset="UTF-8"></head><body><table><thead><tr>${columns.map(column => `<th>${safe(columnLabel(column))}</th>`).join("")}</tr></thead><tbody>${rows.map(row => `<tr>${columns.map(column => `<td style="mso-number-format:'\\@';">${safe(row[column])}</td>`).join("")}</tr>`).join("")}</tbody></table></body></html>`;
+      const url = URL.createObjectURL(new Blob([html], { type: "application/vnd.ms-excel" }));
+      const link = document.createElement("a"); link.href = url; link.download = `${state.selectedTask.replace(/[^a-z0-9_-]/gi, "_")}_Details.xls`; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    function openColumns() {
+      const columns = cvtColumns;
+      state.tempSelected = applicationFirst(visibleColumns(currentRows()));
+      state.tempAvailable = columns.filter(column => !state.tempSelected.includes(column));
+      $("columnBackdrop").classList.remove("hidden"); renderColumnLists();
+    }
+    function renderColumnLists() {
+      $("availableCount").textContent = `${state.tempAvailable.length} columns`;
+      $("selectedCount").textContent = `${state.tempSelected.length} columns`;
+      $("availableList").innerHTML = state.tempAvailable.map(column => `<label><input type="checkbox" value="${column}" class="available-check" ${state.tempSelected.length >= 12 ? "disabled" : ""}>${columnLabel(column)}</label>`).join("");
+      $("selectedList").innerHTML = state.tempSelected.map((column, index) => `<label><input type="checkbox" value="${column}" class="selected-check" ${column === "applicationNo" ? "disabled" : ""}>${columnLabel(column)}<span style="flex:1"></span><button class="transfer-button" data-move="up" data-index="${index}" title="Move up" ${index <= 1 ? "disabled" : ""}>↑</button><button class="transfer-button" data-move="down" data-index="${index}" title="Move down" ${column === "applicationNo" || index === state.tempSelected.length - 1 ? "disabled" : ""}>↓</button></label>`).join("");
+    }
+    $("addColumns").addEventListener("click", () => { const selected = [...document.querySelectorAll(".available-check:checked")].map(input => input.value).slice(0, 12 - state.tempSelected.length); state.tempSelected.push(...selected); state.tempAvailable = state.tempAvailable.filter(column => !selected.includes(column)); renderColumnLists(); });
+    $("removeColumns").addEventListener("click", () => { const selected = [...document.querySelectorAll(".selected-check:checked")].map(input => input.value); state.tempSelected = state.tempSelected.filter(column => !selected.includes(column)); state.tempAvailable.push(...selected); renderColumnLists(); });
+    $("selectedList").addEventListener("click", event => { const button = event.target.closest("[data-move]"); if (!button || button.disabled) return; event.preventDefault(); const index = Number(button.dataset.index), other = button.dataset.move === "up" ? index - 1 : index + 1; if (other > 0 && other < state.tempSelected.length) [state.tempSelected[index], state.tempSelected[other]] = [state.tempSelected[other], state.tempSelected[index]]; renderColumnLists(); });
+    $("columnReset").addEventListener("click", () => { const columns = cvtColumns; state.tempSelected = columns.slice(0, 8); state.tempAvailable = columns.slice(8); renderColumnLists(); });
+    $("columnSave").addEventListener("click", () => { if (!state.tempSelected.length) return; state.columnsByTask[state.selectedTask] = applicationFirst(state.tempSelected).slice(0, 12); state.page = 0; $("columnBackdrop").classList.add("hidden"); renderTable(); });
+    $("columnClose").addEventListener("click", () => $("columnBackdrop").classList.add("hidden"));
+    $("columnBackdrop").addEventListener("click", event => { if (event.target === $("columnBackdrop")) $("columnBackdrop").classList.add("hidden"); });
+
+    function openFilters() {
+      const columns = visibleColumns(currentRows());
+      state.filterColumn = state.filterColumn && columns.includes(state.filterColumn) ? state.filterColumn : columns[0] || null;
+      renderFilterOptions();
+      $("filterBackdrop").classList.remove("hidden");
+    }
+    function renderFilterOptions() {
+      const columns = visibleColumns(currentRows());
+      const selectedColumn = state.filterColumn;
+      $("filterColumns").innerHTML = columns.map(column => { const count = state.filters[column]?.length || 0; return `<button type="button" class="filter-column-button ${column === selectedColumn ? "active" : ""}" data-filter-column="${escapeHtml(column)}"><span>${columnLabel(column)}</span><span class="filter-selection-count">${count}</span></button>`; }).join("");
+      const values = [...new Set(currentRows().map(row => String(row[selectedColumn] ?? "")))].sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }));
+      const selectedValues = state.filters[selectedColumn] || [];
+      $("filterValues").innerHTML = selectedColumn ? `<div class="filter-value-heading">${columnLabel(selectedColumn)}</div>${values.map(value => `<label><input type="checkbox" class="filter-value-check" value="${escapeHtml(value)}" ${selectedValues.includes(value) ? "checked" : ""}>${escapeHtml(formatCell(value))}</label>`).join("")}` : "";
+    }
+    $("filterColumns").addEventListener("click", event => { const button = event.target.closest("[data-filter-column]"); if (!button) return; state.filterColumn = button.dataset.filterColumn; renderFilterOptions(); });
+    $("filterValues").addEventListener("change", () => { const selectedValues = [...document.querySelectorAll(".filter-value-check:checked")].map(input => input.value); if (selectedValues.length) state.filters[state.filterColumn] = selectedValues; else delete state.filters[state.filterColumn]; renderFilterOptions(); });
+    $("filterForm").addEventListener("submit", event => { event.preventDefault(); state.page = 0; $("filterBackdrop").classList.add("hidden"); renderTable(); });
+    $("clearFilters").addEventListener("click", () => { state.filters = {}; state.page = 0; $("filterBackdrop").classList.add("hidden"); renderTable(); });
+    $("filterClose").addEventListener("click", () => $("filterBackdrop").classList.add("hidden"));
+    $("filterBackdrop").addEventListener("click", event => { if (event.target === $("filterBackdrop")) $("filterBackdrop").classList.add("hidden"); });
+
+    const formatNow = () => {
+      const parts = Object.fromEntries(new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kolkata", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true }).formatToParts(new Date()).map(part => [part.type, part.value]));
+      $("currentTime").textContent = `${Number(parts.day)} ${parts.month} ${parts.year}, ${parts.hour}:${parts.minute}:${parts.second} ${parts.dayPeriod.toLowerCase()}`;
+    };
+    let sessionDeadline = Date.now() + 15 * 60 * 1000;
+    ["mousedown", "keydown", "scroll", "touchstart"].forEach(name => window.addEventListener(name, () => { sessionDeadline = Date.now() + 15 * 60 * 1000; }, { passive: true }));
+    function tick() { formatNow(); const seconds = Math.max(0, Math.ceil((sessionDeadline - Date.now()) / 1000)); $("sessionTime").textContent = `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`; }
+    tick(); setInterval(tick, 1000);
+    try { $("profileName").textContent = localStorage.getItem("username") || "ipru75474"; } catch {}
+    $("profileButton").addEventListener("click", () => { const open = $("profileMenu").classList.toggle("hidden"); $("profileButton").setAttribute("aria-expanded", String(!open)); $("profileArrow").textContent = open ? "⌄" : "⌃"; });
+    document.addEventListener("click", event => { if (!event.target.closest("#profileButton, #profileMenu")) { $("profileMenu").classList.add("hidden"); $("profileButton").setAttribute("aria-expanded", "false"); $("profileArrow").textContent = "⌄"; } });
+    $("breakButton").addEventListener("click", () => { $("profileMenu").classList.add("hidden"); $("breakBackdrop").classList.remove("hidden"); });
+    $("logoutButton").addEventListener("click", () => { $("profileMenu").classList.add("hidden"); window.location.href = "./login.html"; });
+    $("breakClose").addEventListener("click", () => $("breakBackdrop").classList.add("hidden"));
+    $("breakConfirm").addEventListener("click", () => $("breakBackdrop").classList.add("hidden"));
+    $("breakBackdrop").addEventListener("click", event => { if (event.target === $("breakBackdrop")) $("breakBackdrop").classList.add("hidden"); });
+    document.addEventListener("keydown", event => { if (event.key === "Escape") { $("breakBackdrop").classList.add("hidden"); $("columnBackdrop").classList.add("hidden"); $("filterBackdrop").classList.add("hidden"); $("profileMenu").classList.add("hidden"); } });
+    render();
+  </script>
+</body>
+</html>

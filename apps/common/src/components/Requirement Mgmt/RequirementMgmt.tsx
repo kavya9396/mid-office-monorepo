@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Box } from "@mui/material";
 import { colors, CustomTable } from "@insurance-poc/ui";
 import { getMasterList } from "@insurance-poc/utils";
@@ -19,7 +19,20 @@ import {
   RequirementValueDialog,
 } from "./RequirementParts";
 import { useRequirementFilters } from "./useRequirementFilters";
-import { useRequirementRows } from "./useRequirementRows";
+import { isNewRequirement, useRequirementRows } from "./useRequirementRows";
+import { ensureRequirementMstApplicationKey, removeRequirementMstRowSession } from "./requirementMstSession";
+import { useRequirementMstCascade } from "./useRequirementMstCascade";
+
+export { clearRequirementMstContext } from "./requirementMstSession";
+
+const CASCADE_FIELD_KEYS = new Set([
+  "team",
+  "category",
+  "subCategory",
+  "document",
+  "reason",
+  "fupCode",
+]);
 import type {
   RequirementColumnKey,
   RequirementItem,
@@ -30,6 +43,7 @@ import type {
 
 export * from "./types";
 export { defaultRequirementColumns, defaultRequirementFilterFields } from "./defaults";
+export { createEmptyRequirement, isNewRequirement, useRequirementRows } from "./useRequirementRows";
 
 const EMPTY_BADGE_VARIANTS = {};
 
@@ -38,6 +52,18 @@ const readMasterStatusOptions = (): RequirementStatusOption[] =>
   getMasterList("misc", "REQT_ST")
     .filter((entry) => entry.isActive === "Y")
     .map((entry) => ({ label: entry.description, value: entry.code }));
+
+/** Team options from the post-login master data (`requirement_mst`). */
+const readMasterTeamOptions = (): RequirementStatusOption[] => {
+  const list = getMasterList("requirement_mst", "team");
+  const fallbackList = list.length > 0 ? list : getMasterList("requirement_mst");
+  return fallbackList
+    .filter((entry) => entry.isActive.toUpperCase() !== "N")
+    .map((entry) => ({
+      label: entry.description || entry.code,
+      value: entry.code || entry.description,
+    }));
+};
 
 const uniqueStatusOptions = (rows: RequirementItem[]): RequirementStatusOption[] =>
   Array.from(new Set(rows.map((row) => row.status).filter(Boolean))).map((value) => ({
@@ -58,24 +84,44 @@ export function RequirementMgmt({
   pageSize = 5,
   showPagination = true,
   statusOptions,
+  fieldOptions,
   statusOrder = NO_STATUS_ORDER,
   statusVariants = EMPTY_BADGE_VARIANTS,
   filter,
+  initialStatus,
   labels: labelOverrides,
   onSave,
+  onDirtyChange,
+  applicationKey,
 }: Readonly<RequirementMgmtProps>) {
   const labels: RequirementLabels = { ...DEFAULT_LABELS, ...labelOverrides };
   const masterStatusOptions = readMasterStatusOptions();
+  const masterTeamOptions = readMasterTeamOptions();
   const filterConfig = resolveFilterConfig(filter, readOnly);
 
-  const { rows, saving, updateRow, removeRow, save } = useRequirementRows(requirements, onSave);
+  const { rows, saving, isDirty, addRow, updateRow, patchRow, removeRow, save } = useRequirementRows(
+    requirements,
+    onSave,
+  );
+  const cascade = useRequirementMstCascade(patchRow);
   const [dialogValue, setDialogValue] = useState<{ title: string; value: string } | null>(null);
+
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
+
+  useEffect(() => {
+    if (applicationKey && applicationKey.trim().length > 0) {
+      ensureRequirementMstApplicationKey(applicationKey);
+    }
+  }, [applicationKey]);
 
   const filtering = useRequirementFilters({
     rows,
     filterFields: filterConfig.fields,
     statusOrder,
     pageSize,
+    initialStatus,
   });
   const { pagination } = filtering;
 
@@ -88,8 +134,23 @@ export function RequirementMgmt({
     hasMultiplePages: pagination.hasMultiplePages,
   });
 
+  const handleAddRequirement = () => {
+    addRow();
+    pagination.resetPage();
+    addButton?.onClick?.();
+  };
+
+  const handleRemoveRow = (id: RequirementItem["id"]) => {
+    removeRequirementMstRowSession(String(id));
+    removeRow(id);
+  };
+
   const handleValueChange = (row: RequirementItem, key: RequirementColumnKey, value: string) => {
-    updateRow(row, key, value);
+    if (isNewRequirement(row) && CASCADE_FIELD_KEYS.has(key)) {
+      void cascade.onCascadeFieldChange(row, key, value);
+    } else {
+      updateRow(row, key, value);
+    }
     if (key === "status") pagination.resetPage();
   };
 
@@ -98,10 +159,17 @@ export function RequirementMgmt({
     visibleActions: visibility.rowActions,
     actionsColumnConfig,
     readOnly,
-    onRemoveRow: removeRow,
+    onRemoveRow: handleRemoveRow,
     cellContext: {
       statusOptions:
         statusOptions ?? (masterStatusOptions.length > 0 ? masterStatusOptions : uniqueStatusOptions(rows)),
+      fieldOptions: {
+        team: fieldOptions?.team ?? (masterTeamOptions.length > 0 ? masterTeamOptions : undefined),
+        ...fieldOptions,
+      },
+      resolveRowFieldOptions: cascade.resolveRowFieldOptions,
+      isRowFieldDisabled: cascade.isRowFieldDisabled,
+      rows,
       labels,
       onValueChange: handleValueChange,
       onOpenDialog: (dialogTitle, value) => setDialogValue({ title: dialogTitle, value }),
@@ -123,7 +191,14 @@ export function RequirementMgmt({
         <RequirementHeader
           title={title}
           headerActions={headerActions}
-          addButton={visibility.addButton}
+          addButton={
+            visibility.addButton
+              ? {
+                  ...visibility.addButton,
+                  onClick: handleAddRequirement,
+                }
+              : undefined
+          }
         />
       )}
 

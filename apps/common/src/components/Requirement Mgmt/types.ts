@@ -14,9 +14,25 @@ export type RequirementItem = {
   fupCode: string;
   extraRemarks: string;
   description: string;
+  isNew?: boolean;
+  requirementPoolType?: string;
+  requirementId?: number;
+  partyId?: string;
+  memberType?: string;
 };
 
-export type RequirementColumnKey = Exclude<keyof RequirementItem, "id">;
+export type RequirementColumnKey =
+  | "status"
+  | "ocrStatus"
+  | "team"
+  | "profile"
+  | "category"
+  | "subCategory"
+  | "document"
+  | "reason"
+  | "fupCode"
+  | "extraRemarks"
+  | "description";
 
 export type RequirementStatusOption = { label: string; value: string };
 
@@ -77,7 +93,7 @@ export type RequirementActionsColumnConfig = {
 export type RequirementAddButtonConfig = {
   label?: string;
   icon?: ReactNode;
-  onClick: () => void;
+  onClick?: () => void;
   disabled?: boolean;
   /** Keep the button when the table is `readOnly`. */
   allowReadOnly?: boolean;
@@ -139,17 +155,25 @@ export type RequirementMgmtProps = {
   /* Status handling */
   /** Options of the status select. Defaults to the statuses found in `requirements`. */
   statusOptions?: RequirementStatusOption[];
+  /** Custom options per field for new requirement dropdowns (team, profile, category, subCategory, document, reason, fupCode). */
+  fieldOptions?: Partial<Record<RequirementColumnKey, RequirementStatusOption[]>>;
   /** Status order used for sorting rows and the filter pills (first = top). */
   statusOrder?: string[];
   /** Badge variant used for the filter pill of each status. */
   statusVariants?: Record<string, RequirementBadgeVariant>;
 
   filter?: RequirementFilterConfig;
+  /** Status pre-selected in the filter bar on mount (e.g. the BRE card chip that was clicked). */
+  initialStatus?: string;
   /** Overrides any of the built-in texts. */
   labels?: Partial<RequirementLabels>;
 
   /** Shows the Save button in the footer when provided. */
   onSave?: (requirements: RequirementItem[]) => void | Promise<void>;
+  /** Fires when the table has unsaved changes (true) or matches the saved `requirements` again (false). */
+  onDirtyChange?: (dirty: boolean) => void;
+  /** When this changes (e.g. DRS application no.), requirement master cascade session is reset. */
+  applicationKey?: string;
 };
 
 /** Selected values per column. */

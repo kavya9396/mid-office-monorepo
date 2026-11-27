@@ -19,14 +19,27 @@ const COLUMNS: Column<ImageDetailRow>[] = [
   { key: "remarks", header: "Remarks" },
 ];
 
-export function ImageDetails({ records }: Readonly<{ records: ImageDetailRecord[] }>) {
-  const rows: ImageDetailRow[] = records.map((record) => ({
-    imageType: displayValue(record.imageType),
-    document: displayValue(record.document),
-    faceMatchScore: displayValue(record.faceMatchScore),
-    imageQuality: displayValue(record.imageQuality),
-    remarks: displayValue(record.remarks),
-  }));
+export function ImageDetails({ records }: Readonly<{ records?: ImageDetailRecord[] }>) {
+  const hasData = Boolean(
+    records?.some(
+      (record) =>
+        record.imageType?.trim() ||
+        record.document?.trim() ||
+        record.faceMatchScore?.trim() ||
+        record.imageQuality?.trim() ||
+        record.remarks?.trim()
+    )
+  );
+
+  const rows: ImageDetailRow[] = hasData
+    ? (records ?? []).map((record) => ({
+        imageType: displayValue(record.imageType),
+        document: displayValue(record.document),
+        faceMatchScore: displayValue(record.faceMatchScore),
+        imageQuality: displayValue(record.imageQuality),
+        remarks: displayValue(record.remarks),
+      }))
+    : [];
 
   return (
     <CustomTable<ImageDetailRow>

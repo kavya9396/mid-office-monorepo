@@ -116,17 +116,25 @@ export function buildTableColumns({
     header: actionsHeader,
     headerRender: () => headerCell(actionsHeader, true),
     width: widthOf(actionsWeight),
-    render: (_value, row) =>
-      cellBox(
+    render: (_value, row) => {
+      const actionsForThisRow = visibleActions.filter((action) => !action.hidden?.(row));
+      if (actionsForThisRow.length === 0) {
+        return cellBox(
+          <Box sx={{ color: "text.secondary", fontSize: 12, textAlign: "center", width: "100%" }}>
+            -
+          </Box>,
+          true,
+        );
+      }
+      return cellBox(
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-          {visibleActions
-            .filter((action) => !action.hidden?.(row))
-            .map((action) => (
-              <RowActionButton key={action.key} action={action} row={row} onRemoveRow={onRemoveRow} />
-            ))}
+          {actionsForThisRow.map((action) => (
+            <RowActionButton key={action.key} action={action} row={row} onRemoveRow={onRemoveRow} />
+          ))}
         </Box>,
         true,
-      ),
+      );
+    },
   };
 
   return actionsColumnConfig?.position === "end"

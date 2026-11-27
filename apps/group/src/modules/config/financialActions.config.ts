@@ -1,6 +1,6 @@
 import type { FinancialActionsConfig } from "@insurance-poc/common/financial";
 
-export type GroupFinancialScreen = "dvt";
+export type GroupFinancialScreen = "dvt" | "guw" | "dptNmr";
 
 /**
  * Which sections and buttons each Group screen shows on the Financial page.
@@ -17,11 +17,24 @@ export const GROUP_FINANCIAL_ACTIONS_CONFIG: Record<
 > = {
   dvt: {
     hiddenSectionKeys: [
-      "financial_profession", // Application Form Financial & Professional Details
+      "bre_financial_decision", // BRE Financial Decision
+      "decision", // Decision
+    ],
+    defaultMode: "readOnly",
+    sectionModes: {},
+  },
+  dptNmr: {
+    hiddenSectionKeys: [
       "bre_financial_decision", // BRE Financial Decision
       "decision", // Decision
     ],
     defaultMode: "edit",
+    sectionModes: {},
+  },
+  // Same sections as DVT, with the Agree button added next to Edit / Reset / Save.
+  guw: {
+    hiddenSectionKeys: [],
+    defaultMode: "editAndReview",
     sectionModes: {},
   },
 };

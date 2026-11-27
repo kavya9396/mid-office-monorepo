@@ -17,6 +17,7 @@ import { GroupAuditTrailPage } from "../modules/auditTrail/GroupAuditTrailPage";
 import { GroupOpenTasksPage } from "../modules/openTasks/GroupOpenTasksPage";
 import { GroupPreviousPolicyPage } from "../modules/previousPolicy/GroupPreviousPolicyPage";
 import { GroupRiskDetailsPage } from "../modules/riskDetails/GroupRiskDetailsPage";
+import { MemberSelection } from "../modules/member-selection/MemberSelection";
 
 export function AppRoutes() {
   return (
@@ -33,6 +34,14 @@ export function AppRoutes() {
         >
           <Route index element={<Navigate to="/inbox" replace />} />
           <Route path="/inbox" element={<GroupInboxPage />} />
+          {/* <Route path="/drs" element={<GroupDrsRouter />} /> */}
+          <Route path="/guw/member-selection" element={<MemberSelection />} />
+          {/* <Route path="/guw/drs" element={<GroupDrsRouter />} /> */}
+          <Route path="/referral/member-selection" element={<MemberSelection />} />
+          {/* <Route path="/referral/drs" element={<GroupDrsRouter />} /> */}
+          <Route path="/drs" element={<GroupDrsPage />} />
+          <Route path="/drs/financial" element={<GroupDrsPage />} />
+          <Route path="/drs/medical" element={<GroupDrsPage />} />
           <Route path="/app/:applicationNo/drs" element={<GroupDrsPage />} />
           <Route path="/app/:applicationNo/drs/financial" element={<GroupDrsPage />} />
           <Route path="/app/:applicationNo/drs/medical" element={<GroupDrsPage />} />

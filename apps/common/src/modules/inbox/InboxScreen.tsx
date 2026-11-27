@@ -4,6 +4,7 @@ import { drsRoutePath } from "@insurance-poc/routes";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { CustomButton, CustomLoader, CustomSnackbar } from "@insurance-poc/ui";
+import { clearRequirementMstContext } from "../../components/Requirement Mgmt/requirementMstSession";
 import {
   clearDrsTaskIds,
   getLastLoginAt,
@@ -18,7 +19,7 @@ import {
   type InboxCase,
   type InboxData,
 } from "./inboxApi";
-import { taskDetailsTitle } from "./inboxFormat";
+import { taskDetailsTitle, toDisplayLabel } from "./inboxFormat";
 import { InboxSidebar } from "./InboxSidebar";
 import { InboxTable } from "./InboxTable";
 
@@ -68,6 +69,7 @@ export function InboxScreen({
 
   useEffect(() => {
     clearDrsTaskIds();
+    clearRequirementMstContext();
   }, []);
 
   const pools = useMemo(() => {
@@ -111,13 +113,22 @@ export function InboxScreen({
       setNotice("This task is missing an application number.");
       return;
     }
+    const drsTarget = drsRoutePath(item.applicationNo);
     const taskId = readFieldText(item.fields.taskId);
     const instanceId = readFieldText(item.fields.instanceId);
 
     const persistTaskContext = () => {
       const roleType = drsRoleFromInboxCase(item);
-      if (taskId.length > 0 || instanceId.length > 0 || roleType.length > 0) {
-        setDrsOpenContext({ taskId, instanceId, roleType });
+      // Header label comes from the role type (e.g. GUW_TASK -> "GUW Task"), not the `role` key (GROUP_GUW_USER).
+      const roleLabel = toDisplayLabel(roleType || item.poolName || activeTask);
+      if (taskId.length > 0 || instanceId.length > 0 || roleType.length > 0 || roleLabel.length > 0) {
+        setDrsOpenContext({
+          taskId,
+          instanceId,
+          roleType,
+          roleLabel,
+          applicationNo: item.applicationNo,
+        });
       } else {
         clearDrsTaskIds();
       }
@@ -131,7 +142,7 @@ export function InboxScreen({
           errorCode === "200" || (response?.success === true && errorCode !== "400");
         if (isSuccess) {
           persistTaskContext();
-          navigate(drsRoutePath(item.applicationNo));
+          navigate(drsTarget);
           return;
         }
         const apiMessage = String(response?.message ?? "").trim();
@@ -145,7 +156,7 @@ export function InboxScreen({
     }
 
     persistTaskContext();
-    navigate(drsRoutePath(item.applicationNo));
+    navigate(drsTarget);
   }
 
   if (loading) {

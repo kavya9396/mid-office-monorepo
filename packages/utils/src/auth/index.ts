@@ -16,6 +16,7 @@ export {
   getLastLoginAt,
   getRefreshToken,
   getSessionId,
+  getSessionRoles,
   getSessionUser,
   getToken,
   hasSession,
@@ -31,13 +32,19 @@ export {
   type SessionUser,
 } from "./session";
 export {
+  absorbDrsQueryFromSearch,
   clearDrsTaskIds,
+  getDrsApplicationNo,
+  getDrsMemberCount,
+  getDrsMemberId,
+  getDrsRoleLabel,
   getDrsRoleType,
   getDrsTaskIds,
   hasDrsTaskIds,
   removeDrsTaskContext,
   setDrsOpenContext,
   setDrsTaskIds,
+  toDisplayRoleLabel,
   type DrsTaskContext,
 } from "./drsTaskContext";
 export {

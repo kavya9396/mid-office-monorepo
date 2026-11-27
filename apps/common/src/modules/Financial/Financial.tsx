@@ -27,15 +27,16 @@ import {
   type Column,
 } from "@insurance-poc/ui";
 import {
+  buildFinancialDecisionOptions,
+  buildFinancialDocumentOptions,
   buildFinancialMonthOptions,
+  buildFinancialVerifiedIncomeDocOptions,
   buildFinancialYesNoOptions,
   FINANCIAL_DATE_FORMAT,
-  FINANCIAL_DECISION_OPTIONS,
   FINANCIAL_DEFAULT_APPLICANTS,
   FINANCIAL_LOCKED_FIELDS,
   FINANCIAL_MESSAGES,
   FINANCIAL_MONTHLY_INCOME_LAYOUTS,
-  FINANCIAL_NON_REVIEWABLE_SECTION_KEYS,
   FINANCIAL_SECTIONS,
   FINANCIAL_STATEMENT_LAYOUTS,
   FINANCIAL_TABLE_LAYOUTS,
@@ -47,6 +48,7 @@ import {
   type FinancialControlKind,
   type FinancialLabelRef,
   type FinancialMonthlyIncomeLayout,
+  type FinancialOption,
   type FinancialSection,
   type FinancialStatementLayout,
   type FinancialSubmitPayload,
@@ -61,6 +63,7 @@ import {
   type FinancialSaveRequest,
   type FinancialSaveResponse,
 } from "./financialSavePayload";
+import { retriggerBre } from "../../services/breRetrigger";
 
 export * from "./financial.config";
 export * from "./financialSavePayload";
@@ -221,6 +224,8 @@ const createFinancialStore = (
 const StoreContext = createContext<FinancialStore | null>(null);
 /** Whether the section that owns a field is currently editable (after "Edit"). */
 const EditingContext = createContext(false);
+/** Options for the "Verified Income Doc" dropdown (documents of `table_of_finance_documents`). */
+const VerifiedIncomeDocOptionsContext = createContext<FinancialOption[]>([]);
 
 function useFinancialStore(): FinancialStore {
   const store = useContext(StoreContext);
@@ -301,6 +306,7 @@ const getAvatarText = (label: string) =>
 
 const selectPlaceholder = (kind: FinancialControlKind) => {
   if (kind === "decision") return "Select financial decision";
+  if (kind === "verifiedIncomeDoc") return "Select document";
   if (kind === "month") return "Select month";
   if (kind === "yesNo") return "Select";
   return "";
@@ -650,12 +656,14 @@ const FinancialControl = memo(function FinancialControl({
   const store = useFinancialStore();
   const value = useFieldValue(id);
   const error = useFieldError(id);
+  const verifiedIncomeDocOptions = useContext(VerifiedIncomeDocOptionsContext);
   // Master lists are read from session storage, so resolve them once per kind / value.
   const selectOptions = useMemo(() => {
-    if (kind === "decision") return FINANCIAL_DECISION_OPTIONS;
+    if (kind === "decision") return buildFinancialDecisionOptions(value);
+    if (kind === "verifiedIncomeDoc") return verifiedIncomeDocOptions;
     if (kind === "month") return buildFinancialMonthOptions();
     return buildFinancialYesNoOptions(value);
-  }, [kind, value]);
+  }, [kind, value, verifiedIncomeDocOptions]);
   const onChange = useCallback(
     (next: string) => {
       store.set(id, next);
@@ -666,6 +674,10 @@ const FinancialControl = memo(function FinancialControl({
 
   if (readOnly) {
     let displayValue = value;
+    if (kind === "verifiedIncomeDoc") {
+      displayValue =
+        selectOptions.find((option) => option.value === value)?.label ?? value;
+    }
     if (kind === "date" && value) {
       const parsed = parseFinancialDate(value);
       if (parsed) displayValue = parsed.format(FINANCIAL_DATE_FORMAT);
@@ -683,7 +695,12 @@ const FinancialControl = memo(function FinancialControl({
     );
   }
 
-  if (kind === "decision" || kind === "yesNo" || kind === "month") {
+  if (
+    kind === "decision" ||
+    kind === "yesNo" ||
+    kind === "month" ||
+    kind === "verifiedIncomeDoc"
+  ) {
     return (
       <Box sx={EDITABLE_CONTROL_SX} data-field={id}>
         <CustomSelect
@@ -1431,7 +1448,9 @@ export function Financial({
   }, [activeSectionKey]);
 
   const dialogSection = useMemo(
-    () => sections.find((section) => section.key === dialogKey),
+    () =>
+      sections.find((section) => section.key === dialogKey) ??
+      FINANCIAL_SECTIONS.find((section) => section.key === dialogKey),
     [sections, dialogKey],
   );
 
@@ -1478,7 +1497,9 @@ export function Financial({
   /** Validates every field of a section against its schema and shows the errors; true when valid. */
   const validateSection = useCallback(
     (sectionKey: string) => {
-      const section = sections.find((item) => item.key === sectionKey);
+      const section =
+        sections.find((item) => item.key === sectionKey) ??
+        FINANCIAL_SECTIONS.find((item) => item.key === sectionKey);
       if (!section) return true;
       let valid = true;
       const check = (id: string, label: string) => {
@@ -1555,6 +1576,9 @@ export function Financial({
                 : FINANCIAL_MESSAGES.sectionSaved(section.title)),
             severity: failed ? "error" : "success",
           });
+          if (!failed) {
+            window.location.reload();
+          }
           return !failed;
         }
       } catch (reason: unknown) {
@@ -1568,6 +1592,7 @@ export function Financial({
         message: FINANCIAL_MESSAGES.sectionSaved(section.title),
         severity: "success",
       });
+      window.location.reload();
       return true;
     },
     [
@@ -1583,7 +1608,9 @@ export function Financial({
   const handleSave = useCallback(
     async (sectionKey: string) => {
       if (!validateSection(sectionKey)) return;
-      const targetSection = sections.find((section) => section.key === sectionKey);
+      const targetSection =
+        sections.find((section) => section.key === sectionKey) ??
+        FINANCIAL_SECTIONS.find((section) => section.key === sectionKey);
       if (!targetSection) {
         stopEditing(sectionKey, false);
         return;
@@ -1622,12 +1649,27 @@ export function Financial({
     onApplicantChange?.(applicantKey);
   };
 
-  const handleSubmit = () => {
-    onSubmit?.({
-      applicantKey: activeApplicantKey,
-      values: store.snapshot(),
-      reviews,
-    });
+  const handleSubmit = async () => {
+    // A section still in edit mode has not been saved (Save and Reset both leave edit mode).
+    if (Object.values(editingRef.current).some(Boolean)) {
+      setSnackbar({ message: FINANCIAL_MESSAGES.unsavedChanges, severity: "warning" });
+      return;
+    }
+
+    if (applicationNumber) {
+      try {
+        const result = await retriggerBre(applicationNumber, { eventName: "FE" });
+        if ("error" in result && result.error) {
+          setSnackbar({ message: result.error, severity: "error" });
+          return;
+        }
+      } catch {
+        setSnackbar({ message: "Unable to retrigger BRE.", severity: "error" });
+        return;
+      }
+    }
+
+    onSubmit?.({ applicantKey: activeApplicantKey });
     setSnackbar({ message: FINANCIAL_MESSAGES.submitted, severity: "success" });
   };
 
@@ -1639,20 +1681,19 @@ export function Financial({
     const visible = activeApplicant ? [activeApplicant] : applicants;
     return visible.map(({ key, label }) => ({ key, label }));
   }, [activeApplicant, applicants]);
-  /** Only sections with Edit/Save or Agree buttons can be opened from the dropdown. */
+  /** Master data documents (`FIN_DOC_TABLE`) filtered by documents already present in sections / table_of_finance_documents. */
   const editableOptions = useMemo(
-    () =>
-      sections
-        .filter(
-          (section) =>
-            !FINANCIAL_NON_REVIEWABLE_SECTION_KEYS.includes(section.key) &&
-            resolveFinancialActionMode(section.key, actions) !== "readOnly",
-        )
-        .map((section) => ({ label: section.title, value: section.key })),
-    [sections, actions],
+    () => buildFinancialDocumentOptions(sections),
+    [sections],
+  );
+  /** "Verified Income Doc" options: documents of `table_of_finance_documents` barring profession / bureau / decision. */
+  const verifiedIncomeDocOptions = useMemo(
+    () => buildFinancialVerifiedIncomeDocOptions(sections),
+    [sections],
   );
   return (
     <StoreContext.Provider value={store}>
+      <VerifiedIncomeDocOptionsContext.Provider value={verifiedIncomeDocOptions}>
       <Box
         component="section"
         aria-label="View Financial"
@@ -1877,6 +1918,7 @@ export function Financial({
           onClose={() => setSnackbar(null)}
         />
       </Box>
+      </VerifiedIncomeDocOptionsContext.Provider>
     </StoreContext.Provider>
   );
 }

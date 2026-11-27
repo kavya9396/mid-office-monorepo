@@ -97,6 +97,7 @@ export default function CustomTable<T extends object>({
               px: 1,
               lineHeight: 1.2,
               borderBottom: "1px solid #D6D6D6",
+              overflowWrap: "anywhere",
             },
 
             "& td": {

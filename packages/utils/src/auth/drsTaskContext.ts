@@ -5,6 +5,11 @@ export type DrsTaskContext = {
   instanceId?: string;
   /** Pool / task key for DRS screen dispatch (session only; not in the URL). */
   roleType?: string;
+  applicationNo?: string;
+  memberId?: string;
+  memberCount?: number;
+  /** Inbox/header display label (`role` field); not the pool `roleType`. */
+  roleLabel?: string;
 };
 
 function readStorage(): Storage | null {
@@ -16,44 +21,73 @@ function readText(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
-function readContext(): DrsTaskContext {
+function readMemberCount(value: unknown): number {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string") {
+    const parsed = parseInt(value.trim(), 10);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+  return 0;
+}
+
+function readContext(): Required<DrsTaskContext> {
+  const empty: Required<DrsTaskContext> = {
+    taskId: "",
+    instanceId: "",
+    roleType: "",
+    applicationNo: "",
+    memberId: "",
+    memberCount: 0,
+    roleLabel: "",
+  };
   const raw = readStorage()?.getItem(DRS_TASK_CONTEXT_KEY);
-  if (!raw) return {};
+  if (!raw) return empty;
   try {
     const parsed: unknown = JSON.parse(raw);
-    if (typeof parsed !== "object" || parsed === null) return {};
+    if (typeof parsed !== "object" || parsed === null) return empty;
     const record = parsed as Record<string, unknown>;
     return {
       taskId: readText(record.taskId),
       instanceId: readText(record.instanceId),
       roleType: readText(record.roleType),
+      applicationNo: readText(record.applicationNo),
+      memberId: readText(record.memberId),
+      memberCount: readMemberCount(record.memberCount),
+      roleLabel: readText(record.roleLabel),
     };
   } catch {
-    return {};
+    return empty;
   }
 }
 
 function writeContext(context: DrsTaskContext): void {
   const storage = readStorage();
   if (!storage) return;
-  const taskId = readText(context.taskId);
-  const instanceId = readText(context.instanceId);
-  const roleType = readText(context.roleType);
-  if (taskId.length === 0 && instanceId.length === 0 && roleType.length === 0) {
+  const next: Required<DrsTaskContext> = {
+    taskId: readText(context.taskId),
+    instanceId: readText(context.instanceId),
+    roleType: readText(context.roleType),
+    applicationNo: readText(context.applicationNo),
+    memberId: readText(context.memberId),
+    memberCount: readMemberCount(context.memberCount),
+    roleLabel: readText(context.roleLabel),
+  };
+  const hasData =
+    next.taskId.length > 0 ||
+    next.instanceId.length > 0 ||
+    next.roleType.length > 0 ||
+    next.applicationNo.length > 0 ||
+    next.memberId.length > 0 ||
+    next.memberCount > 0 ||
+    next.roleLabel.length > 0;
+  if (!hasData) {
     storage.setItem(
       DRS_TASK_CONTEXT_KEY,
       JSON.stringify({ taskId: "", instanceId: "", roleType: "" }),
     );
     return;
   }
-  storage.setItem(
-    DRS_TASK_CONTEXT_KEY,
-    JSON.stringify({
-      taskId,
-      instanceId,
-      roleType,
-    }),
-  );
+  storage.setItem(DRS_TASK_CONTEXT_KEY, JSON.stringify(next));
 }
 
 /** Persists BPM task identifiers when opening a case from the inbox. */
@@ -67,20 +101,118 @@ export function setDrsTaskIds(taskId: string, instanceId: string): void {
 }
 
 export function getDrsRoleType(): string {
-  return readContext().roleType ?? "";
+  return readContext().roleType;
+}
+
+export function getDrsApplicationNo(): string {
+  return readContext().applicationNo;
+}
+
+export function getDrsMemberId(): string {
+  return readContext().memberId;
+}
+
+export function getDrsMemberCount(): number {
+  return readContext().memberCount;
+}
+
+const ROLE_ACRONYMS = new Set([
+  "ACCUITY",
+  "AMR",
+  "CMO",
+  "COPS",
+  "CPT",
+  "CUW",
+  "CVT",
+  "DVT",
+  "ECG",
+  "GOPS",
+  "GUW",
+  "HO",
+  "HOD",
+  "IIFL",
+  "IT",
+  "MR",
+  "NMR",
+  "PIVV",
+  "RI",
+  "SR",
+  "SUW",
+  "TMT",
+  "UW",
+]);
+
+const ROLE_DISPLAY_OVERRIDES: Record<string, string> = {
+  MMT_TASK: "MMT Task",
+  SR_UW_TASK: "Sr UW Task",
+  SR_UW: "Sr UW",
+  DVT_TASK: "DVT Task",
+  GUW_TASK: "GUW Task",
+  CVT_TASK: "CVT Task",
+  CUW_TASK: "CUW Task",
+};
+
+export function toDisplayRoleLabel(value: string): string {
+  const trimmed = value.trim();
+  if (trimmed.length === 0) return "";
+  const upperTrimmed = trimmed.toUpperCase();
+  const override = ROLE_DISPLAY_OVERRIDES[upperTrimmed];
+  if (override !== undefined) return override;
+
+  return trimmed
+    .split(/[_\s]+/)
+    .filter((part) => part.length > 0)
+    .map((part) => {
+      const upper = part.toUpperCase();
+      if (ROLE_ACRONYMS.has(upper)) return upper;
+      const lower = part.toLowerCase();
+      return `${lower.charAt(0).toUpperCase()}${lower.slice(1)}`;
+    })
+    .join(" ");
+}
+
+export function getDrsRoleLabel(): string {
+  const ctx = readContext();
+  if (ctx.roleLabel && ctx.roleLabel.length > 0) {
+    return ctx.roleLabel;
+  }
+  if (ctx.roleType && ctx.roleType.length > 0) {
+    return toDisplayRoleLabel(ctx.roleType);
+  }
+  return "";
 }
 
 /** Inbox → DRS: task ids + pool key in session (`/app/{applicationNo}/drs` has no query). */
-export function setDrsOpenContext(context: DrsTaskContext): void {
-  writeContext({
-    taskId: readText(context.taskId),
-    instanceId: readText(context.instanceId),
-    roleType: readText(context.roleType),
+export function setDrsOpenContext(context: Partial<DrsTaskContext>): void {
+  writeContext({ ...readContext(), ...context });
+}
+
+/** Reads legacy `?applicationNo=&roleType=&memberId=&memberCount=&role=` into session. */
+export function absorbDrsQueryFromSearch(params: URLSearchParams): boolean {
+  const applicationNo = readText(params.get("applicationNo"));
+  const roleType = readText(params.get("roleType"));
+  const memberId = readText(params.get("memberId"));
+  const memberCount = readMemberCount(params.get("memberCount"));
+  const roleLabel = readText(params.get("role")) || (roleType ? toDisplayRoleLabel(roleType) : "");
+  const hasQuery =
+    applicationNo.length > 0 ||
+    roleType.length > 0 ||
+    memberId.length > 0 ||
+    roleLabel.length > 0 ||
+    memberCount > 0;
+  if (!hasQuery) return false;
+  setDrsOpenContext({
+    ...(applicationNo.length > 0 ? { applicationNo } : {}),
+    ...(roleType.length > 0 ? { roleType } : {}),
+    ...(memberId.length > 0 ? { memberId } : {}),
+    ...(memberCount > 0 ? { memberCount } : {}),
+    ...(roleLabel.length > 0 ? { roleLabel } : {}),
   });
+  return true;
 }
 
 export function getDrsTaskIds(): { taskId: string; instanceId: string } {
-  const { taskId = "", instanceId = "" } = readContext();
+  const { taskId, instanceId } = readContext();
   return { taskId, instanceId };
 }
 
@@ -90,7 +222,15 @@ export function hasDrsTaskIds(): boolean {
 }
 
 export function clearDrsTaskIds(): void {
-  writeContext({ taskId: "", instanceId: "", roleType: "" });
+  writeContext({
+    taskId: "",
+    instanceId: "",
+    roleType: "",
+    applicationNo: "",
+    memberId: "",
+    memberCount: 0,
+    roleLabel: "",
+  });
 }
 
 export function removeDrsTaskContext(): void {

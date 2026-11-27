@@ -1,0 +1,3583 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ICICI Life | View Financial</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      background: #fff;
+    }
+
+    body {
+      margin: 0;
+      color: #1f2937;
+      background: #fff;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 14px;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    .app-header {
+      height: 57px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      align-items: stretch;
+      overflow: visible;
+      background: linear-gradient(to bottom, #F58220 0%, #E65318 42%, #C92E27 72%, #98252B 100%);
+      box-shadow: 0 3px 12px rgba(111, 24, 24, .25);
+    }
+
+    .header-back {
+      width: 42px;
+      border: 0;
+      border-right: 1px solid rgba(255, 255, 255, .25);
+      color: #fff;
+      background: rgba(126, 22, 31, .42);
+      font-size: 26px;
+      cursor: pointer;
+    }
+
+    .header-back:hover {
+      background: rgba(126, 22, 31, .62);
+    }
+
+    .brand {
+      width: 150px;
+      height: 57px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .header-user {
+      min-width: 0;
+      flex: 1;
+      padding: 0 32px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      color: #fff;
+    }
+
+    .session {
+      min-width: 175px;
+      padding-right: 12px;
+      text-align: right;
+      border-right: 1px solid rgba(255, 255, 255, .35);
+      color: rgba(255, 255, 255, .9);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .session strong {
+      display: block;
+      margin-top: 3px;
+      color: #fff;
+      font-size: 11px;
+      letter-spacing: .2px;
+    }
+
+    .profile-trigger {
+      margin-left: 20px;
+      padding: 4px 8px;
+      border: 0;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      color: #fff;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .profile-trigger:hover {
+      background: rgba(255, 255, 255, .14);
+    }
+
+    .profile-circle {
+      width: 35px;
+      height: 35px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255, 255, 255, .45);
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .2);
+      font-size: 20px;
+    }
+
+    .profile-name {
+      min-width: 80px;
+      margin: 0 8px 0 10px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .chevron {
+      font-size: 18px;
+    }
+
+    .user-menu {
+      display: none;
+      position: absolute;
+      right: 16px;
+      top: 65px;
+      z-index: 30;
+      width: 240px;
+      overflow: hidden;
+      border: 1px solid #F1D7D0;
+      border-radius: 8px;
+      color: #323232;
+      background: #fff;
+      box-shadow: 0 8px 24px rgba(70, 20, 20, .18);
+    }
+
+    .user-menu.open {
+      display: block;
+    }
+
+    .menu-row {
+      padding: 15px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .menu-row:hover {
+      background: #FFF3EE;
+    }
+
+    .menu-row+.menu-row {
+      border-top: 1px solid #e0e0e0;
+    }
+
+    .menu-row span:first-child {
+      color: #9A2529;
+      font-size: 14px;
+    }
+
+    .page {
+      width: 100%;
+      padding: 6px 8px 30px;
+    }
+
+    .main-button {
+      min-height: 28px;
+      padding: 4px 11px;
+      border: 1px solid #E45F14;
+      border-radius: 5px;
+      color: #E45F14;
+      background: #fff;
+      font-size: 11.5px;
+      font-weight: 700;
+      text-transform: none;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .financial-search {
+      margin-top: 8px;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      border: 1px solid #E4E7EC;
+      border-radius: 6px;
+      background: #F8FAFC;
+    }
+
+    .financial-search-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+    }
+
+    .financial-search select,
+    .financial-search input {
+      height: 34px;
+      padding: 6px 10px;
+      border: 1px solid #CBD0D7;
+      border-radius: 6px;
+      outline: none;
+      color: #344054;
+      background: #fff;
+      font-size: 12px;
+    }
+
+    .financial-search select {
+      width: 130px;
+    }
+
+    .financial-search input {
+      width: 280px;
+    }
+
+    .financial-search select:focus,
+    .financial-search input:focus {
+      border-color: #E45F14;
+    }
+
+    .financial-search button {
+      height: 34px;
+      padding: 0 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    #financial-search-button {
+      border: 0;
+      color: #fff;
+      background: #9A2529;
+    }
+
+    #financial-search-button:hover {
+      background: #8F2026;
+    }
+
+    .financial-search-clear {
+      border: 1px solid #9A2529;
+      color: #9A2529;
+      background: #fff;
+    }
+
+    .financial-search-clear:hover {
+      color: #fff;
+      background: #9A2529;
+    }
+
+    /* Highlight searched financial section */
+    .financial-card.search-highlight {
+      border: 2px solid #E45F14;
+      box-shadow: 0 0 0 3px rgba(228, 95, 20, 0.12);
+      animation: financialHighlight 1.2s ease;
+    }
+
+    @keyframes financialHighlight {
+      0% {
+        box-shadow: 0 0 0 6px rgba(228, 95, 20, 0.25);
+      }
+
+      100% {
+        box-shadow: 0 0 0 3px rgba(228, 95, 20, 0.12);
+      }
+    }
+
+    .financial-field.search-field-highlight {
+      padding: 6px;
+      border: 2px solid #E45F14;
+      border-radius: 8px;
+      background: #FFF8F3;
+    }
+
+    .financial-shell {
+      display: none;
+      margin-top: 8px;
+    }
+
+    .financial-shell.visible {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      align-items: start;
+      row-gap: 9px;
+      width: 100%;
+      min-width: 0;
+      margin-top: 9px;
+    }
+
+    .financial-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .financial-person-switcher {
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .financial-table-area { padding: 8px 10px; display: flex; flex-direction: column; gap: 9px; min-width: 0; }
+    .financial-table-area .financial-card-body { padding: 0; }
+    .financial-table-wrap { width: 100%; min-width: 0; overflow-x: auto; border: 1px solid #E4E7EC; border-radius: 6px; }
+    .financial-table-title { margin: 0 0 5px; color: #344054; font-size: 12px; font-weight: 700; }
+    .financial-table { width: 100%; min-width: 680px; border-collapse: collapse; table-layout: fixed; }
+    .financial-table.receipts { min-width: 900px; }
+    .financial-table th, .financial-table td { padding: 6px 8px; border-bottom: 1px solid #E4E7EC; vertical-align: middle; }
+    .financial-table tr:last-child th, .financial-table tr:last-child td { border-bottom: 0; }
+    .financial-table thead th { color: #475467; background: #F8FAFC; font-size: 12px; font-weight: 700; text-align: left; }
+    .financial-table tbody th { color: #475467; background: #fff; font-size: 13px; font-weight: 500; text-align: left; overflow-wrap: anywhere; }
+    .financial-table tbody tr:nth-child(even) { background: #FCFCFD; }
+    .financial-table td .financial-field, .financial-table td input, .financial-table td select { min-width: 0; }
+    .form-j-calculated-row { background: #FFF8F4; }
+    .auto-calculated { color: #8D4A21; font-size: 12px; font-weight: 700; white-space: nowrap; }
+
+    .financial-submit {
+      grid-column: 1 / -1;
+    }
+
+    .financial-shared-avatar {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border: 1px solid #E45F14;
+      border-radius: 50%;
+      color: #9A2529;
+      background: #FFF4EC;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .financial-tabs {
+      display: flex;
+      align-items: flex-end;
+      gap: 18px;
+    }
+
+    .financial-tab {
+      padding: 5px 2px 7px;
+      border: 0;
+      border-bottom: 2px solid transparent;
+      color: #667085;
+      background: transparent;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .financial-tab:hover {
+      color: #9A2529;
+    }
+
+    .financial-tab.active {
+      border-bottom-color: #E45F14;
+      color: #9A2529;
+      font-weight: 800;
+    }
+
+    .financial-back {
+      padding: 5px 11px;
+      border: 1px solid #E45F14;
+      border-radius: 18px;
+      color: #A92129;
+      background: #FFF4EC;
+      box-shadow: 0 2px 7px rgba(169, 33, 41, .12);
+      font-size: 11px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .documents-link {
+      padding: 5px 8px;
+      border: 0;
+      color: #9A2529;
+      background: transparent;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .financial-layout {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      align-items: start;
+      gap: 12px;
+      width: 100%;
+      min-width: 0;
+      margin-top: 8px;
+    }
+
+    .financial-nav {
+      width: 100%;
+      min-width: 0;
+      position: sticky;
+      top: 72px;
+      max-height: calc(100vh - 84px);
+      overflow-y: auto;
+      border: 1px solid #D6D8DC;
+      border-radius: 4px;
+      background: #F8F9FB;
+    }
+
+    .financial-nav button {
+      width: 100%;
+      padding: 10px 12px;
+      border: 0;
+      border-bottom: 1px solid #EAECEF;
+      border-left: 3px solid transparent;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      color: #667085;
+      background: transparent;
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1.3;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .financial-nav button.active {
+      border-left-color: #DE2C3B;
+      color: #B42318;
+      background: #fff;
+      font-weight: 600;
+    }
+
+    .financial-content {
+      min-width: 0;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .financial-card {
+      min-width: 0;
+      scroll-margin-top: 75px;
+      overflow: hidden;
+      border: 1px solid #E4E7EC;
+      border-radius: 6px;
+      background: #fff;
+      box-shadow: 0 1px 2px rgba(16, 24, 40, .08);
+    }
+
+    .financial-card-head {
+      padding: 7px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      border-bottom: 1px solid #E4E7EC;
+      background: #F8FAFC;
+    }
+
+    .financial-card-head h3 {
+      margin: 0;
+      color: #1F2937;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .financial-card-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .financial-save {
+      min-width: 80px;
+      padding: 5px 10px;
+      border: 0;
+      border-radius: 4px;
+      color: #fff;
+      background: #9A2529;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .financial-save:hover {
+      background: #8f2026;
+    }
+
+    .financial-reset {
+      min-width: 80px;
+      padding: 5px 10px;
+      border: 1px solid #9A2529;
+      border-radius: 4px;
+      color: #9A2529;
+      background: #fff;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .financial-card-body {
+      padding: 8px 10px;
+      display: grid;
+      grid-template-columns: repeat(var(--columns, 3), minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .monthly-income-section { padding: 8px 10px; display: grid; gap: 8px; }
+    .monthly-income-rows { display: grid; gap: 6px; padding: 7px; border: 1px solid #E4E7EC; border-radius: 7px; background: #fff; }
+    .monthly-income-row { display: grid; grid-template-columns: minmax(150px, 1fr) minmax(150px, 1fr) auto; gap: 8px; align-items: end; padding: 7px; border: 0; border-radius: 5px; background: #fff; }
+    .monthly-income-row .financial-field { min-width: 0; }
+    .monthly-income-add { justify-self: start; min-height: 32px; padding: 5px 10px; border: 1px solid #E45F14; border-radius: 5px; color: #E45F14; background: #fff; font-size: 11px; font-weight: 700; cursor: pointer; }
+    .monthly-income-add:disabled { opacity: .55; cursor: not-allowed; }
+    .monthly-income-average { padding-top: 2px; border-top: 1px solid #E4E7EC; }
+    .monthly-income-average .financial-card-body { padding: 8px 0 0; }
+    .statement-month-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 14px; padding: 7px; border: 1px solid #E4E7EC; border-radius: 7px; background: #fff; }
+    .statement-month-field { min-width: 0; display: grid; grid-template-columns: minmax(128px, 1fr) minmax(230px, 1.6fr); align-items: center; gap: 8px; }
+    .statement-month-field label { margin: 0; color: #475467; font-size: 11px; font-weight: 600; }
+    .statement-month-inputs { min-width: 0; display: grid; grid-template-columns: minmax(92px, .8fr) minmax(112px, 1fr); gap: 6px; }
+    .statement-month-inputs select, .statement-month-inputs input { min-width: 0; }
+
+    .sip-income-table { width: 100%; border-collapse: separate; border-spacing: 0; overflow: hidden; border: 1px solid #E4E7EC; border-radius: 7px; background: #fff; }
+    .sip-income-table th, .sip-income-table td { padding: 7px 9px; text-align: left; vertical-align: middle; border-bottom: 1px solid #E4E7EC; }
+    .sip-income-table tr:last-child td { border-bottom: 0; }
+    .sip-income-table th { color: #6B2731; background: #FFF3EE; font-size: 11px; font-weight: 700; }
+    .sip-income-table .financial-field label { display: none; }
+
+    .financial-field label {
+      margin: 0 0 3px;
+      display: flex;
+      gap: 2px;
+      color: #475467;
+      font-size: 12px;
+    }
+
+    .required {
+      color: #B42318;
+      font-weight: 700;
+    }
+
+    .financial-field input,
+    .financial-field select {
+      width: 100%;
+      min-height: 33px;
+      padding: 6px 8px;
+      border: 1px solid #E4E7EC;
+      border-radius: 8px;
+      outline: none;
+      color: #344054;
+      background: #EFF1F3;
+      font-size: 13px;
+    }
+
+    .financial-field input[readonly],
+    .financial-field select:disabled {
+      min-height: 33px;
+      padding: 6px 8px;
+      border: 1px solid #E4E7EC;
+      border-radius: 8px;
+      color: #344054;
+      background: #EFF1F3;
+      cursor: default;
+      outline: none;
+    }
+
+    /* No visual focus effect in read-only state */
+    .financial-field input[readonly]:focus,
+    .financial-field select:disabled:focus {
+      border-color: #E4E7EC;
+      outline: none;
+      box-shadow: none;
+    }
+
+    .financial-readonly {
+      width: 100%;
+      min-height: 33px;
+      padding: 6px 8px;
+      border-radius: 8px;
+      background: #EFF1F3;
+      border: 1px solid #E4E7EC;
+      color: #344054;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      overflow-wrap: anywhere;
+      cursor: default;
+      user-select: text;
+    }
+
+    .financial-editable {
+      width: 100%;
+      min-height: 38px;
+      padding: 7.6px 10px;
+      border: 1px solid #CBD0D7;
+      border-radius: 8px;
+      outline: none;
+      color: #344054;
+      background: #fff;
+      font-size: 13px;
+    }
+
+    .financial-editable:focus {
+      border-color: #9A2529;
+    }
+
+    /* Editable state */
+    .financial-field input:not([readonly]),
+    .financial-field select:not(:disabled) {
+      background: #fff;
+      border: 1px solid #CBD0D7;
+      cursor: text;
+    }
+
+    .financial-field input:not([readonly]):focus,
+    .financial-field select:not(:disabled):focus {
+      border-color: #9A2529;
+      outline: none;
+      box-shadow: none;
+    }
+
+    /* CUW review actions use the same green/red outline and selected states as ViewFinancial.tsx. */
+    .financial-review-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 7px 12px;
+      border-top: 1px solid #E4E7EC;
+      background: #FCFCFD;
+    }
+
+    .financial-review-button {
+      min-width: 90px;
+      padding: 5px 12px;
+      border: 1px solid currentColor;
+      border-radius: 4px;
+      background: transparent;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .financial-review-button.agree {
+      color: #027A48;
+    }
+
+    .financial-review-button.disagree {
+      color: #B42318;
+    }
+
+    .financial-review-button.agree[aria-pressed="true"] {
+      color: #fff;
+      background: #027A48;
+    }
+
+    .financial-review-button.disagree[aria-pressed="true"] {
+      color: #fff;
+      background: #B42318;
+    }
+
+    .financial-review-button.agree:hover {
+      border-color: #05603A;
+    }
+
+    .financial-review-button.disagree:hover {
+      border-color: #912018;
+    }
+
+    .financial-review-button:disabled {
+      cursor: not-allowed;
+      opacity: .48;
+    }
+
+    .financial-review-button:disabled:hover {
+      border-color: currentColor;
+    }
+
+    .financial-submit {
+      padding: 16px;
+      display: flex;
+      justify-content: flex-end;
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .financial-submit .main-button {
+      min-width: 110px;
+      border: 0;
+      border-radius: 50px;
+      color: #fff;
+      background: #9A2529;
+      font-size: 13px;
+    }
+
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 40;
+      display: none;
+      padding: 12px 16px;
+      border-radius: 6px;
+      color: #fff;
+      background: #027A48;
+      box-shadow: 0 4px 14px rgba(16, 24, 40, .25);
+      font-size: 13px;
+    }
+
+    .toast.show {
+      display: block;
+    }
+
+      .banner-shell {
+        /* position: sticky; */
+        top: 0;
+        z-index: 20;
+        padding: 6px 4px 0;
+        background: #fff;
+        }
+
+        .banner {
+        display: grid;
+        grid-template-columns: 150px minmax(0, 1fr);
+        margin-bottom: 6px;
+        overflow: hidden;
+        background: #ffead7;
+        color: #000;
+        border-radius: 12px;
+        box-shadow: 0 3px 10px rgba(169, 33, 41, .16);
+        }
+
+        .banner-avatar {
+        min-height: 138px;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(145deg, #e45f14, #c83c2f);
+        }
+
+        .banner-avatar span {
+        width: 76px;
+        height: 76px;
+        display: grid;
+        place-items: center;
+        border: 2px solid rgba(255, 255, 255, .45);
+        border-radius: 50%;
+        background: rgba(255, 255, 255, .18);
+        }
+
+        .banner-avatar svg {
+        width: 44px;
+        height: 44px;
+        }
+
+        .banner-content {
+        padding: 12px 18px;
+        min-width: 0;
+        }
+
+        .banner-title {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 4px;
+        }
+
+        .banner-title strong {
+        font-size: 16px;
+        font-weight: 900;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        }
+
+      .app-pill {
+      padding: 4px 9px;
+      flex: none;
+      border: 1px solid rgba(169, 33, 41, .18);
+      border-radius: 16px;
+      background: #fff;
+      color: #a92129;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .banner-line {
+      font-size: 11.5px;
+      line-height: 1.6;
+      margin: 4px 0;
+    }
+
+    .banner-line.product {
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+     .content {
+      padding: 6px 4px 0;
+    }
+
+    @media (max-width: 800px) {
+      .header-user {
+        padding: 0 8px;
+      }
+
+      .session,
+      .profile-name {
+        display: none;
+      }
+
+      .financial-layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .financial-shell.visible {
+        grid-template-columns: 1fr;
+        row-gap: 8px;
+      }
+
+      .financial-topbar,
+      .financial-person-switcher,
+      .financial-layout,
+      .financial-submit {
+        grid-column: 1;
+      }
+
+      .financial-person-switcher {
+        grid-row: 2;
+      }
+
+      .financial-nav {
+        position: static;
+        width: 100%;
+        min-width: 0;
+        max-height: 260px;
+      }
+
+      .financial-card-body {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .brand {
+        width: 128px;
+      }
+
+      .financial-card-body {
+        grid-template-columns: 1fr;
+      }
+
+      .monthly-income-row { grid-template-columns: 1fr; }
+      .statement-month-grid { grid-template-columns: 1fr; }
+      .statement-month-field { grid-template-columns: 1fr; gap: 4px; }
+
+      .documents-link {
+        min-width: 0;
+        font-size: 11px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <!-- Complete financial view reproduced as its financial section navigator and data cards. -->
+    <section class="financial-shell visible" id="financial-shell" aria-label="View Financial">
+      <div class="financial-topbar"><button class="financial-back" id="back-to-drs">← Back to
+          DRS</button>
+
+        <div class="financial-person-switcher" aria-label="Financial applicant selection">
+          <div class="financial-shared-avatar" id="financial-shared-avatar" aria-label="Life Assured1 avatar">LA</div>
+          <div class="financial-tabs" role="tablist" aria-label="Financial applicants">
+            <button class="financial-tab active" type="button" role="tab" aria-selected="true"
+              data-financial-tab="lifeAssured1">Life Assured1</button>
+            <button class="financial-tab" type="button" role="tab" aria-selected="false"
+              data-financial-tab="Proposer">Proposer</button>
+          </div>
+        </div>
+
+        <button class="documents-link" id="documents-link">View Financial Documents</button>
+
+      </div>
+
+      <div class="financial-search" id="financial-search">
+        <div class="financial-search-group">
+          <!-- Search By control intentionally hidden: financial search now always matches section names.
+          <select id="financial-search-field" aria-label="Search field">
+            <option value="">Search by</option>
+            <option value="section">Section</option>
+            <option value="field">Field</option>
+          </select> -->
+
+          <input type="text" id="financial-search-input" placeholder="Search financial section..." autocomplete="off" />
+
+          <button type="button" id="financial-search-button" aria-label="Search financial details">
+            Search
+          </button>
+          <button type="button" id="financial-search-clear" class="financial-search-clear">
+            Clear
+          </button>
+        </div>
+
+
+      </div>
+      <div class="financial-layout">
+        <nav class="financial-nav" id="financial-nav" aria-label="Financial sections"></nav>
+        <div class="financial-content" id="financial-content"></div>
+      </div>
+      <div class="financial-submit"><button class="main-button" id="submit-financial">Submit</button></div>
+    </section>
+  </main>
+  <div class="toast" id="toast" role="status"></div>
+  <script>
+    // Financial sections and field order mirror financialAccordionConfig.ts.
+    const sections = [
+      {
+        "key": "financial_profession",
+        "title": "Application Form Financial & Professional Details",
+        "cols": 3,
+        "fields": [
+          [
+            "Occupation",
+            "SPVT",
+            0
+          ],
+          [
+            "Annual Income",
+            "₹ 50,00,000",
+            0
+          ],
+          [
+            "GSTIN",
+            "-",
+            0
+          ],
+          [
+            "Industry Type",
+            "-",
+            0
+          ],[
+            "Employment Type",
+            "-",
+            0
+          ],[
+            "Education Type",
+            "-",
+            0
+          ],
+          [
+            "Organisation Type",
+            "PVT",
+            0
+          ],
+          [
+            "Organisation Name",
+            "3I INFOTECH",
+            0
+          ],
+          [
+            "Designation",
+            "-",
+            0
+          ]
+        ]
+      },
+      {
+  "key": "credit_bureau_details",
+  "title": "Credit Bureau Details",
+  "cols": 3,
+  "fields": [
+    ["Experian Income", "", 0],
+    ["Experian Score", "", 0],
+    ["Crif Income", "", 0],
+    ["Crif Score", "", 0],
+    ["Cibil Income", "", 0],
+    ["Cibil Score", "", 0],
+    ["Imputed Income", "", 0],
+    ["Digital Income", "", 0],
+    ["PayU Income", "", 0],
+    ["Average Income", "", 0]
+  ]
+},
+      {
+        "key": "decision",
+        "title": "Decision",
+        "cols": 3,
+        "fields": [
+          [
+            "Verified Income Doc",
+            "Salary Slips",
+            1
+          ],
+          [
+            "Verified Income",
+            "₹ 12,00,000",
+            1
+          ],
+          [
+            "Justification",
+            "Income verified from submitted documents",
+            0
+          ],
+          [
+            "Financial Decision",
+            "financially eligible",
+            0
+          ]
+        ]
+      },
+      {
+        "key": "appointment_letter",
+        "title": "Appointment Letter / Contract of Employer",
+        "cols": 3,
+        "fields": [
+          [
+            "Name of the company",
+            "3I INFOTECH",
+            0
+          ],
+          [
+            "Name of the employee",
+            "Rudra Prakash Sangha",
+            0
+          ],
+          [
+            "Joining Date",
+            "15/06/2018",
+            1
+          ],
+          [
+            "CTC",
+            "₹ 12,00,000",
+            1
+          ]
+        ]
+      },
+      {
+        "key": "commission_statement",
+        "title": "Commission Statement",
+        "cols": 4,
+        "fields": [
+          [
+            "Month 1",
+            "",
+            1
+          ],
+          [
+            "Month 2",
+            "",
+            0
+          ],
+          [
+            "Month 3",
+            "",
+            0
+          ],
+          [
+            "Month 4",
+            "",
+            0
+          ],
+          [
+            "Month 5",
+            "",
+            0
+          ],
+          [
+            "Month 6",
+            "",
+            0
+          ],
+          [
+            "Average commission pm",
+            "",
+            0
+          ],
+          [
+            "Average Annual Income",
+            "",
+            0
+          ]
+        ]
+      },
+      {
+        "key": "computation_of_income",
+        "title": "Computation Of Income",
+        "cols": 3,
+        "fields": [
+          [
+            "Assessment Year",
+            "2025-26",
+            1
+          ],
+          [
+            "Assessment Year Year 2",
+            "2024-25",
+            1
+          ],
+          [
+            "Assessment Year Year 3",
+            "2023-24",
+            0
+          ],
+          [
+            "Income from Salary(A)",
+            "₹ 12,00,000",
+            1
+          ],
+          [
+            "Income from Salary(A) Year 2",
+            "₹ 11,00,000",
+            1
+          ],
+          [
+            "Income from Salary(A) Year 3",
+            "₹ 10,00,000",
+            0
+          ],
+          [
+            "Income from House Property",
+            "₹ 0",
+            0
+          ],
+          [
+            "Income from House Property Year 2",
+            "",
+            0
+          ],
+          [
+            "Income from House Property Year 3",
+            "",
+            0
+          ],
+          [
+            "Income from Business or Profession (B)",
+            "₹ 0",
+            1
+          ],
+          [
+            "Income from Business or Profession (B) Year 2",
+            "",
+            1
+          ],
+          [
+            "Income from Business or Profession (B) Year 3",
+            "",
+            0
+          ],
+          [
+            "Short term & Capital Gains",
+            "₹ 0",
+            0
+          ],
+          [
+            "Short term & Capital Gains Year 2",
+            "",
+            0
+          ],
+          [
+            "Short term & Capital Gains Year 3",
+            "",
+            0
+          ],
+          [
+            "Income from Other Sources",
+            "₹ 50,000",
+            0
+          ],
+          [
+            "Income from Other Sources Year 2",
+            "",
+            0
+          ],
+          [
+            "Income from Other Sources Year 3",
+            "",
+            0
+          ],
+          [
+            "Agricultural Income",
+            "₹ 0",
+            0
+          ],
+          [
+            "Agricultural Income Year 2",
+            "",
+            0
+          ],
+          [
+            "Agricultural Income Year 3",
+            "",
+            0
+          ],
+          [
+            "Exempt Income(C)",
+            "₹ 0",
+            1
+          ],
+          [
+            "Exempt Income(C) Year 2",
+            "",
+            1
+          ],
+          [
+            "Exempt Income(C) Year 3",
+            "",
+            0
+          ],
+          [
+            "Gross Total Income",
+            "₹ 12,50,000",
+            0
+          ],
+          [
+            "Gross Total Income Year 2",
+            "",
+            0
+          ],
+          [
+            "Gross Total Income Year 3",
+            "",
+            0
+          ],
+          [
+            "Total Gross Total Income",
+            "₹ 33,50,000",
+            0
+          ],
+          [
+            "Average Gross Total Income",
+            "₹ 11,16,667",
+            0
+          ]
+        ]
+      },
+      {
+        "key": "credit_card",
+        "title": "Credit Cards",
+        "cols": 3,
+        "fields": [
+          [
+            "Is Credit card statement in the name of LA",
+            "",
+            0
+          ],
+          [
+            "Is LA Defaulter in the Payment",
+            "",
+            0
+          ],
+          [
+            "Type of Card",
+            "",
+            0
+          ],
+          [
+            "Credit Limit",
+            "",
+            1
+          ],
+          [
+            "Points Earned",
+            "",
+            0
+          ],
+          [
+            "Income Earned",
+            "",
+            0
+          ],
+          [
+            "Derived Income",
+            "",
+            0
+          ],
+          [
+            "Average Income",
+            "",
+            0
+          ]
+        ]
+      },
+      {
+        "key": "fixed_deposit_receipt",
+        "title": "Fixed Deposit Receipt",
+        "cols": 3,
+        "fields": [
+          [
+            "Is Fixed Deposit Receipt in the name of LA",
+            "",
+            0
+          ],
+          [
+            "Is Fixed Deposit Receipts matured",
+            "",
+            0
+          ],
+          [
+            "Amount Invested",
+            "",
+            1
+          ],
+          [
+            "Income Earned",
+            "",
+            0
+          ],
+          [
+            "Derived Income",
+            "",
+            0
+          ],
+          [
+            "Average Income",
+            "",
+            0
+          ]
+        ]
+      },
+      {
+        "key": "form16",
+        "title": "FORM16/FORM 130",
+        "cols": 3,
+        "fields": [
+          [
+            "ASSESSMENT",
+            "2025-26",
+            1
+          ],
+          [
+            "ASSESSMENT Year 2",
+            "2024-25",
+            0
+          ],
+          [
+            "ASSESSMENT Year 3",
+            "2023-24",
+            0
+          ],
+          [
+            "Gross Salary PA",
+            "₹ 12,00,000",
+            1
+          ],
+          [
+            "Gross Salary PA Year 2",
+            "₹ 11,00,000",
+            0
+          ],
+          [
+            "Gross Salary PA Year 3",
+            "₹ 10,00,000",
+            0
+          ],
+          [
+            "Average Annual Income",
+            "₹ 11,00,000",
+            0
+          ],
+          [
+            "Life Assured Pan No",
+            "ABCDE1234F",
+            1
+          ],
+          [
+            "Life Assured Pan No Year 2",
+            "",
+            0
+          ],
+          [
+            "Life Assured Pan No Year 3",
+            "",
+            0
+          ],
+          [
+            "Life Assured Name",
+            "Rudra Prakash Sangha",
+            1
+          ],
+          [
+            "Life Assured Name Year 2",
+            "",
+            0
+          ],
+          [
+            "Life Assured Name Year 3",
+            "",
+            0
+          ],
+          [
+            "Company Name",
+            "3I INFOTECH",
+            1
+          ],
+          [
+            "Company Name Year 2",
+            "",
+            0
+          ],
+          [
+            "Company Name Year 3",
+            "",
+            0
+          ],
+          [
+            "Is Life Assured Name Same With Doc Name?",
+            "Y",
+            0
+          ],
+          [
+            "Is Life Assured Name Same With Doc Name? Year 2",
+            "",
+            0
+          ],
+          [
+            "Is Life Assured Name Same With Doc Name? Year 3",
+            "",
+            0
+          ]
+        ]
+      },
+      {
+        "key": "form16a",
+        "title": "FORM 16A/FORM 131",
+        "cols": 3,
+        "fields": [
+          [
+            "Assessment Year",
+            "",
+            1
+          ],
+          [
+            "Assessment Year Year 2",
+            "",
+            0
+          ],
+          [
+            "Assessment Year Year 3",
+            "",
+            0
+          ],
+          [
+            "Net Receipt pa",
+            "",
+            1
+          ],
+          [
+            "Net Receipt pa Year 2",
+            "",
+            0
+          ],
+          [
+            "Net Receipt pa Year 3",
+            "",
+            0
+          ],
+          [
+            "Average Annual Income",
+            "",
+            0
+          ]
+        ]
+      },
+      {
+        "key": "form_j",
+        "title": "FORM J",
+        "cols": 3,
+        "fields": [
+          [
+            "Is Form J in the name of LA",
+            "",
+            1
+          ],
+          [
+            "Month1 Receipt1",
+            "",
+            1
+          ],
+          [
+            "Month1 Receipt2",
+            "",
+            0
+          ],
+          [
+            "Month1 Receipt3",
+            "",
+            0
+          ],
+          [
+            "Month1 Receipt4",
+            "",
+            0
+          ],
+          [
+            "Month1 Receipt5",
+            "",
+            0
+          ],
+          [
+            "Month1 Receipt6",
+            "",
+            0
+          ],
+          [
+            "Month2 Receipt1",
+            "",
+            0
+          ],
+          [
+            "Month2 Receipt2",
+            "",
+            0
+          ],
+          [
+            "Month2 Receipt3",
+            "",
+            0
+          ],
+          [
+            "Month2 Receipt4",
+            "",
+            0
+          ],
+          [
+            "Month2 Receipt5",
+            "",
+            0
+          ],
+          [
+            "Month2 Receipt6",
+            "",
+            0
+          ],
+          [
+            "Month3 Receipt1",
+            "",
+            0
+          ],
+          [
+            "Month3 Receipt2",
+            "",
+            0
+          ],
+          [
+            "Month3 Receipt3",
+            "",
+            0
+          ],
+          [
+            "Month3 Receipt4",
+            "",
+            0
+          ],
+          [
+            "Month3 Receipt5",
+            "",
+            0
+          ],
+          [
+            "Month3 Receipt6",
+            "",
+            0
+          ],
+          [
+            "Total Receipts Receipt1",
+            "",
+            0
+          ],
+          [
+            "Average Monthly Receipts Receipt1",
+            "",
+            0
+          ],
+          [
+            "Annual Receipts Receipt1",
+            "",
+            0
+          ],
+          [
+            "Derived Income Receipt1",
+            "",
+            0
+          ]
+        ]
+      },
+      {
+        "key": "govt_bonds",
+        "title": "Govt. Of India Bonds",
+        "cols": 3,
+        "fields": [
+          [
+            "Is Bond Certification in the name of LA",
+            "",
+            0
+          ],
+          [
+            "Is Bond Certificate matured",
+            "",
+            0
+          ],
+          [
+            "Amount Invested or Maturity Value, whichever higher",
+            "",
+            1
+          ],
+          [
+            "Income Earned",
+            "",
+            0
+          ],
+          [
+            "Derived Income",
+            "",
+            0
+          ],
+          [
+            "Average Income",
+            "",
+            0
+          ]
+        ]
+      },
+      {
+        "key": "itr_non_individual",
+        "title": "Income Tax Return (Non-Individual)",
+        "cols": 3,
+        "fields": [
+          [
+            "Name of Organisation/Firm",
+            "",
+            0
+          ],
+          [
+            "Permanent Account Number",
+            "",
+            0
+          ],
+          [
+            "Assessment Year",
+            "",
+            1
+          ],
+          [
+            "Assessment Year Year 2",
+            "",
+            1
+          ],
+          [
+            "Assessment Year Year 3",
+            "",
+            0
+          ],
+          [
+            "ITR Acknowledgement Number",
+            "",
+            0
+          ],
+          [
+            "ITR Acknowledgement Number Year 2",
+            "",
+            0
+          ],
+          [
+            "ITR Acknowledgement Number Year 3",
+            "",
+            0
+          ],
+          [
+            "Income from Salary",
+            "",
+            1
+          ],
+          [
+            "Income from Salary Year 2",
+            "",
+            1
+          ],
+          [
+            "Income from Salary Year 3",
+            "",
+            0
+          ],
+          [
+            "Pan Number Matched with Barcode Number",
+            "",
+            0
+          ],
+          [
+            "Pan Number Matched with Barcode Number Year 2",
+            "",
+            0
+          ],
+          [
+            "Pan Number Matched with Barcode Number Year 3",
+            "",
+            0
+          ],
+          [
+            "Income from House Property",
+            "",
+            0
+          ],
+          [
+            "Income from House Property Year 2",
+            "",
+            0
+          ],
+          [
+            "Income from House Property Year 3",
+            "",
+            0
+          ],
+          [
+            "Income from Business or Profession",
+            "",
+            1
+          ],
+          [
+            "Income from Business or Profession Year 2",
+            "",
+            1
+          ],
+          [
+            "Income from Business or Profession Year 3",
+            "",
+            0
+          ],
+          [
+            "Short term & Capital Gains",
+            "",
+            0
+          ],
+          [
+            "Short term & Capital Gains Year 2",
+            "",
+            0
+          ],
+          [
+            "Short term & Capital Gains Year 3",
+            "",
+            0
+          ],
+          [
+            "Income from Other Sources",
+            "",
+            0
+          ],
+          [
+            "Income from Other Sources Year 2",
+            "",
+            0
+          ],
+          [
+            "Income from Other Sources Year 3",
+            "",
+            0
+          ],
+          [
+            "Agricultural Income",
+            "",
+            0
+          ],
+          [
+            "Agricultural Income Year 2",
+            "",
+            0
+          ],
+          [
+            "Agricultural Income Year 3",
+            "",
+            0
+          ],
+          [
+            "Exempt Income",
+            "",
+            1
+          ],
+          [
+            "Exempt Income Year 2",
+            "",
+            1
+          ],
+          [
+            "Exempt Income Year 3",
+            "",
+            0
+          ],
+          [
+            "Gross Total Income",
+            "",
+            0
+          ],
+          [
+            "Gross Total Income Year 2",
+            "",
+            0
+          ],
+          [
+            "Gross Total Income Year 3",
+            "",
+            0
+          ],
+          [
+            "Total Gross Total Income",
+            "",
+            0
+          ],
+          [
+            "Average Gross Total Income",
+            "",
+            0
+          ]
+        ]
+      },
+      {
+        "key": "itr_individual",
+        "title": "Income Tax Return (Individual)",
+        "cols": 3,
+        "fields": [
+          [
+            "Name of Organisation/Firm",
+            "",
+            0
+          ],
+          [
+            "Permanent Account Number",
+            "",
+            0
+          ],
+          [
+            "Assessment Year",
+            "",
+            1
+          ],
+          [
+            "Assessment Year Year 2",
+            "",
+            1
+          ],
+          [
+            "Assessment Year Year 3",
+            "",
+            0
+          ],
+          [
+            "ITR Acknowledgement Number",
+            "",
+            0
+          ],
+          [
+            "ITR Acknowledgement Number Year 2",
+            "",
+            0
+          ],
+          [
+            "ITR Acknowledgement Number Year 3",
+            "",
+            0
+          ],
+          [
+            "Pan Number Matched with Barcode Number",
+            "",
+            0
+          ],
+          [
+            "Pan Number Matched with Barcode Number Year 2",
+            "",
+            0
+          ],
+          [
+            "Pan Number Matched with Barcode Number Year 3",
+            "",
+            0
+          ],
+          [
+            "Date of Filling ITR",
+            "",
+            1
+          ],
+          [
+            "Date of Filling ITR Year 2",
+            "",
+            1
+          ],
+          [
+            "Date of Filling ITR Year 3",
+            "",
+            0
+          ],
+          [
+            "Income from Salary(A)",
+            "",
+            1
+          ],
+          [
+            "Income from Salary(A) Year 2",
+            "",
+            1
+          ],
+          [
+            "Income from Salary(A) Year 3",
+            "",
+            0
+          ],
+          [
+            "Income from House Property",
+            "",
+            0
+          ],
+          [
+            "Income from House Property Year 2",
+            "",
+            0
+          ],
+          [
+            "Income from House Property Year 3",
+            "",
+            0
+          ],
+          [
+            "Income from Business or Profession(B)",
+            "",
+            1
+          ],
+          [
+            "Income from Business or Profession(B) Year 2",
+            "",
+            1
+          ],
+          [
+            "Income from Business or Profession(B) Year 3",
+            "",
+            0
+          ],
+          [
+            "Short term & Capital Gains",
+            "",
+            0
+          ],
+          [
+            "Short term & Capital Gains Year 2",
+            "",
+            0
+          ],
+          [
+            "Short term & Capital Gains Year 3",
+            "",
+            0
+          ],
+          [
+            "Income from Other Sources",
+            "",
+            0
+          ],
+          [
+            "Income from Other Sources Year 2",
+            "",
+            0
+          ],
+          [
+            "Income from Other Sources Year 3",
+            "",
+            0
+          ],
+          [
+            "Agricultural Income",
+            "",
+            0
+          ],
+          [
+            "Agricultural Income Year 2",
+            "",
+            0
+          ],
+          [
+            "Agricultural Income Year 3",
+            "",
+            0
+          ],
+          [
+            "Exempt Income(C)",
+            "",
+            1
+          ],
+          [
+            "Exempt Income(C) Year 2",
+            "",
+            1
+          ],
+          [
+            "Exempt Income(C) Year 3",
+            "",
+            0
+          ],
+          [
+            "Gross Total Income(A+B+C)",
+            "",
+            0
+          ],
+          [
+            "Gross Total Income(A+B+C) Year 2",
+            "",
+            0
+          ],
+          [
+            "Gross Total Income(A+B+C) Year 3",
+            "",
+            0
+          ],
+          [
+            "Total Gross Total Income",
+            "",
+            0
+          ],
+          [
+            "Average Gross Total Income",
+            "",
+            0
+          ],
+          [
+            "PF deduction - Salaried customers",
+            "",
+            0
+          ],
+          [
+            "PF deduction - Salaried customers Year 2",
+            "",
+            0
+          ],
+          [
+            "PF deduction - Salaried customers Year 3",
+            "",
+            0
+          ],
+          [
+            "Life Assured Name",
+            "",
+            1
+          ],
+          [
+            "Life Assured Name Year 2",
+            "",
+            0
+          ],
+          [
+            "Life Assured Name Year 3",
+            "",
+            0
+          ],
+          [
+            "Is Life Assured Name Same?",
+            "",
+            1
+          ],
+          [
+            "Is Life Assured Name Same? Year 2",
+            "",
+            1
+          ],
+          [
+            "Is Life Assured Name Same? Year 3",
+            "",
+            0
+          ]
+        ]
+      },
+      {
+        "key": "loan_statement",
+        "title": "Loan Statements",
+        "cols": 3,
+        "fields": [
+          [
+            "Is Loan Statements in the name of LA",
+            "",
+            0
+          ],
+          [
+            "Is LA Defaulter in the Payment",
+            "",
+            0
+          ],
+          [
+            "Monthly EMI as per Schedule",
+            "",
+            1
+          ],
+          [
+            "Income Earned",
+            "",
+            0
+          ],
+          [
+            "Derived Income",
+            "",
+            0
+          ],
+          [
+            "Average Income",
+            "",
+            0
+          ]
+        ]
+      },
+      {
+        "key": "mutual_fund",
+        "title": "Mutual Fund A/C Statement",
+        "cols": 3,
+        "fields": [
+          [
+            "Is Mutual Fund Statement in the name of LA",
+            "",
+            0
+          ],
+          [
+            "Latest Market Value (as per NAV) in Statement",
+            "",
+            1
+          ],
+          [
+            "Income Earned",
+            "",
+            0
+          ],
+          [
+            "Derived Income",
+            "",
+            0
+          ],
+          [
+            "Average Income",
+            "",
+            0
+          ]
+        ]
+      },
+      {
+        "key": "pension_statement",
+        "title": "PENSION STATEMENT",
+        "cols": 3,
+        "fields": [
+          [
+            "Total Monthly Pension",
+            "",
+            1
+          ],
+          [
+            "Pension Received pa",
+            "",
+            0
+          ]
+        ]
+      },
+      {
+        "key": "profit_and_loss",
+        "title": "Profit & Loss A/C",
+        "cols": 3,
+        "fields": [
+          [
+            "Name of Organization/Firm",
+            "",
+            1
+          ],
+          [
+            "Assessment Year",
+            "",
+            1
+          ],
+          [
+            "Assessment Year Year 2",
+            "",
+            1
+          ],
+          [
+            "Assessment Year Year 3",
+            "",
+            1
+          ],
+          [
+            "Shareholders Funds / Partners Capital",
+            "",
+            0
+          ],
+          [
+            "Shareholders Funds / Partners Capital Year 2",
+            "",
+            0
+          ],
+          [
+            "Shareholders Funds / Partners Capital Year 3",
+            "",
+            0
+          ],
+          [
+            "Share Capital or Fixed/Fluctuating Capital",
+            "",
+            0
+          ],
+          [
+            "Share Capital or Fixed/Fluctuating Capital Year 2",
+            "",
+            0
+          ],
+          [
+            "Share Capital or Fixed/Fluctuating Capital Year 3",
+            "",
+            0
+          ],
+          [
+            "Reserves & Surplus",
+            "",
+            0
+          ],
+          [
+            "Reserves & Surplus Year 2",
+            "",
+            0
+          ],
+          [
+            "Reserves & Surplus Year 3",
+            "",
+            0
+          ],
+          [
+            "Total Shareholders Funds or Partner's Fund",
+            "",
+            0
+          ],
+          [
+            "Total Shareholders Funds or Partner's Fund Year 2",
+            "",
+            0
+          ],
+          [
+            "Total Shareholders Funds or Partner's Fund Year 3",
+            "",
+            0
+          ],
+          [
+            "Profit Calculation",
+            "",
+            0
+          ],
+          [
+            "Profit Calculation Year 2",
+            "",
+            0
+          ],
+          [
+            "Profit Calculation Year 3",
+            "",
+            0
+          ],
+          [
+            "Profit Before Depreciation & Tax (PBDT)",
+            "",
+            0
+          ],
+          [
+            "Profit Before Depreciation & Tax (PBDT) Year 2",
+            "",
+            0
+          ],
+          [
+            "Profit Before Depreciation & Tax (PBDT) Year 3",
+            "",
+            0
+          ],
+          [
+            "Less : Depreciation",
+            "",
+            0
+          ],
+          [
+            "Less : Depreciation Year 2",
+            "",
+            0
+          ],
+          [
+            "Less : Depreciation Year 3",
+            "",
+            0
+          ],
+          [
+            "Profit Before Tax (PBT)",
+            "",
+            0
+          ],
+          [
+            "Profit Before Tax (PBT) Year 2",
+            "",
+            0
+          ],
+          [
+            "Profit Before Tax (PBT) Year 3",
+            "",
+            0
+          ],
+          [
+            "Tax",
+            "",
+            0
+          ],
+          [
+            "Tax Year 2",
+            "",
+            0
+          ],
+          [
+            "Tax Year 3",
+            "",
+            0
+          ],
+          [
+            "Profit After Tax (PAT)",
+            "",
+            1
+          ],
+          [
+            "Profit After Tax (PAT) Year 2",
+            "",
+            1
+          ],
+          [
+            "Profit After Tax (PAT) Year 3",
+            "",
+            1
+          ],
+          [
+            "Profit After Tax of Last Year",
+            "",
+            0
+          ],
+          [
+            "Profit After Tax of Last Year Year 2",
+            "",
+            0
+          ],
+          [
+            "Profit After Tax of Last Year Year 3",
+            "",
+            0
+          ],
+          [
+            "Rise In Profit as compared to Last Year",
+            "",
+            0
+          ],
+          [
+            "Rise In Profit as compared to Last Year Year 2",
+            "",
+            0
+          ],
+          [
+            "Rise In Profit as compared to Last Year Year 3",
+            "",
+            0
+          ],
+          [
+            "% Rise In Profit as compared to Last Year",
+            "",
+            0
+          ],
+          [
+            "% Rise In Profit as compared to Last Year Year 2",
+            "",
+            0
+          ],
+          [
+            "% Rise In Profit as compared to Last Year Year 3",
+            "",
+            0
+          ],
+          [
+            "Income Calculation",
+            "",
+            0
+          ],
+          [
+            "Income Calculation Year 2",
+            "",
+            0
+          ],
+          [
+            "Income Calculation Year 3",
+            "",
+            0
+          ],
+          [
+            "Sales",
+            "",
+            0
+          ],
+          [
+            "Sales Year 2",
+            "",
+            0
+          ],
+          [
+            "Sales Year 3",
+            "",
+            0
+          ],
+          [
+            "Sales of Last Year",
+            "",
+            0
+          ],
+          [
+            "Sales of Last Year Year 2",
+            "",
+            0
+          ],
+          [
+            "Sales of Last Year Year 3",
+            "",
+            0
+          ],
+          [
+            "Rise In Sales as compared to Last Year",
+            "",
+            0
+          ],
+          [
+            "Rise In Sales as compared to Last Year Year 2",
+            "",
+            0
+          ],
+          [
+            "Rise In Sales as compared to Last Year Year 3",
+            "",
+            0
+          ],
+          [
+            "% Rise In Sales as compared to Last Year",
+            "",
+            0
+          ],
+          [
+            "% Rise In Sales as compared to Last Year Year 2",
+            "",
+            0
+          ],
+          [
+            "% Rise In Sales as compared to Last Year Year 3",
+            "",
+            0
+          ],
+          [
+            "Average Gross Income",
+            "",
+            0
+          ],
+          [
+            "Average Profit Before Tax",
+            "",
+            0
+          ],
+          [
+            "Average Profit After Tax",
+            "",
+            0
+          ]
+        ]
+      },
+      {
+        "key": "property_purchase",
+        "title": "Property Purchase Documents",
+        "cols": 3,
+        "fields": [
+          [
+            "Is Property purchased by LA",
+            "",
+            0
+          ],
+          [
+            "Purchase Price",
+            "",
+            1
+          ],
+          [
+            "Financial Year of Purchase",
+            "",
+            0
+          ],
+          [
+            "Estimated Market Value of Property",
+            "",
+            0
+          ],
+          [
+            "Derived Income",
+            "",
+            0
+          ]
+        ]
+      },
+      {
+        "key": "property_valuation",
+        "title": "Property Valuation Report",
+        "cols": 3,
+        "fields": [
+          [
+            "Is Property Valuation Report in the name of LA",
+            "",
+            0
+          ],
+          [
+            "Estimated Market Value of Property(as per report)",
+            "",
+            1
+          ],
+          [
+            "Derived Income",
+            "",
+            0
+          ]
+        ]
+      },
+      {
+        "key": "salary_certificate",
+        "title": "Salary Certificate",
+        "cols": 3,
+        "fields": [
+          [
+            "Gross Salary PA",
+            "",
+            1
+          ],
+          [
+            "Derived Income",
+            "",
+            0
+          ]
+        ]
+      },
+      {
+        "key": "salary_revision_letter",
+        "title": "Salary Revision Letter",
+        "cols": 3,
+        "fields": [
+          [
+            "Gross Salary PA",
+            "",
+            1
+          ],
+          [
+            "Derived Income",
+            "",
+            0
+          ]
+        ]
+      },
+      {
+        "key": "salary_slips",
+        "title": "SALARY SLIPS",
+        "cols": 3,
+        "fields": [
+          [
+            "Gross Salary Pm1",
+            "₹ 1,00,000",
+            1
+          ],
+          [
+            "Gross Salary Pm2",
+            "₹ 1,00,000",
+            1
+          ],
+          [
+            "Gross Salary Pm3",
+            "₹ 1,00,000",
+            1
+          ],
+          [
+            "Gross Salary Pm4",
+            "",
+            0
+          ],
+          [
+            "Gross Salary Pm5",
+            "",
+            0
+          ],
+          [
+            "Gross Salary Pm6",
+            "",
+            0
+          ],
+          [
+            "Average Salary pm",
+            "₹ 1,00,000",
+            0
+          ],
+          [
+            "Gross Salary pa",
+            "₹ 12,00,000",
+            0
+          ],
+          [
+            "Annual Bonus/Incentive/Reimbursement",
+            "",
+            0
+          ],
+          [
+            "Average Annual Income",
+            "₹ 12,00,000",
+            0
+          ],
+          [
+            "Company Name",
+            "3I INFOTECH",
+            1
+          ],
+          [
+            "Life Assured Name",
+            "Rudra Prakash Sangha",
+            1
+          ],
+          [
+            "Is Life Assured Name Same?",
+            "Y",
+            1
+          ],
+          [
+            "PF / UAN No",
+            "",
+            0
+          ]
+        ]
+      },
+      {
+        "key": "bank_statement",
+        "title": "Savings A/C & Current A/C Bank Statements",
+        "cols": 3,
+        "fields": [
+          [
+            "Is Bank Statement in the name of LA/his Business",
+            "",
+            1
+          ],
+          [
+            "Latest 6 months statements given",
+            "",
+            1
+          ],
+          [
+            "Any Overdraft(Negative/Debit) Balances",
+            "",
+            1
+          ],
+          [
+            "Monthly Closing Bal 1",
+            "",
+            1
+          ],
+          [
+            "Monthly Closing Bal 2",
+            "",
+            1
+          ],
+          [
+            "Monthly Closing Bal 3",
+            "",
+            1
+          ],
+          [
+            "Monthly Closing Bal 4",
+            "",
+            1
+          ],
+          [
+            "Monthly Closing Bal 5",
+            "",
+            1
+          ],
+          [
+            "Monthly Closing Bal 6",
+            "",
+            1
+          ],
+          [
+            "Average Bank Balance",
+            "",
+            0
+          ],
+          [
+            "Average Annual income",
+            "",
+            0
+          ],
+          [
+            "Opening Balance",
+            "",
+            1
+          ],
+          [
+            "Statement Period",
+            "",
+            1
+          ],
+          [
+            "Life Assured Name",
+            "",
+            1
+          ],
+          [
+            "Is LA Name Match with Doc Name?",
+            "",
+            1
+          ],
+          [
+            "Life Insurance Premium Deduction Entry",
+            "",
+            0
+          ],
+          [
+            "Wine Beer_Entries",
+            "",
+            0
+          ],
+          [
+            "Med Entry",
+            "",
+            0
+          ]
+        ]
+      },
+      {
+        "key": "stock_holding",
+        "title": "Stock Holding Statement",
+        "cols": 3,
+        "fields": [
+          [
+            "Is Stock Holding Stmt in name of LA/his Business",
+            "",
+            0
+          ],
+          [
+            "Gross Total Market Value as per the Stmt",
+            "",
+            1
+          ],
+          [
+            "Income Earned",
+            "",
+            0
+          ],
+          [
+            "Derived Income",
+            "",
+            0
+          ],
+          [
+            "Average Income",
+            "",
+            0
+          ]
+        ]
+      },
+      {
+        "key": "vehicle_ownership",
+        "title": "Vehicle Ownership Papers",
+        "cols": 3,
+        "fields": [
+          [
+            "Is Registration Papers in the name of LA",
+            "",
+            0
+          ],
+          [
+            "Is Purchase invoices in the name of LA",
+            "",
+            0
+          ],
+          [
+            "Purchase Price",
+            "",
+            1
+          ],
+          [
+            "Vehicle RC Number",
+            "",
+            0
+          ],
+          [
+            "Derived Income",
+            "",
+            0
+          ]
+        ]
+      },
+      {
+        "key": "vahan",
+        "title": "Vahan",
+        "cols": 3,
+        "fields": [
+          [
+            "Is Registration Papers in the Name of LA",
+            "",
+            1
+          ],
+          [
+            "Is Purchase Invoices in the Name of LA",
+            "",
+            1
+          ],
+          [
+            "Car RC Number",
+            "",
+            0
+          ],
+          [
+            "IDV",
+            "",
+            1
+          ],
+          [
+            "Average Annual Income",
+            "",
+            0
+          ]
+        ]
+      },
+      {
+        "key": "sip_statement",
+        "title": "SIP Statement",
+        "cols": 3,
+        "fields": [
+          [
+            "Latest 6 Months SIP Statements Given",
+            "",
+            1
+          ],
+          [
+            "Is SIP Statements in the Name of LA",
+            "",
+            1
+          ],
+          [
+            "SIP of Month1",
+            "",
+            1
+          ],
+          [
+            "SIP Per Month 1",
+            "",
+            1
+          ],
+          [
+            "SIP of Month2",
+            "",
+            1
+          ],
+          [
+            "SIP Per Month2",
+            "",
+            1
+          ],
+          [
+            "SIP of Month 3",
+            "",
+            1
+          ],
+          [
+            "SIP Per Month 3",
+            "",
+            1
+          ],
+          [
+            "SIP of Month 4",
+            "",
+            1
+          ],
+          [
+            "SIP Per Month4",
+            "",
+            1
+          ],
+          [
+            "SIP of Month5",
+            "",
+            1
+          ],
+          [
+            "SIP Per Month 5",
+            "",
+            1
+          ],
+          [
+            "SIP of Month 6",
+            "",
+            1
+          ],
+          [
+            "SIP Per Month 6",
+            "",
+            1
+          ],
+          [
+            "Average Monthly SIP",
+            "",
+            0
+          ],
+          [
+            "Average Annual Income",
+            "",
+            0
+          ]
+        ]
+      },
+      {
+        "key": "gst_income",
+        "title": "GST Income",
+        "cols": 3,
+        "fields": [
+          [
+            "Assessment Year",
+            "",
+            1
+          ],
+          [
+            "Assessment Year Year 2",
+            "",
+            0
+          ],
+          [
+            "Assessment Year Year 3",
+            "",
+            0
+          ],
+          [
+            "Assessment Year Year 4",
+            "",
+            0
+          ],
+          [
+            "Gross Sales",
+            "",
+            1
+          ],
+          [
+            "Gross Sales Year 2",
+            "",
+            0
+          ],
+          [
+            "Gross Sales Year 3",
+            "",
+            0
+          ],
+          [
+            "Gross Sales Year 4",
+            "",
+            0
+          ],
+          [
+            "Gross Purchases",
+            "",
+            0
+          ],
+          [
+            "Gross Purchases Year 2",
+            "",
+            0
+          ],
+          [
+            "Gross Purchases Year 3",
+            "",
+            0
+          ],
+          [
+            "Gross Purchases Year 4",
+            "",
+            0
+          ],
+          [
+            "Profit After GST",
+            "",
+            0
+          ],
+          [
+            "Profit After GST Year 2",
+            "",
+            0
+          ],
+          [
+            "Profit After GST Year 3",
+            "",
+            0
+          ],
+          [
+            "Profit After GST Year 4",
+            "",
+            0
+          ],
+          [
+            "Total of Gross Sales",
+            "",
+            0
+          ],
+          [
+            "Average Gross Sales",
+            "",
+            0
+          ],
+          [
+            "Average Annual Income",
+            "",
+            0
+          ]
+        ]
+      },
+      {
+        "key": "bank_statement_salary_credit",
+        "title": "Bank Statement with Salary Credit Details",
+        "cols": 3,
+        "fields": [
+          [
+            "Is Bank Statement in the Name of LA",
+            "",
+            1
+          ],
+          [
+            "Net Salary Month1",
+            "",
+            1
+          ],
+          [
+            "Net Salary Credited PM1",
+            "",
+            1
+          ],
+          [
+            "Net Salary Month 2",
+            "",
+            1
+          ],
+          [
+            "Net Salary Credited PM2",
+            "",
+            1
+          ],
+          [
+            "Net Salary Month 3",
+            "",
+            1
+          ],
+          [
+            "Net Salary Credited PM3",
+            "",
+            1
+          ],
+          [
+            "Net Salary Month 4",
+            "",
+            0
+          ],
+          [
+            "Net Salary Credited PM4",
+            "",
+            0
+          ],
+          [
+            "Net Salary Month 5",
+            "",
+            0
+          ],
+          [
+            "Net Salary Credited PM 5",
+            "",
+            0
+          ],
+          [
+            "Net Salary Month 6",
+            "",
+            0
+          ],
+          [
+            "Net Salary Credited PM 6",
+            "",
+            0
+          ],
+          [
+            "Average Net Salary Credited PM",
+            "",
+            0
+          ],
+          [
+            "Net Salary Credited PA",
+            "",
+            0
+          ],
+          [
+            "Annual Bonus /Incentive /Reimbursement",
+            "",
+            0
+          ],
+          [
+            "Average Annual Income",
+            "",
+            0
+          ],
+          [
+            "Salary Credited",
+            "",
+            0
+          ],
+          [
+            "Opening Balance",
+            "",
+            1
+          ],
+          [
+            "Closing Balance",
+            "",
+            0
+          ],
+          [
+            "Statement Period",
+            "",
+            1
+          ],
+          [
+            "Life Assured Name",
+            "",
+            1
+          ],
+          [
+            "Is LA Name Match with Doc Name?",
+            "",
+            1
+          ]
+        ]
+      },
+      {
+        "key": "epf_basic",
+        "title": "EMPLOYEE PROVIDENT FUND - BASIC",
+        "cols": 3,
+        "fields": [
+          [
+            "Latest Organization Name",
+            "",
+            1
+          ],
+          [
+            "Is Organization Name Same?",
+            "",
+            1
+          ],
+          [
+            "Income",
+            "",
+            1
+          ]
+        ]
+      },
+      {
+        "key": "epf_advanced",
+        "title": "EMPLOYEE PROVIDENT FUND - ADVANCED",
+        "cols": 3,
+        "fields": [
+          [
+            "Latest Organization Name",
+            "",
+            1
+          ],
+          [
+            "Is Organization Name Same?",
+            "",
+            1
+          ],
+          [
+            "PF Contribution M1",
+            "",
+            1
+          ],
+          [
+            "PF Contribution M2",
+            "",
+            1
+          ],
+          [
+            "PF Contribution M3",
+            "",
+            1
+          ],
+          [
+            "PF Contribution M4",
+            "",
+            1
+          ],
+          [
+            "PF Contribution M5",
+            "",
+            1
+          ],
+          [
+            "PF Contribution M6",
+            "",
+            1
+          ],
+          [
+            "Annual Income",
+            "",
+            0
+          ]
+        ]
+      },
+      {
+        "key": "employee_id_card",
+        "title": "Employee ID Card",
+        "cols": 3,
+        "fields": [
+          [
+            "Name of the company",
+            "",
+            1
+          ],
+          [
+            "Name of the employee",
+            "",
+            1
+          ],
+          [
+            "Employee number",
+            "",
+            1
+          ],
+          [
+            "Photo available",
+            "",
+            1
+          ]
+        ]
+      }
+    ];
+    // Row labels and table structure mirror the attached ViewFinancial component.
+    const tableLayouts = {"form16":{"kind":"year3","title":"Form 16","rows":["ASSESSMENT","Gross Salary PA","Life Assured Pan No","Life Assured Name","Is Life Assured Name Same With Doc Name?","Company Name"],"bottom":[{"label":"Average Annual Income"}]},"form16a":{"kind":"year3","rows":["Assessment Year","Net Receipt pa"],"bottom":[{"label":"Average Annual Income"}]},"computation_of_income":{"kind":"year3","rows":["Assessment Year","Income from Salary(A)","Income from House Property","Income from Business or Profession (B)","Short term & Capital Gains","Income from Other Sources","Agricultural Income","Exempt Income(C)","Gross Total Income"],"bottom":[{"label":"Total Gross Total Income"},{"label":"Average Gross Total Income"}]},"itr_non_individual":{"kind":"year3","top":["Name of Organisation/Firm","Permanent Account Number"],"rows":["Assessment Year","ITR Acknowledgement Number","Income from Salary","Income from House Property","Income from Business or Profession","Short term & Capital Gains","Income from Other Sources","Agricultural Income","Exempt Income","Gross Total Income","Pan Number Matched with Barcode Number"],"bottom":[{"label":"Total Gross Total Income"},{"label":"Average Gross Total Income"}]},"itr_individual":{"kind":"year3","top":["Name of Organisation/Firm","Permanent Account Number"],"rows":["Assessment Year","ITR Acknowledgement Number","Date of Filling ITR","Income from Salary(A)","Income from House Property","Income from Business or Profession(B)","Short term & Capital Gains","Income from Other Sources","Agricultural Income","Exempt Income(C)","Gross Total Income(A+B+C)","PF deduction - Salaried customers","Life Assured Name","Is Life Assured Name Same?","Pan Number Matched with Barcode Number"],"bottom":[{"label":"Total Gross Total Income"},{"label":"Average Gross Total Income"}]},"profit_and_loss":{"kind":"year3","top":["Name of Organization/Firm"],"rows":["Assessment Year","Shareholders Funds / Partners Capital","Share Capital or Fixed/Fluctuating Capital","Reserves & Surplus","Total Shareholders Funds or Partner's Fund","Profit Calculation","Profit Before Depreciation & Tax (PBDT)","Less : Depreciation","Profit Before Tax (PBT)","Tax","Profit After Tax (PAT)","Profit After Tax of Last Year","Rise In Profit as compared to Last Year","% Rise In Profit as compared to Last Year","Income Calculation","Sales","Sales of Last Year","Rise In Sales as compared to Last Year","% Rise In Sales as compared to Last Year"],"bottom":[{"label":"Average Gross Income"},{"label":"Average Profit Before Tax"},{"label":"Average Profit After Tax"}]},"gst_income":{"kind":"year4","rows":["Assessment Year","Gross Sales","Gross Purchases","Profit After GST"],"bottom":[{"label":"Total of Gross Sales"},{"label":"Average Gross Sales"},{"label":"Average Annual Income"}]},"form_j":{"kind":"receipts","title":"FORM J","top":["Is Form J in the name of LA"],"rows":["Month1","Month2","Month3"],"bottom":[{"label":"Total Receipts","fieldLabel":"Total Receipts Receipt1"},{"label":"Average Monthly Receipts","fieldLabel":"Average Monthly Receipts Receipt1"},{"label":"Annual Receipt","fieldLabel":"Annual Receipts Receipt1"},{"label":"Derived Income","fieldLabel":"Derived Income Receipt1"}]}};
+    const monthlyIncomeLayouts = {
+      commission_statement: { top: [], average: ['Average commission pm', 'Average Annual Income'] },
+      bank_statement_salary_credit: { top: ['Is Bank Statement in the Name of LA'], average: ['Average Net Salary Credited PM', 'Net Salary Credited PA', 'Annual Bonus /Incentive /Reimbursement', 'Average Annual Income'] }
+    };
+    const statementLayouts = {
+      salary_slips: { monthly: ['Gross Salary Pm1', 'Gross Salary Pm2', 'Gross Salary Pm3', 'Gross Salary Pm4', 'Gross Salary Pm5', 'Gross Salary Pm6'], calculated: ['Average Salary pm', 'Gross Salary pa', 'Annual Bonus/Incentive/Reimbursement', 'Average Annual Income'], trailing: ['Company Name', 'Life Assured Name', 'Is Life Assured Name Same?', 'PF / UAN No'] },
+      bank_statement: { top: ['Is Bank Statement in the name of LA/his Business', 'Latest 6 months statements given', 'Any Overdraft(Negative/Debit) Balances'], monthly: ['Monthly Closing Bal 1', 'Monthly Closing Bal 2', 'Monthly Closing Bal 3', 'Monthly Closing Bal 4', 'Monthly Closing Bal 5', 'Monthly Closing Bal 6'], calculated: ['Average Bank Balance', 'Average Annual income'], trailing: ['Opening Balance', 'Statement Period', 'Life Assured Name', 'Is LA Name Match with Doc Name?', 'Life Insurance Premium Deduction Entry', 'Wine Beer_Entries', 'Med Entry'] },
+      sip_statement: { top: ['Latest 6 Months SIP Statements Given', 'Is SIP Statements in the Name of LA'], monthly: [{ label: 'SIP of Month 1', fieldLabel: 'SIP Per Month 1' }, { label: 'SIP of Month 2', fieldLabel: 'SIP Per Month2' }, { label: 'SIP of Month 3', fieldLabel: 'SIP Per Month 3' }, { label: 'SIP of Month 4', fieldLabel: 'SIP Per Month4' }, { label: 'SIP of Month 5', fieldLabel: 'SIP Per Month 5' }, { label: 'SIP of Month 6', fieldLabel: 'SIP Per Month 6' }], calculated: ['Average Monthly SIP', 'Average Annual Income'] }
+    };
+    const lockedFields = new Set(["commission_statement:Average commission pm","commission_statement:Average Annual Income","computation_of_income:Gross Total Income","computation_of_income:Gross Total Income Year 2","computation_of_income:Gross Total Income Year 3","computation_of_income:Total Gross Total Income","computation_of_income:Average Gross Total Income","credit_card:Derived Income","credit_card:Average Income","fixed_deposit_receipt:Derived Income","fixed_deposit_receipt:Average Income","form16:Average Annual Income","form16a:Average Annual Income","form_j:Total Receipts Receipt1","form_j:Average Monthly Receipts Receipt1","form_j:Annual Receipts Receipt1","form_j:Derived Income Receipt1","govt_bonds:Derived Income","govt_bonds:Average Income","itr_non_individual:Gross Total Income","itr_non_individual:Gross Total Income Year 2","itr_non_individual:Gross Total Income Year 3","itr_non_individual:Total Gross Total Income","itr_non_individual:Average Gross Total Income","itr_individual:Gross Total Income(A+B+C)","itr_individual:Gross Total Income(A+B+C) Year 2","itr_individual:Gross Total Income(A+B+C) Year 3","itr_individual:Total Gross Total Income","itr_individual:Average Gross Total Income","loan_statement:Derived Income","loan_statement:Average Income","mutual_fund:Derived Income","mutual_fund:Average Income","pension_statement:Pension Received pa","profit_and_loss:Average Gross Income","profit_and_loss:Average Profit Before Tax","profit_and_loss:Average Profit After Tax","property_purchase:Derived Income","property_valuation:Derived Income","salary_certificate:Derived Income","salary_revision_letter:Derived Income","salary_slips:Average Salary pm","salary_slips:Gross Salary pa","salary_slips:Average Annual Income","bank_statement:Average Bank Balance","bank_statement:Average Annual income","stock_holding:Derived Income","stock_holding:Average Income","vehicle_ownership:Derived Income","vahan:Average Annual Income","sip_statement:Average Monthly SIP","sip_statement:Average Annual Income","gst_income:Total of Gross Sales","gst_income:Average Gross Sales","gst_income:Average Annual Income","bank_statement_salary_credit:Average Net Salary Credited PM","bank_statement_salary_credit:Net Salary Credited PA","bank_statement_salary_credit:Average Annual Income","epf_advanced:Annual Income"]);
+    // Keep Decision as the final section in both the left navigation and content area.
+    const decisionIndex = sections.findIndex(section => section.key === 'decision');
+    if (decisionIndex >= 0) sections.push(sections.splice(decisionIndex, 1)[0]);
+    const visibleFinancialSections = sections;
+    const nav = document.getElementById('financial-nav'), content = document.getElementById('financial-content');
+    function esc(value) { return String(value).replace(/[&<>'"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[c])); }
+    function fieldControl(section, field, index) {
+      const [label, value] = field;
+      const fieldId = `${section.key}-${index}`;
+      const isLocked = lockedFields.has(`${section.key}:${label}`);
+      const attributes = `data-field="${esc(fieldId)}" data-field-label="${esc(label)}" aria-label="${esc(section.title + ': ' + label)}"${isLocked ? ' data-locked="true"' : ''}`;
+      if (section.key === 'decision' && label === 'Financial Decision') {
+        const options = ['', 'financially eligible', 'counter offer', 'reject'];
+        return `<select ${attributes}>${options.map(option => `<option value="${esc(option)}"${option === value ? ' selected' : ''}>${esc(option || 'Select financial decision')}</option>`).join('')}</select>`;
+      }
+      const isYesNo = /^(Is\b|Photo available\b|Latest 6 months.*statements given\b|Any Overdraft)/i.test(label);
+      if (isYesNo) {
+        const options = ['', 'Yes', 'No'];
+        if (value && !options.includes(value)) options.splice(1, 0, value);
+        return `<select disabled ${attributes}>${options.map(option => `<option value="${esc(option)}"${option === value ? ' selected' : ''}>${esc(option || 'Select')}</option>`).join('')}</select>`;
+      }
+      return `<input type="text" value="${esc(value)}" ${attributes} readonly />`;
+    }
+
+    function fieldGrid(section, labels, columns = 3) {
+      return `<div class="financial-card-body" style="--columns:${columns}">${labels.map(item => {
+        const display = typeof item === 'string' ? item : item.label;
+        const fieldLabel = typeof item === 'string' ? item : item.fieldLabel || item.label;
+        const index = section.fields.findIndex(field => field[0] === fieldLabel);
+        if (index < 0) return '';
+        const field = section.fields[index];
+        return `<div class="financial-field"><label>${esc(display)}${field[2] ? '<span class="required">*</span>' : ''}</label>${fieldControl(section, field, index)}</div>`;
+      }).join('')}</div>`;
+    }
+
+    function sectionTable(section, layout) {
+      const count = layout.kind === 'receipts' ? 6 : layout.kind === 'year4' ? 4 : 3;
+      const headings = Array.from({ length: count }, (_, i) => layout.kind === 'receipts' ? `Receipt ${i + 1}` : `Year ${i + 1}`);
+      const firstWidth = count === 6 ? '12%' : count === 4 ? '20%' : '28%';
+      const monthWidth = count === 6 ? '12%' : '0%';
+      const restWidth = `${(100 - parseInt(firstWidth, 10) - parseInt(monthWidth, 10)) / count}%`;
+      const formJMonths = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+      const rows = layout.rows.map(label => {
+        const indexes = headings.map((_, column) => {
+          const fieldLabel = layout.kind === 'receipts' ? `${label} Receipt${column + 1}` : column === 0 ? label : `${label} Year ${column + 1}`;
+          return section.fields.findIndex(field => field[0] === fieldLabel);
+        });
+        const required = indexes.some(index => index >= 0 && section.fields[index][2]);
+        const rowHeading = `<th scope="row">${esc(label)}${required && layout.kind !== 'receipts' ? '<span class="required">*</span>' : ''}</th>`;
+        const monthSelect = layout.kind === 'receipts' ? `<td class="form-j-month-cell"><div class="financial-field"><select data-form-j-month disabled aria-label="Select month for ${esc(label)}">${formJMonths.map(month => `<option value="${month}">${month || 'Select month'}</option>`).join('')}</select></div></td>` : '';
+        return `<tr>${rowHeading}${monthSelect}${indexes.map(index => `<td>${index < 0 ? '' : `<div class="financial-field">${fieldControl(section, section.fields[index], index)}</div>`}</td>`).join('')}</tr>`;
+      }).join('');
+      const receiptTopRow = layout.kind === 'receipts' && layout.top?.length ? (() => {
+        const index = section.fields.findIndex(field => field[0] === layout.top[0]);
+        return `<tr class="form-j-name-row"><th scope="row">${esc(layout.top[0])}${index >= 0 && section.fields[index][2] ? '<span class="required">*</span>' : ''}</th><td colspan="${headings.length + 1}">${index >= 0 ? `<div class="financial-field">${fieldControl(section, section.fields[index], index)}</div>` : ''}</td></tr>`;
+      })() : '';
+      const receiptSummaryRows = layout.kind === 'receipts' ? `<tr class="form-j-calculated-row">${layout.bottom.map(item => {
+        const index = section.fields.findIndex(field => field[0] === item.fieldLabel);
+        return `<th scope="row">${esc(item.label)}</th><td>${index >= 0 ? `<div class="financial-field"><input type="text" value="${esc(section.fields[index][1])}" readonly data-locked="true" aria-label="${esc(section.title + ': ' + item.label)}" /></div>` : ''}</td>`;
+      }).join('')}</tr>` : '';
+      const columns = layout.kind === 'receipts' ? `<col style="width:${firstWidth}" /><col style="width:${monthWidth}" />${headings.map(() => `<col style="width:${restWidth}" />`).join('')}` : `<col style="width:${firstWidth}" />${headings.map(() => `<col style="width:${restWidth}" />`).join('')}`;
+      const header = layout.kind === 'receipts' ? `<tr><th scope="col"></th><th scope="col"></th>${headings.map(heading => `<th scope="col">${heading}</th>`).join('')}</tr>` : `<tr><th scope="col"></th>${headings.map(heading => `<th scope="col">${heading}</th>`).join('')}</tr>`;
+      return `<div><h4 class="financial-table-title">${esc(layout.title || section.title)}</h4><div class="financial-table-wrap"><table class="financial-table ${layout.kind === 'receipts' ? 'receipts' : ''}"><colgroup>${columns}</colgroup><thead>${receiptTopRow}${header}</thead><tbody>${rows}${receiptSummaryRows}</tbody></table></div></div>`;
+    }
+
+    function monthlyIncomeRow() {
+      const months = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+      return `<div class="monthly-income-row" data-monthly-income-row><div class="financial-field"><label>Month<span class="required">*</span></label><select data-monthly-income disabled>${months.map(month => `<option value="${month}">${month || 'Select month'}</option>`).join('')}</select></div><div class="financial-field"><label>Income<span class="required">*</span></label><input data-monthly-income type="number" min="0" step="0.01" inputmode="decimal" placeholder="Enter income" readonly /></div><button type="button" class="monthly-income-add" data-add-monthly-income disabled>+ Add</button></div>`;
+    }
+
+    function monthlyIncomeTable(sectionKey) {
+      const months = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+      const monthCount = ['commission_statement', 'bank_statement_salary_credit'].includes(sectionKey) ? 6 : 3;
+      const rows = Array.from({ length: monthCount }, (_, index) => index + 1).map(number => `<tr><td>Month ${number}</td><td><div class="financial-field"><select data-monthly-income disabled aria-label="Month ${number}">${months.map(month => `<option value="${month}">${month || 'Select month'}</option>`).join('')}</select></div></td><td><div class="financial-field"><input data-monthly-income type="number" min="0" step="0.01" inputmode="decimal" placeholder="Enter income" aria-label="Income for month ${number}" readonly /></div></td></tr>`).join('');
+      return `<table class="sip-income-table"><thead><tr><th>Month</th><th>Selected Month<span class="required">*</span></th><th>Income<span class="required">*</span></th></tr></thead><tbody>${rows}</tbody></table>`;
+    }
+
+    function monthlyIncomeBody(section, layout) {
+      const excluded = new Set([...layout.top, ...layout.average]);
+      const remaining = section.fields.map(field => field[0]).filter(label => !excluded.has(label) && !/month|monthly|net salary credited pm|sip per month/i.test(label));
+      // Commission and salary-credit statements need six monthly entries; the other proof sections retain three.
+      const incomeEntry = monthlyIncomeTable(section.key);
+      return `<div class="monthly-income-section">${layout.top.length ? fieldGrid(section, layout.top) : ''}${incomeEntry}${layout.average.length ? `<div class="monthly-income-average">${fieldGrid(section, layout.average)}</div>` : ''}${remaining.length ? `<div class="monthly-income-average">${fieldGrid(section, remaining)}</div>` : ''}</div>`;
+    }
+
+    function statementMonthGrid(section, labels) {
+      const months = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+      return `<div class="statement-month-grid">${labels.map(item => {
+        const display = typeof item === 'string' ? item : item.label;
+        const fieldLabel = typeof item === 'string' ? item : item.fieldLabel;
+        const index = section.fields.findIndex(field => field[0] === fieldLabel);
+        if (index < 0) return '';
+        const field = section.fields[index];
+        return `<div class="statement-month-field"><label>${esc(display)}${field[2] ? '<span class="required">*</span>' : ''}</label><div class="statement-month-inputs"><select data-statement-month disabled aria-label="Select month for ${esc(display)}">${months.map(month => `<option value="${month}">${month || 'Select'}</option>`).join('')}</select>${fieldControl(section, field, index)}</div></div>`;
+      }).join('')}</div>`;
+    }
+
+    function statementBody(section, layout) {
+      return `<div class="monthly-income-section">${layout.top?.length ? fieldGrid(section, layout.top, 2) : ''}${statementMonthGrid(section, layout.monthly)}${layout.calculated?.length ? `<div class="monthly-income-average">${fieldGrid(section, layout.calculated, 2)}</div>` : ''}${layout.trailing?.length ? `<div class="monthly-income-average">${fieldGrid(section, layout.trailing, 2)}</div>` : ''}</div>`;
+    }
+
+    function sectionBody(section) {
+      const monthlyLayout = monthlyIncomeLayouts[section.key];
+      if (monthlyLayout) return monthlyIncomeBody(section, monthlyLayout);
+      const statementLayout = statementLayouts[section.key];
+      if (statementLayout) return statementBody(section, statementLayout);
+      const layout = tableLayouts[section.key];
+      if (!layout) return fieldGrid(section, section.fields.map(field => field[0]), section.cols || 3);
+      return `<div class="financial-table-area">${layout.top?.length && section.key !== 'form_j' ? fieldGrid(section, layout.top, 2) : ''}${sectionTable(section, layout)}${layout.bottom?.length && section.key !== 'form_j' ? fieldGrid(section, layout.bottom) : ''}</div>`;
+    }
+
+    function buildFinancial() {
+      nav.innerHTML = visibleFinancialSections.map((section, index) => `<button class="${index === 0 ? 'active' : ''}" data-target="${section.key}"><span>${esc(section.title)}</span><span>›</span></button>`).join('');
+      content.innerHTML = visibleFinancialSections.map(section => {
+        const hasReviewActions = !['financial_profession', 'credit_bureau_details', 'decision'].includes(section.key);
+        const reviewActions = hasReviewActions ? `<div class="financial-review-actions" role="group" aria-label="${esc(section.title)} review"><button type="button" class="financial-review-button agree" data-review="${section.key}" data-decision="agree" aria-pressed="false">Agree</button><button type="button" class="financial-review-button disagree" data-review="${section.key}" data-decision="disagree" aria-pressed="false">Disagree</button></div>` : '';
+        return `<article class="financial-card" id="${section.key}"><header class="financial-card-head"><h3>${esc(section.title)}</h3></header>${sectionBody(section)}${reviewActions}</article>`;
+      }).join('');
+      // Only the section under review becomes editable when Disagree is selected.
+      content.querySelectorAll('[data-review]').forEach(button => {
+        button.addEventListener('click', () => {
+          const card = document.getElementById(button.dataset.review);
+          if (button.dataset.decision === 'disagree' && card.dataset.editing !== 'true') {
+            card.querySelectorAll('[data-field]').forEach(field => {
+              field.dataset.originalValue = field.value;
+            });
+            setSectionEditing(card, true);
+          } else if (button.dataset.decision === 'agree' && card.dataset.editing === 'true') {
+            restoreSectionFields(card);
+            setSectionEditing(card, false);
+          }
+          card.querySelectorAll('[data-review]').forEach(choice => {
+            choice.setAttribute('aria-pressed', String(choice === button));
+          });
+        });
+      });
+
+      content.querySelectorAll('[data-reset]').forEach(button => {
+        button.addEventListener('click', () => {
+          restoreSectionFields(document.getElementById(button.dataset.reset));
+        });
+      });
+
+      content.querySelectorAll('[data-save]').forEach(button => {
+        button.addEventListener('click', () => {
+          const card = document.getElementById(button.dataset.save);
+          setSectionEditing(card, false);
+          toast(`${card.querySelector('h3').textContent} saved successfully.`);
+        });
+      });
+
+      content.querySelectorAll('[data-add-monthly-income]').forEach(button => {
+        button.addEventListener('click', () => {
+          const card = button.closest('.financial-card');
+          if (card.dataset.editing !== 'true') return;
+          const rows = card.querySelector('[data-monthly-income-rows]');
+          rows.insertAdjacentHTML('beforeend', monthlyIncomeRow());
+          const newRow = rows.lastElementChild;
+          newRow.querySelectorAll('select[data-monthly-income]').forEach(field => { field.disabled = false; });
+          newRow.querySelectorAll('input[data-monthly-income]').forEach(field => { field.readOnly = false; });
+          newRow.querySelectorAll('[data-add-monthly-income]').forEach(addButton => { addButton.disabled = false; });
+        });
+      });
+
+      nav.querySelectorAll('button').forEach(button => button.addEventListener('click', () => { document.getElementById(button.dataset.target).scrollIntoView({ behavior: 'smooth', block: 'start' }); setActive(button.dataset.target); }));
+      const observer = new IntersectionObserver(entries => { const active = entries.filter(x => x.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0]; if (active) setActive(active.target.id); }, { rootMargin: '-100px 0px -60% 0px', threshold: .05 });
+      document.querySelectorAll('.financial-card').forEach(card => observer.observe(card));
+
+    }
+
+    function setSectionEditing(card, editing) {
+      card.dataset.editing = String(editing);
+      card.querySelectorAll('.financial-field input').forEach(field => {
+        field.readOnly = !editing || field.dataset.locked === 'true';
+      });
+      card.querySelectorAll('.financial-field select').forEach(field => {
+        field.disabled = !editing || field.dataset.locked === 'true';
+      });
+      card.querySelectorAll('[data-monthly-income]').forEach(field => {
+        if (field.tagName === 'SELECT') field.disabled = !editing;
+        else field.readOnly = !editing;
+      });
+      card.querySelectorAll('[data-form-j-month]').forEach(field => { field.disabled = !editing; });
+      card.querySelectorAll('[data-statement-month]').forEach(field => { field.disabled = !editing; });
+      card.querySelectorAll('[data-add-monthly-income]').forEach(button => { button.disabled = !editing; });
+      const resetButton = card.querySelector('[data-reset]');
+      const saveButton = card.querySelector('[data-save]');
+      if (resetButton) resetButton.hidden = !editing;
+      if (saveButton) saveButton.hidden = !editing;
+    }
+
+    function restoreSectionFields(card) {
+      card.querySelectorAll('[data-field]').forEach(field => {
+        field.value = field.dataset.originalValue ?? '';
+      });
+    }
+
+    function setupFinancialSearch() {
+      const searchInput = document.getElementById('financial-search-input');
+      const searchButton = document.getElementById('financial-search-button');
+      const clearButton = document.getElementById('financial-search-clear');
+
+      function clearHighlights() {
+        document.querySelectorAll('.financial-card.search-highlight')
+          .forEach(card => card.classList.remove('search-highlight'));
+
+        document.querySelectorAll('.financial-field.search-field-highlight')
+          .forEach(field => field.classList.remove('search-field-highlight'));
+      }
+
+      function performSearch() {
+        clearHighlights();
+
+        const query = searchInput.value.trim().toLowerCase();
+
+        if (!query) {
+          return;
+        }
+
+        const type = 'section';
+
+        if (type === 'section') {
+          const sections = document.querySelectorAll('.financial-card');
+
+          const match = [...sections].find(section =>
+            section.querySelector('h3')?.textContent
+              .toLowerCase()
+              .includes(query)
+          );
+
+          if (match) {
+            match.classList.add('search-highlight');
+
+            match.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start'
+            });
+
+            setActive(match.id);
+          } else {
+            toast('No financial section found.');
+          }
+        }
+
+        if (type === 'field') {
+          const fields = document.querySelectorAll('.financial-field');
+
+          const match = [...fields].find(field =>
+            field.querySelector('label')?.textContent
+              .toLowerCase()
+              .includes(query)
+          );
+
+          if (match) {
+            match.classList.add('search-field-highlight');
+
+            const card = match.closest('.financial-card');
+
+            if (card) {
+              card.classList.add('search-highlight');
+              setActive(card.id);
+            }
+
+            match.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center'
+            });
+          } else {
+            toast('No financial field found.');
+          }
+        }
+      }
+
+      searchButton.addEventListener('click', performSearch);
+
+      searchInput.addEventListener('keydown', event => {
+        if (event.key === 'Enter') {
+          performSearch();
+        }
+      });
+
+      clearButton.addEventListener('click', () => {
+        searchInput.value = '';
+        clearHighlights();
+      });
+    }
+
+    let activeFinancialTab = 'lifeAssured1';
+    function updateFinancialTabs() {
+      const avatar = document.getElementById('financial-shared-avatar');
+      const isProposer = activeFinancialTab === 'Proposer';
+      avatar.textContent = isProposer ? 'P' : 'LA';
+      avatar.setAttribute('aria-label', isProposer ? 'Proposer avatar' : 'Life Assured1 avatar');
+      document.querySelectorAll('[data-financial-tab]').forEach(tab => {
+        const isActive = tab.dataset.financialTab === activeFinancialTab;
+        tab.classList.toggle('active', isActive);
+        tab.setAttribute('aria-selected', String(isActive));
+      });
+    }
+
+
+    function setActive(id) { nav.querySelectorAll('button').forEach(button => button.classList.toggle('active', button.dataset.target === id)); }
+    function toast(message) { const el = document.getElementById('toast'); el.textContent = message; el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 2800); }
+    buildFinancial();
+    setupFinancialSearch();
+    document.querySelectorAll('[data-financial-tab]').forEach(tab => tab.addEventListener('click', () => {
+      activeFinancialTab = tab.dataset.financialTab;
+      updateFinancialTabs();
+    }));
+    updateFinancialTabs();
+    const closeFinancialView = () => {
+      if (window.parent !== window) {
+        window.parent.postMessage('close-financial-view', window.location.origin);
+        return;
+      }
+      window.history.back();
+    };
+    document.getElementById('back-to-drs').addEventListener('click', closeFinancialView);
+    document.getElementById('documents-link').addEventListener('click', () => toast('Financial documents are available in the source application.'));
+    document.getElementById('submit-financial').addEventListener('click', () => toast('Financial details submitted successfully.'));
+  </script>
+</body>
+
+</html>

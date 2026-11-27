@@ -50,7 +50,7 @@ export interface FinancialStatementLayout {
   trailing?: readonly string[];
 }
 
-export type FinancialControlKind = "text" | "yesNo" | "decision" | "date" | "month";
+export type FinancialControlKind = "text" | "yesNo" | "decision" | "date" | "month" | "verifiedIncomeDoc";
 
 export interface FinancialOption {
   label: string;
@@ -64,9 +64,7 @@ export interface FinancialApplicantTab {
 }
 
 export type FinancialSubmitPayload = {
-  applicantKey: string;
-  values: Readonly<Record<string, string>>;
-  reviews: Readonly<Record<string, "agree" | "disagree">>;
+  applicantKey?: string;
 };
 
 export const FINANCIAL_SECTIONS: readonly FinancialSection[] = [
@@ -981,11 +979,49 @@ export function resolveFinancialActionMode(
   return builtIn === "readOnly" ? builtIn : (actions?.defaultMode ?? builtIn);
 }
 
+export const FIN_DOC_TABLE_MISC_TYPE = "FIN_DOC_TABLE";
+
 /** Active entries of a `misc` master list; the description is the stored value (e.g. "Yes", "April"). */
 const readMiscOptions = (type: string): FinancialOption[] =>
   getMasterList("misc", type)
     .filter((entry) => entry.isActive === "Y")
     .map((entry) => ({ label: entry.description, value: entry.description }));
+
+/**
+ * Builds document dropdown options from master data (`FIN_DOC_TABLE` under `misc`),
+ * filtering out any documents already present in the current financial data (`table_of_finance_documents` / `sections`).
+ */
+export function buildFinancialDocumentOptions(
+  sections: readonly FinancialSection[],
+): FinancialOption[] {
+  const existingKeys = new Set(sections.map((section) => section.key));
+  const masterEntries = getMasterList("misc", FIN_DOC_TABLE_MISC_TYPE).filter(
+    (entry) => entry.isActive === "Y",
+  );
+
+  if (masterEntries.length > 0) {
+    return masterEntries
+      .filter((entry) => {
+        const key = entry.value || entry.code;
+        return (
+          key.length > 0 &&
+          !existingKeys.has(key) &&
+          (entry.value === null || !existingKeys.has(entry.value)) &&
+          !existingKeys.has(entry.code)
+        );
+      })
+      .map((entry) => ({
+        label: entry.description,
+        value: entry.value || entry.code,
+      }));
+  }
+
+  return FINANCIAL_SECTIONS.filter(
+    (section) =>
+      !existingKeys.has(section.key) &&
+      !FINANCIAL_NON_REVIEWABLE_SECTION_KEYS.includes(section.key),
+  ).map((section) => ({ label: section.title, value: section.key }));
+}
 
 const monthIndex = (name: string) => new Date(`${name} 1, 2000`).getMonth();
 
@@ -995,12 +1031,39 @@ export function buildFinancialMonthOptions(): FinancialOption[] {
   return [{ label: "Select month", value: "" }, ...months];
 }
 
-export const FINANCIAL_DECISION_OPTIONS: FinancialOption[] = [
-  { label: "Select financial decision", value: "" },
-  { label: "financially eligible", value: "financially eligible" },
-  { label: "counter offer", value: "counter offer" },
-  { label: "reject", value: "reject" },
-];
+/** Financial Decision options from the `misc` master (type `financial_decision`); an unexpected existing value is kept as an extra option. */
+export function buildFinancialDecisionOptions(value: string): FinancialOption[] {
+  const options: FinancialOption[] = [
+    { label: "Select financial decision", value: "" },
+    ...readMiscOptions("financial_decision"),
+  ];
+  if (value && !options.some((option) => option.value === value)) {
+    options.splice(1, 0, { label: value, value });
+  }
+  return options;
+}
+
+/** Documents that are not selectable as the "Verified Income Doc". */
+const VERIFIED_INCOME_DOC_EXCLUDED_KEYS: ReadonlySet<string> = new Set([
+  "financial_profession",
+  "credit_bureau_details",
+  "decision",
+]);
+
+/**
+ * "Verified Income Doc" options: the documents listed in `table_of_finance_documents`
+ * (one section per document), barring the excluded documents.
+ */
+export function buildFinancialVerifiedIncomeDocOptions(
+  sections: readonly FinancialSection[],
+): FinancialOption[] {
+  return [
+    { label: "Select document", value: "" },
+    ...sections
+      .filter((section) => !VERIFIED_INCOME_DOC_EXCLUDED_KEYS.has(section.key))
+      .map((section) => ({ label: section.title, value: section.key })),
+  ];
+}
 
 export const FINANCIAL_DEFAULT_APPLICANTS: readonly FinancialApplicantTab[] = [
   { key: "lifeAssured1", label: "Life Assured1" },
@@ -1016,6 +1079,7 @@ export const FINANCIAL_MESSAGES = {
   sectionSaved: (title: string) => `${title} saved successfully.`,
   saveFailed: "Unable to save the financial details. Please try again.",
   validationFailed: "Please correct the highlighted fields before saving.",
+  unsavedChanges: "Please save the financial details before submitting.",
 } as const;
 
 const YES_NO_LABEL =
@@ -1024,6 +1088,7 @@ const DATE_LABEL = /^(Joining Date|Date of Filling ITR)/i;
 
 export function resolveFinancialControlKind(sectionKey: string, label: string): FinancialControlKind {
   if (sectionKey === "decision" && label === "Financial Decision") return "decision";
+  if (sectionKey === "decision" && label === "Verified Income Doc") return "verifiedIncomeDoc";
   if (YES_NO_LABEL.test(label)) return "yesNo";
   if (DATE_LABEL.test(label)) return "date";
   return "text";

@@ -1,0 +1,563 @@
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  canInvokeBreRetrigger,
+  clearBreRetriggerCount,
+  getDrsApplicationNo,
+  getDrsMemberId,
+  getDrsRoleType,
+  readApiErrorMessage,
+  setBreRetriggerCount,
+} from "@insurance-poc/utils";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import { DecisionComparisonTable } from "@insurance-poc/common/decision-bar";
+import { ApplicantBanner, type RowDetailsOptions } from "@insurance-poc/common/applicant-banner";
+import { BreCard } from "@insurance-poc/common/bre-card";
+import { RiskCards } from "@insurance-poc/common/risk-cards";
+import { QuickLinksModule } from "@insurance-poc/common/quick-links";
+import { buildQuickLinkItems } from "../drs/cuwQuickLinks";
+import { retailPaths, replaceUrl } from "@insurance-poc/routes";
+import {
+  CustomButton,
+  CustomDialog,
+  CustomLoader,
+  CustomSnackbar,
+  CustomTable,
+  DeleteIcon,
+  type Column,
+} from "@insurance-poc/ui";
+import {
+  RequirementMgmt,
+  isNewRequirement,
+  type RequirementItem,
+} from "@insurance-poc/common/requirement-mgmt";
+import { requirementStatusOrder, requirementStatusVariants } from "../drs/requirementData";
+import { getRetailDrsTaskConfig } from "../../config/drsTaskConfig";
+import { useRetriggerRetailBreMutation } from "../../services/breRetriggerApi";
+import { formatBreTimestamp, splitDiscrepancies } from "../drs/breFormat";
+import { CuwSdtRow } from "../cuw/CuwSdtRow";
+import { CuwSectionDialogs, type CuwSectionDialogKey } from "../cuw/CuwSectionDialogs";
+import {
+  fetchCuwDrs,
+  mapClaimAuditListPayload,
+  type CuwClaimAuditSection,
+  type CuwDrsRecord,
+} from "../../services/drsService";
+import {
+  useGetCuwUwDecisionHistoryQuery,
+  useLazyGetCuwClaimAuditListQuery,
+  useSaveRetailDrsRequirementsMutation,
+} from "../../services/drsApi";
+import {
+  readReferralDecisionOptions,
+  type ReferralDecisionHistoryRow,
+  type ReferralRoleConfig,
+} from "../../services/drsService";
+import { useReferralCompleteTask } from "./useReferralCompleteTask";
+import { ReferralDecisionSection } from "./ReferralDecisionSection";
+import { REFERRAL_PROFILE_IMAGE_URL } from "./profileImage";
+
+// Row 0 is the member line (Name / App No. are shown in the banner header); row 1 is the product line (bold); row 2 is Riders; row 3 is Sum at Risk.
+const REFERRAL_BANNER_OPTIONS: RowDetailsOptions = {
+  emphasisRowIds: [1],
+  skipFieldNames: ["Name", "App No.", "App No"],
+  rowLabels: { 2: "Riders", 3: "Sum at Risk" },
+};
+
+// Underwriting Decision History columns (prototype `Mxe`).
+const DECISION_HISTORY_COLUMNS: Column<ReferralDecisionHistoryRow>[] = [
+  { key: "userName", header: "User Name", width: "12%" },
+  { key: "userRole", header: "User Role", width: "10%" },
+  { key: "firstUwDecision", header: "UW Decision", width: "12%" },
+  { key: "firstUwRemarks", header: "UW Remarks", width: "19%" },
+  { key: "date", header: "Date", width: "11%" },
+  { key: "financialDecision", header: "Financial Decision", width: "12%" },
+  { key: "medicalDecision", header: "Medical Decision", width: "12%" },
+  { key: "smokerStatus", header: "Smoker Status", width: "12%" },
+  { key: "referralReason", header: "Referral Reason", width: "14%" },
+  { key: "referralRemarks", header: "Referral Remarks", width: "18%" },
+];
+
+const QUICK_ITEMS = [
+  { id: "applicant-profile", label: "Applicant Profile" },
+  { id: "proposal-documents", label: "Proposal Form & Documents" },
+  { id: "previous-policies", label: "Previous Policies" },
+  { id: "open-tasks", label: "Open Tasks" },
+  { id: "risk-details", label: "Risk Details" },
+  { id: "audit-trail", label: "Audit Trail" },
+  { id: "raise-grievance", label: "Raise Grievance" },
+];
+
+type BreRetriggerFinalOverrides = Partial<
+  Record<"status" | "decision" | "remarks" | "discrepancy" | "timestamp", string>
+>;
+
+type PageState =
+  | { kind: "loading" }
+  | { kind: "missing-id" }
+  | { kind: "not-found" }
+  | { kind: "ready"; record: CuwDrsRecord };
+
+export interface ReferralDrsPageProps {
+  /** HOD or Sr UW — drives the decision card labels and options. */
+  config: ReferralRoleConfig;
+}
+
+/**
+ * Member-level DRS page for the HOD and Sr UW tasks
+ * (prototypes: hod-drs-prototype.html, sr-uw-drs-prototype.html).
+ * Same top area as the CUW member DRS page (banner with photo, risk cards, BRE card, SDT row), followed by
+ *  - BRE Overall Decision / Remarks strip
+ *  - Underwriting Decision History table
+ *  - decision card (ReferralDecisionSection)
+ */
+export function ReferralDrsPage({ config }: Readonly<ReferralDrsPageProps>) {
+  const navigate = useNavigate();
+  const { applicationNo: applicationNoParam } = useParams();
+  const applicationNo = applicationNoParam?.trim() || getDrsApplicationNo();
+  const memberId = getDrsMemberId();
+  const roleType = getDrsRoleType();
+
+  const drsTaskConfig = getRetailDrsTaskConfig(roleType);
+  const [saveRetailDrsRequirements] = useSaveRetailDrsRequirementsMutation();
+  const [retriggerRetailBre, retriggerRetailBreState] = useRetriggerRetailBreMutation();
+  const [fetchClaimAuditList] = useLazyGetCuwClaimAuditListQuery();
+  // Underwriting Decision History: `uw-decision/fetch` on page load
+  const historyQuery = useGetCuwUwDecisionHistoryQuery(
+    { applicationNumber: applicationNo },
+    { skip: !applicationNo },
+  );
+  const historyRows: ReferralDecisionHistoryRow[] = historyQuery.data ?? [];
+
+  const [page, setPage] = useState<PageState>(
+    applicationNo ? { kind: "loading" } : { kind: "missing-id" },
+  );
+
+  const [sectionDialog, setSectionDialog] = useState<CuwSectionDialogKey | null>(null);
+  // Claim Audit rows from the claim-audit list API; null = use the rows that came with the DRS.
+  const [claimAuditOverride, setClaimAuditOverride] = useState<CuwClaimAuditSection | null>(null);
+  const [breDetailOpen, setBreDetailOpen] = useState(false);
+  const [requirementOpen, setRequirementOpen] = useState(false);
+  // Status of the BRE card chip that opened the Requirement Management dialog ("" = All).
+  const [requirementStatus, setRequirementStatus] = useState("");
+  const [breRetriggerFinals, setBreRetriggerFinals] = useState<BreRetriggerFinalOverrides>({});
+  const [breRetriggerBarDecision, setBreRetriggerBarDecision] = useState<string | null>(null);
+  const [breRetriggerLimitDialogOpen, setBreRetriggerLimitDialogOpen] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+
+  const notify = (message: string) => {
+    setSnackbarMessage(message);
+    setSnackbarOpen(true);
+  };
+
+  const handleClaimAuditClick = async (record: CuwDrsRecord) => {
+    try {
+      const payload = await fetchClaimAuditList({
+        applicationNumber: record.applicationNo || applicationNo,
+        partyId: record.partyId,
+      }).unwrap();
+      setClaimAuditOverride(mapClaimAuditListPayload(payload, record.sections.claimAudit));
+      setSectionDialog("claimAudit");
+    } catch (reason: unknown) {
+      const message = readApiErrorMessage(reason);
+      notify(message.length > 0 ? message : "Unable to load Claim Audit.");
+    }
+  };
+
+  const handleSaveRequirements = async (updatedRequirements: RequirementItem[]) => {
+    try {
+      const saved = await saveRetailDrsRequirements({
+        applicationNo,
+        roleType: drsTaskConfig.roleType,
+        lob: "R",
+        requirements: updatedRequirements,
+        ...(page.kind === "ready"
+          ? { drsData: page.record.drsData, caseType: page.record.caseType }
+          : {}),
+      }).unwrap();
+      setPage((prev) =>
+        prev.kind === "ready"
+          ? { kind: "ready", record: { ...prev.record, requirements: saved } }
+          : prev,
+      );
+      notify("Requirements saved successfully.");
+    } catch (err: unknown) {
+      notify(readApiErrorMessage(err) || "Failed to save requirements.");
+    }
+  };
+
+  const referralCompleteTask = useReferralCompleteTask(applicationNo, notify);
+
+  const goToInbox = () => {
+    clearBreRetriggerCount();
+    navigate(retailPaths.inbox, { replace: true });
+  };
+
+  const handleBreRetrigger = async () => {
+    const appNo = applicationNo.trim();
+    if (appNo.length === 0) {
+      notify("Application number is missing.");
+      return;
+    }
+    if (retriggerRetailBreState.isLoading) return;
+
+    if (!canInvokeBreRetrigger()) {
+      setBreRetriggerLimitDialogOpen(true);
+      return;
+    }
+
+    try {
+      const mapped = await retriggerRetailBre({ applicationNumber: appNo }).unwrap();
+      setBreRetriggerCount(mapped.reTriggerCount);
+      setBreRetriggerBarDecision(mapped.barDecision);
+      setBreRetriggerFinals(mapped.rows);
+    } catch (reason: unknown) {
+      setBreRetriggerFinals((previous) => ({ ...previous, status: "" }));
+      const message = readApiErrorMessage(reason);
+      notify(message.length > 0 ? message : "Unable to retrigger BRE.");
+    }
+  };
+
+  const readBreRowFinal = (rowLabel: string, defaultFinal: string): string => {
+    const labelLower = rowLabel.toLowerCase();
+    if (labelLower.includes("status") && breRetriggerFinals.status !== undefined) return breRetriggerFinals.status;
+    if (labelLower.includes("decision") && breRetriggerFinals.decision !== undefined) return breRetriggerFinals.decision;
+    if (labelLower.includes("remark") && breRetriggerFinals.remarks !== undefined) return breRetriggerFinals.remarks;
+    if (labelLower.includes("discrepancy") && breRetriggerFinals.discrepancy !== undefined) return breRetriggerFinals.discrepancy;
+    if (labelLower.includes("timestamp") && breRetriggerFinals.timestamp !== undefined) return formatBreTimestamp(breRetriggerFinals.timestamp);
+    return defaultFinal;
+  };
+
+  useEffect(() => {
+    setBreRetriggerFinals({});
+    setBreRetriggerBarDecision(null);
+  }, [applicationNo]);
+
+  useEffect(() => {
+    setClaimAuditOverride(null);
+  }, [applicationNo, memberId]);
+
+  useEffect(() => {
+    if (!applicationNo) {
+      setPage({ kind: "missing-id" });
+      return;
+    }
+    let active = true;
+    setPage({ kind: "loading" });
+    void fetchCuwDrs(applicationNo, memberId, roleType).then((record) => {
+      if (!active) return;
+      setPage(record ? { kind: "ready", record } : { kind: "not-found" });
+    });
+    return () => {
+      active = false;
+    };
+  }, [applicationNo, memberId, roleType]);
+
+  return (
+    <Box
+      data-testid="referral-drs-main"
+      sx={{ minHeight: "100%", background: "#fff8f3", pb: 8 }}
+    >
+      {retriggerRetailBreState.isLoading && (
+        <CustomLoader message="Retriggering BRE" fullScreen />
+      )}
+      <Box>
+        {page.kind === "ready" ? (
+          <>
+            <ApplicantBanner
+              name={page.record.applicantName}
+              photoUrl={REFERRAL_PROFILE_IMAGE_URL}
+              applicationNo={page.record.applicationNo}
+              rowDetails={page.record.rowDetails}
+              rowDetailsOptions={REFERRAL_BANNER_OPTIONS}
+            />
+
+            {/* Summary wrap: risk cards + BRE card + SDT row */}
+            <Box sx={{ p: "6px 4px 0" }}>
+              <Box
+                sx={{
+                  p: "6px",
+                  border: "1px solid #f1d8c8",
+                  borderRadius: "6px",
+                  background: "#fff8f3",
+                }}
+              >
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: {
+                      xs: "1fr",
+                      md: "minmax(0, 3fr) minmax(245px, 1fr)",
+                    },
+                    gap: "6px",
+                    alignItems: "stretch",
+                  }}
+                >
+                  <RiskCards cards={page.record.riskCards} />
+
+                  <BreCard
+                    decision={breRetriggerBarDecision ?? page.record.breData.breCode}
+                    initialDiscrepancies={page.record.breData.initialDiscrepancy}
+                    finalDiscrepancies={
+                      breRetriggerFinals.discrepancy !== undefined
+                        ? splitDiscrepancies(breRetriggerFinals.discrepancy)
+                        : page.record.breData.finalDiscrepancy
+                    }
+                    statusChips={page.record.breData.statusChips.map((c) => ({
+                      key: c.label,
+                      label: c.label,
+                      count: c.count,
+                    }))}
+                    onStatusClick={(chip) => {
+                      setRequirementStatus(chip.label === "All" ? "" : chip.label);
+                      setRequirementOpen(true);
+                    }}
+                    onViewDetail={() => setBreDetailOpen(true)}
+                    onRefresh={handleBreRetrigger}
+                  />
+                </Box>
+
+                <Box sx={{ mt: "7px" }}>
+                  <CuwSdtRow
+                    data={page.record.sdtRow}
+                    onGrievanceHistory={() => setSectionDialog("grievanceHistory")}
+                    onClaimAudit={() => void handleClaimAuditClick(page.record)}
+                    onUwGuidelines={() => setSectionDialog("uwGuidelines")}
+                    onSpecialRemarks={() => setSectionDialog("specialRemarks")}
+                  />
+                </Box>
+              </Box>
+            </Box>
+
+            <Box sx={{ p: "4px 12px 0" }}>
+              {/* BRE Overall Decision / Remarks */}
+              <Box
+                role="group"
+                aria-label="SDT decision details"
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: {
+                    xs: "minmax(0, 1fr)",
+                    md: "minmax(130px, 0.65fr) minmax(0, 2fr)",
+                  },
+                  alignItems: "stretch",
+                  width: "100%",
+                  minWidth: 0,
+                  boxSizing: "border-box",
+                  border: "1px solid #E4DEDB",
+                  borderLeft: "4px solid #E45F14",
+                  borderRadius: "8px",
+                  bgcolor: "#FCFAF9",
+                  overflow: "hidden",
+                  boxShadow: "0 2px 7px rgba(60, 42, 35, 0.04)",
+                }}
+              >
+                {[
+                  { label: "BRE Overall Decision", value: page.record.uwData?.breOverallDecision },
+                  { label: "BRE Overall Remarks", value: page.record.uwData?.breOverallRemarks },
+                ].map(({ label, value }, index) => (
+                  <Box
+                    key={label}
+                    sx={{
+                      minWidth: 0,
+                      px: 1.5,
+                      py: 1,
+                      borderLeft: { xs: "none", md: index > 0 ? "1px solid #E8E1DE" : "none" },
+                      borderTop: { xs: index > 0 ? "1px solid #E8E1DE" : "none", md: "none" },
+                    }}
+                  >
+                    <Typography
+                      sx={{
+                        color: "#8B807B",
+                        fontSize: 9,
+                        fontWeight: 700,
+                        textTransform: "uppercase",
+                        letterSpacing: 0.45,
+                        lineHeight: 1.4,
+                        mb: 0.4,
+                      }}
+                    >
+                      {label}
+                    </Typography>
+                    <Typography
+                      sx={{
+                        color: index === 0 ? "#302A27" : "#4B433F",
+                        fontSize: 11,
+                        fontWeight: index === 0 ? 800 : 600,
+                        lineHeight: 1.5,
+                        whiteSpace: "pre-wrap",
+                        overflowWrap: "anywhere",
+                      }}
+                    >
+                      {value}
+                    </Typography>
+                  </Box>
+                ))}
+              </Box>
+
+              {/* Underwriting Decision History */}
+              <Box sx={{ mt: 0.75 }}>
+                <CustomTable<ReferralDecisionHistoryRow>
+                  title="Underwriting Decision History"
+                  columns={DECISION_HISTORY_COLUMNS}
+                  data={historyRows}
+                />
+              </Box>
+
+              {/* Role decision (HOD / Sr UW) */}
+              <Box sx={{ mt: 0.75 }}>
+                <ReferralDecisionSection
+                  roleLabel={config.label}
+                  decisionOptions={readReferralDecisionOptions(config)}
+                  disabled={referralCompleteTask.isSubmitting}
+                  onSubmit={(payload) => {
+                    void referralCompleteTask.submit(payload).then((done) => {
+                      if (done) {
+                        clearBreRetriggerCount();
+                        replaceUrl(retailPaths.inbox);
+                      }
+                    });
+                  }}
+                />
+              </Box>
+            </Box>
+
+            <QuickLinksModule
+              items={buildQuickLinkItems(QUICK_ITEMS, notify)}
+              title="Quick Links"
+              applicationNo={applicationNo}
+              onNavigate={(path) => navigate(path)}
+              onNotify={notify}
+            />
+          </>
+        ) : null}
+
+        {page.kind === "missing-id" ? (
+          <Box role="alert" sx={{ p: 2, color: "#302a27", fontSize: "12px" }}>
+            Application number is missing.
+          </Box>
+        ) : null}
+
+        {page.kind === "not-found" ? (
+          <Box role="alert" sx={{ p: 2, color: "#302a27", fontSize: "12px" }}>
+            No {config.label} record was found for application {applicationNo}.
+          </Box>
+        ) : null}
+      </Box>
+
+      {/* Requirement Management dialog — opens on BRE status chip click */}
+      {page.kind === "ready" && (
+        <CustomDialog
+          open={requirementOpen}
+          onClose={() => setRequirementOpen(false)}
+          title="Requirement Management"
+          maxWidth="xl"
+          fullWidth
+        >
+          <Box sx={{ p: 1 }}>
+            <RequirementMgmt
+              applicationKey={applicationNo}
+              requirements={page.record.requirements}
+              statusVariants={requirementStatusVariants}
+              statusOrder={requirementStatusOrder}
+              initialStatus={requirementStatus || undefined}
+              fieldOptions={{
+                profile:
+                  page.record.memberTypes.length > 0
+                    ? page.record.memberTypes.map((type) => ({ label: type, value: type }))
+                    : undefined,
+              }}
+              addButton={{
+                label: "+ Add Requirement",
+                onClick: () => console.log("Add Requirement clicked"),
+              }}
+              rowActions={[
+                {
+                  key: "delete",
+                  label: "Remove requirement",
+                  icon: <DeleteIcon width={16} height={16} />,
+                  tone: "danger",
+                  hidden: (row) => !isNewRequirement(row),
+                  onClick: (row, { removeRow }) => {
+                    console.log("Delete requirement", row.id);
+                    removeRow();
+                  },
+                },
+              ]}
+              onSave={handleSaveRequirements}
+            />
+          </Box>
+        </CustomDialog>
+      )}
+
+      {/* BRE Detail dialog */}
+      <CustomDialog
+        open={breDetailOpen}
+        onClose={() => setBreDetailOpen(false)}
+        title={
+          <Typography component="span" sx={{ fontSize: 12, fontWeight: 800 }}>
+            BRE Decision
+          </Typography>
+        }
+        maxWidth="lg"
+        contentSx={{ p: { xs: 1, sm: 1.5 } }}
+      >
+        {page.kind === "ready" ? (
+          <DecisionComparisonTable
+            headers={page.record.breData.detailHeaders}
+            rows={page.record.breData.detailRows.map((row) => ({
+              ...row,
+              final: readBreRowFinal(row.label, row.final),
+            }))}
+          />
+        ) : null}
+      </CustomDialog>
+
+      <CustomDialog
+        open={breRetriggerLimitDialogOpen}
+        onClose={() => setBreRetriggerLimitDialogOpen(false)}
+        showCloseIcon={false}
+        disableEscapeKeyDown
+        title="BRE Retrigger"
+        actions={
+          <CustomButton variant="contained" onClick={goToInbox}>
+            Ok
+          </CustomButton>
+        }
+      >
+        Kindly raise ticket with IT team
+      </CustomDialog>
+
+      {page.kind === "ready" ? (
+        <CuwSectionDialogs
+          sections={
+            claimAuditOverride
+              ? { ...page.record.sections, claimAudit: claimAuditOverride }
+              : page.record.sections
+          }
+          open={sectionDialog}
+          onClose={() => setSectionDialog(null)}
+          notify={notify}
+          grievanceContext={{
+            applicationNo: page.record.applicationNo || applicationNo,
+            partyId: page.record.partyId,
+            lifeNumber: page.record.lifeNumber,
+            transactionId: page.record.transactionId,
+          }}
+        />
+      ) : null}
+
+      <CustomSnackbar
+        open={snackbarOpen}
+        message={snackbarMessage}
+        severity="info"
+        onClose={() => setSnackbarOpen(false)}
+        autoHideDuration={2000}
+      />
+    </Box>
+  );
+}
+
+export default ReferralDrsPage;

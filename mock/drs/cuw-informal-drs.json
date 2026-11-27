@@ -1,0 +1,79 @@
+{
+    "success": true,
+    "data": {
+        "applicationNo": "OS30419326",
+        "caseType": "Non-Medical",
+        "screenType": "CUW",
+        "businessType": "RETAIL",
+        "roleType": "CUW_TASK",
+        "commonSection": [
+            {
+                "name": "latestBreDecision",
+                "label": "BRE Decision",
+                "value": {
+                    "code": "ST",
+                    "columns": [
+                        {
+                            "key": "label",
+                            "header": "BRE"
+                        },
+                        {
+                            "key": "initial",
+                            "header": "Initial BRE"
+                        },
+                        {
+                            "key": "final",
+                            "header": "Final BRE"
+                        }
+                    ],
+                    "rows": [
+                        {
+                            "id": "status",
+                            "label": "BRE Status",
+                            "initial": "SUCCESS",
+                            "final": "SUCCESS"
+                        },
+                        {
+                            "id": "decision",
+                            "label": "BRE Decision",
+                            "initial": "ST",
+                            "final": "ST"
+                        },
+                        {
+                            "id": "remarks",
+                            "label": "BRE Remarks",
+                            "initial": "Preferred Customer: Verify documented income greater than or equal to 15L#Check Basic KYC Document Attestations#Original Verified KYC Document Required.#QSTN/Document Attached#TSSA value = 2210000#PB risk score not received#Travel questionnaire response non-adverse",
+                            "final": "Preferred Customer: Verify documented income greater than or equal to 15L#Check Basic KYC Document Attestations#Original Verified KYC Document Required.#QSTN/Document Attached#TSSA value = 2210000#PB risk score not received#Travel questionnaire response non-adverse"
+                        },
+                        {
+                            "id": "discrepancy",
+                            "label": "BRE Discrepancy",
+                            "initial": "IDM#ADP#KYP#AGE#ACR#OCD#PAL",
+                            "final": "IDM#ADP#KYP#AGE#ACR#OCD#PAL"
+                        },
+                        {
+                            "id": "timestamp",
+                            "label": "BRE Timestamp",
+                            "initial": "19/11/2026, 1318hrs",
+                            "final": "19/11/2026, 1319hrs"
+                        }
+                    ]
+                }
+            }
+        ],
+        "membersDetails": [
+            {
+                "rowDetails": [],
+                "cardDetails": [],
+                "sections": [],
+                "subSections": [],
+                "sectionType": [
+                    "Header",
+                    "Card",
+                    "Section",
+                    "quickLinks"
+                ]
+            }
+        ]
+    }
+}

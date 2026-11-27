@@ -51,7 +51,7 @@ const EMPTY_LOAN: LoanEditValues = {
 // Prototype masks everything except the last 4 characters
 const maskValue = (value?: string) => {
   const text = value?.trim();
-  if (!text) return "-";
+  if (!text) return "";
   return text.length <= 4 ? "X".repeat(text.length) : `${"X".repeat(text.length - 4)}${text.slice(-4)}`;
 };
 
@@ -83,29 +83,130 @@ const readFields = (value: unknown): FieldData[] =>
   asArray(value)
     .filter(isRecord)
     .map((item) => {
-      const rawVal = text(item.value);
-      const strVal = typeof rawVal === "string" ? rawVal.trim() : typeof rawVal === "number" ? String(rawVal) : "";
+      const strVal = str(item.value).trim();
       return {
         label: str(item.label),
-        value: strVal.length > 0 ? strVal : "-",
+        value: strVal,
       };
     });
 
-/** Finds an entry of a [{ label, ... }] list by label (case-insensitive). */
+// Fixed field lists for the Personal & KYC tab. The UI always shows these fields in this order;
+// a field missing from the API response renders as "-" instead of disappearing.
+const PERSONAL_LABELS = [
+  "Applicant Name",
+  "Date of Birth",
+  "Age",
+  "Gender",
+  "Marital Status",
+  "Nationality",
+  "Country of Residence",
+  "Education",
+  "Resident Status",
+  "Designation",
+  "Disabled",
+  "Percentage Of Impairment",
+  "Type Of Impairment",
+  "UDID Number",
+  "UDS Link",
+  "City of Resident",
+  "State of Resident",
+] as const;
+
+const KYC_LABELS = [
+  "PRAN Number",
+  "PRAN Number Verification",
+  "PAN Number",
+  "PAN Flag",
+  "PAN Aadhar Seeding Status",
+  "Identity Proof Type",
+  "Identity Proof Expiry Date",
+  "Identity Proof Number",
+  "Address Proof",
+  "Income Proof",
+  "CKYC Number",
+  "PEP",
+  "Criminal Proceedings",
+] as const;
+
+const ADDRESS_LABELS = [
+  "Address Line 1",
+  "Address Line 2",
+  "Address Line 3",
+  "Landmark",
+  "City",
+  "State",
+  "Country",
+  "Pin Code",
+] as const;
+
+const CONTACT_LABELS = [
+  "Mobile Number",
+  "Email Id",
+  "Alternate Mobile",
+  "STD/ISD Code",
+  "Land Line Number",
+  "Email Pref",
+  "SMS Pref",
+  "Negative Pincode",
+] as const;
+
+const LIFESTYLE_LABELS = [
+  "Height",
+  "Weight",
+  "BMI",
+  "Smoker",
+  "Alcohol",
+  "Any Narcotics Question ticked Positive",
+  "Is Occupation Hazardous?",
+  "Any Medical Question ticked Positive",
+  "Is Family Medical History?",
+  "Family Medical History Details",
+  "Illness Impairment",
+  "Illness Impairment Details",
+  "Other Medical History",
+] as const;
+
+const normalizeLabel = (label: string) =>
+  label.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+
+const isLabelMatch = (a: string, b: string) => {
+  const normA = normalizeLabel(a);
+  const normB = normalizeLabel(b);
+  if (normA === normB) return true;
+  if (
+    (normA === "mobileno" || normA === "mobilenumber" || normA === "mobile") &&
+    (normB === "mobileno" || normB === "mobilenumber" || normB === "mobile")
+  ) {
+    return true;
+  }
+  if (
+    (normA === "pincode" || normA === "zipcode" || normA === "postalcode" || normA === "pincode") &&
+    (normB === "pincode" || normB === "zipcode" || normB === "postalcode" || normB === "pincode")
+  ) {
+    return true;
+  }
+  return false;
+};
+
+/** Builds one field per expected label (normalized match); missing labels get "-". */
+const readFixedFields = (value: unknown, labels: readonly string[]): FieldData[] => {
+  const received = readFields(value);
+  return labels.map((label) => ({
+    label,
+    value: received.find((field) => isLabelMatch(field.label, label))?.value ?? "-",
+  }));
+};
+
+/** Finds an entry of a [{ label, ... }] list by label (normalized match). */
 const findByLabel = (entries: unknown, label: string): JsonRecord | undefined =>
   asArray(entries)
     .filter(isRecord)
-    .find((entry) => str(entry.label).trim().toLowerCase() === label.toLowerCase());
+    .find((entry) => isLabelMatch(str(entry.label), label));
 
 const maskKycField = (field: FieldData): FieldData =>
   MASKED_KYC_LABELS.has(field.label)
     ? { label: field.label, value: maskValue(typeof field.value === "string" ? field.value : undefined) }
     : field;
-
-const splitName = (name: string) => {
-  const [firstName = "", ...rest] = name.trim().split(/\s+/);
-  return { firstName, lastName: rest.join(" ") };
-};
 
 const toShare = (value: unknown) => {
   const raw = str(value).trim();
@@ -114,7 +215,12 @@ const toShare = (value: unknown) => {
 };
 
 const readNomineeRows = (nominee: unknown, label: string): JsonRecord[] =>
-  asArray(findByLabel(asRecord(nominee).value, label)?.rows).filter(isRecord);
+  asArray(findByLabel(asRecord(nominee).value, label)?.rows)
+    .filter(isRecord)
+    .filter((row) => Object.values(row).some((cell) => str(cell).trim() !== ""));
+
+/** `{ label, value: { label, value: [{ label, value }] } }` tab (generic, eIA) -> FieldData[]. */
+const readNestedFields = (section: unknown): FieldData[] => readFields(asRecord(asRecord(section).value).value);
 
 const readLoan = (baseAndLoan: unknown): LoanEditValues => {
   const loan: LoanEditValues = { ...EMPTY_LOAN };
@@ -125,9 +231,11 @@ const readLoan = (baseAndLoan: unknown): LoanEditValues => {
   return loan;
 };
 
-/** Finds a field value by label (case-insensitive) in a [{ label, value }] list. */
-const fieldValue = (fields: FieldData[], label: string): string =>
-  str(fields.find((field) => field.label.trim().toLowerCase() === label.toLowerCase())?.value);
+/** Finds a field value by label in a [{ label, value }] list. */
+const fieldValue = (fields: FieldData[], label: string): string => {
+  const found = fields.find((field) => isLabelMatch(field.label, label))?.value;
+  return found === "-" ? "" : str(found);
+};
 
 const MONTHS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
 
@@ -155,13 +263,15 @@ export const readEditOptions = (): Partial<EditApplicantOptions> => ({
   genderDocument: toMasterOptions("misc", "IDENTITY"),
   pincodeDocument: toMasterOptions("misc", "ADDRESS"),
   residentStatus: toMasterOptions("resident_status"),
+  applicantStatus: toMasterOptions("misc", "applicant_status"),
+  riders: toMasterOptions("rider"),
 });
 
 /** Maps a displayed value (description / value / code) to the master code used as the select value. */
-const toMasterCode = (masterType: string, displayed: string): string => {
+const toMasterCode = (masterType: string, displayed: string, type?: string): string => {
   const target = displayed.trim().toLowerCase();
   if (!target) return "";
-  const entry = getMasterList(masterType).find(
+  const entry = getMasterList(masterType, type).find(
     (item) =>
       item.description.trim().toLowerCase() === target ||
       item.value?.trim().toLowerCase() === target ||
@@ -181,28 +291,42 @@ const toYesNo = (value: string): string => {
 type EditValuesSource = {
   personal: FieldData[];
   kyc: FieldData[];
+  rawPersonalKyc?: FieldData[];
   communicationAddress: FieldData[];
   contactDetails: FieldData[];
   financialAndProfession: FieldData[];
   health: FieldData[];
-  lifestyleHabits: string;
 };
 
-const readEditValues = (source: EditValuesSource): Partial<EditApplicantValues> => ({
-  dob: toIsoDate(fieldValue(source.personal, "Date of Birth")),
-  gender: toMasterCode("gender", fieldValue(source.personal, "Gender")),
-  zipCode: fieldValue(source.communicationAddress, "Pin Code"),
-  mobileNo: fieldValue(source.contactDetails, "Mobile Number"),
-  immigrationStatus: toMasterCode("resident_status", fieldValue(source.personal, "Resident Status")),
-  panNumber: fieldValue(source.kyc, "PAN Number"),
-  isPanValid: toYesNo(fieldValue(source.kyc, "PAN Flag")),
-  aadharSeedingStatus: toYesNo(fieldValue(source.kyc, "PAN Aadhar Seeding Status")),
-  emailId: fieldValue(source.contactDetails, "Email Id"),
-  height: fieldValue(source.health, "Height"),
-  weight: fieldValue(source.health, "Weight"),
-  lifestyleHabits: source.lifestyleHabits,
-  annualIncome: fieldValue(source.financialAndProfession, "Annual Income"),
-});
+const readEditValues = (source: EditValuesSource): Partial<EditApplicantValues> => {
+  const rawApplicantStatus = fieldValue(source.rawPersonalKyc ?? [], "Applicant Status");
+
+  const rawKyc = source.rawPersonalKyc ?? [];
+
+  return {
+    dobDocument: toMasterCode("misc", fieldValue(rawKyc, "Dob Document"), "AGE"),
+    genderDocument: toMasterCode("misc", fieldValue(rawKyc, "Gender Document"), "IDENTITY"),
+    pincodeDocument: toMasterCode("misc", fieldValue(rawKyc, "Pincode Document"), "ADDRESS"),
+    dob: toIsoDate(fieldValue(source.personal, "Date of Birth")),
+    gender: toMasterCode("gender", fieldValue(source.personal, "Gender")),
+    zipCode: fieldValue(source.communicationAddress, "Pin Code"),
+    mobileNo: fieldValue(source.contactDetails, "Mobile Number"),
+    immigrationStatus: toMasterCode("resident_status", fieldValue(rawKyc, "Immigration Status")),
+    panNumber: fieldValue(source.kyc, "PAN Number"),
+    isPanValid: toYesNo(fieldValue(source.kyc, "PAN Flag")),
+    aadharSeedingStatus: toYesNo(fieldValue(source.kyc, "PAN Aadhar Seeding Status")),
+    nsdlNameMatching: toYesNo(fieldValue(rawKyc, "Nsdl Name Matching")),
+    nsdlDobMatching: toYesNo(fieldValue(rawKyc, "Nsdl Dob Matching")),
+    emailId: fieldValue(source.contactDetails, "Email Id"),
+    height: fieldValue(source.health, "Height"),
+    weight: fieldValue(source.health, "Weight"),
+    annualIncome: fieldValue(source.financialAndProfession, "Annual Income"),
+    applicantStatus:
+      toMasterCode("misc", rawApplicantStatus, "applicant_status") ||
+      rawApplicantStatus.trim().toLowerCase() ||
+      "applicant",
+  };
+};
 
 // product_details row key + default label, in column order. The row keys keep the API's own
 // spelling (`foundSource`, `partnertype`); labels come from `columns` by position when present.
@@ -220,8 +344,7 @@ const PRODUCT_COLUMNS = [
 const readProductFields = (productDetails: unknown): FieldData[] => {
   const value = asRecord(asRecord(productDetails).value);
   const columns = asArray(value.columns);
-  const row = asArray(value.rows).find(isRecord);
-  if (!row) return [];
+  const row = asArray(value.rows).find(isRecord) ?? {};
   return PRODUCT_COLUMNS.map(({ key, label }, index) => ({
     label: optionalText(asRecord(columns[index]).label) ?? label,
     value: text(row[key]),
@@ -232,6 +355,7 @@ const readImageRecords = (imageDetails: unknown): ImageDetailRecord[] =>
   asArray(asRecord(asRecord(imageDetails).value).rows)
     .filter(isRecord)
     .map((row) => ({
+      imageType: optionalText(row.imageType),
       document: optionalText(row.document),
       faceMatchScore: optionalText(row.faceMatchScore),
       imageQuality: optionalText(row.imageQuality),
@@ -244,43 +368,49 @@ const toApplicant = (member: JsonRecord, total: number, riders: RiderEditRow[]):
 
   const contactAndAddress = asRecord(member.contact_and_address).value;
   const healthInformation = findByLabel(asRecord(member.medical_and_lifestyle).value, "Health Information");
-  const lifestyleHabits = findByLabel(asRecord(member.medical_and_lifestyle).value, "Lifestyle Habits");
 
   const nomineeRows = readNomineeRows(member.nominee, "Nominee Details");
   const appointeeRows = readNomineeRows(member.nominee, "Appointee Details");
 
   const nominees: NomineeRow[] = nomineeRows.map((row) => ({
-    nomineeName: str(row.name) || "-",
-    nomineeDOB: str(row.dob) || "-",
-    gender: str(row.gender) || "-",
-    relationship: str(row.relationship) || "-",
+    nomineeName: str(row.name),
+    nomineeDOB: str(row.dob),
+    gender: str(row.gender),
+    relationship: str(row.relationship),
     sharePercentage: toShare(row.share),
-    isLASame: "-",
-    relationShipWithJL: "-",
-    laFlag: "-",
+    isLASame: "",
+    relationShipWithJL: "",
+    laFlag: "",
   }));
 
   const appointees: AppointeeRow[] = appointeeRows.map((row) => ({
-    appointeeName: str(row.name) || "-",
-    appointeeGender: str(row.gender) || "-",
-    appointeeDOB: str(row.dob) || "-",
-    appointeeRelationship: str(row.relationship) || "-",
+    appointeeName: str(row.name),
+    appointeeGender: str(row.gender),
+    appointeeDOB: str(row.dob),
+    appointeeRelationship: str(row.relationship),
   }));
 
   const editNominees: NomineeEditRow[] = nomineeRows.map((row) => ({
-    ...splitName(str(row.name)),
+    firstName: str(row.firstName),
+    lastName: str(row.lastName),
     dob: str(row.dob).slice(0, 10),
-    gender: str(row.gender),
-    proposerNomineeRelation: str(row.relationship),
+    gender: toMasterCode("gender", str(row.gender)),
+    proposerNomineeRelation: str(row.proposerNomineeRelation) || str(row.relationship),
     percentage: str(row.share),
-    accountNumber: "",
-    ifsc: "",
+    accountNumber: str(row.accountNumber),
+    ifsc: str(row.ifsc),
   }));
 
-  const personalFields = readFields(groups[0]);
-  const rawKycFields = readFields(groups[1]);
-  const communicationAddress = readFields(findByLabel(contactAndAddress, "Communication Address")?.value);
-  const contactDetails = readFields(findByLabel(contactAndAddress, "Contact Details")?.value);
+  const personalFields = readFixedFields(groups[0], PERSONAL_LABELS);
+  const rawKycFields = readFixedFields(groups[1], KYC_LABELS);
+  const communicationEntries = findByLabel(contactAndAddress, "Communication Address")?.value;
+  const communicationAddress = readFixedFields(communicationEntries, ADDRESS_LABELS);
+  // "Negative Pincode" is sent with the communication address; it is shown under Contact Details.
+  // Communication entries come first, so they win over a same-named Contact Details entry.
+  const contactDetails = readFixedFields(
+    [...asArray(communicationEntries), ...asArray(findByLabel(contactAndAddress, "Contact Details")?.value)],
+    CONTACT_LABELS,
+  );
 
   return {
     id: memberType,
@@ -292,7 +422,7 @@ const toApplicant = (member: JsonRecord, total: number, riders: RiderEditRow[]):
     personalFields,
     kycFields: rawKycFields.map(maskKycField),
     communicationAddress,
-    permanentAddress: readFields(findByLabel(contactAndAddress, "Permanent Address")?.value),
+    permanentAddress: readFixedFields(findByLabel(contactAndAddress, "Permanent Address")?.value, ADDRESS_LABELS),
     contactDetails,
     productFields: readProductFields(member.product_details),
     nominees,
@@ -300,21 +430,33 @@ const toApplicant = (member: JsonRecord, total: number, riders: RiderEditRow[]):
     editValues: readEditValues({
       personal: personalFields,
       kyc: rawKycFields,
+      rawPersonalKyc: [...readFields(groups[0]), ...readFields(groups[1])],
       communicationAddress,
       contactDetails,
       financialAndProfession: readFields(asRecord(member.financial_and_profession).value),
       health: readFields(healthInformation?.value),
-      lifestyleHabits: str(lifestyleHabits?.value),
     }),
     editNominees,
     editRiders: riders,
     editLoan: readLoan(member.base_and_loan_details),
-    lifestyleFields: [
-      ...readFields(healthInformation?.value),
-      { label: "Lifestyle Habits", value: text(lifestyleHabits?.value) },
-    ],
+    lifestyleFields: readFixedFields(healthInformation?.value, LIFESTYLE_LABELS).map((field) => ({
+      ...field,
+      value: str(field.value).trim() === "" ? "-" : field.value,
+    })),
+    genericFields: readNestedFields(member.generic),
+    eiaFields: readNestedFields(member.eia),
+    paymentDetails: readFields(findByLabel(asRecord(member.payment_and_payout).value, "Payment Details")?.value),
+    payoutDetails: readFields(findByLabel(asRecord(member.payment_and_payout).value, "Payout Details")?.value),
   };
 };
+
+/**
+ * Maps ONE `applicantProfile` value (the Quick Links payload) with the same field lists, masking and
+ * defaults as the DVT Applicant Profile tab.
+ */
+export function mapApplicantProfileValue(profile: unknown): LifeAssuredApplicant {
+  return toApplicant(asRecord(profile), 1, []);
+}
 
 export function mapApplicants(source: LifeAssuredSource): LifeAssuredApplicant[] {
   const rawMembers = source.members.filter(isRecord);

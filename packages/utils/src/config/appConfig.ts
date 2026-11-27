@@ -13,10 +13,18 @@ function requiredUrl(value: string | undefined, name: string): string {
 /** Shared by Common, Retail, and Group. False only when VITE_USE_MOCK is exactly "false". */
 export const useMock = readFlag(import.meta.env.VITE_USE_MOCK) !== "false";
 
+/** True only when VITE_USE_APIGEE is exactly "true". Read on each call so .env is the switch. */
+export function isApigeeMode(): boolean {
+  return readFlag(import.meta.env.VITE_USE_APIGEE).toLowerCase() === "true";
+}
+
 /** Full auth URLs from .env. Read on use so mock mode does not require them. */
 export const authUrls = {
   get login(): string {
-    return requiredUrl(import.meta.env.VITE_AUTH_LOGIN_API, "VITE_AUTH_LOGIN_API");
+    // VITE_USE_APIGEE=true uses the Apigee login URL. Otherwise the mid-office IAM URL.
+    return isApigeeMode()
+      ? requiredUrl(import.meta.env.VITE_APIGEE_AUTH_LOGIN_API, "VITE_APIGEE_AUTH_LOGIN_API")
+      : requiredUrl(import.meta.env.VITE_AUTH_LOGIN_API, "VITE_AUTH_LOGIN_API");
   },
   get forgotPassword(): string {
     return requiredUrl(
@@ -83,6 +91,13 @@ export const masterUrls = {
   },
 };
 
+/** IAM user lookup. Empty when unset — mock mode skips it. `usersByRole` is the URL up to `/by-role`; append `/{roleName}`. */
+export const userUrls = {
+  get usersByRole(): string {
+    return configuredUrl(import.meta.env.VITE_USERS_BY_ROLE_API);
+  },
+};
+
 /** BRE wrapper orchestrator (shared Retail / Group retrigger). */
 export const breUrls = {
   get retrigger(): string {
@@ -90,10 +105,35 @@ export const breUrls = {
   },
 };
 
+/** MMT grievance fetch / save. Empty when unset — mock mode skips them. */
+export const mmtGrievanceUrls = {
+  get fetch(): string {
+    return configuredUrl(import.meta.env.VITE_MMT_GRIEVANCE_FETCH_API);
+  },
+  get save(): string {
+    return configuredUrl(import.meta.env.VITE_MMT_GRIEVANCE_SAVE_API);
+  },
+};
+
 /** Full Group DRS / Financial service URLs from .env. Empty when unset — mock mode skips them. */
 export const groupBusinessUrls = {
   get drsData(): string {
     return configuredUrl(import.meta.env.VITE_GROUP_DRS_DATA_API);
+  },
+  get uwDecision(): string {
+    return configuredUrl(import.meta.env.VITE_GROUP_UW_DECISION_API);
+  },
+  get uwDecisionFetch(): string {
+    return configuredUrl(import.meta.env.VITE_GROUP_UW_DECISION_FETCH_API);
+  },
+  get parallelDecision(): string {
+    return configuredUrl(import.meta.env.VITE_GROUP_PARALLEL_DECISION_API);
+  },
+  get dvtValidation(): string {
+    return configuredUrl(import.meta.env.VITE_GROUP_DVT_VALIDATION_API);
+  },
+  get claimAuditList(): string {
+    return configuredUrl(import.meta.env.VITE_GROUP_CLAIM_AUDIT_LIST_API);
   },
   get financialFetch(): string {
     return configuredUrl(import.meta.env.VITE_GROUP_FINANCIAL_FETCH_API);
@@ -106,6 +146,34 @@ export const groupBusinessUrls = {
   },
   get medicalSave(): string {
     return configuredUrl(import.meta.env.VITE_MEDICAL_SAVE_API);
+  },
+};
+
+/** Full Retail DRS service URLs from .env. Empty when unset — mock mode skips them. */
+export const retailBusinessUrls = {
+  get drsData(): string {
+    return configuredUrl(import.meta.env.VITE_RETAIL_DRS_DATA_API);
+  },
+  get financialFetch(): string {
+    return configuredUrl(import.meta.env.VITE_RETAIL_FINANCIAL_FETCH_API);
+  },
+  get financialSave(): string {
+    return configuredUrl(import.meta.env.VITE_RETAIL_FINANCIAL_SAVE_API);
+  },
+  get cvtValidation(): string {
+    return configuredUrl(import.meta.env.VITE_RETAIL_CVT_VALIDATION_API);
+  },
+  get uwDecisionFetch(): string {
+    return configuredUrl(import.meta.env.VITE_RETAIL_UW_DECISION_FETCH_API);
+  },
+  get uwDecision(): string {
+    return configuredUrl(import.meta.env.VITE_RETAIL_UW_DECISION_API);
+  },
+  get parallelDecision(): string {
+    return configuredUrl(import.meta.env.VITE_RETAIL_PARALLEL_DECISION_API);
+  },
+  get claimAuditList(): string {
+    return configuredUrl(import.meta.env.VITE_RETAIL_CLAIM_AUDIT_LIST_API);
   },
 };
 

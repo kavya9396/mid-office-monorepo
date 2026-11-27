@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { loanSchema } from "./LoanDetails";
+import { nomineeSchema } from "./NomineeDetails";
 import { RAISE_PAN_PENDCODE_MESSAGE, requiredMessage } from "./editApplicant.messages";
+import { requiredFormat } from "./fieldFormat";
  
 /**
  * Every validation rule of the Edit Applicant dialog lives in this file
@@ -18,9 +20,9 @@ export const editApplicantSchema = z.object({
   dob: required("Birthdate"),
   gender: required("Gender"),
   zipCode: required("Zip Code"),
-  mobileNo: required("Mobile No"),
+  mobileNo: requiredFormat("Mobile No", "numeric"),
   immigrationStatus: required("Immigration Status"),
-  panNumber: required("PAN No"),
+  panNumber: requiredFormat("PAN No", "pan"),
   isPanValid: required("Is PAN Valid"),
   aadharSeedingStatus: required("Aadhar Seeding Status"),
   nsdlNameMatching: required("Is NSDL Name Matching"),
@@ -28,18 +30,21 @@ export const editApplicantSchema = z.object({
   nsdlTab: z.string(),
   // All Edit Profile fields are mandatory
   emailId: required("Email ID"),
-  height: required("Height"),
-  weight: required("Weight"),
-  lifestyleHabits: required("Lifestyle Habits"),
-  annualIncome: required("Annual Income"),
+  height: requiredFormat("Height", "numeric"),
+  weight: requiredFormat("Weight", "numeric"),
+  annualIncome: requiredFormat("Annual Income", "numeric"),
   applicantStatus: required("Applicant Status"),
 });
  
-// Base & Loan Details live in the same form under `loan`
-export const editFormSchema = editApplicantSchema.extend({ loan: loanSchema });
+// Base & Loan Details and Nominees live in the same form
+export const editFormSchema = editApplicantSchema.extend({
+  loan: loanSchema,
+  nominees: z.array(nomineeSchema),
+});
  
 export type EditApplicantValues = z.infer<typeof editApplicantSchema>;
 export type EditFormValues = z.infer<typeof editFormSchema>;
+export { nomineeSchema };
  
 /** Master codes for the Yes / No selects of the dialog: "Y" is shown as Yes, "N" as No. */
 export const PAN_VALID_YES = "Y";
@@ -115,6 +120,11 @@ export type PanValidationInput = { panNumber: string; dob: string };
  * (API error while a PAN pendcode is already pending, open question 9).
  */
 export type PanValidationResult = {
+  /**
+   * The call failed (`error` is true or the HTTP status is not 200). Checked before everything else:
+   * the dialog shows the info notice and lets the user save without a validated PAN.
+   */
+  apiFailed?: boolean;
   panValid?: boolean;
   /** NSDL match flags (add-on #17). Missing means "not available", which the dialog shows as NO. */
   matches?: NsdlMatchSelection;
@@ -135,4 +145,6 @@ export type PanStatus = {
   nsdlNameMatching?: string;
   nsdlDobMatching?: string;
   aadharSeedingStatus?: string;
+  /** The last NSDL call failed; Save is allowed until the next NSDL result. */
+  apiFailed?: boolean;
 };

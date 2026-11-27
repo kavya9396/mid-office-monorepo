@@ -39,6 +39,36 @@
       "import": "./src/components/DetailCard.tsx",
       "default": "./src/components/DetailCard.tsx"
     },
+    "./bre-card": {
+      "types": "./src/components/BreCard.tsx",
+      "import": "./src/components/BreCard.tsx",
+      "default": "./src/components/BreCard.tsx"
+    },
+    "./risk-cards": {
+      "types": "./src/components/RiskCards.tsx",
+      "import": "./src/components/RiskCards.tsx",
+      "default": "./src/components/RiskCards.tsx"
+    },
+    "./claim-audit": {
+      "types": "./src/components/ClaimAudit.tsx",
+      "import": "./src/components/ClaimAudit.tsx",
+      "default": "./src/components/ClaimAudit.tsx"
+    },
+    "./special-remarks": {
+      "types": "./src/components/SpecialRemarks.tsx",
+      "import": "./src/components/SpecialRemarks.tsx",
+      "default": "./src/components/SpecialRemarks.tsx"
+    },
+    "./uw-guidelines": {
+      "types": "./src/components/UwGuidelines.tsx",
+      "import": "./src/components/UwGuidelines.tsx",
+      "default": "./src/components/UwGuidelines.tsx"
+    },
+    "./validation-list": {
+      "types": "./src/components/ValidationList.tsx",
+      "import": "./src/components/ValidationList.tsx",
+      "default": "./src/components/ValidationList.tsx"
+    },
     "./requirement-mgmt": {
       "types": "./src/components/Requirement Mgmt/RequirementMgmt.tsx",
       "import": "./src/components/Requirement Mgmt/RequirementMgmt.tsx",
@@ -104,10 +134,30 @@
       "import": "./src/modules/Telemer/index.ts",
       "default": "./src/modules/Telemer/index.ts"
     },
+    "./cmo": {
+      "types": "./src/components/cmo/index.ts",
+      "import": "./src/components/cmo/index.ts",
+      "default": "./src/components/cmo/index.ts"
+    },
     "./life-assured": {
       "types": "./src/components/LifeAssured/LifeAssured.tsx",
       "import": "./src/components/LifeAssured/LifeAssured.tsx",
       "default": "./src/components/LifeAssured/LifeAssured.tsx"
+    },
+    "./reinsurer": {
+      "types": "./src/components/reinsurer.ts",
+      "import": "./src/components/reinsurer.ts",
+      "default": "./src/components/reinsurer.ts"
+    },
+    "./pivv-details": {
+      "types": "./src/components/PivvDetails.tsx",
+      "import": "./src/components/PivvDetails.tsx",
+      "default": "./src/components/PivvDetails.tsx"
+    },
+    "./decision-history": {
+      "types": "./src/components/DecisionHistory.tsx",
+      "import": "./src/components/DecisionHistory.tsx",
+      "default": "./src/components/DecisionHistory.tsx"
     },
     "./decision-section": {
       "types": "./src/components/DecisionSection.tsx",

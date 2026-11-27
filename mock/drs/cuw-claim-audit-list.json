@@ -1,0 +1,36 @@
+[
+  {
+    "applicationNumber": "OS30417629",
+    "partyId": "53fb40a8-6423-4570-99b4-7a079d77759b",
+    "policyNumber": "01243420",
+    "productCode": "",
+    "claimId": "14526",
+    "claimKey": "14526",
+    "canonicalId": "",
+    "patientName": "",
+    "ailmentForCommunication": "",
+    "claimType": "",
+    "subtype": "",
+    "intimationDate": "",
+    "doa": "",
+    "dod": "",
+    "decisionStatus": ""
+  },
+  {
+    "applicationNumber": "OS30417629",
+    "partyId": "53fb40a8-6423-4570-99b4-7a079d77759b",
+    "policyNumber": "01243420",
+    "productCode": "U59",
+    "claimId": "14548",
+    "claimKey": "14548",
+    "canonicalId": "11694",
+    "patientName": "SHAH AMIT",
+    "ailmentForCommunication": "",
+    "claimType": "Death",
+    "subtype": "Accidental",
+    "intimationDate": "19-NOV-26",
+    "doa": "",
+    "dod": "",
+    "decisionStatus": "J2 JET CAT 2"
+  }
+]

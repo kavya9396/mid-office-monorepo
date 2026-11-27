@@ -26,6 +26,7 @@ export type SessionBusinessType = "RETAIL" | "GROUP";
 export interface SessionUser {
   username: string;
   displayName: string;
+  roles?: string[];
 }
 
 function readStorage(): Storage | null {
@@ -67,6 +68,7 @@ export function clearToken(): void {
   clearFirstLoginChangePending();
   storage?.removeItem(SESSION_ID_KEY);
   storage?.removeItem(LEGACY_PASSWORD_CHANGED_KEY);
+  storage?.removeItem("roles");
   clearMasterData();
   removeDrsTaskContext();
   clearBreRetriggerCount();
@@ -109,6 +111,22 @@ export function setSessionUser(user: SessionUser): void {
   storage.setItem(USERNAME_KEY, user.username);
   storage.removeItem(LEGACY_USER_ID_KEY);
   storage.setItem(DISPLAY_NAME_KEY, user.displayName);
+  if (user.roles && Array.isArray(user.roles)) {
+    storage.setItem("roles", JSON.stringify(user.roles));
+  }
+}
+
+export function getSessionRoles(): string[] {
+  const storage = readStorage();
+  if (!storage) return [];
+  const raw = storage.getItem("roles");
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.filter((r): r is string => typeof r === "string") : [];
+  } catch {
+    return [];
+  }
 }
 
 export function getSessionUser(): SessionUser | null {
@@ -127,7 +145,20 @@ export function getSessionUser(): SessionUser | null {
     storage.removeItem(LEGACY_USER_ID_KEY);
   }
 
-  return { username, displayName };
+  const rawRoles = storage.getItem("roles");
+  let roles: string[] | undefined;
+  if (rawRoles) {
+    try {
+      const parsed = JSON.parse(rawRoles);
+      if (Array.isArray(parsed)) {
+        roles = parsed.filter((r): r is string => typeof r === "string");
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  return { username, displayName, ...(roles ? { roles } : {}) };
 }
 
 export function setSessionBusinessType(

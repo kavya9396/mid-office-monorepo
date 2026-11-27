@@ -1,0 +1,19 @@
+{
+  "applicationNo": "OS90377750",
+  "correlationId": "26336fa7-9819-4427-9e4c-6df7d866027d",
+  "status": "Failure",
+  "partyValidations": [
+    {
+      "partyId": "qwertyuiop12345",
+      "memberType": "lifeassured1",
+      "validations": [
+        {
+          "validationId": 208,
+          "reason": "Requirement decision can be opted only when at least one requirement is open",
+          "remarks": "Requirement decision can be opted only when at least one requirement is open",
+          "action": null
+        }
+      ]
+    }
+  ]
+}

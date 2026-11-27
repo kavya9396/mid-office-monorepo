@@ -1,5 +1,28 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { RequirementColumnKey, RequirementItem } from "./types";
+
+export const isNewRequirement = (row: RequirementItem): boolean =>
+  Boolean(row.isNew) || (typeof row.id === "string" && row.id.startsWith("req-"));
+
+export const createEmptyRequirement = (template?: Partial<RequirementItem>): RequirementItem => ({
+  id: `req-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+  status: "Pending",
+  ocrStatus: "-",
+  team: "",
+  profile: "",
+  category: "",
+  subCategory: "",
+  document: "",
+  reason: "",
+  fupCode: "",
+  extraRemarks: "",
+  description: "",
+  isNew: true,
+  requirementPoolType: "",
+  partyId: "",
+  memberType: "lifeassured1",
+  ...template,
+});
 
 /** Local copy of the rows (edits / removals live here until Save) plus the Save flow. */
 export function useRequirementRows(
@@ -9,11 +32,29 @@ export function useRequirementRows(
   const [rows, setRows] = useState<RequirementItem[]>(requirements);
   const [saving, setSaving] = useState(false);
 
+  useEffect(() => {
+    setRows(requirements);
+  }, [requirements]);
+
+  const addRow = (template?: Partial<RequirementItem>) => {
+    const newRow = createEmptyRequirement(template);
+    setRows((current) => [newRow, ...current]);
+    return newRow;
+  };
+
   const updateRow = (row: RequirementItem, key: RequirementColumnKey, value: string) =>
     setRows((current) => current.map((item) => (item.id === row.id ? { ...item, [key]: value } : item)));
 
+  const patchRow = (id: RequirementItem["id"], patch: Partial<RequirementItem>) =>
+    setRows((current) =>
+      current.map((item) => (item.id === id ? { ...item, ...patch } : item)),
+    );
+
   const removeRow = (id: RequirementItem["id"]) =>
     setRows((current) => current.filter((item) => item.id !== id));
+
+  /** True while the local rows differ from the last saved `requirements`. */
+  const isDirty = JSON.stringify(rows) !== JSON.stringify(requirements);
 
   const save = async () => {
     if (!onSave || saving) return;
@@ -25,5 +66,5 @@ export function useRequirementRows(
     }
   };
 
-  return { rows, saving, updateRow, removeRow, save };
+  return { rows, saving, isDirty, addRow, updateRow, patchRow, removeRow, save };
 }
