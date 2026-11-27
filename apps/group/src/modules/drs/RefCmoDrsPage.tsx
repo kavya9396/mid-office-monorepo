@@ -12,6 +12,7 @@ import { getDrsApplicationNo, getDrsMemberId, getDrsRoleLabel, getDrsRoleType } 
 import { getGroupDrsTaskConfig } from "../../config/drsTaskConfig";
 import { GuwRaiseGrievanceDialog } from "../guw/GuwRaiseGrievanceDialog";
 import { GROUP_QUICK_LINKS_CONFIG } from "../config/quickLinks.config";
+import { readCmoDecisionSection } from "./cmoDecisionSection";
 import { buildQuickLinkItems } from "./guwQuickLinks";
 import { useGetCmoDrsQuery } from "../../services/drsApi";
 
@@ -69,6 +70,7 @@ export function RefCmoDrsPage() {
     setSnackbarOpen(true);
   };
 
+  const decisionSection = readCmoDecisionSection(record?.drsData.membersDetails);
   const riskCards: RiskCardData[] =
     pageKind === "ready" && record
       ? CARD_IDS.flatMap((id) => record.riskCards.filter((card) => card.id === id))
@@ -111,7 +113,11 @@ export function RefCmoDrsPage() {
           ) : (
             <CustomBox sx={{ p: "6px 4px 20px", display: "flex", flexDirection: "column", gap: 1.5 }}>
               <RiskCards cards={riskCards} onView={openMedical} viewCardIds={["MEDICAL"]} />
-              <DecisionHistory />
+              <DecisionHistory
+                title={decisionSection.title}
+                columns={decisionSection.columns}
+                rows={[]}
+              />
               <CustomBox
                 sx={{
                   display: "flex",

@@ -42,24 +42,14 @@ export const GROUP_DRS_TASK_CONFIG: Record<string, GroupDrsTaskConfig> = {
     screenType: "RF_CMO",
     businessType: "GROUP",
   },
-  HO_CMO_SPECIAL_TASK: {
-    roleType: "HO_CMO_SPECIAL_TASK",
-    screenType: "HO_CMO_SPECIAL",
+  HO_CMO_TASK: {
+    roleType: "HO_CMO_TASK",
+    screenType: "HO_CMO",
     businessType: "GROUP",
   },
-  HO_CMO_REFERRAL_TASK: {
-    roleType: "HO_CMO_REFERRAL_TASK",
-    screenType: "HO_CMO_REFERRAL",
-    businessType: "GROUP",
-  },
-  VENDOR_CMO_ECG_TASK: {
-    roleType: "VENDOR_CMO_ECG_TASK",
-    screenType: "VENDOR_CMO_ECG",
-    businessType: "GROUP",
-  },
-  VENDOR_CMO_TMT_TASK: {
-    roleType: "VENDOR_CMO_TMT_TASK",
-    screenType: "VENDOR_CMO_TMT",
+  VENDOR_CMO_TASK: {
+    roleType: "VENDOR_CMO_TASK",
+    screenType: "VENDOR_CMO",
     businessType: "GROUP",
   },
   REINSURER_TASK: {
