@@ -233,8 +233,31 @@ const readCounterOfferTypeOptions = (decision: string, isRider: boolean) => {
   );
 };
 
+/**
+ * Loading Class master `misc` type for a Decision Details "Type", derived from the Extra Premium Type master
+ * (GUW_EP_TYPE): loading types are the entries whose code ends with _LOAD (e.g. MED_LOAD, FE_LOAD, SM_LOAD),
+ * and their class list is GUW_<code prefix>_LOAD_CLS (Medical Loading -> GUW_EP_LOAD_CLS, FE Loading ->
+ * GUW_FE_LOAD_CLS, Smoker Loading -> GUW_SM_LOAD_CLS).
+ */
+const LOADING_TYPE_CODE_SUFFIX = "_LOAD";
+const MEDICAL_LOADING_CODE_PREFIX = "MED";
+
+const readLoadingClassMasterType = (type: string): string | undefined => {
+  const entry = getMasterList("misc", "GUW_EP_TYPE").find(
+    (item) => item.isActive === "Y" && (item.value ?? item.description) === type && item.code.endsWith(LOADING_TYPE_CODE_SUFFIX),
+  );
+  if (!entry) return undefined;
+  const prefix = entry.code.slice(0, -LOADING_TYPE_CODE_SUFFIX.length);
+  return `GUW_${prefix === MEDICAL_LOADING_CODE_PREFIX ? "EP" : prefix}_LOAD_CLS`;
+};
+
+const isLoadingType = (type: string) => readLoadingClassMasterType(type) !== undefined;
+
 // Loading Class / Loading Reason Code values are the master text (the `uw-decision` request carries the text).
-const readLoadingClassOptions = () => readFirstAvailableMiscOptions(["GUW_EP_LOAD_CLS"]);
+const readLoadingClassOptions = (type: string) => {
+  const masterType = readLoadingClassMasterType(type);
+  return masterType ? readFirstAvailableMiscOptions([masterType]) : [];
+};
 
 const readLoadingReasonOptions = () => readFirstAvailableMiscOptions(["GUW_EP_LOAD_RSN_CODE"]);
 
@@ -1490,6 +1513,7 @@ export function GuwUwPanel({
         }
 
         if (field === "type") {
+          updated.loadingClass = "";
           if (value !== "Borderline Standard") {
             updated.bstdCode = "";
           }
@@ -1499,7 +1523,7 @@ export function GuwUwPanel({
           if (value !== "Reduce PT") {
             updated.changedPt = "";
           }
-          if (!["Medical Loading", "FE Loading", "Smoker Loading"].includes(value)) {
+          if (!isLoadingType(value)) {
             updated.loadingClass = "";
             updated.loadingReason = "";
           }
@@ -2929,7 +2953,7 @@ export function GuwUwPanel({
                       // Type dropdown options come from master data based on the effective decision
                       const typeOpts = readCounterOfferTypeOptions(effectiveDecision, row.isRider);
 
-                      const isLoadingType = ["Medical Loading", "FE Loading", "Smoker Loading"].includes(row.type);
+                      const isLoadingRow = isLoadingType(row.type);
 
                       return (
                         <tr key={row.id}>
@@ -3015,9 +3039,9 @@ export function GuwUwPanel({
                             <CustomSelect
                               value={row.loadingClass}
                               onChange={(val) => handleRowFieldChange(row.id, "loadingClass", val)}
-                              options={isLoadingType ? readLoadingClassOptions() : []}
+                              options={isLoadingRow ? readLoadingClassOptions(row.type) : []}
                               placeholder="Select"
-                              disabled={!isLoadingType}
+                              disabled={!isLoadingRow}
                               fullWidth
                             />
                           </td>
@@ -3027,9 +3051,9 @@ export function GuwUwPanel({
                             <CustomSelect
                               value={row.loadingReason}
                               onChange={(val) => handleRowFieldChange(row.id, "loadingReason", val)}
-                              options={isLoadingType ? readLoadingReasonOptions() : []}
+                              options={isLoadingRow ? readLoadingReasonOptions() : []}
                               placeholder="Select"
-                              disabled={!isLoadingType}
+                              disabled={!isLoadingRow}
                               fullWidth
                             />
                           </td>

@@ -1,4 +1,4 @@
-﻿import type { BannerRowDetail } from "@insurance-poc/common/applicant-banner";
+import type { BannerRowDetail } from "@insurance-poc/common/applicant-banner";
 import type { DetailAttribute, DetailTable } from "@insurance-poc/common/detail-card";
 import type { DecisionHistoryRow } from "@insurance-poc/common/decision-history";
 import {
@@ -1778,8 +1778,10 @@ async function loadCuwPayload(applicationNo: string, roleType?: string): Promise
     import("../app/store"),
     import("./drsApi"),
   ]);
+  // forceRefetch: the cached result (kept 60s after unsubscribe) would otherwise be served when the same
+  // application is re-opened after claiming, so drs-data would not be called. In-flight requests are still shared.
   const request = store.dispatch(
-    retailDrsApi.endpoints.getCuwDrsPayload.initiate({ applicationNo, taskType }),
+    retailDrsApi.endpoints.getCuwDrsPayload.initiate({ applicationNo, taskType }, { forceRefetch: true }),
   );
   try {
     const result = await request;
