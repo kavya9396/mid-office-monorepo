@@ -2,6 +2,7 @@ export {
   absoluteApiBaseUrl,
   authUrls,
   breUrls,
+  cmoDecisionUrls,
   groupBusinessUrls,
   isApigeeMode,
   landingUrls,

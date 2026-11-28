@@ -3,6 +3,7 @@ import type { ReactNode, Key } from "react";
 import {
   Paper,
   Box,
+  CircularProgress,
   Typography,
   TableContainer,
   Table,
@@ -33,6 +34,10 @@ type CustomTableProps<T> = {
   columns: Column<T>[];
   data: T[];
   headerAction?: ReactNode;
+  /** Spinner in the table body. The rest of the page stays visible. */
+  loading?: boolean;
+  /** Shown when `data` is empty and the table is not loading. */
+  emptyMessage?: string;
 
   // Each row must have a stable, unique key.
   getRowId?: (row: T, index: number) => Key;
@@ -43,6 +48,8 @@ export default function CustomTable<T extends object>({
   columns = [],
   data = [],
   headerAction,
+  loading = false,
+  emptyMessage = "No data available",
   getRowId,
 }: Readonly<CustomTableProps<T>>) {
   return (
@@ -185,7 +192,13 @@ export default function CustomTable<T extends object>({
 
           {/* TABLE BODY */}
           <TableBody>
-            {data.length === 0 ? (
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={columns.length || 1} align="center">
+                  <CircularProgress size={28} sx={{ color: "#f58220", my: 1.5 }} />
+                </TableCell>
+              </TableRow>
+            ) : data.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={columns.length || 1}
@@ -197,7 +210,7 @@ export default function CustomTable<T extends object>({
                       py: 1,
                     }}
                   >
-                    No data available
+                    {emptyMessage}
                   </Typography>
                 </TableCell>
               </TableRow>

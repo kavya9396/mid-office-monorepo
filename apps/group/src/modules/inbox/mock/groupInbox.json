@@ -216,7 +216,7 @@
         "roleType": "REF_CMO_TASK"
       }
     ],
-    "HO_CMO_SPECIAL_TASK": [
+    "HO_CMO_TASK": [
       {
         "id": 10,
         "applicationNo": "OS31231001",
@@ -232,68 +232,70 @@
         "startTime": "2026-11-02T17:02:33Z",
         "atRiskTime": "2026-11-03T10:06:15Z",
         "businessType": "GROUP",
-        "role": "GROUP_HO_CMO_SPECIAL_USER",
-        "roleType": "HO_CMO_SPECIAL_TASK"
-      }
-    ],
-    "HO_CMO_REFERRAL_TASK": [
+        "role": "GROUP_HOCMOREF_USER",
+        "roleType": "HO_CMO_TASK"
+      },
       {
-        "id": 11,
-        "applicationNo": "OS31231002",
-        "nameOfProposer": "RAHUL VERMA",
-        "nameOfLifeAssured": "RAHUL VERMA",
+        "id": 10,
+        "applicationNo": "OS31231001",
+        "nameOfProposer": "MEERA SHAH",
+        "nameOfLifeAssured": "MEERA SHAH",
         "productOpted": "T74",
         "plan": null,
         "medicalRaisedDate": null,
         "dateAndTimeStamp": "2026-11-02T17:22:13.382022",
-        "taskId": "302",
-        "instanceId": "182",
+        "taskId": "301",
+        "instanceId": "181",
         "dueDate": "2026-11-03T12:00:00Z",
         "startTime": "2026-11-02T17:02:33Z",
         "atRiskTime": "2026-11-03T10:06:15Z",
         "businessType": "GROUP",
-        "role": "GROUP_HO_CMO_REFERRAL_USER",
-        "roleType": "HO_CMO_REFERRAL_TASK"
+        "role": "GROUP_HOCMOSPECIAL_USER",
+        "roleType": "HO_CMO_TASK"
       }
     ],
-    "VENDOR_CMO_ECG_TASK": [
+    "VENDOR_CMO_TASK": [
       {
-        "id": 12,
-        "applicationNo": "OS31231003",
-        "nameOfProposer": "ANITA DESAI",
-        "nameOfLifeAssured": "ANITA DESAI",
-        "productOpted": "T74",
-        "plan": null,
-        "medicalRaisedDate": null,
-        "dateAndTimeStamp": "2026-11-02T17:22:13.382022",
-        "taskId": "303",
-        "instanceId": "183",
-        "dueDate": "2026-11-03T12:00:00Z",
-        "startTime": "2026-11-02T17:02:33Z",
-        "atRiskTime": "2026-11-03T10:06:15Z",
+        "id": 1,
+        "applicationNo": "OS65356589",
+        "channelCode": "Agence",
+        "channel": null,
+        "sumAssured": 90000000,
+        "product": "Group Loan Secure",
+        "premium": "5000000",
+        "clientType": null,
+        "caseType": null,
+        "breDecision": "RM",
+        "dateAndTimeStamp": "2026-11-24T17:10:06.287160",
+        "taskId": "4556",
+        "instanceId": "431",
+        "dueDate": "2026-11-25T10:56:54Z",
+        "startTime": "2026-11-24T11:56:54Z",
+        "atRiskTime": "2026-11-25T08:38:54Z",
         "businessType": "GROUP",
-        "role": "GROUP_VENDOR_CMO_ECG_USER",
-        "roleType": "VENDOR_CMO_ECG_TASK"
-      }
-    ],
-    "VENDOR_CMO_TMT_TASK": [
+        "role": "GROUP_VENDORCMOTMT_USER",
+        "roleType": "VENDOR_CMO_TASK"
+      },
       {
-        "id": 13,
-        "applicationNo": "OS31231004",
-        "nameOfProposer": "SANJAY KULKARNI",
-        "nameOfLifeAssured": "SANJAY KULKARNI",
-        "productOpted": "T74",
-        "plan": null,
-        "medicalRaisedDate": null,
-        "dateAndTimeStamp": "2026-11-02T17:22:13.382022",
-        "taskId": "304",
-        "instanceId": "184",
-        "dueDate": "2026-11-03T12:00:00Z",
-        "startTime": "2026-11-02T17:02:33Z",
-        "atRiskTime": "2026-11-03T10:06:15Z",
+        "id": 1,
+        "applicationNo": "OS65356589",
+        "channelCode": "Agence",
+        "channel": null,
+        "sumAssured": 90000000,
+        "product": "Group Loan Secure",
+        "premium": "5000000",
+        "clientType": null,
+        "caseType": null,
+        "breDecision": "RM",
+        "dateAndTimeStamp": "2026-11-24T17:10:06.287160",
+        "taskId": "4556",
+        "instanceId": "431",
+        "dueDate": "2026-11-25T10:56:54Z",
+        "startTime": "2026-11-24T11:56:54Z",
+        "atRiskTime": "2026-11-25T08:38:54Z",
         "businessType": "GROUP",
-        "role": "GROUP_VENDOR_CMO_TMT_USER",
-        "roleType": "VENDOR_CMO_TMT_TASK"
+        "role": "GROUP_VENDORCMOECG_USER",
+        "roleType": "VENDOR_CMO_TASK"
       }
     ],
     "GROUP_DATA_ENTRY_NMR_TASK": [

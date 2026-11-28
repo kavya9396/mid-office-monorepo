@@ -9,10 +9,8 @@ import { MmtGrievanceDrsPage } from "./MmtGrievanceDrsPage";
 import DvtUser from "./DvtUser";
 import GuwUser from "./GuwUser";
 import { RefCmoDrsPage } from "./RefCmoDrsPage";
-import { HoCmoSpecial } from "./HoCmoSpecial";
-import { HoCmoReferral } from "./HoCmoReferral";
-import { VendorCmoEcg } from "./VendorCmoEcg";
-import { VendorCmoTmt } from "./VendorCmoTmt";
+import { HoCmoDrs } from "./HoCmoDrs";
+import { VendorCmoDrs } from "./VendorCmoDrs";
 import { fetchGuwMembers, referralConfigForRoleType } from "../../services/drsService";
 import { ReferralDrsPage } from "../referral-uw/ReferralDrsPage";
 import DptNmrUser from "./DptNmrUser";
@@ -91,14 +89,12 @@ const SCREEN_BY_SCREEN_TYPE: Record<string, () => JSX.Element | null> = {
   GUW_INFORMAL: GuwEntry,
   DVT_INFORMAL: DvtUser,
   MMT: MmtGrievanceDrsPage,
-  CPT_NMR: DptNmrUser,
-  CPT_MR: DptMrUser,
+  GRP_DE_NMR: DptNmrUser,
+  GRP_DE_MR: DptMrUser,
   REINSURER: ReinsurerUser,
-  VENDOR_CMO_TMT: VendorCmoTmt,
+  VENDOR_CMO: VendorCmoDrs,
   REF_CMO: RefCmoDrsPage,
-  VENDOR_CMO_ECG: VendorCmoEcg,
-  HO_CMO_SPECIAL: HoCmoSpecial,
-  HO_CMO_REFERRAL: HoCmoReferral,
+  HO_CMO: HoCmoDrs,
 };
 
 export function GroupDrsPage() {

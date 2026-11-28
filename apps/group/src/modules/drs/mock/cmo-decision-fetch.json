@@ -1,0 +1,39 @@
+{
+  "response_code": 200,
+  "error": false,
+  "message": "1 special test(s) fetched",
+  "data": {
+    "applicationNumber": "OS90377743",
+    "partyId": "067a1194-7c5a-4f4d-881c-259e655b3200",
+    "specialTests": [
+      {
+        "section": "2decho",
+        "medicalType": "2DECHO",
+        "testCode": "2DECHO",
+        "testDtlId": 1001,
+        "fupCode": "2DECHO",
+        "profile": null,
+        "raisedDate": "2026-09-18",
+        "receivedDate": "2026-09-18",
+        "currentDecision": {
+          "cmoDecision": "Accepted",
+          "cmoRemarks": "Echo report reviewed.",
+          "userName": "Dr. Alpana Gandhi",
+          "ntid": "IPRU84213",
+          "poolName": "Vendor CMO",
+          "updatedOn": "2026-09-20T07:12:30"
+        },
+        "history": [
+          {
+            "userName": "Dr. Alpana Gandhi",
+            "ntid": "IPRU84213",
+            "poolName": "Vendor CMO",
+            "decision": "Accepted",
+            "remarks": "Echo report reviewed.",
+            "updatedOn": "2026-09-20T07:12:30"
+          }
+        ]
+      }
+    ]
+  }
+}
