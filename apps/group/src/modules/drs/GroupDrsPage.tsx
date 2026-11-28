@@ -105,7 +105,9 @@ export function GroupDrsPage() {
   const roleType = getDrsRoleType();
   if (referralConfigForRoleType(roleType)) return <ReferralEntry roleType={roleType} />;
   const taskConfig = findGroupDrsTaskConfig(roleType);
+  console.log("Screen", taskConfig)
   const Screen = taskConfig ? SCREEN_BY_SCREEN_TYPE[taskConfig.screenType] : undefined;
+  console.log("Screen", Screen)
   if (!Screen) return <div>Page not found</div>;
   return <Screen />;
 }

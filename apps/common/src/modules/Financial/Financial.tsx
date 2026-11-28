@@ -64,6 +64,7 @@ import {
   type FinancialSaveResponse,
 } from "./financialSavePayload";
 import { retriggerBre } from "../../services/breRetrigger";
+import { useDocumentLink } from "../../hooks/useDocumentLink";
 
 export * from "./financial.config";
 export * from "./financialSavePayload";
@@ -1354,6 +1355,17 @@ export function Financial({
     message: string;
     severity: "success" | "warning" | "error";
   } | null>(null);
+  // UDS viewer link for "View Financial Documents", fetched once the screen has loaded for this application.
+  const documentsLink = useDocumentLink(applicationNumber, "finance");
+  const handleViewDocuments = useCallback(() => {
+    if (documentsLink) {
+      window.open(documentsLink, "_blank", "noopener,noreferrer");
+    } else if (onViewDocuments) {
+      onViewDocuments();
+    } else {
+      setSnackbar({ message: FINANCIAL_MESSAGES.documentsUnavailable, severity: "error" });
+    }
+  }, [documentsLink, onViewDocuments]);
 
   // Reload values and clear edit / review state only when the sections themselves change
   // (not when the highlighted section changes while scrolling).
@@ -1765,17 +1777,7 @@ export function Financial({
             />
           </Box>
 
-          <CustomButton
-            variant="text"
-            onClick={() =>
-              onViewDocuments
-                ? onViewDocuments()
-                : setSnackbar({
-                    message: FINANCIAL_MESSAGES.documents,
-                    severity: "success",
-                  })
-            }
-          >
+          <CustomButton variant="text" onClick={handleViewDocuments}>
             View Financial Documents
           </CustomButton>
         </Box>
@@ -1865,12 +1867,11 @@ export function Financial({
               minHeight: 28,
               px: "11px",
               py: "4px",
-              borderRadius: "50px",
               fontSize: 13,
               fontWeight: 700,
             }}
           >
-            Submit
+            Call FE BRE
           </CustomButton>
         </Box>
 

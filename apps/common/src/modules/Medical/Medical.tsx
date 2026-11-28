@@ -29,14 +29,14 @@ import {
   type Column,
 } from "@insurance-poc/ui";
 import { formatIndianCurrency, getSessionUser } from "@insurance-poc/utils";
+import { retriggerBre } from "../../services/breRetrigger";
+import { useDocumentLink } from "../../hooks/useDocumentLink";
 import dayjs, { type Dayjs } from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import {
   getMedicalOptions,
   MEDICAL_DATE_FORMAT,
   MEDICAL_DEFAULT_APPLICANTS,
-  MEDICAL_FAMILY_RELATION_OPTIONS,
-  MEDICAL_TELE_HEALTH_STATUS_OPTIONS,
   type MedicalCmoDecision,
   type MedicalFamilyRow,
   getVisibleMedicalQuestions,
@@ -47,6 +47,13 @@ import {
   MEDICAL_MESSAGES,
   MEDICAL_COMBINED_GROUP_KEYS,
   MEDICAL_NON_EDITABLE_SECTION_KEYS,
+  buildMedicalDocumentOptions,
+  medicalModeCanEdit,
+  medicalModeCanReview,
+  omitHiddenMedicalSections,
+  resolveMedicalActionMode,
+  type MedicalActionMode,
+  type MedicalActionsConfig,
   MEDICAL_SECTIONS,
   resolveMedicalControlKind,
   type MedicalApplicantTab,
@@ -77,6 +84,7 @@ import {
 
 dayjs.extend(customParseFormat);
 
+export type { MedicalActionMode, MedicalActionsConfig } from "./medical.config";
 export { mapMedicalFetchPayload, type MedicalFetchResult } from "./medical.mapper";
 export {
   buildMedicalSaveRequest,
@@ -101,6 +109,11 @@ export interface MedicalProps {
     sections: readonly MedicalSection[];
     groups: readonly MedicalGroup[];
   };
+  /**
+   * Which sections this screen shows. `hiddenSectionKeys` are never rendered (cards, navigation,
+   * document dropdown), even when the API returns them. Omit to show every section.
+   */
+  actions?: MedicalActionsConfig;
   /**
    * Past data per section key, shown by each section's History button as the
    * same read-only form. Entry `values` use the same ids as the submit payload.
@@ -468,6 +481,33 @@ const HEAD_BUTTON_SX = {
   textTransform: "none",
 } as const;
 
+const REVIEW_BAR_SX = {
+  p: "7px 12px",
+  display: "flex",
+  justifyContent: "flex-end",
+  gap: "8px",
+  borderTop: "1px solid #E4E7EC",
+  bgcolor: "#FCFCFD",
+} as const;
+
+const reviewButtonSx = (color: string, hoverBorder: string, selected: boolean) =>
+  ({
+    border: "1px solid",
+    borderColor: selected ? color : "currentColor",
+    color: selected ? "#fff" : color,
+    bgcolor: selected ? color : "transparent",
+    fontSize: 13,
+    fontWeight: 500,
+    "&:hover": {
+      color: selected ? "#fff" : color,
+      bgcolor: selected ? color : "transparent",
+      borderColor: hoverBorder,
+    },
+  }) as const;
+
+const AGREE_SX = reviewButtonSx("#027A48", "#05603A", false);
+const AGREE_SELECTED_SX = reviewButtonSx("#027A48", "#05603A", true);
+
 const NAV_SX = {
   width: "280px",
   minWidth: "280px",
@@ -606,6 +646,40 @@ const formatIndianCurrencyOrRaw = (value: string): string => {
 /** Option key that is mutually exclusive with the other options of a multi-select question. */
 const MULTI_SELECT_NONE_KEY = "NO";
 
+/** Keys selected after toggling `key`. "NO" is exclusive: picking it clears every other option, and picking any other option clears "NO". */
+const toggleMultiSelectKey = (selectedKeys: readonly string[], key: string): string[] => {
+  if (selectedKeys.includes(key)) return selectedKeys.filter((item) => item !== key);
+  if (key === MULTI_SELECT_NONE_KEY) return [key];
+  return [...selectedKeys.filter((item) => item !== MULTI_SELECT_NONE_KEY), key];
+};
+
+interface ReadOnlyDisplayArgs {
+  value: string;
+  kind: MedicalControlKind;
+  multiple: boolean;
+  placeholder: string;
+  optionsOverride?: readonly MedicalOption[];
+}
+
+/** Text shown for a read-only control. */
+const getReadOnlyDisplayText = ({
+  value,
+  kind,
+  multiple,
+  placeholder,
+  optionsOverride,
+}: ReadOnlyDisplayArgs): string => {
+  if (multiple) {
+    const labels = splitMultiSelect(value)
+      .map((key) => optionsOverride?.find((option) => option.value === key)?.label)
+      .filter((label): label is string => label !== undefined);
+    return labels.join(", ") || placeholder;
+  }
+  if (kind === "currency" && value !== "") return formatIndianCurrencyOrRaw(value);
+  const options = optionsOverride ?? getMedicalOptions(kind);
+  return options.find((option) => option.value === value)?.label ?? (value || placeholder);
+};
+
 const MedicalControl = memo(function MedicalControl({
   id,
   ariaLabel,
@@ -646,11 +720,7 @@ const MedicalControl = memo(function MedicalControl({
     value.trim() === "";
 
   if (readOnly) {
-    const selectedKeys = multiple ? splitMultiSelect(value) : [value];
-    const readOnlyText = selectedKeys
-      .map((key) => optionsOverride?.find((option) => option.value === key)?.label)
-      .filter((label): label is string => label !== undefined)
-      .join(", ");
+    const displayText = getReadOnlyDisplayText({ value, kind, multiple, placeholder, optionsOverride });
     return (
       <Box
         role="textbox"
@@ -659,13 +729,7 @@ const MedicalControl = memo(function MedicalControl({
         data-field={id}
         sx={READ_ONLY_DISPLAY_SX}
       >
-        {multiple
-          ? readOnlyText || placeholder
-          : kind === "currency" && value !== ""
-            ? formatIndianCurrencyOrRaw(value)
-            : (optionsOverride ?? getMedicalOptions(kind)).find((option) => option.value === value)?.label ??
-              (value || placeholder)}
-        {value}
+        {displayText}
       </Box>
     );
   }
@@ -674,13 +738,7 @@ const MedicalControl = memo(function MedicalControl({
   if (multiple && options.length > 0) {
     const selectedKeys = splitMultiSelect(value);
     const toggle = (key: string) => {
-      const isSelected = selectedKeys.includes(key);
-      // "NO" is exclusive: picking it clears every other option, and picking any other option clears "NO".
-      const next = isSelected
-        ? selectedKeys.filter((item) => item !== key)
-        : key === MULTI_SELECT_NONE_KEY
-          ? [key]
-          : [...selectedKeys.filter((item) => item !== MULTI_SELECT_NONE_KEY), key];
+      const next = toggleMultiSelectKey(selectedKeys, key);
       onChange(
         options
           .map((option) => option.value)
@@ -956,9 +1014,8 @@ const FamilyHistoryBody = memo(function FamilyHistoryBody({
           <MedicalControl
             id={familyRowKey(section.key, row.id, "health")}
             ariaLabel={`Health status, row ${row.id}`}
-            kind="text"
+            kind={section.key === "tele_family_history" ? "healthStatus" : "text"}
             readOnly={!editing}
-            options={section.key === "tele_family_history" ? MEDICAL_TELE_HEALTH_STATUS_OPTIONS : undefined}
           />
         ),
       },
@@ -990,7 +1047,7 @@ const FamilyHistoryBody = memo(function FamilyHistoryBody({
         </Box>
         <Box sx={FAMILY_ADD_SELECT_SX}>
           <CustomSelect
-            options={MEDICAL_FAMILY_RELATION_OPTIONS}
+            options={getMedicalOptions("familyRelation")}
             value={selectedRelation}
             placeholder="Select a relation"
             disabled={!editing}
@@ -1052,7 +1109,7 @@ const HabitAddictionBody = memo(function HabitAddictionBody({
     const control = (
       fieldIndex: string,
       label: string,
-      kind: "yesNo" | "number",
+      kind: "miscYesNo" | "number",
     ) => {
       const validator = validators[Number(fieldIndex)];
       return (
@@ -1083,7 +1140,7 @@ const HabitAddictionBody = memo(function HabitAddictionBody({
         key: "indicator",
         header: "INDICATOR",
         width: "24%",
-        render: (value, row) => control(String(value), `${row.habit}: Indicator`, "yesNo"),
+        render: (value, row) => control(String(value), `${row.habit}: Indicator`, "miscYesNo"),
       },
       {
         key: "quantity",
@@ -1228,7 +1285,7 @@ const LabResultTable = memo(function LabResultTable({
 });
 
 /* ------------------------------------------------------------------ */
-/* Parameter table: Parameter / Value / Normal Range / Unit / Findings  */
+/* Parameter table: Parameter / Value / Lab Range Start / Lab Range End / Unit / Findings */
 /* Findings is derived: Abnormal when Value is outside the range.       */
 /* ------------------------------------------------------------------ */
 
@@ -1249,12 +1306,6 @@ const PARAM_TITLE_SX = {
   fontWeight: 700,
 } as const;
 const PARAM_TABLE_SX = { minWidth: 0, overflowX: "auto" } as const;
-const PARAM_RANGE_SX = {
-  display: "flex",
-  alignItems: "center",
-  gap: "6px",
-} as const;
-const PARAM_RANGE_SEPARATOR_SX = { color: "#667085", fontSize: 13 } as const;
 const PARAM_FINDINGS_SX = {
   display: "flex",
   alignItems: "center",
@@ -1376,29 +1427,27 @@ const ParameterTable = memo(function ParameterTable({
       {
         key: "name",
         header: "Parameter",
-        width: "22%",
+        width: "20%",
         render: (_value, row) => <ParameterName section={section} row={row} />,
       },
       {
         key: "index",
         header: "Value",
-        width: "16%",
+        width: "14%",
         render: (_value, row) =>
           control(row, "value", "Value", "number", row.options),
       },
       {
         key: "id",
-        header: "Normal Range",
-        width: "28%",
-        render: (_value, row) => (
-          <Box sx={PARAM_RANGE_SX}>
-            {control(row, "from", "Normal Range From")}
-            <Box component="span" sx={PARAM_RANGE_SEPARATOR_SX}>
-              -
-            </Box>
-            {control(row, "to", "Normal Range To")}
-          </Box>
-        ),
+        header: "Lab Range Start",
+        width: "16%",
+        render: (_value, row) => control(row, "from", "Lab Range Start"),
+      },
+      {
+        key: "options",
+        header: "Lab Range End",
+        width: "16%",
+        render: (_value, row) => control(row, "to", "Lab Range End"),
       },
       {
         key: "unit",
@@ -1639,9 +1688,16 @@ interface MedicalEditUnit {
   sectionKeys: readonly string[];
 }
 
+type ReviewDecision = "agree";
+
 interface SectionCardProps {
   section: MedicalSection;
+  /** Which buttons the section shows (Edit / Reset / Save, Agree, or none). */
+  mode: MedicalActionMode;
   editing: boolean;
+  /** The reviewer's decision for this card's unit, when the Agree button was used. */
+  review?: ReviewDecision;
+  onReview: (sectionKey: string, decision: ReviewDecision) => void;
   /**
    * False for sub sections that follow the group's single Edit / Save / Reset / History (MER, Tele MER).
    */
@@ -1658,7 +1714,10 @@ interface SectionCardProps {
 
 const SectionCard = memo(function SectionCard({
   section,
+  mode,
   editing,
+  review,
+  onReview,
   ownsEditControls,
   validationAttempted,
   onEdit,
@@ -1668,9 +1727,53 @@ const SectionCard = memo(function SectionCard({
   historyCount,
   registerRef,
 }: Readonly<SectionCardProps>) {
-  const alwaysEditable = Boolean(section.alwaysEditable);
-  const hasActions =
-    alwaysEditable || !MEDICAL_NON_EDITABLE_SECTION_KEYS.includes(section.key);
+  const canEdit = medicalModeCanEdit(mode);
+  const hasReviewActions = medicalModeCanReview(mode) && ownsEditControls;
+  // A section the user always fills in (Decision) is only editable while its mode allows editing.
+  const alwaysEditable = Boolean(section.alwaysEditable) && canEdit;
+  // History is a view of past data: it follows the built-in rule, not the mode.
+  const hasHistory =
+    ownsEditControls &&
+    (Boolean(section.alwaysEditable) ||
+      !MEDICAL_NON_EDITABLE_SECTION_KEYS.includes(section.key));
+  const hasActions = canEdit || hasHistory;
+
+  let editControls: ReactNode = null;
+  if (canEdit && (ownsEditControls || alwaysEditable)) {
+    if (editing || alwaysEditable) {
+      editControls = (
+        <>
+          {!alwaysEditable && (
+            <CustomButton
+              variant="outlined"
+              onClick={() => onReset(section.key)}
+              sx={HEAD_BUTTON_SX}
+            >
+              Reset
+            </CustomButton>
+          )}
+          <CustomButton
+            variant="contained"
+            onClick={() => onSave(section.key)}
+            sx={HEAD_BUTTON_SX}
+          >
+            Save
+          </CustomButton>
+        </>
+      );
+    } else {
+      editControls = (
+        <CustomButton
+          variant="outlined"
+          onClick={() => onEdit(section.key)}
+          sx={HEAD_BUTTON_SX}
+        >
+          Edit
+        </CustomButton>
+      );
+    }
+  }
+
   return (
     <Box
       component="article"
@@ -1685,35 +1788,8 @@ const SectionCard = memo(function SectionCard({
 
         {hasActions && (
           <Box sx={CARD_HEAD_ACTIONS_SX}>
-            {!ownsEditControls && !alwaysEditable ? null : editing || alwaysEditable ? (
-              <>
-                {!alwaysEditable && (
-                  <CustomButton
-                    variant="outlined"
-                    onClick={() => onReset(section.key)}
-                    sx={HEAD_BUTTON_SX}
-                  >
-                    Reset
-                  </CustomButton>
-                )}
-                <CustomButton
-                  variant="contained"
-                  onClick={() => onSave(section.key)}
-                  sx={HEAD_BUTTON_SX}
-                >
-                  Save
-                </CustomButton>
-              </>
-            ) : (
-              <CustomButton
-                variant="outlined"
-                onClick={() => onEdit(section.key)}
-                sx={HEAD_BUTTON_SX}
-              >
-                Edit
-              </CustomButton>
-            )}
-            {ownsEditControls && (
+            {editControls}
+            {hasHistory && (
               <CustomButton
                 variant="outlined"
                 onClick={() => onHistory(section.key)}
@@ -1733,6 +1809,19 @@ const SectionCard = memo(function SectionCard({
           </ValidationAttemptedContext.Provider>
         </EditingContext.Provider>
       </Box>
+
+      {hasReviewActions && (
+        <Box role="group" aria-label={`${section.title} review`} sx={REVIEW_BAR_SX}>
+          <CustomButton
+            variant="outlined"
+            aria-pressed={review === "agree"}
+            onClick={() => onReview(section.key, "agree")}
+            sx={review === "agree" ? AGREE_SELECTED_SX : AGREE_SX}
+          >
+            Agree
+          </CustomButton>
+        </Box>
+      )}
     </Box>
   );
 });
@@ -1924,15 +2013,23 @@ export function Medical({
   partyId,
   applicants = MEDICAL_DEFAULT_APPLICANTS,
   initialApplicantKey,
-  groups: groupsProp = MEDICAL_GROUPS,
-  sections: sectionsProp = MEDICAL_SECTIONS,
+  groups: allGroups = MEDICAL_GROUPS,
+  sections: allSections = MEDICAL_SECTIONS,
   catalog,
+  actions,
   onApplicantChange,
   onViewDocuments,
   onSubmit,
   onSaveSection,
   history,
 }: Readonly<MedicalProps>) {
+  // Sections listed in `actions.hiddenSectionKeys` are dropped even when the API returns them. The result keeps
+  // the identity of the props when nothing is hidden, because `sectionsProp` keys the form store and saved state.
+  const hiddenSectionKeys = actions?.hiddenSectionKeys;
+  const { sections: sectionsProp, groups: groupsProp } = useMemo(
+    () => omitHiddenMedicalSections(allSections, allGroups, hiddenSectionKeys),
+    [allSections, allGroups, hiddenSectionKeys],
+  );
   const [activeApplicantKey, setActiveApplicantKey] = useState(
     initialApplicantKey ?? applicants[0]?.key ?? "",
   );
@@ -1947,8 +2044,15 @@ export function Medical({
     base: readonly MedicalSection[];
     byKey: Readonly<Record<string, MedicalSection>>;
   }>({ base: sectionsProp, byKey: {} });
-  const catalogSections = catalog?.sections ?? MEDICAL_SECTIONS;
-  const catalogGroups = catalog?.groups ?? MEDICAL_GROUPS;
+  const { sections: catalogSections, groups: catalogGroups } = useMemo(
+    () =>
+      omitHiddenMedicalSections(
+        catalog?.sections ?? MEDICAL_SECTIONS,
+        catalog?.groups ?? MEDICAL_GROUPS,
+        hiddenSectionKeys,
+      ),
+    [catalog, hiddenSectionKeys],
+  );
   // Sections the user added from the document list although the fetch did not return them. They belong
   // to one `sections` prop: a new prop (a refetch) drops them.
   const [added, setAdded] = useState<{
@@ -2037,13 +2141,13 @@ export function Medical({
   // Blood pressure: Avg Systolic / Avg Diastolic are disabled and auto populated.
   useEffect(() => {
     const section = sections.find(
-      (s) => s.key === "blood_pressure_pulse_details",
+      (s) => s.key === "blood_pressure_and_pulse",
     );
     if (!section) return;
     // Every reading shown counts (Systolic 1..N), however many the API returned.
     const idsOf = (prefix: string) =>
       section.fields.flatMap(([label], index) =>
-        new RegExp(`^${prefix} \\d+$`).test(label)
+        new RegExp(String.raw`^${prefix} \d+$`).test(label)
           ? [fieldId(section.key, index)]
           : [],
       );
@@ -2070,6 +2174,7 @@ export function Medical({
   }, [sections, store]);
 
   const [editing, setEditing] = useState<Record<string, boolean>>({});
+  const [reviews, setReviews] = useState<Record<string, ReviewDecision>>({});
   const [validationAttempted, setValidationAttempted] = useState<
     Record<string, boolean>
   >({});
@@ -2090,6 +2195,17 @@ export function Medical({
     message: string;
     severity: "success" | "warning" | "error";
   } | null>(null);
+  // UDS viewer link for "View Medical Documents", fetched once the screen has loaded for this application.
+  const documentsLink = useDocumentLink(applicationNumber, "medical");
+  const handleViewDocuments = useCallback(() => {
+    if (documentsLink) {
+      window.open(documentsLink, "_blank", "noopener,noreferrer");
+    } else if (onViewDocuments) {
+      onViewDocuments();
+    } else {
+      setSnackbar({ message: MEDICAL_MESSAGES.documentsUnavailable, severity: "error" });
+    }
+  }, [documentsLink, onViewDocuments]);
 
   const cardRefs = useRef<Record<string, HTMLElement | null>>({});
   const navItemRefs = useRef<Record<string, HTMLElement | null>>({});
@@ -2098,6 +2214,9 @@ export function Medical({
   activeSectionKeyRef.current = activeSectionKey;
   const originalsRef = useRef<Record<string, Record<string, string>>>({});
   const dialogOriginalRef = useRef<Record<string, Record<string, string>>>({});
+  // Sections that `openDialog` added to the page for the open dialog and that are not saved yet. Cancelling
+  // the dialog removes them again; a successful Save keeps them.
+  const dialogAddedRef = useRef<readonly string[]>([]);
   const editingRef = useRef<Record<string, boolean>>({});
   const observerLockUntil = useRef(0);
 
@@ -2368,12 +2487,90 @@ export function Medical({
     [getUnit, sections],
   );
 
+  const handleReview = useCallback(
+    (sectionKey: string, decision: ReviewDecision) => {
+      unitSections(sectionKey).forEach((s) => setAttempted(s.key, false));
+      stopEditing(sectionKey, true);
+      const unitKey = getUnit(sectionKey).key;
+      setReviews((current) =>
+        current[unitKey] === decision ? current : { ...current, [unitKey]: decision },
+      );
+    },
+    [getUnit, setAttempted, stopEditing, unitSections],
+  );
+
   const handleReset = useCallback(
     (sectionKey: string) => {
       unitSections(sectionKey).forEach((s) => setAttempted(s.key, false));
       stopEditing(sectionKey, true);
     },
     [setAttempted, stopEditing, unitSections],
+  );
+
+  /** Sends the unit's sections to the Save API and re-reads the saved sections. Returns true when the API accepted it. */
+  const saveUnitToApi = useCallback(
+    async (
+      save: NonNullable<MedicalProps["onSaveSection"]>,
+      unit: MedicalEditUnit,
+      unitSectionList: readonly MedicalSection[],
+    ): Promise<boolean> => {
+      // Every applicant profile has a party id; it is the DB correlation key, so a save never goes without it.
+      const activePartyId = partyId?.trim() ?? "";
+      if (activePartyId.length === 0) {
+        setSnackbar({ message: MEDICAL_MESSAGES.partyMissing, severity: "error" });
+        return false;
+      }
+      // `createdBy` is the logged-in user id, the same value the header profile shows.
+      const createdBy = getSessionUser()?.username.trim() ?? "";
+      if (createdBy.length === 0) {
+        setSnackbar({ message: MEDICAL_MESSAGES.sessionMissing, severity: "error" });
+        return false;
+      }
+      const request = buildMedicalSaveRequest({
+        applicationNumber: applicationNumber ?? "",
+        partyId: activePartyId,
+        createdBy,
+        sections: unitSectionList,
+        values: store.snapshot(),
+      });
+      try {
+        const response = await save(request);
+        const failed = response.error || response.response_code !== 200;
+        // Success shows the API's top-level message; a failure appends the field-level errors to it.
+        setSnackbar({
+          message: formatMedicalSaveMessage(
+            response,
+            failed ? MEDICAL_MESSAGES.saveFailed : MEDICAL_MESSAGES.sectionSaved(unit.title),
+          ),
+          severity: failed ? "error" : "success",
+        });
+        if (failed) return false;
+        // The response echoes the fetch structure: re-read the saved sections from it, so the form holds what
+        // the database stored (real memberId, habitId, readingId, responseId) and a second Save updates the
+        // same rows instead of inserting them again. Other sections, and their unsaved edits, are untouched.
+        const refreshed = readMedicalSaveSections(response, unit.sectionKeys);
+        if (refreshed.length > 0) {
+          refreshed.forEach((section) => {
+            store.restore(`${section.key}-`, createInitialValues([section]));
+          });
+          setSavedSections((previous) => ({
+            base: sectionsProp,
+            byKey: {
+              ...(previous.base === sectionsProp ? previous.byKey : {}),
+              ...Object.fromEntries(refreshed.map((section) => [section.key, section])),
+            },
+          }));
+        }
+        return true;
+      } catch (reason: unknown) {
+        setSnackbar({
+          message: readSaveError(reason) || MEDICAL_MESSAGES.saveFailed,
+          severity: "error",
+        });
+        return false;
+      }
+    },
+    [applicationNumber, partyId, sectionsProp, store],
   );
 
   /**
@@ -2398,60 +2595,8 @@ export function Medical({
       }
       unitSectionList.forEach((s) => setAttempted(s.key, false));
       if (onSaveSection) {
-        // Every applicant profile has a party id; it is the DB correlation key, so a save never goes without it.
-        const activePartyId = partyId?.trim() ?? "";
-        if (activePartyId.length === 0) {
-          setSnackbar({ message: MEDICAL_MESSAGES.partyMissing, severity: "error" });
-          return false;
-        }
-        // `createdBy` is the logged-in user id, the same value the header profile shows.
-        const createdBy = getSessionUser()?.username.trim() ?? "";
-        if (createdBy.length === 0) {
-          setSnackbar({ message: MEDICAL_MESSAGES.sessionMissing, severity: "error" });
-          return false;
-        }
-        const request = buildMedicalSaveRequest({
-          applicationNumber: applicationNumber ?? "",
-          partyId: activePartyId,
-          createdBy,
-          sections: unitSectionList,
-          values: store.snapshot(),
-        });
-        try {
-          const response = await onSaveSection(request);
-          const failed = response.error || response.response_code !== 200;
-          // Success shows the API's top-level message; a failure appends the field-level errors to it.
-          setSnackbar({
-            message: formatMedicalSaveMessage(
-              response,
-              failed ? MEDICAL_MESSAGES.saveFailed : MEDICAL_MESSAGES.sectionSaved(unit.title),
-            ),
-            severity: failed ? "error" : "success",
-          });
-          if (failed) return false;
-          // The response echoes the fetch structure: re-read the saved sections from it, so the form holds what
-          // the database stored (real memberId, habitId, readingId, responseId) and a second Save updates the
-          // same rows instead of inserting them again. Other sections, and their unsaved edits, are untouched.
-          const refreshed = readMedicalSaveSections(response, unit.sectionKeys);
-          if (refreshed.length > 0) {
-            refreshed.forEach((section) => {
-              store.restore(`${section.key}-`, createInitialValues([section]));
-            });
-            setSavedSections((previous) => ({
-              base: sectionsProp,
-              byKey: {
-                ...(previous.base === sectionsProp ? previous.byKey : {}),
-                ...Object.fromEntries(refreshed.map((section) => [section.key, section])),
-              },
-            }));
-          }
-        } catch (reason: unknown) {
-          setSnackbar({
-            message: readSaveError(reason) || MEDICAL_MESSAGES.saveFailed,
-            severity: "error",
-          });
-          return false;
-        }
+        const saved = await saveUnitToApi(onSaveSection, unit, unitSectionList);
+        if (!saved) return false;
       } else {
         setSnackbar({
           message: MEDICAL_MESSAGES.sectionSaved(unit.title),
@@ -2462,14 +2607,11 @@ export function Medical({
       return true;
     },
     [
-      applicationNumber,
       getUnit,
       onSaveSection,
-      partyId,
-      sectionsProp,
+      saveUnitToApi,
       setAttempted,
       stopEditing,
-      store,
       unitSections,
       validateSection,
     ],
@@ -2514,6 +2656,7 @@ export function Medical({
       const missing = catalogSections.filter(
         (section) => unit.sectionKeys.includes(section.key) && !shownKeys.has(section.key),
       );
+      dialogAddedRef.current = missing.map((section) => section.key);
       if (missing.length > 0) {
         missing.forEach((section) => {
           store.restore(`${section.key}-`, createInitialValues([section]));
@@ -2544,13 +2687,26 @@ export function Medical({
         setAttempted(s.key, false);
       });
     }
+    // A document added only for this dialog is dropped again: it appears on the page only after Save.
+    const discarded = dialogAddedRef.current;
+    dialogAddedRef.current = [];
+    if (discarded.length > 0) {
+      setAdded((previous) => ({
+        base: sectionsProp,
+        keys: (previous.base === sectionsProp ? previous.keys : []).filter(
+          (key) => !discarded.includes(key),
+        ),
+      }));
+    }
     setDialogOpen(false);
-  }, [dialogKey, setAttempted, store, unitSections]);
+  }, [dialogKey, sectionsProp, setAttempted, store, unitSections]);
 
   const saveDialog = useCallback(() => {
     if (!dialogKey) return;
     void saveUnit(dialogKey).then((saved) => {
-      if (saved) setDialogOpen(false);
+      if (!saved) return;
+      dialogAddedRef.current = [];
+      setDialogOpen(false);
     });
   }, [dialogKey, saveUnit]);
 
@@ -2559,7 +2715,26 @@ export function Medical({
     onApplicantChange?.(applicantKey);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    // A section still in edit mode has not been saved (Save and Reset both leave edit mode).
+    if (Object.values(editingRef.current).some(Boolean)) {
+      setSnackbar({ message: MEDICAL_MESSAGES.unsavedChanges, severity: "warning" });
+      return;
+    }
+
+    if (applicationNumber) {
+      try {
+        const result = await retriggerBre(applicationNumber, { eventName: "ME" });
+        if ("error" in result && result.error) {
+          setSnackbar({ message: result.error, severity: "error" });
+          return;
+        }
+      } catch {
+        setSnackbar({ message: "Unable to retrigger BRE.", severity: "error" });
+        return;
+      }
+    }
+
     onSubmit?.({
       applicantKey: activeApplicantKey,
       values: store.snapshot(),
@@ -2571,27 +2746,32 @@ export function Medical({
   const activeApplicant = applicants.find(
     (applicant) => applicant.key === activeApplicantKey,
   );
-  const applicantTabs = useMemo(
-    () => applicants.map(({ key, label }) => ({ key, label })),
-    [applicants],
-  );
+  /** Only the selected applicant is shown in the tabs; falls back to all when none matches. */
+  const applicantTabs = useMemo(() => {
+    const visible = activeApplicant ? [activeApplicant] : applicants;
+    return visible.map(({ key, label }) => ({ key, label }));
+  }, [activeApplicant, applicants]);
 
-  // Every catalog section is offered, whether or not the fetch returned it. Only the first section of
-  // a combined group (MER, Tele MER) is listed; its sub sections open together with it.
-  const editableOptions = useMemo(
-    () =>
-      catalogSections
-        .filter(
-          (section) =>
-            !MEDICAL_NON_EDITABLE_SECTION_KEYS.includes(section.key) &&
-            getCatalogUnit(section.key).key === section.key,
-        )
+  // The documents still to add: the `MED_DOC_TABLE` master documents that are not shown yet (the built-in
+  // catalog when the master is not loaded). Only the first section of a combined group (MER, Tele MER) is
+  // listed; its sub sections open together with it.
+  const editableOptions = useMemo(() => {
+    const shownKeys = new Set(sections.map((section) => section.key));
+    const offerable = catalogSections.filter(
+      (section) =>
+        !MEDICAL_NON_EDITABLE_SECTION_KEYS.includes(section.key) &&
+        getCatalogUnit(section.key).key === section.key,
+    );
+    return (
+      buildMedicalDocumentOptions(shownKeys, new Set(offerable.map((section) => section.key))) ??
+      offerable
+        .filter((section) => !shownKeys.has(section.key))
         .map((section) => ({
           label: getCatalogUnit(section.key).title,
           value: section.key,
-        })),
-    [catalogSections, getCatalogUnit],
-  );
+        }))
+    );
+  }, [sections, catalogSections, getCatalogUnit]);
 
   return (
     <StoreContext.Provider value={store}>
@@ -2665,17 +2845,7 @@ export function Medical({
             />
           </Box>
 
-          <CustomButton
-            variant="text"
-            onClick={() =>
-              onViewDocuments
-                ? onViewDocuments()
-                : setSnackbar({
-                    message: MEDICAL_MESSAGES.documents,
-                    severity: "success",
-                  })
-            }
-          >
+          <CustomButton variant="text" onClick={handleViewDocuments}>
             View Medical Documents
           </CustomButton>
         </Box>
@@ -2755,6 +2925,9 @@ export function Medical({
               <SectionCard
                 key={section.key}
                 section={section}
+                mode={resolveMedicalActionMode(section, actions)}
+                review={reviews[getUnit(section.key).key]}
+                onReview={handleReview}
                 editing={Boolean(editing[getUnit(section.key).key])}
                 ownsEditControls={getUnit(section.key).sectionKeys[0] === section.key}
                 validationAttempted={Boolean(validationAttempted[section.key])}
@@ -2786,12 +2959,11 @@ export function Medical({
               minHeight: 28,
               px: "11px",
               py: "4px",
-              borderRadius: "50px",
-              fontSize: 13,
+              fontSize: 12,
               fontWeight: 700,
             }}
           >
-            Submit
+            Call BRE
           </CustomButton>
         </Box>
 

@@ -105,6 +105,13 @@ export const breUrls = {
   },
 };
 
+/** Reinsurer / UDS document link fetch (Medical "View Medical Documents"). Empty when unset — mock mode skips it. */
+export const reinsurerDocUrls = {
+  get fetch(): string {
+    return configuredUrl(import.meta.env.VITE_REINSURER_DOC_FETCH_API);
+  },
+};
+
 /** MMT grievance fetch / save. Empty when unset — mock mode skips them. */
 export const mmtGrievanceUrls = {
   get fetch(): string {

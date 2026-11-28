@@ -6312,7 +6312,7 @@
             }
           ]
         },
-        "_commented_psa": {
+        "psa": {
           "testDtlId": 437,
           "medicalType": "REGULAR MEDICAL",
           "testDate": "2026-07-22",

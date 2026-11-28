@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { formatIndianCurrency } from "@insurance-poc/utils";
-import medicalDataFetchMock from "../../../../../mock/medical/medical-data-fetch-merged.json";
+import medicalDataFetchMock from "../../../../../mock/medical/medical-data-fetch.json";
 import {
   MEDICAL_FAMILY_HISTORY_SECTION,
   MEDICAL_SECTIONS,
@@ -132,9 +132,9 @@ describe("mapMedicalFetchPayload", () => {
     const result = mapMedicalFetchPayload(source);
     const get = (key: string, label: string) =>
       result?.sections.find((s) => s.key === key)?.fields.find(([l]) => l === label)?.[1];
-    expect(get("habit_addictions", "Cigarettes/beedis/cigar - Quantity")).toBe("");
-    expect(get("habit_addictions", "Gutka / snuff / paan etc. - Quantity")).toBe("0");
-    expect(get("habit_addictions", "Beer/Wine/Hard liquor - Quantity")).toBe("2");
+    expect(get("habit_and_addictions", "Cigarettes/beedis/cigar - Quantity")).toBe("");
+    expect(get("habit_and_addictions", "Gutka / snuff / paan etc. - Quantity")).toBe("0");
+    expect(get("habit_and_addictions", "Beer/Wine/Hard liquor - Quantity")).toBe("2");
     expect(get("tele_habit_addiction", "Beer/Wine/Hard liquor - Quantity")).toBe("");
   });
 
@@ -154,7 +154,7 @@ describe("mapMedicalFetchPayload", () => {
   });
 
   it("maps members[] to family rows, one per member, in the order the API sends them", () => {
-    const rows = sectionOf("family_history_health_status").familyRows;
+    const rows = sectionOf("family_history").familyRows;
     expect(rows?.map((row) => row.relation)).toEqual([
       "Mother", "Brother", "Sister", "Father", "Father", "Mother", "Brother", "Spouse",
     ]);
@@ -169,7 +169,7 @@ describe("mapMedicalFetchPayload", () => {
   });
 
   it("omits null member values instead of writing empty strings", () => {
-    const brother = sectionOf("family_history_health_status").familyRows?.[1];
+    const brother = sectionOf("family_history").familyRows?.[1];
     expect(brother).toEqual({ relation: "Brother", memberId: expect.any(Number) });
   });
 
@@ -203,7 +203,7 @@ describe("mapMedicalFetchPayload", () => {
     expect(tele?.[0]?.health).toBe("Healthy");
     expect(tele?.[1]).not.toHaveProperty("health");
     // MER Health Status is free text and is shown as sent.
-    const mer = result?.sections.find((s) => s.key === "family_history_health_status")?.familyRows;
+    const mer = result?.sections.find((s) => s.key === "family_history")?.familyRows;
     expect(mer?.[0]?.health).toBe("Unlisted");
   });
 
@@ -310,12 +310,12 @@ describe("mapMedicalFetchPayload", () => {
     const result = mapMedicalFetchPayload(source);
     const value = (key: string, label: string) =>
       result?.sections.find((s) => s.key === key)?.fields.find(([l]) => l === label)?.[1];
-    expect(value("blood_urea_nitro", "Findings")).toBe("20");
-    expect(value("blood_urea_nitro", "BUN")).toBe("9");
-    expect(value("blood_urea_nitro", "Remark")).toBe("ok");
-    expect(value("dobutamine_stress_echo", "Ejection Fraction")).toBe("60");
-    expect(value("dobutamine_stress_echo", "Remark")).toBe("r1");
-    expect(value("exercise_stress_echo", "Findings")).toBe("Abnormal");
+    expect(value("blood_urea_and_nitro", "Findings")).toBe("20");
+    expect(value("blood_urea_and_nitro", "BUN")).toBe("9");
+    expect(value("blood_urea_and_nitro", "Remark")).toBe("ok");
+    expect(value("dobutamine_stress_echocardiogram", "Ejection Fraction")).toBe("60");
+    expect(value("dobutamine_stress_echocardiogram", "Remark")).toBe("r1");
+    expect(value("exercise_stress_echocardiogram", "Findings")).toBe("Abnormal");
     expect(value("pap_smear", "Remarks")).toBe("r3");
     expect(value("pft", "Date")).toBe("03/02/2026");
     expect(value("pft", "FEV1/FVC")).toBe("80");
@@ -348,17 +348,17 @@ describe("mapMedicalFetchPayload", () => {
   });
 
   it("maps BP readings by readingId and keeps slots 1-4 when values are null", () => {
-    const labels = sectionOf("blood_pressure_pulse_details").fields.map(([label]) => label);
+    const labels = sectionOf("blood_pressure_and_pulse").fields.map(([label]) => label);
     expect(labels).toEqual([
       "Systolic 1", "Systolic 2", "Systolic 3", "Systolic 4", "Avg Systolic",
       "Diastolic 1", "Diastolic 2", "Diastolic 3", "Diastolic 4", "Avg Diastolic",
       "Pulse Rate",
     ]);
-    expect(sectionOf("blood_pressure_pulse_details").cols).toBe(5);
+    expect(sectionOf("blood_pressure_and_pulse").cols).toBe(5);
     // V3 sends readings[] with readingSeq 1-3, so slots 1-3 are filled and slot 4 stays empty.
-    expect(valueOf("blood_pressure_pulse_details", "Systolic 1")).toBe("120");
-    expect(valueOf("blood_pressure_pulse_details", "Diastolic 3")).toBe("82");
-    expect(valueOf("blood_pressure_pulse_details", "Systolic 4")).toBe("");
+    expect(valueOf("blood_pressure_and_pulse", "Systolic 1")).toBe("120");
+    expect(valueOf("blood_pressure_and_pulse", "Diastolic 3")).toBe("82");
+    expect(valueOf("blood_pressure_and_pulse", "Systolic 4")).toBe("");
   });
 
   it("adds a slot for every extra readingId, sorted, and maps by id not position", () => {
@@ -380,7 +380,7 @@ describe("mapMedicalFetchPayload", () => {
       },
     };
     const section = mapMedicalFetchPayload(source)?.sections.find(
-      (item) => item.key === "blood_pressure_pulse_details",
+      (item) => item.key === "blood_pressure_and_pulse",
     );
     const labels = section?.fields.map(([label]) => label);
     expect(labels).toEqual([
@@ -412,14 +412,14 @@ describe("mapMedicalFetchPayload", () => {
       },
     };
     const section = mapMedicalFetchPayload(source)?.sections.find(
-      (item) => item.key === "blood_pressure_pulse_details",
+      (item) => item.key === "blood_pressure_and_pulse",
     );
     expect(section?.fields.every(([, value]) => value === "")).toBe(true);
     expect(section?.cols).toBe(5);
   });
 
   it("maps Overview values and normalises Y/N to Yes/No", () => {
-    const key = "application_form_medical_lifestyle";
+    const key = "application_form_medical";
     expect(valueOf(key, "Height")).toBe("170");
     expect(valueOf(key, "BMI")).toBe("24.0");
     expect(valueOf(key, "Family History As Per Application Form ?")).toBe("Yes");
@@ -428,7 +428,7 @@ describe("mapMedicalFetchPayload", () => {
   });
 
   it("keeps Overview defaults for fields the API does not return", () => {
-    const key = "application_form_medical_lifestyle";
+    const key = "application_form_medical";
     expect(valueOf(key, "Adverse")).toBe("");
     expect(valueOf(key, "Hazardous Occupation")).toBe("");
     expect(valueOf(key, "Illness Impairment")).toBe("");
@@ -489,7 +489,7 @@ describe("mapMedicalFetchPayload", () => {
       const section = sectionOf(key);
       expect(section.parameterValues, key).toHaveLength(section.parameters?.length ?? -1);
       const names = section.parameters?.map(([name]) => name) ?? [];
-      const apiRoot = (medicalDataFetchMock.data.sections as unknown as Record<string, { parameters: { parameter: string; value: string | null }[] }>)[key];
+      const apiRoot = (medicalDataFetchMock.response.data.sections as unknown as Record<string, { parameters: { parameter: string; value: string | null }[] }>)[key];
       names.forEach((name, index) => {
         const item = apiRoot?.parameters.find((entry) => entry.parameter === name);
         expect(item, `${key}: ${name}`).toBeDefined();
@@ -716,7 +716,7 @@ describe("mapMedicalFetchPayload", () => {
       "hist-mer-1",
       "hist-mer-2",
     ]);
-    expect(result?.history?.family_history_health_status).toHaveLength(2);
+    expect(result?.history?.family_history).toHaveLength(2);
     expect(result?.history?.tele_mer?.map((entry) => entry.id)).toEqual(["hist-tele_mer-1"]);
     expect(result?.history?.tele_family_history).toHaveLength(1);
     expect(result?.history?.tele_measurements).toBeUndefined();
@@ -725,7 +725,7 @@ describe("mapMedicalFetchPayload", () => {
   it("exports TELEMER_GROUPS with only overview and tele_video_mer groups", () => {
     expect(TELEMER_GROUPS.map((g) => g.key)).toEqual(["overview", "tele_video_mer"]);
     expect(TELEMER_SECTIONS.map((s) => s.key)).toEqual([
-      "application_form_medical_lifestyle",
+      "application_form_medical",
       "tele_mer",
       "tele_measurements",
       "tele_family_history",

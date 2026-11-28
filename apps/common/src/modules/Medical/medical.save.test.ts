@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
-import medicalDataFetchMock from "../../../../../mock/medical/medical-data-fetch-merged.json";
-import medicalDataFetchV4Mock from "../../../../../mock/medical/medical-data-fetch.json";
+import medicalDataFetchMock from "../../../../../mock/medical/medical-data-fetch.json";
 import medicalDataSaveMock from "../../../../../mock/medical/medical-data-save.json";
 import { mapMedicalFetchPayload } from "./medical.mapper";
 import { buildMedicalSaveRequest, formatMedicalSaveMessage, readMedicalSaveSections } from "./medical.save";
@@ -72,7 +71,7 @@ describe("buildMedicalSaveRequest", () => {
   });
 
   it("sends a combined MER unit as one nested mer object", () => {
-    const request = build(["mer", "habit_addictions", "measurement", "family_history_health_status"]);
+    const request = build(["mer", "habit_and_addictions", "measurement", "family_history"]);
     expect(Object.keys(request.sections)).toEqual(["mer"]);
     const mer = request.sections.mer as Record<string, unknown>;
     expect(Object.keys(mer).sort()).toEqual(
@@ -109,12 +108,12 @@ describe("buildMedicalSaveRequest", () => {
   });
 
   it("sends habit indicators as Y / N and years as numbers", () => {
-    const section = sectionOf("habit_addictions");
+    const section = sectionOf("habit_and_addictions");
     const indicator = fieldIndex(section, "Cigarettes/beedis/cigar - Indicator");
     const year = fieldIndex(section, "Cigarettes/beedis/cigar - No. of Year");
-    const request = build(["habit_addictions"], {
-      [`habit_addictions-${indicator}`]: "Yes",
-      [`habit_addictions-${year}`]: "7",
+    const request = build(["habit_and_addictions"], {
+      [`habit_and_addictions-${indicator}`]: "Yes",
+      [`habit_and_addictions-${year}`]: "7",
     });
     const habits = (request.sections.mer as { habit_and_addictions: Record<string, unknown> })
       .habit_and_addictions;
@@ -123,8 +122,7 @@ describe("buildMedicalSaveRequest", () => {
   });
 
   it("sends Tele habits as a value[] array with the fetched habitId", () => {
-    const teleMapped = mapMedicalFetchPayload(medicalDataFetchV4Mock);
-    const section = teleMapped?.sections.find((item) => item.key === "tele_habit_addiction");
+    const section = mapped?.sections.find((item) => item.key === "tele_habit_addiction");
     if (!section) throw new Error("tele_habit_addiction not mapped");
     const indicator = fieldIndex(section, "Cigarette/beedis/cigar - Indicator");
     const year = fieldIndex(section, "Cigarette/beedis/cigar - No. of Year");
@@ -155,8 +153,8 @@ describe("buildMedicalSaveRequest", () => {
   });
 
   it("sends family members with their memberId and an upper-case deadOrAlive", () => {
-    const section = sectionOf("family_history_health_status");
-    const request = build(["family_history_health_status"]);
+    const section = sectionOf("family_history");
+    const request = build(["family_history"]);
     const members = (request.sections.mer as { family_history: { members: Record<string, unknown>[] } })
       .family_history.members;
     expect(members).toHaveLength(section.familyRows?.length ?? 0);
@@ -167,14 +165,14 @@ describe("buildMedicalSaveRequest", () => {
   });
 
   it("sends isActive Y on every kept family member and N on a fetched member that was removed", () => {
-    const section = sectionOf("family_history_health_status");
+    const section = sectionOf("family_history");
     const rows = section.familyRows ?? [];
     const removable = rows.findIndex((row) => row.memberId !== undefined);
     if (removable < 0) throw new Error("no fetched family member in the mock");
     const removedId = rows[removable].memberId;
     const keptRowIds = rows.map((_, i) => String(i + 1)).filter((id) => id !== String(removable + 1));
-    const request = build(["family_history_health_status"], {
-      "family_history_health_status-rows": keptRowIds.join(","),
+    const request = build(["family_history"], {
+      "family_history-rows": keptRowIds.join(","),
     });
     const members = (request.sections.mer as { family_history: { members: Record<string, unknown>[] } })
       .family_history.members;
@@ -186,8 +184,8 @@ describe("buildMedicalSaveRequest", () => {
   });
 
   it("sends isActive Y on every member when nothing was removed", () => {
-    const section = sectionOf("family_history_health_status");
-    const request = build(["family_history_health_status"]);
+    const section = sectionOf("family_history");
+    const request = build(["family_history"]);
     const members = (request.sections.mer as { family_history: { members: Record<string, unknown>[] } })
       .family_history.members;
     expect(members).toHaveLength(section.familyRows?.length ?? 0);
@@ -195,12 +193,12 @@ describe("buildMedicalSaveRequest", () => {
   });
 
   it("sends a family row added on the screen with memberId null and isActive Y", () => {
-    const section = sectionOf("family_history_health_status");
+    const section = sectionOf("family_history");
     const count = section.familyRows?.length ?? 0;
     const newId = String(count + 1);
-    const prefix = `family_history_health_status-row-${newId}`;
-    const request = build(["family_history_health_status"], {
-      "family_history_health_status-rows": Array.from({ length: count + 1 }, (_, i) => String(i + 1)).join(","),
+    const prefix = `family_history-row-${newId}`;
+    const request = build(["family_history"], {
+      "family_history-rows": Array.from({ length: count + 1 }, (_, i) => String(i + 1)).join(","),
       [`${prefix}-relation`]: "Brother",
       [`${prefix}-age`]: "41",
       [`${prefix}-alive`]: "Alive",
@@ -374,25 +372,25 @@ describe("formatMedicalSaveMessage", () => {
 describe("readMedicalSaveSections", () => {
   /** A save response that echoes the fetch structure for the whole mock (the API returns the saved sections). */
   const echo = (data: unknown) => ({ response_code: 200, error: false, message: "saved", data });
-  const fetchData = (medicalDataFetchMock as { data: unknown }).data;
+  const fetchData: unknown = medicalDataFetchMock.response.data;
 
   it("maps the echoed sections like a fetch, with the stored memberIds", () => {
-    const [family] = readMedicalSaveSections(echo(fetchData), ["family_history_health_status"]);
-    expect(family.key).toBe("family_history_health_status");
-    const stored = sectionOf("family_history_health_status").familyRows ?? [];
+    const [family] = readMedicalSaveSections(echo(fetchData), ["family_history"]);
+    expect(family.key).toBe("family_history");
+    const stored = sectionOf("family_history").familyRows ?? [];
     expect(stored.length).toBeGreaterThan(0);
     expect(family.familyRows?.map((row) => row.memberId)).toEqual(stored.map((row) => row.memberId));
   });
 
   it("returns only the sections of the saved unit", () => {
-    const keys = readMedicalSaveSections(echo(fetchData), ["2decho", "family_history_health_status"]).map(
+    const keys = readMedicalSaveSections(echo(fetchData), ["2decho", "family_history"]).map(
       (section) => section.key,
     );
-    expect(keys.sort()).toEqual(["2decho", "family_history_health_status"]);
+    expect(keys.sort()).toEqual(["2decho", "family_history"]);
   });
 
   it("never returns a section the user fills in (Decision) or one the save does not send", () => {
-    expect(readMedicalSaveSections(echo(fetchData), ["decision", "application_form_medical"])).toEqual([]);
+    expect(readMedicalSaveSections(echo(fetchData), ["decision", "not_a_save_section"])).toEqual([]);
   });
 
   it("gives a newly inserted family member the memberId the API assigned", () => {
@@ -407,7 +405,7 @@ describe("readMedicalSaveSections", () => {
       healthStatus: "Healthy",
       isActive: "Y",
     });
-    const [family] = readMedicalSaveSections(echo(data), ["family_history_health_status"]);
+    const [family] = readMedicalSaveSections(echo(data), ["family_history"]);
     expect(family.familyRows?.at(-1)).toMatchObject({ relation: "Sister", memberId: 9001 });
   });
 
@@ -417,7 +415,7 @@ describe("readMedicalSaveSections", () => {
     };
     const before = data.sections.family_history.members.length;
     data.sections.family_history.members[0].isActive = "N";
-    const [family] = readMedicalSaveSections(echo(data), ["family_history_health_status"]);
+    const [family] = readMedicalSaveSections(echo(data), ["family_history"]);
     expect(family.familyRows).toHaveLength(before - 1);
   });
 

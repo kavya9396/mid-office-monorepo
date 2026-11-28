@@ -661,49 +661,1651 @@
     ],
     "product": [
       {
-        "code": "ICICI_PRU_GIFT_PRO",
-        "description": "ICICI PRU GIFT PRO",
+        "code": "A01",
+        "description": "A01-Cashbak A01",
         "value": null,
         "isActive": "Y",
-        "productType": "SAVINGS",
-        "formType": "SINGLE_LIFE",
-        "effectiveFrom": "2024-03-01"
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
       },
       {
-        "code": "ICICI_PRU_GOLD",
-        "description": "ICICI PRU GOLD",
+        "code": "A02",
+        "description": "A02-Cashbak A02",
         "value": null,
         "isActive": "Y",
-        "productType": "SAVINGS",
-        "formType": "SINGLE_LIFE",
-        "effectiveFrom": "2024-04-01"
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
       },
       {
-        "code": "ICICI_PRU_IPROTECT_CARE",
-        "description": "ICICI PRU IPROTECT CARE",
+        "code": "A03",
+        "description": "A03-Smart Kid RP",
         "value": null,
         "isActive": "Y",
-        "productType": "TERM",
-        "formType": "SINGLE_LIFE",
-        "effectiveFrom": "2024-02-01"
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
       },
       {
-        "code": "ICICI_PRU_LOAN_PROTECT",
-        "description": "ICICI PRU LOAN PROTECT",
+        "code": "D04",
+        "description": "D04-Forever Life RP",
         "value": null,
         "isActive": "Y",
-        "productType": "LOAN_PROTECT",
-        "formType": "LOAN_PROTECT",
-        "effectiveFrom": "2024-05-01"
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
       },
       {
-        "code": "ICICI_PRU_SIGNATURE",
-        "description": "ICICI PRU SIGNATURE",
+        "code": "D05",
+        "description": "ICICI Pru Gold Pension Savings - SP",
         "value": null,
         "isActive": "Y",
-        "productType": "ULIP",
-        "formType": "SINGLE_LIFE",
-        "effectiveFrom": "2024-01-01"
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2024-01-30"
+      },
+      {
+        "code": "D06",
+        "description": "ICICI Pru Gold Pension Savings - RP, LP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2024-01-30"
+      },
+      {
+        "code": "E00",
+        "description": "E00-Save 'n' Protect and Save 'n' Protect Plus",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "E01",
+        "description": "E01-Save 'n' Protect ",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "E03",
+        "description": "E03-Future Secure",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "E04",
+        "description": "E04-Whole Life",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "E05",
+        "description": "E05-Guaranteed Insurance Plan",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "E06",
+        "description": "E06-Iassure SP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "E10",
+        "description": "ICICI PRU CASH ADVANTAGE",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2013-07-16"
+      },
+      {
+        "code": "E11",
+        "description": "ICICI Pru Savings Suraksha",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2013-10-05"
+      },
+      {
+        "code": "E12",
+        "description": "ICICI Pru Savings Suraksha LP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2013-10-05"
+      },
+      {
+        "code": "E15",
+        "description": "ICICI Pru Anmol Bachat",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2014-02-20"
+      },
+      {
+        "code": "E16",
+        "description": "ICICI Pru Anmol Bachat-SP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2014-02-20"
+      },
+      {
+        "code": "E18",
+        "description": "ICICI Pru Assurance Savings Insurance Plan",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2014-08-27"
+      },
+      {
+        "code": "E19",
+        "description": "E19-Anmol Bachat",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2016-09-09"
+      },
+      {
+        "code": "E20",
+        "description": "E20-Anmol Bachat",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2016-09-09"
+      },
+      {
+        "code": "E21",
+        "description": "ICICI Prudential Future Perfect",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2016-08-03"
+      },
+      {
+        "code": "E25",
+        "description": "E25 - ICICIPru Lakshya - Wealth",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2020-01-03"
+      },
+      {
+        "code": "E26",
+        "description": "E26 - ICICIPru Lakshya - Lifelong Income",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2020-01-03"
+      },
+      {
+        "code": "E27",
+        "description": "ICICI Pru POS Assured Savings Insurance Plan",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2020-05-05"
+      },
+      {
+        "code": "E28",
+        "description": "ICICI Pru Guaranteed Income for Tomorrow LP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2021-01-04"
+      },
+      {
+        "code": "E29",
+        "description": "ICICI Pru Guaranteed Income for Tomorrow SP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2021-01-04"
+      },
+      {
+        "code": "E30",
+        "description": "ICICI Pru Guaranteed Income for Tomorrow LP (POS)",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2021-01-04"
+      },
+      {
+        "code": "E31",
+        "description": "ICICI Pru Guaranteed Income for Tomorrow SP (POS)",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2021-01-04"
+      },
+      {
+        "code": "E32",
+        "description": "ICICI Pru GIFT Long Term",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2021-11-17"
+      },
+      {
+        "code": "E33",
+        "description": "E33 - ICICI Pru GIFT Long Term (POS)",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2022-11-22"
+      },
+      {
+        "code": "E34",
+        "description": "E34 - ICICI Pru Sukh Samruddhi",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2022-09-22"
+      },
+      {
+        "code": "E35",
+        "description": "ICICI Pru Gold",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2023-01-25"
+      },
+      {
+        "code": "E36",
+        "description": "ICICI Pru GIFT Pro",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2023-08-08"
+      },
+      {
+        "code": "E37",
+        "description": "ICICI Pru GIFT Pro - POS",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2023-10-19"
+      },
+      {
+        "code": "E38",
+        "description": "ICICI Pru Gift Select",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2024-12-30"
+      },
+      {
+        "code": "E39",
+        "description": "ICICI Pru Gift Select - POS",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2024-12-30"
+      },
+      {
+        "code": "E40",
+        "description": "GIFT Assure - Limited Pay",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2026-04-30"
+      },
+      {
+        "code": "E41",
+        "description": "ICICI Pru SmartKid 360",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2025-12-31"
+      },
+      {
+        "code": "E42",
+        "description": "GIFT Assure - Single Pay",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2026-04-30"
+      },
+      {
+        "code": "E43",
+        "description": "ICICI Pru Gold",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2026-07-09"
+      },
+      {
+        "code": "GL1",
+        "description": "Group Loan Secure",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Group",
+        "formType": "Single",
+        "effectiveFrom": "2016-07-08"
+      },
+      {
+        "code": "GL2",
+        "description": "Group Loan Secure",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Group",
+        "formType": "Single",
+        "effectiveFrom": "2016-07-08"
+      },
+      {
+        "code": "GP1",
+        "description": "GP1-ICICI Pru Super Protect - Credit",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Group",
+        "formType": "Single",
+        "effectiveFrom": "2019-09-13"
+      },
+      {
+        "code": "GT4",
+        "description": "Group Term Plus",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Group",
+        "formType": "Single",
+        "effectiveFrom": "2017-07-14"
+      },
+      {
+        "code": "I06",
+        "description": "I06-Immediate Annuity",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2017-11-23"
+      },
+      {
+        "code": "I07",
+        "description": "I07-Immediate Annuity",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2017-11-23"
+      },
+      {
+        "code": "I13",
+        "description": "Guaranteed Pension Plan",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2020-12-02"
+      },
+      {
+        "code": "I14",
+        "description": "Guaranteed Pension Plan",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2020-12-02"
+      },
+      {
+        "code": "I15",
+        "description": "Guaranteed Pension Plan",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2020-12-02"
+      },
+      {
+        "code": "I16",
+        "description": "I16 - ICICI Pru Saral Pension",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2021-07-23"
+      },
+      {
+        "code": "I17",
+        "description": "I17 - ICICI Pru Saral Pension",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2021-07-23"
+      },
+      {
+        "code": "I18",
+        "description": "I18 - ICICI Pru Saral Pension",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2021-07-23"
+      },
+      {
+        "code": "I19",
+        "description": "I19 - Guaranteed Pension Plan Flexi",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2022-03-29"
+      },
+      {
+        "code": "M02",
+        "description": "M02-Home Assure ",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "M03",
+        "description": "M03-Home Assure ",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "SP1",
+        "description": "Super Protect - Life (Single) ",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Group",
+        "formType": "Single",
+        "effectiveFrom": "2020-11-12"
+      },
+      {
+        "code": "SP2",
+        "description": "Super Protect - Life (Regular) ",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Group",
+        "formType": "Single",
+        "effectiveFrom": "2020-11-12"
+      },
+      {
+        "code": "T01",
+        "description": "T01-LifeGuard T01",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "T02",
+        "description": "T02-LifeGuard T02",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "T16",
+        "description": "T16-Crises Cover",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "T19",
+        "description": "T19-Mediassure",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Multi",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "T20",
+        "description": "T20-Pure Protect Classic T20 ",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "T21",
+        "description": "T21-Pure Protect Elite T21 ",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "T22",
+        "description": "Hospital Care II",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Multi",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "T24",
+        "description": "icici pru iprotect option i",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "T25",
+        "description": "icici pru iprotect option ii",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "T26",
+        "description": "icici pru iprotect option i",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "T27",
+        "description": "icici pru iprotect option ii",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "T29",
+        "description": "i care single premium",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "T30",
+        "description": "i care single premium with rider",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "T31",
+        "description": "i care  regular premium",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "T32",
+        "description": "i care regular premium with rider",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "T33",
+        "description": "ICICI Pru Home Protect",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2013-01-06"
+      },
+      {
+        "code": "T34",
+        "description": "Loan Protect -SP-Home",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2013-09-27"
+      },
+      {
+        "code": "T35",
+        "description": "Loan Protect -FP-Home",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2013-09-27"
+      },
+      {
+        "code": "T36",
+        "description": "Loan Protect -SP-Auto",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2013-09-27"
+      },
+      {
+        "code": "T37",
+        "description": "Loan Protect -FP-Auto",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2013-09-27"
+      },
+      {
+        "code": "T38",
+        "description": "ICICI Pru ICAREII RP Option1",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2014-03-10"
+      },
+      {
+        "code": "T39",
+        "description": "ICICI Pru ICAREII SP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2014-03-10"
+      },
+      {
+        "code": "T40",
+        "description": "IPRU iCare II SP Option II",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2024-01-09"
+      },
+      {
+        "code": "T41",
+        "description": "ICICI Prudential i-Care II",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2014-03-10"
+      },
+      {
+        "code": "T43",
+        "description": "ICICI Pru Life Raksha",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2015-08-07"
+      },
+      {
+        "code": "T44",
+        "description": "Loan Protect Plus SP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2015-07-30"
+      },
+      {
+        "code": "T45",
+        "description": "Loan Protect Plus FP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2015-09-11"
+      },
+      {
+        "code": "T46",
+        "description": "ICICI Pru iProtect Smart SP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2015-12-01"
+      },
+      {
+        "code": "T47",
+        "description": "ICICI Pru iProtect Smart RP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2015-12-01"
+      },
+      {
+        "code": "T48",
+        "description": "ICICI Pru Heart/ Cancer Protect SP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2017-04-05"
+      },
+      {
+        "code": "T49",
+        "description": "ICICI Pru Heart/ Cancer Protect RP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2017-04-05"
+      },
+      {
+        "code": "T50",
+        "description": "ICICI Pru iProtect Smart SP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2017-12-11"
+      },
+      {
+        "code": "T51",
+        "description": "ICICI Pru iProtect Smart",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2017-12-11"
+      },
+      {
+        "code": "T52",
+        "description": "ICICI Pru iProtect Smart SP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2018-05-03"
+      },
+      {
+        "code": "T53",
+        "description": "ICICI Pru iProtect Smart",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2018-05-03"
+      },
+      {
+        "code": "T54",
+        "description": "iProtect Smart - POS",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2018-07-18"
+      },
+      {
+        "code": "T55",
+        "description": "T55 - ICICI Pru Precious Life",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2019-08-23"
+      },
+      {
+        "code": "T56",
+        "description": "T56 - ICICI Pru Precious Life",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2019-08-23"
+      },
+      {
+        "code": "T58",
+        "description": "T58 - IPRU Saral Jeevan - Single Pay",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2021-03-09"
+      },
+      {
+        "code": "T59",
+        "description": "T59 - IPRU Saral Jeevan - Regular/Limited Pay",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2021-03-09"
+      },
+      {
+        "code": "T60",
+        "description": "T60 - IPRU Saral Jeevan - Single Pay (POS)",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2021-03-09"
+      },
+      {
+        "code": "T61",
+        "description": "T61 - IPRU Saral Jeevan - Regular/Limited Pay(POS)",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2021-03-09"
+      },
+      {
+        "code": "T62",
+        "description": "ICICI Pru iProtect ROP - SP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2021-12-20"
+      },
+      {
+        "code": "T63",
+        "description": "ICICI Pru iProtect ROP - LP/RP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2021-12-20"
+      },
+      {
+        "code": "T64",
+        "description": "ICICI Pru iProtect ROP - SP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2021-12-20"
+      },
+      {
+        "code": "T65",
+        "description": "ICICI Pru iProtect ROP - LP/RP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2021-12-20"
+      },
+      {
+        "code": "T66",
+        "description": "T66 - ICICI Pru iShield",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2023-02-10"
+      },
+      {
+        "code": "T67",
+        "description": "T67 - ICICI Pru iShield",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2023-02-10"
+      },
+      {
+        "code": "T68",
+        "description": "ICICI Pru iProtect Supreme",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2024-07-31"
+      },
+      {
+        "code": "T69",
+        "description": "ICICI Pru iProtect Supreme",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2024-07-31"
+      },
+      {
+        "code": "T70",
+        "description": "ICICI Pru iProtect Smart Return of Premium",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2024-10-24"
+      },
+      {
+        "code": "T72",
+        "description": "ICICI Pru iProtect Super",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2024-12-13"
+      },
+      {
+        "code": "T73",
+        "description": "ICICI PRU WISH",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2024-12-13"
+      },
+      {
+        "code": "T74",
+        "description": "IPRU Iprotect Smart Pro RP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2025-06-19"
+      },
+      {
+        "code": "T75",
+        "description": "IPRU Iprotect Smart Pro SP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2025-06-19"
+      },
+      {
+        "code": "T76",
+        "description": "ICICI PRU Wealth Forever",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2025-12-12"
+      },
+      {
+        "code": "T77",
+        "description": "ICICI Pru Wealth Forever",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2025-12-12"
+      },
+      {
+        "code": "T78",
+        "description": "ICICI Pru iProtect Care",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2026-02-15"
+      },
+      {
+        "code": "T80",
+        "description": "ICICI Pru iProtect Super POS",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2026-04-23"
+      },
+      {
+        "code": "U56",
+        "description": "U56-Health Saver U56",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Multi",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "U63",
+        "description": "U63-ICICI Pru Pinnacle",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "U64",
+        "description": "U64-Life Time Maxima",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "U65",
+        "description": "U65-Elite Pension II",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "U66",
+        "description": "U66-Life Stage Pension Advantage",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "U67",
+        "description": "icici pru lifetime pension maxima",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "U68",
+        "description": "U68-ICICI Pru SmartKid Maxima",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "U69",
+        "description": "U69-ICICI Pru SmartKid Assure",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "U70",
+        "description": "U70-Assure Pension",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "U71",
+        "description": "U71-Premier Wealth",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "U72",
+        "description": "U72-ICICI Pru Assure Wealth Plus",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "U73",
+        "description": "U73-ICICI Pru Assure  Wealth Super",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "U74",
+        "description": "U74-ICICI Pru LifeStage Wealth",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "U75",
+        "description": "U75-ICICI PRU ACE",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "U76",
+        "description": "U76-Life Link Wealth SP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "U77",
+        "description": "U77-Pinnacle II",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "U78",
+        "description": "ICICI Pru Lifetime Premier RP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "U79",
+        "description": "ICICI Pru LifeTime Premier SP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "U80",
+        "description": "U80-Life Stage Wealth II",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "U81",
+        "description": "U81-Life Link Pension",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "U82",
+        "description": "U82-Smart Kid Premier",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "U83",
+        "description": "U83-Pinnacle Super-SP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "U84",
+        "description": "U84-Pinnacle Super-LP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "U85",
+        "description": "U85-Elite Life-SP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "U86",
+        "description": "U86-Elite Life-LP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "U87",
+        "description": "U87-Elite Wealth-SP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "U88",
+        "description": "U88-Elite Wealth-LP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "U89",
+        "description": "U89-Invest Easy",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "U91",
+        "description": "U91-Wealth Builder",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-10-12"
+      },
+      {
+        "code": "U92",
+        "description": "U92-Pinnacle Super-SP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "U93",
+        "description": "U93-Pinnacle Super-RP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2012-06-12"
+      },
+      {
+        "code": "U94",
+        "description": "ICICI PRU SHUBH RETIREMENT",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2013-01-05"
+      },
+      {
+        "code": "U96",
+        "description": "ICICI PRU EASY RETIREMENT",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2013-09-17"
+      },
+      {
+        "code": "U97",
+        "description": "ICICI PRU EASY RETIREMENT SP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2014-03-10"
+      },
+      {
+        "code": "U98",
+        "description": "Guaranteed Wealth Protector LP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2013-05-15"
+      },
+      {
+        "code": "U99",
+        "description": "Guaranteed Wealth Protector SP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2013-05-15"
+      },
+      {
+        "code": "UA1",
+        "description": "IPRU Elite Life II-SP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2013-08-31"
+      },
+      {
+        "code": "UA2",
+        "description": "IPRU Elite Life II",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2013-08-31"
+      },
+      {
+        "code": "UA3",
+        "description": "IPRU Elite Wealth II-SP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2013-08-31"
+      },
+      {
+        "code": "UA4",
+        "description": "IPRU Elite Wealth II",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2013-08-31"
+      },
+      {
+        "code": "UA5",
+        "description": "Wealth Builder II-SP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2013-09-06"
+      },
+      {
+        "code": "UA6",
+        "description": "ICICI Prudential Wealth Builder II",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2013-09-06"
+      },
+      {
+        "code": "UA8",
+        "description": "IPRU Smart Life",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2015-02-13"
+      },
+      {
+        "code": "UA9",
+        "description": "IPRU Smart Life- SP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2015-02-13"
+      },
+      {
+        "code": "UB1",
+        "description": "ICICI Pru Elite Life Super - SP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2017-03-06"
+      },
+      {
+        "code": "UB2",
+        "description": "ICICI Pru Elite Life Super LP RP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2017-03-06"
+      },
+      {
+        "code": "UB3",
+        "description": "ICICI Pru Elite Wealth Super - SP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2017-03-06"
+      },
+      {
+        "code": "UB4",
+        "description": "ICICI Pru Elite Wealth Super LP RP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2017-03-06"
+      },
+      {
+        "code": "UB5",
+        "description": "ICICI Pru Life Time Classic - SP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2017-03-06"
+      },
+      {
+        "code": "UB6",
+        "description": "ICICI Pru Life Time Classic LP RP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2017-03-06"
+      },
+      {
+        "code": "UB7",
+        "description": "ICICI Pru Signature Pension - Single Pay",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2024-08-13"
+      },
+      {
+        "code": "UB8",
+        "description": "ICICI Pru Signature Pension",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2024-08-13"
+      },
+      {
+        "code": "UB9",
+        "description": "ICICI PRU Signature Assure",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2024-11-21"
+      },
+      {
+        "code": "UC1",
+        "description": "ICICI PRU Smart Insurance Plan Plus",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2025-06-05"
+      },
+      {
+        "code": "UC2",
+        "description": "ICICI Pru Wealth Elite Pro - SP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2025-12-31"
+      },
+      {
+        "code": "UC3",
+        "description": "ICICI Pru Wealth Elite Pro",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2025-12-31"
+      },
+      {
+        "code": "UC4",
+        "description": "ICICI Pru Protect N Gain Whole Life",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2026-02-15"
+      },
+      {
+        "code": "UC5",
+        "description": "ICICI Pru Signature Secure",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2026-06-09"
+      },
+      {
+        "code": "UW1",
+        "description": "ICICI Pru1 Wealth",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2018-07-11"
+      },
+      {
+        "code": "UW2",
+        "description": "UW2 - ICICI Pru Signature - SP",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2019-03-07"
+      },
+      {
+        "code": "UW3",
+        "description": "UW3 - ICICI Pru Signature - LP/RP/WL",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2019-03-07"
+      },
+      {
+        "code": "UW4",
+        "description": "ICICI Pru New ULIP Limited Pay/Regular Pay/Whole Life Pay",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2022-12-01"
+      },
+      {
+        "code": "UW5",
+        "description": "ICICI Pru Protect N Gain",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2023-06-21"
+      },
+      {
+        "code": "UW6",
+        "description": "ICICI Pru PLATINA",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2024-02-23"
+      },
+      {
+        "code": "UW7",
+        "description": "ICICI Pru Platinum - Single Pay",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2024-05-08"
+      },
+      {
+        "code": "UW8",
+        "description": "Protect N Gain",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2024-07-19"
+      },
+      {
+        "code": "UW9",
+        "description": "ICICI Pru Smart Goal Assure",
+        "value": null,
+        "isActive": "Y",
+        "productType": "Retail",
+        "formType": "Single",
+        "effectiveFrom": "2025-01-16"
       }
     ],
     "rider": [
@@ -5877,6 +7479,22 @@
         "type": "CUW_MED_RSN"
       },
       {
+        "code": "FLAT XRT- Smoker",
+        "description": "FLAT XRT- Smoker",
+        "value": "FLAT XRT- Smoker",
+        "isActive": "Y",
+        "miscMastId": "1045",
+        "type": "CUW_SM_LOAD_CLS"
+      },
+      {
+        "code": "FLAT XRT- Smoker",
+        "description": "FLAT XRT- Smoker",
+        "value": "FLAT XRT- Smoker",
+        "isActive": "Y",
+        "miscMastId": "1046",
+        "type": "GUW_SM_LOAD_CLS"
+      },
+      {
         "code": "Cancelled",
         "description": "Cancelled",
         "value": "Cancelled",
@@ -5973,12 +7591,156 @@
         "type": "YESNO"
       },
       {
+        "code": "CLN",
+        "description": "Clinic",
+        "value": "Clinic",
+        "isActive": "Y",
+        "miscMastId": "162",
+        "type": "EXAM_PL"
+      },
+      {
+        "code": "RES_OFF",
+        "description": "Res/Office",
+        "value": "Res/Office",
+        "isActive": "Y",
+        "miscMastId": "163",
+        "type": "EXAM_PL"
+      },
+      {
+        "code": "PG",
+        "description": "Post Graduate",
+        "value": "Post Graduate",
+        "isActive": "Y",
+        "miscMastId": "164",
+        "type": "EDUCATION"
+      },
+      {
+        "code": "GRAD",
+        "description": "Graduate",
+        "value": "Graduate",
+        "isActive": "Y",
+        "miscMastId": "165",
+        "type": "EDUCATION"
+      },
+      {
+        "code": "DIP",
+        "description": "Diploma",
+        "value": "Diploma",
+        "isActive": "Y",
+        "miscMastId": "166",
+        "type": "EDUCATION"
+      },
+      {
+        "code": "12TH",
+        "description": "12th",
+        "value": "12th",
+        "isActive": "Y",
+        "miscMastId": "167",
+        "type": "EDUCATION"
+      },
+      {
+        "code": "10TH",
+        "description": "10th",
+        "value": "10th",
+        "isActive": "Y",
+        "miscMastId": "168",
+        "type": "EDUCATION"
+      },
+      {
+        "code": "BELOW_10",
+        "description": "Below 10th",
+        "value": "Below 10th",
+        "isActive": "Y",
+        "miscMastId": "169",
+        "type": "EDUCATION"
+      },
+      {
         "code": "1",
         "description": "Customer not speaking",
         "value": "Customer not speaking",
         "isActive": "Y",
         "miscMastId": "17",
         "type": "PIVV_TERM_DESC"
+      },
+      {
+        "code": "SAL",
+        "description": "Salaried",
+        "value": "Salaried",
+        "isActive": "Y",
+        "miscMastId": "170",
+        "type": "OCCUPATION"
+      },
+      {
+        "code": "AGRI",
+        "description": "Agriculturalist",
+        "value": "Agriculturalist",
+        "isActive": "Y",
+        "miscMastId": "171",
+        "type": "OCCUPATION"
+      },
+      {
+        "code": "ICICI_EMP",
+        "description": "ICICI Group Employee",
+        "value": "ICICI Group Employee",
+        "isActive": "Y",
+        "miscMastId": "172",
+        "type": "OCCUPATION"
+      },
+      {
+        "code": "PROF",
+        "description": "Professional",
+        "value": "Professional",
+        "isActive": "Y",
+        "miscMastId": "173",
+        "type": "OCCUPATION"
+      },
+      {
+        "code": "RET",
+        "description": "Retired",
+        "value": "Retired",
+        "isActive": "Y",
+        "miscMastId": "174",
+        "type": "OCCUPATION"
+      },
+      {
+        "code": "SELF_EMP",
+        "description": "Self Employed",
+        "value": "Self Employed",
+        "isActive": "Y",
+        "miscMastId": "175",
+        "type": "OCCUPATION"
+      },
+      {
+        "code": "STU",
+        "description": "Student",
+        "value": "Student",
+        "isActive": "Y",
+        "miscMastId": "176",
+        "type": "OCCUPATION"
+      },
+      {
+        "code": "SELF_CA",
+        "description": "Self Employed CA",
+        "value": "Self Employed CA",
+        "isActive": "Y",
+        "miscMastId": "177",
+        "type": "OCCUPATION"
+      },
+      {
+        "code": "SELF_DOC",
+        "description": "Self Employed Doctor",
+        "value": "Self Employed Doctor",
+        "isActive": "Y",
+        "miscMastId": "178",
+        "type": "OCCUPATION"
+      },
+      {
+        "code": "SELF_ARCH",
+        "description": "Self Employed Architect",
+        "value": "Self Employed Architect",
+        "isActive": "Y",
+        "miscMastId": "179",
+        "type": "OCCUPATION"
       },
       {
         "code": "2",
@@ -5989,12 +7751,172 @@
         "type": "PIVV_TERM_DESC"
       },
       {
+        "code": "SELF_BUS",
+        "description": "Self Employed Businessman",
+        "value": "Self Employed Businessman",
+        "isActive": "Y",
+        "miscMastId": "180",
+        "type": "OCCUPATION"
+      },
+      {
+        "code": "SELF_CON",
+        "description": "Self Employed Consultant",
+        "value": "Self Employed Consultant",
+        "isActive": "Y",
+        "miscMastId": "181",
+        "type": "OCCUPATION"
+      },
+      {
+        "code": "SELF_LAW",
+        "description": "Self Employed Lawyer",
+        "value": "Self Employed Lawyer",
+        "isActive": "Y",
+        "miscMastId": "182",
+        "type": "OCCUPATION"
+      },
+      {
+        "code": "SELF_OTH",
+        "description": "Self Employed Other",
+        "value": "Self Employed Other",
+        "isActive": "Y",
+        "miscMastId": "183",
+        "type": "OCCUPATION"
+      },
+      {
+        "code": "OTHER",
+        "description": "Other(Specify)",
+        "value": "Other(Specify)",
+        "isActive": "Y",
+        "miscMastId": "184",
+        "type": "OCCUPATION"
+      },
+      {
+        "code": "BRO",
+        "description": "BROTHER",
+        "value": "BROTHER",
+        "isActive": "Y",
+        "miscMastId": "185",
+        "type": "RELATION"
+      },
+      {
+        "code": "SIS",
+        "description": "SISTER",
+        "value": "SISTER",
+        "isActive": "Y",
+        "miscMastId": "186",
+        "type": "RELATION"
+      },
+      {
+        "code": "SPOUSE",
+        "description": "SPOUSE",
+        "value": "SPOUSE",
+        "isActive": "Y",
+        "miscMastId": "187",
+        "type": "RELATION"
+      },
+      {
+        "code": "DEAD",
+        "description": "DEAD",
+        "value": "DEAD",
+        "isActive": "Y",
+        "miscMastId": "188",
+        "type": "DEAD_ALIVE"
+      },
+      {
+        "code": "ALIVE",
+        "description": "ALIVE",
+        "value": "ALIVE",
+        "isActive": "Y",
+        "miscMastId": "189",
+        "type": "DEAD_ALIVE"
+      },
+      {
         "code": "3",
         "description": "Pre-recorded video",
         "value": "Pre-recorded video",
         "isActive": "Y",
         "miscMastId": "19",
         "type": "PIVV_TERM_DESC"
+      },
+      {
+        "code": "PAST_MED",
+        "description": "PAST MEDICAL",
+        "value": "PAST MEDICAL",
+        "isActive": "Y",
+        "miscMastId": "190",
+        "type": "MEDICAL_TYPE"
+      },
+      {
+        "code": "REG_MED",
+        "description": "REGULAR MEDICAL",
+        "value": "REGULAR MEDICAL",
+        "isActive": "Y",
+        "miscMastId": "191",
+        "type": "MEDICAL_TYPE"
+      },
+      {
+        "code": "NEG_NR",
+        "description": "Negative/Non Reactive",
+        "value": "Negative/Non Reactive",
+        "isActive": "Y",
+        "miscMastId": "192",
+        "type": "VALUE"
+      },
+      {
+        "code": "POS_R",
+        "description": "Positive/Reactive",
+        "value": "Positive/Reactive",
+        "isActive": "Y",
+        "miscMastId": "193",
+        "type": "VALUE"
+      },
+      {
+        "code": "NIL_ABS",
+        "description": "Nil/Absent",
+        "value": "Nil/Absent",
+        "isActive": "Y",
+        "miscMastId": "194",
+        "type": "SUGAR_GLYCOSURIA"
+      },
+      {
+        "code": "TRACE",
+        "description": "Trace",
+        "value": "Trace",
+        "isActive": "Y",
+        "miscMastId": "195",
+        "type": "SUGAR_GLYCOSURIA"
+      },
+      {
+        "code": "PLUS_1",
+        "description": "+",
+        "value": "+",
+        "isActive": "Y",
+        "miscMastId": "196",
+        "type": "SUGAR_GLYCOSURIA"
+      },
+      {
+        "code": "PLUS_2",
+        "description": "++",
+        "value": "++",
+        "isActive": "Y",
+        "miscMastId": "197",
+        "type": "SUGAR_GLYCOSURIA"
+      },
+      {
+        "code": "PLUS_3",
+        "description": "+++",
+        "value": "+++",
+        "isActive": "Y",
+        "miscMastId": "198",
+        "type": "SUGAR_GLYCOSURIA"
+      },
+      {
+        "code": "PLUS_4",
+        "description": "++++",
+        "value": "++++",
+        "isActive": "Y",
+        "miscMastId": "199",
+        "type": "SUGAR_GLYCOSURIA"
       },
       {
         "code": "4",
@@ -6005,12 +7927,172 @@
         "type": "PIVV_TERM_DESC"
       },
       {
+        "code": "NIL_ABS",
+        "description": "Nil/Absent",
+        "value": "Nil/Absent",
+        "isActive": "Y",
+        "miscMastId": "200",
+        "type": "ALBUMIN_PROTEINURIA"
+      },
+      {
+        "code": "TRACE_PM",
+        "description": "Trace/+-",
+        "value": "Trace/+-",
+        "isActive": "Y",
+        "miscMastId": "201",
+        "type": "ALBUMIN_PROTEINURIA"
+      },
+      {
+        "code": "MID_PLUS",
+        "description": "Mid/+",
+        "value": "Mid/+",
+        "isActive": "Y",
+        "miscMastId": "202",
+        "type": "ALBUMIN_PROTEINURIA"
+      },
+      {
+        "code": "MOD_PLUS2",
+        "description": "Moderate/++",
+        "value": "Moderate/++",
+        "isActive": "Y",
+        "miscMastId": "203",
+        "type": "ALBUMIN_PROTEINURIA"
+      },
+      {
+        "code": "MARK_PLUS3",
+        "description": "Marked/+++",
+        "value": "Marked/+++",
+        "isActive": "Y",
+        "miscMastId": "204",
+        "type": "ALBUMIN_PROTEINURIA"
+      },
+      {
+        "code": "NIL_OCC",
+        "description": "Nil/Absent/Occ",
+        "value": "Nil/Absent/Occ",
+        "isActive": "Y",
+        "miscMastId": "205",
+        "type": "RBC_HAEMATURIA"
+      },
+      {
+        "code": "TRACE_1_4",
+        "description": "Trace/+-/1-4",
+        "value": "Trace/+-/1-4",
+        "isActive": "Y",
+        "miscMastId": "206",
+        "type": "RBC_HAEMATURIA"
+      },
+      {
+        "code": "MILD_5_9",
+        "description": "Mild/+/5-9",
+        "value": "Mild/+/5-9",
+        "isActive": "Y",
+        "miscMastId": "207",
+        "type": "RBC_HAEMATURIA"
+      },
+      {
+        "code": "MOD_10_19",
+        "description": "Moderate/++/10-19",
+        "value": "Moderate/++/10-19",
+        "isActive": "Y",
+        "miscMastId": "208",
+        "type": "RBC_HAEMATURIA"
+      },
+      {
+        "code": "MARK_20_PLUS",
+        "description": "Marked /+++/>=20",
+        "value": "Marked /+++/>=20",
+        "isActive": "Y",
+        "miscMastId": "209",
+        "type": "RBC_HAEMATURIA"
+      },
+      {
+        "code": "PRESENT",
+        "description": "Present",
+        "value": "Present",
+        "isActive": "Y",
+        "miscMastId": "210",
+        "type": "KETONE_BODIES"
+      },
+      {
+        "code": "NIL_ABS",
+        "description": "Nil/Absent",
+        "value": "Nil/Absent",
+        "isActive": "Y",
+        "miscMastId": "211",
+        "type": "KETONE_BODIES"
+      },
+      {
         "code": "5",
         "description": "Customer didn’t complete the full script - Application",
         "value": "Customer didn’t complete the full script - Application",
         "isActive": "Y",
         "miscMastId": "21",
         "type": "PIVV_TERM_DESC"
+      },
+      {
+        "code": "PALE_YELLOW",
+        "description": "Pale Yellow",
+        "value": "Pale Yellow",
+        "isActive": "Y",
+        "miscMastId": "212",
+        "type": "URINE_COLOUR"
+      },
+      {
+        "code": "TRANSPARENT",
+        "description": "Transparent",
+        "value": "Transparent",
+        "isActive": "Y",
+        "miscMastId": "213",
+        "type": "URINE_COLOUR"
+      },
+      {
+        "code": "CLEAR",
+        "description": "Clear",
+        "value": "Clear",
+        "isActive": "Y",
+        "miscMastId": "214",
+        "type": "URINE_COLOUR"
+      },
+      {
+        "code": "COLOURLESS",
+        "description": "Colourless",
+        "value": "Colourless",
+        "isActive": "Y",
+        "miscMastId": "215",
+        "type": "URINE_COLOUR"
+      },
+      {
+        "code": "DARK_YELLOW",
+        "description": "Darker yellow",
+        "value": "Darker yellow",
+        "isActive": "Y",
+        "miscMastId": "216",
+        "type": "URINE_COLOUR"
+      },
+      {
+        "code": "DARK_ORANGE",
+        "description": "Dark orange or Brown",
+        "value": "Dark orange or Brown",
+        "isActive": "Y",
+        "miscMastId": "217",
+        "type": "URINE_COLOUR"
+      },
+      {
+        "code": "DARK_BROWN",
+        "description": "Dark brown or Black",
+        "value": "Dark brown or Black",
+        "isActive": "Y",
+        "miscMastId": "218",
+        "type": "URINE_COLOUR"
+      },
+      {
+        "code": "PINK_RED",
+        "description": "Pink or Red",
+        "value": "Pink or Red",
+        "isActive": "Y",
+        "miscMastId": "219",
+        "type": "URINE_COLOUR"
       },
       {
         "code": "6",
@@ -6021,12 +8103,156 @@
         "type": "PIVV_TERM_DESC"
       },
       {
+        "code": "BLUE_GREEN",
+        "description": "Blue or Green",
+        "value": "Blue or Green",
+        "isActive": "Y",
+        "miscMastId": "220",
+        "type": "URINE_COLOUR"
+      },
+      {
+        "code": "CLOUDY",
+        "description": "Cloudy",
+        "value": "Cloudy",
+        "isActive": "Y",
+        "miscMastId": "221",
+        "type": "URINE_COLOUR"
+      },
+      {
+        "code": "WHITE_MILKY",
+        "description": "White or Milky",
+        "value": "White or Milky",
+        "isActive": "Y",
+        "miscMastId": "222",
+        "type": "URINE_COLOUR"
+      },
+      {
+        "code": "OTHER_CLR",
+        "description": "Other colour",
+        "value": "Other colour",
+        "isActive": "Y",
+        "miscMastId": "223",
+        "type": "URINE_COLOUR"
+      },
+      {
+        "code": "CLEAR",
+        "description": "Clear",
+        "value": "Clear",
+        "isActive": "Y",
+        "miscMastId": "224",
+        "type": "URINE_APPEARANCE"
+      },
+      {
+        "code": "CLOUDY",
+        "description": "Cloudy",
+        "value": "Cloudy",
+        "isActive": "Y",
+        "miscMastId": "225",
+        "type": "URINE_APPEARANCE"
+      },
+      {
+        "code": "TURBID",
+        "description": "Turbid",
+        "value": "Turbid",
+        "isActive": "Y",
+        "miscMastId": "226",
+        "type": "URINE_APPEARANCE"
+      },
+      {
+        "code": "DARK_YELLOW",
+        "description": "Dark Yellow",
+        "value": "Dark Yellow",
+        "isActive": "Y",
+        "miscMastId": "227",
+        "type": "URINE_APPEARANCE"
+      },
+      {
+        "code": "ABNORMAL",
+        "description": "Abnormal",
+        "value": "Abnormal",
+        "isActive": "Y",
+        "miscMastId": "228",
+        "type": "FINDINGS"
+      },
+      {
+        "code": "MILD_CHG",
+        "description": "Mild Changes",
+        "value": "Mild Changes",
+        "isActive": "Y",
+        "miscMastId": "229",
+        "type": "FINDINGS"
+      },
+      {
         "code": "7",
         "description": "Customer didn’t complete the full script - Policy term",
         "value": "Customer didn’t complete the full script - Policy term",
         "isActive": "Y",
         "miscMastId": "23",
         "type": "PIVV_TERM_DESC"
+      },
+      {
+        "code": "MOD_CHG",
+        "description": "Moderate Changes",
+        "value": "Moderate Changes",
+        "isActive": "Y",
+        "miscMastId": "230",
+        "type": "FINDINGS"
+      },
+      {
+        "code": "NORMAL",
+        "description": "Normal",
+        "value": "Normal",
+        "isActive": "Y",
+        "miscMastId": "231",
+        "type": "FINDINGS"
+      },
+      {
+        "code": "SEVERE_CHG",
+        "description": "Severe Changes",
+        "value": "Severe Changes",
+        "isActive": "Y",
+        "miscMastId": "232",
+        "type": "FINDINGS"
+      },
+      {
+        "code": "INDETERMINATE",
+        "description": "Indeterminate",
+        "value": "Indeterminate",
+        "isActive": "Y",
+        "miscMastId": "235",
+        "type": "AXIS"
+      },
+      {
+        "code": "LAD",
+        "description": "LAD",
+        "value": "LAD",
+        "isActive": "Y",
+        "miscMastId": "236",
+        "type": "AXIS"
+      },
+      {
+        "code": "LAHB",
+        "description": "LAHB",
+        "value": "LAHB",
+        "isActive": "Y",
+        "miscMastId": "237",
+        "type": "AXIS"
+      },
+      {
+        "code": "LPHB",
+        "description": "LPHB",
+        "value": "LPHB",
+        "isActive": "Y",
+        "miscMastId": "238",
+        "type": "AXIS"
+      },
+      {
+        "code": "NORMAL",
+        "description": "Normal",
+        "value": "Normal",
+        "isActive": "Y",
+        "miscMastId": "239",
+        "type": "AXIS"
       },
       {
         "code": "8",
@@ -6037,6 +8263,46 @@
         "type": "PIVV_TERM_DESC"
       },
       {
+        "code": "RAD",
+        "description": "RAD",
+        "value": "RAD",
+        "isActive": "Y",
+        "miscMastId": "240",
+        "type": "AXIS"
+      },
+      {
+        "code": "1",
+        "description": "1",
+        "value": "1",
+        "isActive": "Y",
+        "miscMastId": "246",
+        "type": "METS"
+      },
+      {
+        "code": "2",
+        "description": "2",
+        "value": "2",
+        "isActive": "Y",
+        "miscMastId": "247",
+        "type": "METS"
+      },
+      {
+        "code": "3",
+        "description": "3",
+        "value": "3",
+        "isActive": "Y",
+        "miscMastId": "248",
+        "type": "METS"
+      },
+      {
+        "code": "4",
+        "description": "4",
+        "value": "4",
+        "isActive": "Y",
+        "miscMastId": "249",
+        "type": "METS"
+      },
+      {
         "code": "9",
         "description": "Customer didn’t complete the full script - Sum assured",
         "value": "Customer didn’t complete the full script - Sum assured",
@@ -6045,7 +8311,135 @@
         "type": "PIVV_TERM_DESC"
       },
       {
+        "code": "5",
+        "description": "5",
+        "value": "5",
+        "isActive": "Y",
+        "miscMastId": "250",
+        "type": "METS"
+      },
+      {
+        "code": "6",
+        "description": "6",
+        "value": "6",
+        "isActive": "Y",
+        "miscMastId": "251",
+        "type": "METS"
+      },
+      {
+        "code": "7",
+        "description": "7",
+        "value": "7",
+        "isActive": "Y",
+        "miscMastId": "252",
+        "type": "METS"
+      },
+      {
+        "code": "8",
+        "description": "8",
+        "value": "8",
+        "isActive": "Y",
+        "miscMastId": "253",
+        "type": "METS"
+      },
+      {
+        "code": "9",
+        "description": "9",
+        "value": "9",
+        "isActive": "Y",
+        "miscMastId": "254",
+        "type": "METS"
+      },
+      {
         "code": "10",
+        "description": "10",
+        "value": "10",
+        "isActive": "Y",
+        "miscMastId": "255",
+        "type": "METS"
+      },
+      {
+        "code": "11",
+        "description": "11",
+        "value": "11",
+        "isActive": "Y",
+        "miscMastId": "256",
+        "type": "METS"
+      },
+      {
+        "code": "12",
+        "description": "12",
+        "value": "12",
+        "isActive": "Y",
+        "miscMastId": "257",
+        "type": "METS"
+      },
+      {
+        "code": "13",
+        "description": "13",
+        "value": "13",
+        "isActive": "Y",
+        "miscMastId": "258",
+        "type": "METS"
+      },
+      {
+        "code": "14",
+        "description": "14",
+        "value": "14",
+        "isActive": "Y",
+        "miscMastId": "259",
+        "type": "METS"
+      },
+      {
+        "code": "15",
+        "description": "15",
+        "value": "15",
+        "isActive": "Y",
+        "miscMastId": "260",
+        "type": "METS"
+      },
+      {
+        "code": "16",
+        "description": "16",
+        "value": "16",
+        "isActive": "Y",
+        "miscMastId": "261",
+        "type": "METS"
+      },
+      {
+        "code": "17",
+        "description": "17",
+        "value": "17",
+        "isActive": "Y",
+        "miscMastId": "262",
+        "type": "METS"
+      },
+      {
+        "code": "18",
+        "description": "18",
+        "value": "18",
+        "isActive": "Y",
+        "miscMastId": "263",
+        "type": "METS"
+      },
+      {
+        "code": "NORMAL",
+        "description": "Normal",
+        "value": "Normal",
+        "isActive": "Y",
+        "miscMastId": "264",
+        "type": "SM_FINDINGS"
+      },
+      {
+        "code": "ABNORMAL",
+        "description": "Abnormal",
+        "value": "Abnormal",
+        "isActive": "Y",
+        "miscMastId": "265",
+        "type": "SM_FINDINGS"
+      },
+      {
+        "code": "11",
         "description": "Customer weight different with application form",
         "value": "Customer weight different with application form",
         "isActive": "Y",
@@ -6053,7 +8447,7 @@
         "type": "PIVV_TERM_DESC"
       },
       {
-        "code": "11",
+        "code": "12",
         "description": "Customer profile is not ok",
         "value": "Customer profile is not ok",
         "isActive": "Y",
@@ -6061,7 +8455,7 @@
         "type": "PIVV_TERM_DESC"
       },
       {
-        "code": "12",
+        "code": "13",
         "description": "Customer face not clear in video",
         "value": "Customer face not clear in video",
         "isActive": "Y",
@@ -6077,7 +8471,7 @@
         "type": "REQT_ST"
       },
       {
-        "code": "13",
+        "code": "14",
         "description": "Voice does not audible",
         "value": "Voice does not audible",
         "isActive": "Y",
@@ -6165,7 +8559,7 @@
         "type": "GUW_BSD_CODE_MED"
       },
       {
-        "code": "14",
+        "code": "15",
         "description": "PDF not generated to check script",
         "value": "PDF not generated to check script",
         "isActive": "Y",
@@ -6325,7 +8719,7 @@
         "type": "GUW_BSD_CODE_NON_MED"
       },
       {
-        "code": "15",
+        "code": "16",
         "description": "New PDF not generated as per latest PIVV",
         "value": "New PDF not generated as per latest PIVV",
         "isActive": "Y",
@@ -6477,7 +8871,7 @@
         "type": "GUW_RECONS_AFTER"
       },
       {
-        "code": "16",
+        "code": "17",
         "description": "PIVV Done",
         "value": "PIVV Done",
         "isActive": "Y",

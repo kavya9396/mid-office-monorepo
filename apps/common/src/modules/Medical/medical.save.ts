@@ -64,14 +64,15 @@ const fieldErrorText = (item: unknown): string => {
 export function readMedicalSaveFieldErrors(data: unknown): string[] {
   if (!isRecord(data)) return [];
   const source = data.errors ?? data.fieldErrors;
-  const entries: string[] = Array.isArray(source)
-    ? source.map(fieldErrorText)
-    : isRecord(source)
-      ? Object.entries(source).map(([field, message]) => {
-          const text = textOf(message);
-          return text === "" ? "" : `${field}: ${text}`;
-        })
-      : [];
+  let entries: string[] = [];
+  if (Array.isArray(source)) {
+    entries = source.map(fieldErrorText);
+  } else if (isRecord(source)) {
+    entries = Object.entries(source).map(([field, message]) => {
+      const text = textOf(message);
+      return text === "" ? "" : `${field}: ${text}`;
+    });
+  }
   return entries.filter((entry) => entry !== "");
 }
 
@@ -88,7 +89,9 @@ export function formatMedicalSaveMessage(response: MedicalSaveResponse, fallback
   const fieldErrors = readMedicalSaveFieldErrors(response.data);
   if (fieldErrors.length === 0) return message || fallback;
   const head = message === "" ? fallback : message;
-  return `${head.replace(/[.:\s]+$/, "")}: ${fieldErrors.join("; ")}`;
+  let end = head.length;
+  while (end > 0 && /[.:\s]/.test(head.charAt(end - 1))) end--;
+  return `${head.slice(0, end)}: ${fieldErrors.join("; ")}`;
 }
 
 /**
@@ -165,7 +168,8 @@ const setAtPath = (root: Json, path: readonly string[], value: unknown): void =>
     node[key] = created;
     node = created;
   });
-  node[path[path.length - 1]] = value;
+  const last = path.at(-1);
+  if (last !== undefined) node[last] = value;
 };
 
 const fieldValueId = (sectionKey: string, index: number) => `${sectionKey}-${index}`;
@@ -198,6 +202,9 @@ const parameterFindings = (value: string, from: string, to: string): string | nu
   const abnormal = !Number.isNaN(current) && (current < Number(from) || current > Number(to));
   return abnormal ? "ABNORMAL" : "NORMAL";
 };
+
+/** Habit indicator as the API code: the master (misc YESNO) code is sent as is. */
+const toIndicatorCode = (value: string): string | null => orNull(value);
 
 function buildParameters(section: MedicalSection, values: Readonly<Record<string, string>>): Json[] {
   return (section.parameters ?? []).map(([name, defaultUnit], index) => {
@@ -235,7 +242,7 @@ function buildTeleHabits(section: MedicalSection, values: Readonly<Record<string
       return {
         habit,
         ...(habitId !== undefined ? { habitId } : {}),
-        indicator: indicator === "Yes" ? "Y" : indicator === "No" ? "N" : null,
+        indicator: toIndicatorCode(indicator),
         quantity: orNull(valueOf(`${tele} - Quantity`)),
         year: toNumberOrNull(valueOf(`${tele} - No. of Year`)),
       };
@@ -244,7 +251,7 @@ function buildTeleHabits(section: MedicalSection, values: Readonly<Record<string
 }
 
 function buildHabits(section: MedicalSection, values: Readonly<Record<string, string>>): Json {
-  if (section.key !== "habit_addictions") return buildTeleHabits(section, values);
+  if (section.key !== "habit_and_addictions") return buildTeleHabits(section, values);
   const keys = MER_HABIT_KEYS;
   const body: Json = {};
   section.fields.forEach(([label], index) => {
@@ -252,7 +259,7 @@ function buildHabits(section: MedicalSection, values: Readonly<Record<string, st
     if (!apiKey) return;
     const value = values[fieldValueId(section.key, index)] ?? "";
     if (label.endsWith(" - Indicator")) {
-      body[apiKey] = value === "Yes" ? "Y" : value === "No" ? "N" : null;
+      body[apiKey] = toIndicatorCode(value);
     } else if (label.endsWith(" - No. of Year")) {
       body[apiKey] = toNumberOrNull(value);
     } else {
@@ -278,7 +285,7 @@ function buildFamily(section: MedicalSection, values: Readonly<Record<string, st
       memberId: memberId ?? null,
       relationType: orNull(values[`${prefix}-relation`] ?? ""),
       age: toNumberOrNull(values[`${prefix}-age`] ?? ""),
-      deadOrAlive: alive === "" ? null : alive.toUpperCase(),
+      deadOrAlive: orNull(alive),
       healthStatus: orNull(values[`${prefix}-health`] ?? ""),
       isActive: "Y",
     };
@@ -291,7 +298,7 @@ function buildFamily(section: MedicalSection, values: Readonly<Record<string, st
             memberId: row.memberId,
             relationType: orNull(row.relation),
             age: toNumberOrNull(row.age ?? ""),
-            deadOrAlive: row.alive ? row.alive.toUpperCase() : null,
+            deadOrAlive: orNull(row.alive ?? ""),
             healthStatus: orNull(row.health ?? ""),
             isActive: "N",
           },

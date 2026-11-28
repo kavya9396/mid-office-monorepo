@@ -1,0 +1,13 @@
+{
+  "success": true,
+  "data": [
+    {
+      "doc_type": "medical",
+      "link": "https://udsviewer-uat.icicilife.com/App/UdsViewer/document-listing/split?roleid=MOCK_ROLE_ID&_uidtype=MOCK_UID_TYPE&_uidvalue=MOCK_UID_VALUE&ntid=UDSMIDOFFICE&token=MOCK_MEDICAL_TOKEN"
+    },
+    {
+      "doc_type": "finance",
+      "link": "https://udsviewer-uat.icicilife.com/App/UdsViewer/document-listing/split?roleid=MOCK_ROLE_ID&_uidtype=MOCK_UID_TYPE&_uidvalue=MOCK_UID_VALUE&ntid=UDSMIDOFFICE&token=MOCK_FINANCE_TOKEN"
+    }
+  ]
+}

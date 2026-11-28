@@ -193,7 +193,7 @@ export function TelemerScreen({
   const activeSections = useMemo<readonly MedicalSection[]>(() => {
     if (!isOverallEditing) return sections;
     return sections.map((sec) =>
-      sec.key === "application_form_medical_lifestyle"
+      sec.key === "application_form_medical"
         ? sec
         : { ...sec, alwaysEditable: true }
     );
@@ -204,7 +204,7 @@ export function TelemerScreen({
     return groups.map((grp) => ({
       ...grp,
       sections: grp.sections.map((sec) =>
-        sec.key === "application_form_medical_lifestyle"
+        sec.key === "application_form_medical"
           ? sec
           : { ...sec, alwaysEditable: true }
       ),
@@ -551,8 +551,8 @@ export function TelemerScreen({
                     6. Recorded Question Disclosures
                   </Typography>
                   <Box component="ul" sx={{ pl: 2, m: 0, fontSize: "11px", color: colors.textBody }}>
-                    {attempt.disclosures.map((disc, idx) => (
-                      <li key={idx}>{disc}</li>
+                    {attempt.disclosures.map((disc) => (
+                      <li key={disc}>{disc}</li>
                     ))}
                   </Box>
                 </Box>

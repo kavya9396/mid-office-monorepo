@@ -75,6 +75,7 @@ import { useFetchDvtValidationMutation } from "../../services/dvtValidationApi";
 import { useValidateNsdlPanMutation } from "../../services/nsdlApi";
 import { createNsdlPanValidateRequest, resolveNsdlOutcome } from "../../services/nsdlService";
 import { GROUP_FINANCIAL_ACTIONS_CONFIG } from "../config/financialActions.config";
+import { GROUP_MEDICAL_ACTIONS_CONFIG } from "../config/medicalActions.config";
 import { GROUP_QUICK_LINKS_CONFIG } from "../config/quickLinks.config";
 import { buildQuickLinkItems, withProposalFormLink } from "./guwQuickLinks";
 
@@ -303,7 +304,7 @@ const DvtUser = () => {
     );
   };
   const handleMedicalApplicantChange = (applicantKey: string) => {
-    navigate(
+    void navigate(
       { pathname: medicalPath, search },
       { replace: true, state: { applicantId: applicantKey } satisfies ApplicantRouteState },
     );
@@ -550,6 +551,7 @@ const DvtUser = () => {
         groups={medicalQuery.data?.groups}
         sections={medicalQuery.data?.sections}
         history={medicalQuery.data?.history}
+        actions={GROUP_MEDICAL_ACTIONS_CONFIG.dvt}
         onApplicantChange={handleMedicalApplicantChange}
         onBack={closeMedical}
         onSaveSection={(saveRequest) => saveMedical(saveRequest).unwrap()}

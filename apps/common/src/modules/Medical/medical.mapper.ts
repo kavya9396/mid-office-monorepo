@@ -9,6 +9,7 @@
 import {
   createMedicalBpPulseSection,
   type MedicalCmoDecision,
+  getMedicalDocumentSectionKeys,
   getMedicalOptions,
   MEDICAL_BP_DEFAULT_READING_IDS,
   MEDICAL_GROUPS,
@@ -18,6 +19,7 @@ import {
   type MedicalControlKind,
   type MedicalFamilyRow,
   type MedicalFieldDef,
+  type MedicalDocument,
   type MedicalGroup,
   type MedicalHistoryEntry,
   type MedicalParameterValue,
@@ -26,8 +28,7 @@ import {
 import {
   getMedicalParameterValidator,
   MEDICAL_BP_READING_LABEL,
-  MEDICAL_SCHEMA_TELE_HEALTH_STATUS,
-  MEDICAL_SECTION_FIELD_OPTIONS,
+  getMedicalSectionFieldOptions,
 } from "./medical.schema";
 
 export interface MedicalFetchResult {
@@ -117,13 +118,17 @@ function toTime12h(text: string): string {
 function normaliseValue(
   kind: MedicalControlKind,
   raw: unknown,
-  sectionOptions?: readonly string[],
+  sectionOptions?: readonly { label: string; value: string }[],
 ): string {
   const text = rawText(raw);
   if (text === "") return "";
   if (sectionOptions && sectionOptions.length > 0) {
     const lower = text.toLowerCase();
-    return sectionOptions.find((option) => option.toLowerCase() === lower) ?? "";
+    return (
+      sectionOptions.find(
+        (option) => option.value.toLowerCase() === lower || option.label.toLowerCase() === lower,
+      )?.value ?? ""
+    );
   }
   switch (kind) {
     case "date": {
@@ -133,11 +138,20 @@ function normaliseValue(
     }
     case "time":
       return toTime12h(text);
-    case "yesNo": {
+    case "miscYesNo": {
+      // The API sends Y / N / Yes / No; the control holds the `misc` YESNO code.
       const upper = text.toUpperCase();
-      if (upper === "Y" || upper === "YES" || upper === "TRUE") return "Yes";
-      if (upper === "N" || upper === "NO" || upper === "FALSE") return "No";
-      return "";
+      let word = upper.toLowerCase();
+      if (["Y", "YES", "TRUE"].includes(upper)) {
+        word = "yes";
+      } else if (["N", "NO", "FALSE"].includes(upper)) {
+        word = "no";
+      }
+      return (
+        getMedicalOptions(kind).find(
+          (option) => option.value.toLowerCase() === word || option.label.toLowerCase() === word,
+        )?.value ?? ""
+      );
     }
     case "text":
     case "number":
@@ -234,7 +248,7 @@ const FINDINGS_REMARKS_KEYS: Readonly<Record<string, string>> = { Findings: "fin
 
 const SPECIAL_MEDICAL_SOURCES: readonly FieldSource[] = [
   specialSource("2decho", "2decho", { ...STRESS_ECHO_KEYS, Remarks: "remarks" }),
-  specialSource("blood_urea_nitro", "blood_urea_and_nitro", {
+  specialSource("blood_urea_and_nitro", "blood_urea_and_nitro", {
     Findings: "findings",
     "Blood Urea": "bloodUrea",
     BUN: "bun",
@@ -242,8 +256,8 @@ const SPECIAL_MEDICAL_SOURCES: readonly FieldSource[] = [
     Remark: "remark",
   }),
   specialSource("cxr", "cxr", FINDINGS_REMARK_KEYS),
-  specialSource("dobutamine_stress_echo", "dobutamine_stress_echocardiogram", STRESS_ECHO_KEYS),
-  specialSource("exercise_stress_echo", "exercise_stress_echocardiogram", STRESS_ECHO_KEYS),
+  specialSource("dobutamine_stress_echocardiogram", "dobutamine_stress_echocardiogram", STRESS_ECHO_KEYS),
+  specialSource("exercise_stress_echocardiogram", "exercise_stress_echocardiogram", STRESS_ECHO_KEYS),
   specialSource("ecg", "ecg", {
     Findings: "findings",
     Axis: "axis",
@@ -358,12 +372,12 @@ const PARAMETER_LIST_SOURCES: readonly FieldSource[] = [
 const CMO_DECISION_SECTION_KEYS: ReadonlySet<string> = new Set(["2decho", "ecg", "tmt"]);
 
 function mapCmoDecisions(raw: JsonRecord): readonly MedicalCmoDecision[] {
-  const historyList =
-    isRecord(raw.cmo_decision) && Array.isArray(raw.cmo_decision.history)
-      ? raw.cmo_decision.history
-      : Array.isArray(raw.cmoDecisions)
-        ? raw.cmoDecisions
-        : undefined;
+  let historyList: unknown[] | undefined;
+  if (isRecord(raw.cmo_decision) && Array.isArray(raw.cmo_decision.history)) {
+    historyList = raw.cmo_decision.history;
+  } else if (Array.isArray(raw.cmoDecisions)) {
+    historyList = raw.cmoDecisions;
+  }
 
   if (!historyList) return [];
   return historyList.filter(isRecord).map((row) => ({
@@ -381,7 +395,7 @@ export const FIELD_SOURCES: readonly FieldSource[] = [
   ...PARAMETER_LIST_SOURCES,
 
   {
-    sectionKey: "application_form_medical_lifestyle",
+    sectionKey: "application_form_medical",
     paths: [["application_form_medical"]],
     keys: {
       Height: "height",
@@ -525,7 +539,7 @@ function applyFields(
         : normaliseValue(
             resolveMedicalControlKind(section.key, label),
             rawVal,
-            MEDICAL_SECTION_FIELD_OPTIONS[section.key]?.[label],
+            getMedicalSectionFieldOptions(section.key, label),
           );
     return required === undefined ? [label, value] : [label, value, required];
   });
@@ -557,7 +571,7 @@ function applyParameters(section: MedicalSection, raw: JsonRecord): MedicalSecti
     const paramId = typeof item?.paramId === "number" ? item.paramId : undefined;
     const id = typeof item?.id === "string" ? item.id : undefined;
     return {
-      value: normaliseValue("text", item?.value, dropdown?.map((option) => option.value)),
+      value: normaliseValue("text", item?.value, dropdown),
       from: rawText(item?.labRangeStart ?? item?.labRangeValueStart),
       to: rawText(item?.labRangeEnd ?? item?.labRangeValueEnd),
       unit: rawText(item?.unit ?? item?.unitsValue),
@@ -573,19 +587,35 @@ function applyParameters(section: MedicalSection, raw: JsonRecord): MedicalSecti
 /* ------------------------------------------------------------------ */
 
 export const FAMILY_SOURCES: readonly { sectionKey: string; paths: readonly (readonly string[])[] }[] = [
-  { sectionKey: "family_history_health_status", paths: [["mer", "family_history"], ["family_history"]] },
+  { sectionKey: "family_history", paths: [["mer", "family_history"], ["family_history"]] },
   { sectionKey: "tele_family_history", paths: [["tele_mer", "family_history"], ["tele_family_history"]] },
 ];
 
 const titleCase = (text: string): string =>
   text === "" ? "" : text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
 
-/** Normalises dead or alive status from V3 "ALIVE" / "DEAD" values. */
+/** Normalises dead or alive status ("ALIVE" / "DEAD" / "A" / "D") to the `misc` DEAD_ALIVE code. */
 const normaliseAlive = (raw: unknown): string => {
   const text = rawText(raw);
-  if (text.toUpperCase() === "ALIVE" || text.toUpperCase() === "A") return "Alive";
-  if (text.toUpperCase() === "DEAD" || text.toUpperCase() === "D") return "Dead";
-  return normaliseValue("deadOrAlive", text);
+  const upper = text.toUpperCase();
+  let status = text;
+  if (upper === "A") {
+    status = "ALIVE";
+  } else if (upper === "D") {
+    status = "DEAD";
+  }
+  return normaliseValue("deadOrAlive", status);
+};
+
+/** Relation as the `misc` RELATION code; a relation the master does not list (Father, Mother) is kept as sent. */
+const normaliseRelation = (raw: unknown): string => {
+  const text = rawText(raw);
+  const lower = text.toLowerCase();
+  return (
+    getMedicalOptions("familyRelation").find(
+      (option) => option.value.toLowerCase() === lower || option.label.toLowerCase() === lower,
+    )?.value ?? titleCase(text)
+  );
 };
 
 /** Maps V3 family members array into MedicalFamilyRow items. */
@@ -602,11 +632,11 @@ function mapFamilyRows(raw: JsonRecord, sectionKey: string): readonly MedicalFam
     // MER Health Status is free text and is shown as sent.
     const health =
       sectionKey === "tele_family_history"
-        ? normaliseValue("text", member.healthStatus, MEDICAL_SCHEMA_TELE_HEALTH_STATUS)
+        ? normaliseValue("healthStatus", member.healthStatus)
         : rawText(member.healthStatus);
     const memberId = typeof member.memberId === "number" ? member.memberId : undefined;
     return {
-      relation: titleCase(rawText(member.relationType)),
+      relation: normaliseRelation(member.relationType),
       ...(age === "" ? {} : { age }),
       ...(alive === "" ? {} : { alive }),
       ...(health === "" ? {} : { health }),
@@ -620,7 +650,7 @@ function mapFamilyRows(raw: JsonRecord, sectionKey: string): readonly MedicalFam
 /* ------------------------------------------------------------------ */
 
 export const HABIT_SOURCES: readonly { sectionKey: string; paths: readonly (readonly string[])[] }[] = [
-  { sectionKey: "habit_addictions", paths: [["mer", "habit_and_addictions"], ["habit_and_addictions"]] },
+  { sectionKey: "habit_and_addictions", paths: [["mer", "habit_and_addictions"], ["habit_and_addictions"]] },
   { sectionKey: "tele_habit_addiction", paths: [["tele_mer", "habit_and_addictions"], ["tele_habit_and_addictions"]] },
 ];
 
@@ -649,11 +679,12 @@ function findHabitItem(items: readonly Record<string, unknown>[], baseName: stri
 }
 
 function mapHabits(section: MedicalSection, raw: unknown): MedicalSection {
-  const rawArray = Array.isArray(raw)
-    ? raw
-    : isRecord(raw) && Array.isArray(raw.value)
-      ? raw.value
-      : undefined;
+  let rawArray: unknown[] | undefined;
+  if (Array.isArray(raw)) {
+    rawArray = raw;
+  } else if (isRecord(raw) && Array.isArray(raw.value)) {
+    rawArray = raw.value;
+  }
 
   if (rawArray) {
     const items = rawArray.filter(isRecord);
@@ -667,7 +698,7 @@ function mapHabits(section: MedicalSection, raw: unknown): MedicalSection {
 
       let value = defaultValue;
       if (item) {
-        if (isInd) value = normaliseValue("yesNo", item.indicator);
+        if (isInd) value = normaliseValue("miscYesNo", item.indicator);
         else if (isQuant) value = habitQuantity(item.quantity);
         else if (isYear) value = normaliseValue("number", item.year);
       }
@@ -681,7 +712,7 @@ function mapHabits(section: MedicalSection, raw: unknown): MedicalSection {
     });
     return { ...section, fields, ...(Object.keys(habitIds).length > 0 ? { habitIds } : {}) };
   } else if (isRecord(raw)) {
-    const keys = section.key === "habit_addictions" ? MER_HABIT_KEYS : TELE_HABIT_KEYS;
+    const keys = section.key === "habit_and_addictions" ? MER_HABIT_KEYS : TELE_HABIT_KEYS;
     const mapped = applyFields(section, { sectionKey: section.key, paths: [[]], keys }, raw);
     return {
       ...mapped,
@@ -698,7 +729,40 @@ function mapHabits(section: MedicalSection, raw: unknown): MedicalSection {
 /* Blood pressure: readings[] of { readingSeq, systolic, diastolic }  */
 /* ------------------------------------------------------------------ */
 
-export const BP_SECTION_KEY = "blood_pressure_pulse_details";
+export const BP_SECTION_KEY = "blood_pressure_and_pulse";
+
+interface BpReadings {
+  readonly systolic: Map<number, string>;
+  readonly diastolic: Map<number, string>;
+  /** API `readingId` by reading slot, kept so a save can send it back. */
+  readonly apiReadingIds: Record<string, number>;
+}
+
+const hasValue = (value: unknown): boolean => value !== null && value !== undefined;
+
+/** V3 format: readings[] of { readingId, readingSeq, systolic, diastolic }. */
+function readBpReadings(readings: readonly unknown[], target: BpReadings): void {
+  readings.forEach((item, index) => {
+    if (!isRecord(item)) return;
+    const hasSeq = typeof item.readingSeq === "number" && item.readingSeq >= 1;
+    const seq = hasSeq ? Number(item.readingSeq) : index + 1;
+    if (typeof item.readingId === "number") target.apiReadingIds[String(seq)] = item.readingId;
+    if (hasValue(item.systolic)) target.systolic.set(seq, normaliseValue("number", item.systolic));
+    if (hasValue(item.diastolic)) target.diastolic.set(seq, normaliseValue("number", item.diastolic));
+  });
+}
+
+/** Legacy split array (`systolic[]` / `diastolic[]`) of { readingId, value }. */
+function readLegacyBpReadings(items: unknown, target: Map<number, string>): void {
+  if (!Array.isArray(items)) return;
+  for (const item of items) {
+    if (!isRecord(item)) continue;
+    const id = item.readingId;
+    if (typeof id === "number" && Number.isInteger(id) && id >= 1) {
+      target.set(id, normaliseValue("number", item.value));
+    }
+  }
+}
 
 /**
  * Builds the BP & Pulse section with one slot per readingSeq (or readingId),
@@ -706,46 +770,14 @@ export const BP_SECTION_KEY = "blood_pressure_pulse_details";
  * are populated directly from the API response root.
  */
 function mapBloodPressure(raw: JsonRecord): MedicalSection {
-  const systolic = new Map<number, string>();
-  const diastolic = new Map<number, string>();
-  const apiReadingIds: Record<string, number> = {};
+  const readings: BpReadings = { systolic: new Map(), diastolic: new Map(), apiReadingIds: {} };
+  const { systolic, diastolic, apiReadingIds } = readings;
 
   if (Array.isArray(raw.readings)) {
-    // V3 format: readings[] of { readingId, readingSeq, systolic, diastolic }
-    raw.readings.forEach((item, index) => {
-      if (!isRecord(item)) return;
-      const seq =
-        typeof item.readingSeq === "number" && item.readingSeq >= 1
-          ? item.readingSeq
-          : index + 1;
-      if (typeof item.readingId === "number") apiReadingIds[String(seq)] = item.readingId;
-      if (item.systolic !== null && item.systolic !== undefined) {
-        systolic.set(seq, normaliseValue("number", item.systolic));
-      }
-      if (item.diastolic !== null && item.diastolic !== undefined) {
-        diastolic.set(seq, normaliseValue("number", item.diastolic));
-      }
-    });
+    readBpReadings(raw.readings, readings);
   } else {
-    // Fallback for legacy split arrays: systolic[] / diastolic[]
-    if (Array.isArray(raw.systolic)) {
-      for (const item of raw.systolic) {
-        if (!isRecord(item)) continue;
-        const id = item.readingId;
-        if (typeof id === "number" && Number.isInteger(id) && id >= 1) {
-          systolic.set(id, normaliseValue("number", item.value));
-        }
-      }
-    }
-    if (Array.isArray(raw.diastolic)) {
-      for (const item of raw.diastolic) {
-        if (!isRecord(item)) continue;
-        const id = item.readingId;
-        if (typeof id === "number" && Number.isInteger(id) && id >= 1) {
-          diastolic.set(id, normaliseValue("number", item.value));
-        }
-      }
-    }
+    readLegacyBpReadings(raw.systolic, systolic);
+    readLegacyBpReadings(raw.diastolic, diastolic);
   }
 
   const readingIds = [
@@ -786,6 +818,83 @@ export const QUESTIONNAIRE_SOURCES: readonly { sectionKey: string; paths: readon
 /* Entry point                                                        */
 /* ------------------------------------------------------------------ */
 
+/** The API node of a field section; the BRE medical decision also takes the Tele / Video MER STP decision. */
+function readFieldSectionNode(
+  section: MedicalSection,
+  fieldSource: FieldSource,
+  root: JsonRecord,
+): JsonRecord | undefined {
+  const raw = readFirstPath(root, fieldSource.paths);
+  if (section.key !== "bre_medical_decision") return raw;
+  const stp = readFirstPath(root, [["tele_mer", "stp_details"], ["tele_stp_details"]]);
+  if (!stp) return raw;
+  return {
+    ...raw,
+    teleVideoMerDecision: stp.stpDecision ?? raw?.teleVideoMerDecision,
+    teleVideoMerRemark: stp.stpRemarks ?? raw?.teleVideoMerRemark,
+  };
+}
+
+/** The section with the ids the API sent for it (test, medical application, parameter, fields). */
+function withSectionMetadata(section: MedicalSection, raw: JsonRecord): MedicalSection {
+  const testDtlId = typeof raw.testDtlId === "number" ? raw.testDtlId : undefined;
+  const medAppDtlId = typeof raw.medAppDtlId === "number" ? raw.medAppDtlId : undefined;
+  const paramId = typeof raw.paramId === "number" ? raw.paramId : undefined;
+  const fieldIds = isRecord(raw.fieldIds) ? (raw.fieldIds as Readonly<Record<string, number | null>>) : undefined;
+  return {
+    ...section,
+    ...(testDtlId !== undefined ? { testDtlId } : {}),
+    ...(medAppDtlId !== undefined ? { medAppDtlId } : {}),
+    ...(paramId !== undefined ? { paramId } : {}),
+    ...(fieldIds !== undefined ? { fieldIds } : {}),
+  };
+}
+
+function mapFieldSection(
+  section: MedicalSection,
+  fieldSource: FieldSource,
+  root: JsonRecord,
+  absent: MedicalSection | undefined,
+): MedicalSection | undefined {
+  const raw = readFieldSectionNode(section, fieldSource, root);
+  if (!raw) return absent;
+  const mapped = applyParameters(applyFields(withSectionMetadata(section, raw), fieldSource, raw), raw);
+  return CMO_DECISION_SECTION_KEYS.has(section.key)
+    ? { ...mapped, cmoDecisions: mapCmoDecisions(raw) }
+    : mapped;
+}
+
+/** The question list of a questionnaire node: `questions`, else `answers`, else `questionnaire`. */
+function readQuestionnaireList(raw: JsonRecord | undefined): unknown[] | undefined {
+  if (!raw) return undefined;
+  for (const candidate of [raw.questions, raw.answers, raw.questionnaire]) {
+    if (Array.isArray(candidate)) return candidate;
+  }
+  return undefined;
+}
+
+function mapFamilySection(
+  section: MedicalSection,
+  paths: readonly (readonly string[])[],
+  root: JsonRecord,
+  absent: MedicalSection | undefined,
+): MedicalSection | undefined {
+  const raw = readFirstPath(root, paths);
+  if (!raw) return absent;
+  const familyRows = mapFamilyRows(raw, section.key);
+  return familyRows ? { ...section, familyRows } : section;
+}
+
+function mapQuestionnaireSection(
+  section: MedicalSection,
+  paths: readonly (readonly string[])[],
+  root: JsonRecord,
+  absent: MedicalSection | undefined,
+): MedicalSection | undefined {
+  const rawList = readQuestionnaireList(readFirstPath(root, paths));
+  return rawList ? { ...section, questionnaire: parseMedicalQuestionnaire(rawList) } : absent;
+}
+
 /**
  * Maps one section. Returns `undefined` when the API did not return that section, so the screen
  * shows only the sections the API sent. A section that is returned but empty (`{}`) is kept.
@@ -800,35 +909,7 @@ function mapSection(section: MedicalSection, root: JsonRecord): MedicalSection |
   }
 
   const fieldSource = FIELD_SOURCES.find((source) => source.sectionKey === section.key);
-  if (fieldSource) {
-    let raw = readFirstPath(root, fieldSource.paths);
-    if (section.key === "bre_medical_decision") {
-      const stp = readFirstPath(root, [["tele_mer", "stp_details"], ["tele_stp_details"]]);
-      if (stp) {
-        raw = {
-          ...(raw ?? {}),
-          teleVideoMerDecision: stp.stpDecision ?? raw?.teleVideoMerDecision,
-          teleVideoMerRemark: stp.stpRemarks ?? raw?.teleVideoMerRemark,
-        };
-      }
-    }
-    if (!raw) return absent;
-    const testDtlId = typeof raw.testDtlId === "number" ? raw.testDtlId : undefined;
-    const medAppDtlId = typeof raw.medAppDtlId === "number" ? raw.medAppDtlId : undefined;
-    const paramId = typeof raw.paramId === "number" ? raw.paramId : undefined;
-    const fieldIds = isRecord(raw.fieldIds) ? (raw.fieldIds as Readonly<Record<string, number | null>>) : undefined;
-    const withMetadata: MedicalSection = {
-      ...section,
-      ...(testDtlId !== undefined ? { testDtlId } : {}),
-      ...(medAppDtlId !== undefined ? { medAppDtlId } : {}),
-      ...(paramId !== undefined ? { paramId } : {}),
-      ...(fieldIds !== undefined ? { fieldIds } : {}),
-    };
-    const mapped = applyParameters(applyFields(withMetadata, fieldSource, raw), raw);
-    return CMO_DECISION_SECTION_KEYS.has(section.key)
-      ? { ...mapped, cmoDecisions: mapCmoDecisions(raw) }
-      : mapped;
-  }
+  if (fieldSource) return mapFieldSection(section, fieldSource, root, absent);
 
   const habitSource = HABIT_SOURCES.find((source) => source.sectionKey === section.key);
   if (habitSource) {
@@ -838,30 +919,12 @@ function mapSection(section: MedicalSection, root: JsonRecord): MedicalSection |
   }
 
   const familySource = FAMILY_SOURCES.find((source) => source.sectionKey === section.key);
-  if (familySource) {
-    const raw = readFirstPath(root, familySource.paths);
-    if (!raw) return absent;
-    const familyRows = mapFamilyRows(raw, section.key);
-    return familyRows ? { ...section, familyRows } : section;
-  }
+  if (familySource) return mapFamilySection(section, familySource.paths, root, absent);
 
   const questionnaireSource = QUESTIONNAIRE_SOURCES.find(
     (source) => source.sectionKey === section.key,
   );
-  if (questionnaireSource) {
-    const raw = readFirstPath(root, questionnaireSource.paths);
-    const rawList =
-      raw && Array.isArray(raw.questions)
-        ? raw.questions
-        : raw && Array.isArray(raw.answers)
-          ? raw.answers
-          : raw && Array.isArray(raw.questionnaire)
-            ? raw.questionnaire
-            : undefined;
-    return rawList
-      ? { ...section, questionnaire: parseMedicalQuestionnaire(rawList) }
-      : absent;
-  }
+  if (questionnaireSource) return mapQuestionnaireSection(section, questionnaireSource.paths, root, absent);
 
   return section;
 }
@@ -898,6 +961,40 @@ function extractSectionValues(section: MedicalSection): Record<string, string> {
   return values;
 }
 
+/** One history snapshot mapped onto its section with the same mappers as the live data. */
+function mapHistorySnapshot(
+  section: MedicalSection,
+  snapshot: unknown,
+  snapRecord: JsonRecord,
+): MedicalSection {
+  const fieldSource = FIELD_SOURCES.find((s) => s.sectionKey === section.key);
+  if (fieldSource) {
+    return applyParameters(applyFields(section, fieldSource, snapRecord), snapRecord);
+  }
+  if (section.layout === "familyHistory") {
+    const familyRows = mapFamilyRows(snapRecord, section.key);
+    return familyRows ? { ...section, familyRows } : section;
+  }
+  if (section.layout === "habitAddiction") {
+    return mapHabits(section, snapRecord);
+  }
+  if (section.layout === "questionnaire") {
+    let qList: unknown[] | undefined;
+    if (Array.isArray(snapRecord.questions)) {
+      qList = snapRecord.questions;
+    } else if (Array.isArray(snapRecord.answers)) {
+      qList = snapRecord.answers;
+    } else if (Array.isArray(snapshot)) {
+      qList = snapshot;
+    }
+    return qList ? { ...section, questionnaire: parseMedicalQuestionnaire(qList) } : section;
+  }
+  if (section.key === BP_SECTION_KEY) {
+    return mapBloodPressure(snapRecord);
+  }
+  return section;
+}
+
 function extractSectionHistory(
   section: MedicalSection,
   rawNode: unknown,
@@ -922,29 +1019,7 @@ function extractSectionHistory(
 
     const id = rawText(snapRecord.testDtlId) || `hist-${section.key}-${index + 1}`;
 
-    let mapped = section;
-    const fieldSource = FIELD_SOURCES.find((s) => s.sectionKey === section.key);
-    if (fieldSource) {
-      mapped = applyParameters(applyFields(mapped, fieldSource, snapRecord), snapRecord);
-    } else if (section.layout === "familyHistory") {
-      const familyRows = mapFamilyRows(snapRecord, section.key);
-      if (familyRows) mapped = { ...mapped, familyRows };
-    } else if (section.layout === "habitAddiction") {
-      mapped = mapHabits(mapped, snapRecord);
-    } else if (section.layout === "questionnaire") {
-      const qList = Array.isArray(snapRecord.questions)
-        ? snapRecord.questions
-        : Array.isArray(snapRecord.answers)
-          ? snapRecord.answers
-          : Array.isArray(snapshot)
-            ? snapshot
-            : undefined;
-      if (qList) mapped = { ...mapped, questionnaire: parseMedicalQuestionnaire(qList) };
-    } else if (section.key === BP_SECTION_KEY) {
-      mapped = mapBloodPressure(snapRecord);
-    }
-
-    const values = extractSectionValues(mapped);
+    const values = extractSectionValues(mapHistorySnapshot(section, snapshot, snapRecord));
     entries.push({ id, label, values });
   });
 
@@ -987,26 +1062,56 @@ function extractParentHistory(
     groupSections.forEach((section) => {
       const mapped = mapSection(section, snapshotRoot);
       if (!mapped) return;
-      (result[section.key] ??= []).push({ id, label, values: extractSectionValues(mapped) });
+      result[section.key] ??= [];
+      result[section.key].push({ id, label, values: extractSectionValues(mapped) });
     });
   });
   return Object.keys(result).length > 0 ? result : undefined;
 }
 
+/** Valid entries of `data.table_of_medical_documents` (code, description and value are all text). */
+function readMedicalDocuments(value: unknown): MedicalDocument[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item): MedicalDocument[] =>
+    isRecord(item) &&
+    typeof item.code === "string" &&
+    typeof item.description === "string" &&
+    typeof item.value === "string" &&
+    item.value !== ""
+      ? [{ code: item.code, description: item.description, value: item.value }]
+      : [],
+  );
+}
+
+/** The API node a section reads from, found through the first source list that names the section. */
+function readSectionRawNode(sectionKey: string, root: JsonRecord): JsonRecord | undefined {
+  if (sectionKey === BP_SECTION_KEY) {
+    return readFirstPath(root, [["mer", "blood_pressure_and_pulse"], ["blood_pressure_and_pulse"]]);
+  }
+  const sourceLists = [FIELD_SOURCES, HABIT_SOURCES, FAMILY_SOURCES, QUESTIONNAIRE_SOURCES];
+  for (const sources of sourceLists) {
+    const source = sources.find((item) => item.sectionKey === sectionKey);
+    if (source) return readFirstPath(root, source.paths);
+  }
+  return undefined;
+}
+
 /**
  * Builds the View Medical sections and groups from a fetch response.
  * Returns null when the response has no `data.sections` ("not found"); never defaults to other data.
+ * When the response lists `table_of_medical_documents`, exactly those documents are shown: a listed
+ * document the API sent no data for is an empty section, and a document it sent but did not list is hidden.
  * Throws when a questionnaire row has an invalid shape.
  */
 export function mapMedicalFetchPayload(payload: unknown): MedicalFetchResult | null {
   if (!isRecord(payload)) return null;
 
-  const payloadData =
-    isRecord(payload.response) && isRecord(payload.response.data)
-      ? payload.response.data
-      : isRecord(payload.data)
-        ? payload.data
-        : null;
+  let payloadData: JsonRecord | null = null;
+  if (isRecord(payload.response) && isRecord(payload.response.data)) {
+    payloadData = payload.response.data;
+  } else if (isRecord(payload.data)) {
+    payloadData = payload.data;
+  }
 
   if (!isRecord(payloadData) || !isRecord(payloadData.sections)) {
     return null;
@@ -1014,9 +1119,13 @@ export function mapMedicalFetchPayload(payload: unknown): MedicalFetchResult | n
   const root = payloadData.sections;
   const examId = typeof payloadData.examId === "number" ? payloadData.examId : undefined;
   const medAppDtlId = typeof payloadData.medAppDtlId === "number" ? payloadData.medAppDtlId : undefined;
+  const documents = readMedicalDocuments(payloadData.table_of_medical_documents);
+  const listedKeys = documents.length > 0 ? getMedicalDocumentSectionKeys(documents) : undefined;
   const sections = MEDICAL_SECTIONS.flatMap((section) => {
+    if (listedKeys && !listedKeys.has(section.key) && !section.alwaysEditable) return [];
     const mapped = mapSection(section, root);
-    return mapped ? [mapped] : [];
+    if (mapped) return [mapped];
+    return listedKeys ? [section] : [];
   });
   const byKey = new Map(sections.map((section) => [section.key, section]));
   const groups = MEDICAL_GROUPS.map((group) => ({
@@ -1040,26 +1149,7 @@ export function mapMedicalFetchPayload(payload: unknown): MedicalFetchResult | n
   });
   sections.forEach((section) => {
     if (parentHistoryKeys.has(section.key)) return;
-    let rawNode: unknown = undefined;
-    if (section.key === BP_SECTION_KEY) {
-      rawNode = readFirstPath(root, [["mer", "blood_pressure_and_pulse"], ["blood_pressure_and_pulse"]]);
-    } else {
-      const fieldSource = FIELD_SOURCES.find((s) => s.sectionKey === section.key);
-      if (fieldSource) rawNode = readFirstPath(root, fieldSource.paths);
-      else {
-        const habitSource = HABIT_SOURCES.find((s) => s.sectionKey === section.key);
-        if (habitSource) rawNode = readFirstPath(root, habitSource.paths);
-        else {
-          const familySource = FAMILY_SOURCES.find((s) => s.sectionKey === section.key);
-          if (familySource) rawNode = readFirstPath(root, familySource.paths);
-          else {
-            const qSource = QUESTIONNAIRE_SOURCES.find((s) => s.sectionKey === section.key);
-            if (qSource) rawNode = readFirstPath(root, qSource.paths);
-          }
-        }
-      }
-    }
-    const entries = extractSectionHistory(section, rawNode);
+    const entries = extractSectionHistory(section, readSectionRawNode(section.key, root));
     if (entries) historyMap[section.key] = entries;
   });
 

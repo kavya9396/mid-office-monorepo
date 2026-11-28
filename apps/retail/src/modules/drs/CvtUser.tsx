@@ -64,6 +64,7 @@ import {
   useSaveRetailFinancialMutation,
 } from "../../services/financialApi";
 import { RETAIL_FINANCIAL_ACTIONS_CONFIG } from "../config/financialActions.config";
+import { RETAIL_MEDICAL_ACTIONS_CONFIG } from "../config/medicalActions.config";
 import { CvtEditApplicantDialog } from "./CvtEditApplicantDialog";
 import { requirementStatusOrder, requirementStatusVariants } from "./requirementData";
 
@@ -401,6 +402,7 @@ const CvtUser = () => {
         summary={applicantBanner}
         applicants={applicantOptions}
         initialApplicantKey={selectedApplicant?.id}
+        actions={RETAIL_MEDICAL_ACTIONS_CONFIG.cvt}
         onBack={closeSubPage}
         onSubmit={(payload) => console.log("Submit medical", payload)}
       />
