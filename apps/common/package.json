@@ -139,6 +139,11 @@
       "import": "./src/components/LifeAssured/LifeAssured.tsx",
       "default": "./src/components/LifeAssured/LifeAssured.tsx"
     },
+    "./referral-sheet": {
+      "types": "./src/components/ReferralSheet/index.ts",
+      "import": "./src/components/ReferralSheet/index.ts",
+      "default": "./src/components/ReferralSheet/index.ts"
+    },
     "./reinsurer": {
       "types": "./src/components/reinsurer.ts",
       "import": "./src/components/reinsurer.ts",

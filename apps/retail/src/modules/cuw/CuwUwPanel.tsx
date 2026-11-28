@@ -20,6 +20,7 @@ import {
 } from "@insurance-poc/ui";
 import { retailPaths, replaceUrl } from "@insurance-poc/routes";
 import { ValidationList } from "@insurance-poc/common/validation-list";
+import { ReferralSheetDialog, toReferralSheetRequest, type ReferralSheetForm } from "@insurance-poc/common/referral-sheet";
 import { getDrsRoleType, getDrsTaskIds, getMasterList, getSessionUser } from "@insurance-poc/utils";
 import {
   findPendingValidationMessage,
@@ -28,6 +29,8 @@ import {
 } from "../../services/drsService";
 import {
   useGetCuwUwDecisionMutation,
+  useGetReinsurerReferralQuery,
+  useSaveReferralSheetMutation,
   useGetUsersByRoleQuery,
   useSaveCuwParallelDecisionMutation,
 } from "../../services/drsApi";
@@ -259,7 +262,14 @@ const readLoadingClassOptions = (type: string) => {
   return masterType ? readFirstAvailableMiscOptions([masterType]) : [];
 };
 
-const readLoadingReasonOptions = () => readFirstAvailableMiscOptions(["CUW_EP_LOAD_RSN_CODE"]);
+// Loading Reason Code master `misc` type follows the loading type: Medical -> CUW_EP_LOAD_RSN_CODE,
+// FE Loading -> CUW_FE_LOAD_RSN_CODE, Smoker Loading -> CUW_SM_LOAD_RSN_CODE.
+const readLoadingReasonOptions = (type: string) => {
+  const classMasterType = readLoadingClassMasterType(type);
+  return classMasterType
+    ? readFirstAvailableMiscOptions([classMasterType.replace(/_LOAD_CLS$/, "_LOAD_RSN_CODE")])
+    : [];
+};
 
 const readHoldReasonOptions = () => readFirstAvailableMiscOptions(["CUW_HOLD_RSN"]);
 
@@ -390,8 +400,6 @@ const readReferralReasonOptions = (target: string) => {
   return (REFERRAL_STATIC_REASON_OPTIONS[target] ?? []).map((text) => ({ value: text, label: text }));
 };
 
-const REINSURER_UW_OPTIONS = ["Swiss Re", "Munich Re", "Scor Re", "Gen Re", "RGA Re", "Hannover Re"];
-const REFERRAL_DOCUMENTS = ["Application Form", "PhotoId Proof", "Address Proof"];
 
 const DEFAULT_PRODUCTS = [
   { name: "iProtect Smart", code: "IPROTECT_SMART", sa: "₹50,00,000", pt: "20", isRider: false, productType: "base" },
@@ -714,6 +722,16 @@ export function CuwUwPanel({
   const srUwPicked =
     referralRows.some((r) => isCuwSrUwReferral(r.target) && r.selected) ||
     assigneeRoleForReferTo(approverTarget) === CUW_ASSIGNEE_ROLE.SR_UW;
+  // Assign Documents rows: the reinsurer-referral API is called (with the application number only) once Reinsurer is picked
+  const reinsurerPicked =
+    referralRows.some((r) => r.target === "REF_REINS" && r.selected) || dialogDecision === "REF_REINS";
+  const reinsurerReferralApplicationNo = drsApplicationNo || applicationNo;
+  const referralQuery = useGetReinsurerReferralQuery(reinsurerReferralApplicationNo, {
+    skip: !reinsurerPicked || reinsurerReferralApplicationNo.length === 0,
+  });
+  const referralDocuments = referralQuery.data?.documents ?? [];
+  const [saveReferralSheet] = useSaveReferralSheetMutation();
+  const [referralSheetOpen, setReferralSheetOpen] = useState<boolean>(false);
   const hodUsers = useGetUsersByRoleQuery(CUW_ASSIGNEE_ROLE.HOD, { skip: !hodPicked });
   const srUwUsers = useGetUsersByRoleQuery(CUW_ASSIGNEE_ROLE.SR_UW, { skip: !srUwPicked });
   const assigneeOptionsForRole = (role: string): CuwAssigneeOption[] => {
@@ -781,11 +799,14 @@ export function CuwUwPanel({
 
   // Reinsurer Details states
   const [reinsurerUwNames, setReinsurerUwNames] = useState<string[]>(["", ""]);
-  const [reinsurerDocChecks, setReinsurerDocChecks] = useState<boolean[][]>([
-    [true, false],
-    [false, false],
-    [false, true],
-  ]);
+  // [document][reinsurer]; rows follow the API `documents[]`
+  const [reinsurerDocChecks, setReinsurerDocChecks] = useState<boolean[][]>([]);
+  useEffect(() => {
+    const docs = referralQuery.data?.documents;
+    if (!docs) return;
+    setReinsurerDocChecks(docs.map((doc) => (referralQuery.data?.reinsurers ?? []).map(() => doc.selected)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only react to freshly loaded documents
+  }, [referralQuery.data]);
 
   // Counter Offer Grid
   const [counterOfferRows, setCounterOfferRows] = useState<CounterOfferRow[]>([]);
@@ -947,9 +968,9 @@ export function CuwUwPanel({
         ? reinsurerRows.map((r) => ({ code: r.code, systemName: r.systemName, uwName: r.uwName }))
         : [],
       documentRows: isReinsurerSelected
-        ? REFERRAL_DOCUMENTS.map((name, rowIndex) => ({
-            name,
-            assigned: reinsurerRows.map((_, colIndex) => reinsurerDocChecks[rowIndex][colIndex]),
+        ? referralDocuments.map((doc, rowIndex) => ({
+            name: doc.fileName,
+            assigned: reinsurerRows.map((_, colIndex) => reinsurerDocChecks[rowIndex]?.[colIndex] ?? false),
           }))
         : [],
       guidelines: [],
@@ -988,7 +1009,7 @@ export function CuwUwPanel({
     setSmokerFlag("");
     setDecisionCodeValue("");
     setReinsurerUwNames(["", ""]);
-    setReinsurerDocChecks(REFERRAL_DOCUMENTS.map(() => reinsurerRows.map(() => false)));
+    setReinsurerDocChecks(referralDocuments.map(() => reinsurerRows.map(() => false)));
     if (["CO", "BOR_STD", "EP"].includes(effectiveDecision)) {
       setCounterOfferRows(
         productList.map((prod, idx) => ({
@@ -1548,19 +1569,23 @@ export function CuwUwPanel({
   const handleDocCheckChange = (rowIndex: number, colIndex: number, checked: boolean) => {
     setReinsurerDocChecks((prev) => {
       const copy = prev.map((row) => [...row]);
-      copy[rowIndex][colIndex] = checked;
+      if (copy[rowIndex]) copy[rowIndex][colIndex] = checked;
       return copy;
     });
   };
 
   // Reinsurer Details Rows Definitions
-  const reinsurerRows = [
-    { code: "ABC", systemName: "Munich Re", uwName: reinsurerUwNames[0] },
-    { code: "CI", systemName: "Scor RE", uwName: reinsurerUwNames[1] },
-  ];
+  // Code and "Reinsurer Name - System" come from `reinsurerDetails[]` of the reinsurer-referral API;
+  // "Reinsurer Name - UW" options come from the master `misc` type REINSURER_NAME.
+  const reinsurerRows = (referralQuery.data?.reinsurers ?? []).map((row, index) => ({
+    code: row.code,
+    systemName: row.systemName,
+    uwName: reinsurerUwNames[index] ?? "",
+  }));
+  const reinsurerUwOptions = readFirstAvailableMiscOptions(["REINSURER_NAME"]);
 
   const getEffectiveReinsurerName = (idx: number) => {
-    return reinsurerUwNames[idx] || reinsurerRows[idx].systemName;
+    return reinsurerUwNames[idx] || reinsurerRows[idx]?.systemName || "";
   };
 
   // Reasons options for MultiSelect, from master data: Reject = CUW_NON_MED_RSN, every other decision =
@@ -2351,8 +2376,8 @@ export function CuwUwPanel({
                             </thead>
                             <tbody>
                               {reinsurerRows.map((row, index) => {
-                                const options = REINSURER_UW_OPTIONS.filter(
-                                  (name) => name.toLowerCase() !== row.systemName.toLowerCase()
+                                const options = reinsurerUwOptions.filter(
+                                  (opt) => opt.value.toLowerCase() !== row.systemName.toLowerCase()
                                 );
                                 return (
                                   <tr key={row.code}>
@@ -2368,7 +2393,7 @@ export function CuwUwPanel({
                                             return copy;
                                           });
                                         }}
-                                        options={options.map((opt) => ({ value: opt, label: opt }))}
+                                        options={options}
                                         placeholder="Select"
                                         fullWidth
                                       />
@@ -2446,9 +2471,19 @@ export function CuwUwPanel({
                               </tr>
                             </thead>
                             <tbody>
-                              {REFERRAL_DOCUMENTS.map((docName, rowIndex) => (
-                                <tr key={docName}>
-                                  <td style={{ padding: "10px 12px", borderBottom: "1px solid #ded9d6" }}>{docName}</td>
+                              {referralDocuments.length === 0 && (
+                                <tr>
+                                  <td
+                                    colSpan={reinsurerRows.length + 1}
+                                    style={{ padding: "10px 12px", borderBottom: "1px solid #ded9d6", color: "#7b716c" }}
+                                  >
+                                    {referralQuery.isFetching ? "Loading documents..." : "No documents available."}
+                                  </td>
+                                </tr>
+                              )}
+                              {referralDocuments.map((doc, rowIndex) => (
+                                <tr key={doc.udsUrnNumber || doc.fileName}>
+                                  <td style={{ padding: "10px 12px", borderBottom: "1px solid #ded9d6" }}>{doc.fileName}</td>
                                   {reinsurerRows.map((_, colIndex) => (
                                     <td
                                       key={colIndex}
@@ -2460,7 +2495,7 @@ export function CuwUwPanel({
                                     >
                                       <input
                                         type="checkbox"
-                                        checked={reinsurerDocChecks[rowIndex][colIndex]}
+                                        checked={reinsurerDocChecks[rowIndex]?.[colIndex] ?? false}
                                         onChange={(e) =>
                                           handleDocCheckChange(rowIndex, colIndex, e.target.checked)
                                         }
@@ -2492,7 +2527,16 @@ export function CuwUwPanel({
                             notify("Please add remarks before generating the referral sheet", "error");
                             return;
                           }
-                          notify("Referral sheet generated successfully", "success");
+                          if (!referralQuery.data?.sheet) {
+                            notify(
+                              referralQuery.isFetching
+                                ? "Referral details are still loading. Please try again."
+                                : "Referral sheet details are not available.",
+                              "error",
+                            );
+                            return;
+                          }
+                          setReferralSheetOpen(true);
                         }}
                         sx={{
                           borderColor: "#aa262a",
@@ -3039,7 +3083,7 @@ export function CuwUwPanel({
                             <CustomSelect
                               value={row.loadingReason}
                               onChange={(val) => handleRowFieldChange(row.id, "loadingReason", val)}
-                              options={isLoadingRow ? readLoadingReasonOptions() : []}
+                              options={isLoadingRow ? readLoadingReasonOptions(row.type) : []}
                               placeholder="Select"
                               disabled={!isLoadingRow}
                               fullWidth
@@ -3185,6 +3229,25 @@ export function CuwUwPanel({
         onClose={() => setViewDialogOpen(false)}
         submittedDecision={submittedDecision}
       />
+
+      {/* Referral Sheet popup (Reinsurer): editable sheet; Save sends the whole form */}
+      {referralSheetOpen && referralQuery.data?.sheet && (
+        <ReferralSheetDialog
+          open
+          onClose={() => setReferralSheetOpen(false)}
+          initialForm={referralQuery.data.sheet}
+          onSave={async (form: ReferralSheetForm) => {
+            const result = await saveReferralSheet(toReferralSheetRequest(form));
+            if ("error" in result) {
+              notify("Failed to save the referral sheet", "error");
+              return false;
+            }
+            notify("Referral sheet saved successfully", "success");
+            setReferralSheetOpen(false);
+            return true;
+          }}
+        />
+      )}
 
       {/* Snackbar notification */}
       <CustomSnackbar
