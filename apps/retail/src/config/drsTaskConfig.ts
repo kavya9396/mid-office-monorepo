@@ -34,12 +34,12 @@ export const RETAIL_DRS_TASK_CONFIG: Record<string, RetailDrsTaskConfig> = {
   },
   CPT_DATA_ENTRY_NMR_TASK: {
     roleType: "CPT_DATA_ENTRY_NMR_TASK",
-    screenType: "CPT_NMR",
+    screenType: "CPT_DE_NMR",
     businessType: "RETAIL",
   },
   CPT_DATA_ENTRY_MR_TASK: {
     roleType: "CPT_DATA_ENTRY_MR_TASK",
-    screenType: "CPT_MR",
+    screenType: "CPT_DE_MR",
     businessType: "RETAIL",
   },
   PIVV_TASK: {

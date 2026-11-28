@@ -3,12 +3,14 @@ import { authApi } from "@insurance-poc/common/auth-api";
 import { authReducer, sessionExpired } from "@insurance-poc/utils";
 import { groupDrsApi } from "../services/drsApi";
 import { groupFinancialApi } from "../services/financialApi";
+import { groupMedicalApi } from "../services/medicalApi";
 import { groupBreRetriggerApi } from "../services/breRetriggerApi";
 import { groupCompleteTaskApi } from "../services/completeTaskApi";
 import { groupInboxApi } from "../services/inboxApi";
 import { groupNsdlApi } from "../services/nsdlApi";
 import { groupDvtValidationApi } from "../services/dvtValidationApi";
 import { mmtGrievanceApi } from "../services/mmtGrievanceApi";
+import { cmoDecisionApi } from "../services/cmoDecisionApi";
 
 const listenerMiddleware = createListenerMiddleware();
 
@@ -18,11 +20,13 @@ listenerMiddleware.startListening({
     listenerApi.dispatch(groupInboxApi.util.resetApiState());
     listenerApi.dispatch(groupDrsApi.util.resetApiState());
     listenerApi.dispatch(groupFinancialApi.util.resetApiState());
+    listenerApi.dispatch(groupMedicalApi.util.resetApiState());
     listenerApi.dispatch(groupCompleteTaskApi.util.resetApiState());
     listenerApi.dispatch(groupNsdlApi.util.resetApiState());
     listenerApi.dispatch(groupDvtValidationApi.util.resetApiState());
     listenerApi.dispatch(groupBreRetriggerApi.util.resetApiState());
     listenerApi.dispatch(mmtGrievanceApi.util.resetApiState());
+    listenerApi.dispatch(cmoDecisionApi.util.resetApiState());
   },
 });
 
@@ -33,11 +37,13 @@ export const store = configureStore({
     [groupInboxApi.reducerPath]: groupInboxApi.reducer,
     [groupDrsApi.reducerPath]: groupDrsApi.reducer,
     [groupFinancialApi.reducerPath]: groupFinancialApi.reducer,
+    [groupMedicalApi.reducerPath]: groupMedicalApi.reducer,
     [groupCompleteTaskApi.reducerPath]: groupCompleteTaskApi.reducer,
     [groupNsdlApi.reducerPath]: groupNsdlApi.reducer,
     [groupDvtValidationApi.reducerPath]: groupDvtValidationApi.reducer,
     [groupBreRetriggerApi.reducerPath]: groupBreRetriggerApi.reducer,
     [mmtGrievanceApi.reducerPath]: mmtGrievanceApi.reducer,
+    [cmoDecisionApi.reducerPath]: cmoDecisionApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
@@ -47,11 +53,13 @@ export const store = configureStore({
         groupInboxApi.middleware,
         groupDrsApi.middleware,
         groupFinancialApi.middleware,
+        groupMedicalApi.middleware,
         groupCompleteTaskApi.middleware,
         groupNsdlApi.middleware,
         groupDvtValidationApi.middleware,
         groupBreRetriggerApi.middleware,
         mmtGrievanceApi.middleware,
+        cmoDecisionApi.middleware,
       ),
 });
 

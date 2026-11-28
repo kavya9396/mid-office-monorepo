@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import type { QuickLinkItem } from "@insurance-poc/common/quick-links";
 import { getDrsApplicationNo, getDrsMemberId, getDrsRoleType } from "@insurance-poc/utils";
+import { getGroupDrsTaskConfig } from "../../config/drsTaskConfig";
 import { fetchGuwDrs } from "../../services/drsService";
-import { useGetGroupDrsQuery } from "../../services/drsApi";
+import { useGetCmoDrsQuery, useGetGroupDrsQuery } from "../../services/drsApi";
 import type { QuickLinksSubSections } from "./quickLinksData";
 
 // Quick links that have their own page route (opened as a new page; Header back returns to the DRS)
@@ -11,6 +12,9 @@ const PAGE_LINK_IDS = new Set(["previous-policies", "open-tasks", "risk-details"
 
 // DVT screens use their own data; every other Group screen reads the GUW DRS payload
 const DVT_ROLE_TYPES = new Set(["DVT_POOL", "GOPS_DVT", "DVT_FORMAL", "DVT_TASK", "DVT USER", "DVT"]);
+
+/** Role-list roleType for the single HO CMO and Vendor CMO screens. */
+const CMO_ROLE_TYPES = new Set(["HO_CMO_TASK", "VENDOR_CMO_TASK"]);
 
 const isDvtRole = (roleType: string) =>
   DVT_ROLE_TYPES.has(roleType.toUpperCase()) || roleType.toUpperCase().includes("DVT");
@@ -55,11 +59,23 @@ export function useGuwQuickLinks(): GuwQuickLinksState {
   const roleType = getDrsRoleType().trim().toUpperCase();
   const shouldLoad = applicationNo.length > 0;
   const isDvt = isDvtRole(roleType);
+  const isCmo = CMO_ROLE_TYPES.has(roleType);
+  const cmoTask = getGroupDrsTaskConfig(roleType);
   const [state, setState] = useState<GuwQuickLinksState>({ loading: shouldLoad });
   const dvt = useGetGroupDrsQuery(applicationNo, { skip: !shouldLoad || !isDvt });
+  const cmo = useGetCmoDrsQuery(
+    {
+      applicationNo,
+      roleType: cmoTask.roleType,
+      screenType: cmoTask.screenType,
+      businessType: cmoTask.businessType,
+      memberId: memberId || undefined,
+    },
+    { skip: !shouldLoad || !isCmo },
+  );
 
   useEffect(() => {
-    if (!shouldLoad || isDvt) {
+    if (!shouldLoad || isDvt || isCmo) {
       setState({ loading: false });
       return;
     }
@@ -72,10 +88,13 @@ export function useGuwQuickLinks(): GuwQuickLinksState {
     return () => {
       active = false;
     };
-  }, [applicationNo, memberId, roleType, isDvt, shouldLoad]);
+  }, [applicationNo, memberId, roleType, isDvt, isCmo, shouldLoad]);
 
   if (shouldLoad && isDvt) {
     return { loading: dvt.isLoading || dvt.isFetching, data: dvt.data?.quickLinks };
+  }
+  if (shouldLoad && isCmo) {
+    return { loading: cmo.isLoading || cmo.isFetching, data: cmo.data?.quickLinks };
   }
   return state;
 }

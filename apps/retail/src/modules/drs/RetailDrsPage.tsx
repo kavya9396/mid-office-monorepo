@@ -89,8 +89,8 @@ const SCREEN_BY_SCREEN_TYPE: Record<string, () => JSX.Element | null> = {
   CVT: CvtUser,
   MMT: MmtGrievanceDrsPage,
   TPA: TpaDrsPage,
-  CPT_NMR: CptNmrUser,
-  CPT_MR: CptMrUser,
+  CPT_DE_NMR: CptNmrUser,
+  CPT_DE_MR: CptMrUser,
   PIVV: PivvUser,
   REINSURER: ReinsurerUser,
 };

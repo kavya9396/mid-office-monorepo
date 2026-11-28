@@ -1,0 +1,395 @@
+# ============================================================================
+# Medical data save -> "View Medical" screen mapping (menu-wise)
+# ----------------------------------------------------------------------------
+# API   : POST /icic-medical-service/v1/medical-data/save  (UAT)
+# Sample: mock/medical/medical-data-save.json
+# UI    : apps/common/src/modules/Medical/medical.save.ts   (buildMedicalSaveRequest)
+#         apps/common/src/modules/Medical/medical.mapper.ts (FIELD_SOURCES etc., shared with fetch)
+# Spec  : docs/spec/integrations/medical-data-save.md
+# Fetch : design-reference/medical-data-fetch-mapping.yaml (the save request is its inverse)
+#
+# Same UI -> API key names as the fetch mapping. This file adds what is specific to save:
+# where each UI section is placed under request.sections, which ids are echoed back,
+# and how each value is converted before it is sent.
+#
+# Only the sections of the edited unit are sent (see meta.edit_units).
+#
+# STATUS LEGEND
+#   built        sent by buildMedicalSaveRequest today
+#   not_sent     display-only in the UI, never saved
+#   mismatch     the builder and the save sample disagree (see the matching open question). None today.
+#
+# API TEAM comments are prefixed with "# API TEAM:".
+# ============================================================================
+
+meta:
+  request:
+    applicationNumber: string     # host screen prop (from useSearchParams)
+    partyId: string               # host screen prop, one call per applicant tab
+    createdBy: string             # logged-in user id = getSessionUser().username (the header profile value, e.g. UW002); Save is blocked without it
+    # Confirmed by the API team: the username (UW002) is what the API expects (open question 2, closed).
+    sections: object              # only the edited unit, nested like data.sections of the fetch
+  response:
+    envelope: "{ response_code, error, message, data }"
+    success: "error=false and response_code=200 -> snackbar(success) shows message, unit leaves edit mode"
+    failure: "error=true or response_code!=200 -> snackbar(error) shows message, unit stays in edit mode"
+    http_error: "RTK error body message is shown; unit stays in edit mode"
+    data: "each saved section returns the fetch-shaped body + rowsInserted / rowsUpdated / rowsDeleted (+ rowsDeactivated on family). Not read by the UI."
+    # API TEAM: confirm the validation-failure body and whether field-level errors are returned (open question 1).
+  edit_units:
+    - { unit: mer,            sections: [mer, habit_addictions, measurement, family_history_health_status, blood_pressure_pulse_details, question_table], root: "sections.mer" }
+    - { unit: tele_video_mer, sections: [tele_mer, tele_measurements, tele_family_history, tele_habit_addiction, tele_question_table, tele_disposition], root: "sections.tele_mer" }
+    - { unit: "<each other editable section>", sections: ["<its own key>"], root: "sections.<api_key>" }
+    - { unit: decision, sections: [decision], root: "sections.decision" }
+  not_sent:
+    - application_form_medical_lifestyle    # display-only
+    - bre_medical_decision                  # display-only
+    - cmo_decision (2decho, ecg, tmt)       # read-only audit trail, never edited
+    - tele_mer.stp_details                  # not edited here  # API TEAM: confirm ignored on save (open question 10)
+  value_rules:
+    empty: "sent as null, never an empty string"
+    date: "DD/MM/YYYY (form) -> YYYY-MM-DD; other text unchanged"
+    numbers: "measurement and tele_measurements fields, habit No. of Year, family age and BP readings are JSON numbers, null when empty"
+    habit_indicator: "Yes -> Y, No -> N"
+    yes_no_fields: "every other Yes/No field is sent as the screen holds it (Yes / No), unchanged. The API uses Yes, N, NO and YES on different fields. # API TEAM: confirm Yes / No is accepted on each (open question 5)."
+    family_dead_or_alive: "upper-cased (Alive -> ALIVE)"
+    parameter_findings: "ABNORMAL if value is numeric and outside from..to, else NORMAL; null when value, from or to is empty"
+    hidden_question: "response and remarks sent as null when the parent answer hides the question"
+    is_active: "\"Y\" always, \"N\" when something was deleted. Test objects (testDtlId) send Y (a test cannot be deleted here). Family members send Y when kept and N when a fetched member was removed on the screen."
+  echoed_ids:
+    testDtlId: "every test object"
+    medAppDtlId: "test object / tele_mer.details"
+    paramId: "single-value Other Medical tests"
+    fieldIds: "Special Medical tests"
+    parameters_paramId_id: "parameter-list tests, per row"
+    memberId: "family member rows (new rows send null)"
+    readingId: "BP reading, by readingSeq"
+    responseId: "question rows"
+
+# ----------------------------------------------------------------------------
+# Reusable key maps (YAML anchors). Same names as the fetch mapping.
+# ----------------------------------------------------------------------------
+common:
+  special_header: &special_header
+    Medical Type: medicalType
+    Test Date: testDate
+    Examinee Name: examineeName
+    Examinee Age: examineeAge
+    Diagnostic Centre Name: diagnosticCentreName
+    Doctor Name: doctorName
+    Doctor Registration No: doctorRegistrationNo
+  other_header: &other_header
+    Medical Type: medicalType
+    Examinee Name: examineeName
+    Examinee Age: examineeAge
+    Examinee Gender: examineeGender
+    Diagnostic Centre Name: diagnosticCentreName
+    Diagnostic Centre Address: diagnosticCentreAddress
+    Diagnostic Centre Pincode: diagnosticCentrePincode
+    Doctor Name: doctorName
+    Doctor Registration No: doctorRegistrationNo
+  other_lab: &other_lab
+    Lab Range Start: labRangeValueStart
+    Lab Range End: labRangeValueEnd
+    Unit Value: unitsValue
+  stress_echo: &stress_echo
+    Findings: findings
+    Ejection Fraction: ejectionFraction
+    Ejection Result: ejectionResult
+    Rejection Abnormality: rejectionAbnormality
+    Remark: remark
+
+# ============================================================================
+# MENU 1 - OVERVIEW
+# ============================================================================
+menus:
+  - menu: overview
+    label: "Overview"
+    sections:
+      - ui_key: application_form_medical_lifestyle
+        api_key: application_form_medical
+        status: not_sent
+
+# ============================================================================
+# MENU 2 - MER   (one edit unit, all sections under sections.mer)
+# ============================================================================
+  - menu: mer
+    label: "MER"
+    sections:
+      - ui_key: mer
+        request_path: sections.mer.details
+        status: built
+        fields:
+          Application No.: applicationNo
+          First Name: firstName
+          Last Name: lastName
+          Is MER name same as proposal name?: isMerNameSameAsProposalName
+          Place of Examination: placeOfExamination
+          Gender: gender
+          Name of ME: nameOfMe
+          ME Code: meCode
+          Is Identity Proof and Application Photo Match: isIdentityProofAndApplicationPhotoMatch
+          Examinee DOB: examineeDob
+          Examination Time: examTime
+          Examinee Education SD: examineeEducationSd
+          Examinee Occupation SD: examineeOccupationSd
+          Examinee Income SD: examineeIncomeSd
+          Examinee Photo ID Proof: examineePhotoIdProof
+          Examinee Contact No: examineeContactNo
+          Face match Score: faceMatchScore
+          Diagnostic Centre Name: diagnosticCentreName
+          Diagnostic Centre Address: diagnosticCentreAddress
+          Diagnostic Centre Pincode: diagnosticCentrePincode
+          Date of Examination: dateOfExamination
+          Any previous life Insurance policy decline/Postpone/issued on revised term SD: anyPreviousLifeInsurancePolicyDeclinePostponeOrIssuedOnRevisedTermSd
+        # Coded values (open question 4): gender, education and occupation send the master code. Place of Examination
+        #   sends CLINIC or RES_OFFICE (the dropdown value is the code, the label is shown). examTime is sent as fetched.
+
+      - ui_key: habit_addictions
+        request_path: sections.mer.habit_and_addictions
+        shape: flat keys per habit
+        status: built
+        fields:
+          Cigarettes/beedis/cigar - Indicator: cigarettesBeedisCigar        # Yes/No -> Y/N
+          Cigarettes/beedis/cigar - Quantity: cigarettesBeedisCigarQuant
+          Cigarettes/beedis/cigar - No. of Year: cigarettesBeedisCigarYear  # number
+          Gutka / snuff / paan etc. - Indicator: gutkaSnuffPaan
+          Gutka / snuff / paan etc. - Quantity: gutkaSnuffPaanQuant
+          Gutka / snuff / paan etc. - No. of Year: gutkaSnuffPaanYear
+          Narcotic Consumption - Indicator: narcoticConsumption
+          Narcotic Consumption - Quantity: narcoticConsumptionQuant
+          Narcotic Consumption - No. of Year: narcoticConsumptionYear
+          Beer/Wine/Hard liquor - Indicator: beerWineHardLiquor
+          Beer/Wine/Hard liquor - Quantity: beerWineHardLiquorQuant
+          Beer/Wine/Hard liquor - No. of Year: beerWineHardLiquorYear
+
+      - ui_key: measurement
+        request_path: sections.mer.measurement
+        status: built
+        fields:                                # all sent as JSON numbers
+          Height (cms): heightCms
+          Height (Fts): heightFts
+          Inches: inches
+          Weight (Kgs): weightKgs
+          Waist (cms): waistCms
+          Hips (cms): hipsCms
+          BMI: bmi
+
+      - ui_key: family_history_health_status
+        request_path: sections.mer.family_history.members[]
+        cardinality: "1:N"
+        status: built
+        row:
+          memberId: "echoed from the fetch row; null for a row added in the UI"
+          relationType: "Relation Type (as selected)"
+          age: "Age, number"
+          deadOrAlive: "Dead or alive, upper-cased"
+          healthStatus: "Health Status (free text for MER)"
+          isActive: "Y on every kept member; N on a fetched member removed on the screen"
+        removed_member: "a fetched member removed on the screen is sent again with its fetched values and isActive N. A row added and removed before saving is not sent."
+        # New rows: memberId null + isActive Y, the API inserts them (open question 8, confirmed).
+        # API TEAM: confirm isActive is read on family members (open question 7).
+
+      - ui_key: blood_pressure_pulse_details
+        request_path: sections.mer.blood_pressure_and_pulse
+        cardinality: "1:N readings"
+        status: built
+        fields:
+          readings[]: "{ readingId (echoed), readingSeq, systolic, diastolic } from the Systolic n / Diastolic n fields"
+          avgSystolic: "Avg Systolic"
+          avgDiastolic: "Avg Diastolic"
+          pulseRate: "Pulse Rate"
+
+      - ui_key: question_table
+        request_path: sections.mer.question_table.questions[]
+        cardinality: "1:N, API-owned list"
+        status: built
+        row: { id: id, parentId: parentId, section: section, responseId: "echoed", response: "Response", remarks: "Remarks" }
+        # API TEAM: the sample sends the full question object. The builder sends only the fields above (open question 9).
+
+# ============================================================================
+# MENU 3 - TELE-VIDEO MER   (one edit unit, all sections under sections.tele_mer)
+# ============================================================================
+  - menu: tele_video_mer
+    label: "TELE-VIDEO MER"
+    sections:
+      - ui_key: tele_mer
+        request_path: sections.tele_mer.details
+        status: built
+        fields:
+          Application No.: applicationNo
+          First Name: firstName
+          Last Name: lastName
+          Gender: gender
+          Date of Birth: dateOfBirth
+          Telephonic MER: telephonicMer
+          Time of Tele call: dateTimeOfTeleCall
+          Education: education
+          Occupation: occupation
+          Disclosure: disclosure
+          Adversity: adversity
+          Annual Income: annualIncome
+          Examiner Name: examinerName
+          Registration ID: registrationId
+          MER Detail: merDetail
+          Previous Insurance Declined: previousInsuranceDeclined
+          Medical Treatment: medicalTreatment
+          Address Including City and State: addressInclCityState
+          Tele Findings: teleFindings
+          Tele MER Final Remark: tmerFinalRemark
+          Tele Type: teleType
+        # API TEAM: dateTimeOfTeleCall is sent as the 12-hour time held by the UI (fetch spec, question 11).
+
+      - ui_key: tele_measurements
+        request_path: sections.tele_mer.measurement
+        status: built
+        fields:                                # all sent as JSON numbers
+          Height (cms): heightCms
+          Height (ft): heightFts
+          Inches: inches
+          Weight (kgs): weightKgs
+          BMI: bmi
+
+      - ui_key: tele_family_history
+        request_path: sections.tele_mer.family_history.members[]
+        cardinality: "1:N"
+        status: built
+        row: { memberId: "echoed or null", relationType: "Relation Type", age: "number", deadOrAlive: "upper-cased", healthStatus: "Health Status (dropdown)", isActive: "Y kept / N removed fetched member" }
+
+      - ui_key: tele_habit_addiction
+        request_path: sections.tele_mer.habit_and_addictions.value[]
+        cardinality: "1:4, one item per habit"
+        shape: "{ value: [ { habit, habitId, indicator, quantity, year } ] }   # same shape as the fetch and the save sample"
+        status: built
+        item:
+          habit: "API habit name (fixed): Cigarette/beedis/cigar | Gutka/Snuff/Paan etc. | Narcotic Consumption | Beer/Wine/Hard liquor"
+          habitId: "echoed from the fetch (166, 234, 235, 236 in the sample); omitted when the fetch had none"
+          indicator: "Y / N, from the Indicator field (Yes / No); null when empty"
+          quantity: "Quantity field, text; null when empty"
+          year: "No. of Year field, JSON number; null when empty"
+        ui_fields_per_habit:
+          Cigarette/beedis/cigar: [Indicator, Quantity, No. of Year]
+          Gutka/Snuff/Paan etc.: [Indicator, Quantity, No. of Year]
+          Narrotic Consumption: [Indicator, Quantity, No. of Year]      # "Narrotic" is the prototype spelling; the API habit is "Narcotic Consumption"
+          Beer/Wine/Hard liquor: [Indicator, Quantity, No. of Year]
+        # Resolved (open question 3): MER habits stay flat keys (see mer.habit_and_addictions); only Tele uses this array.
+        # API TEAM: confirm the flat-key shape for MER is accepted by save (the sample sends flat keys for MER).
+
+      - ui_key: tele_question_table
+        request_path: sections.tele_mer.question_table.questions[]
+        cardinality: "1:N, API-owned list (sub-questions via parentId / parentOption)"
+        status: built
+        row: { id: id, parentId: parentId, section: section, responseId: "echoed", response: "Response (MULTISELECT option keys joined by '#')", remarks: "Remarks" }
+
+      - ui_key: tele_disposition
+        request_path: sections.tele_mer.disposition
+        status: built
+        fields: { TUW Status: tuwStatus, Remark: remark, Note: note, Remarks2: remarks2 }
+
+# ============================================================================
+# MENU 4 - SPECIAL MEDICAL   (each test is its own unit: sections.<api_key>)
+# Every body also carries: testDtlId, fieldIds (echoed), isActive "Y".
+# ============================================================================
+  - menu: special_medical
+    label: "SPECIAL MEDICAL"
+    sections:
+      # 2DECHO: the mapper gives it the stress-echo keys (Remark -> remark) AND Remarks -> remarks. The fetch spec
+      # (question 19) says 2DECHO uses "remarks" only. A key is sent only for a field the screen shows, so a section
+      # without a "Remark" field sends only remarks. The 2DECHO screen has only "Remarks", so only remarks is sent.
+      - { ui_key: 2decho, request_path: sections.2decho, status: built, fields: { <<: [*special_header, *stress_echo], Remarks: remarks } }
+      - ui_key: blood_urea_nitro
+        request_path: sections.blood_urea_and_nitro
+        status: built
+        fields: { <<: *special_header, Findings: findings, Blood Urea: bloodUrea, BUN: bun, Result: result, Remark: remark }
+      - { ui_key: cxr, request_path: sections.cxr, status: built, fields: { <<: *special_header, Findings: findings, Remark: remark } }
+      - { ui_key: dobutamine_stress_echo, request_path: sections.dobutamine_stress_echocardiogram, status: built, fields: { <<: [*special_header, *stress_echo] } }
+      - { ui_key: exercise_stress_echo, request_path: sections.exercise_stress_echocardiogram, status: built, fields: { <<: [*special_header, *stress_echo] } }
+      - ui_key: ecg
+        request_path: sections.ecg
+        status: built
+        fields: { <<: *special_header, Findings: findings, Axis: axis, Heart Rate: heartRate, Heart Rate Finding: heartRateFinding, Remark: remark }
+      - { ui_key: mammogram, request_path: sections.mammogram, status: built, fields: { <<: *special_header, Findings: findings, Remark: remark } }
+      - { ui_key: pap_smear, request_path: sections.pap_smear, status: built, fields: { <<: *special_header, Findings: findings, Remarks: remarks } }
+      - ui_key: pft
+        request_path: sections.pft
+        status: built
+        fields:        # PFT has no Findings; its date key is "date"
+          <<: *special_header
+          Date: date
+          Inspiration: inspiration
+          Expiration: expiration
+          FEV1: fev1
+          FVC: fvc
+          FEV1/FVC: fev1Fvc
+          RV: rv
+          VC: vc
+      - { ui_key: stool_test, request_path: sections.stool_test, status: built, fields: { <<: *special_header, Findings: findings, Remarks: remarks } }
+      - ui_key: tmt
+        request_path: sections.tmt
+        status: built
+        fields: { <<: *special_header, Findings: findings, METS: mets, Heart Rate Finding: heartRateFinding, Heart Rate Result: heartRateResult, Remarks: remarks }
+      - { ui_key: usg, request_path: sections.usg, status: built, fields: { <<: *special_header, Findings: findings, Remarks: remarks } }
+      - { ui_key: fundoscopy_test, request_path: sections.fundoscopy_test, status: built, fields: { <<: *special_header, Findings: findings, Remarks: remarks } }
+    # API TEAM: Special Medical bodies in the sample carry fieldIds { <field>: id }. The builder echoes the object as fetched.
+    #   Confirm a changed value is matched by fieldIds, not by key name.
+
+# ============================================================================
+# MENU 5 - OTHER MEDICAL   (each test is its own unit: sections.<ui_key>)
+# Every body also carries: testDtlId, isActive "Y".
+# ============================================================================
+  - menu: other_medical
+    label: "OTHER MEDICAL"
+    sections:
+      # Single-value tests. Also sent: paramId (echoed).
+      - ui_keys: [blood_sugar_random, cot, ghb, hba1c, hbsag, hiv_elisa, ppbs, serum_cotinine, fbs, hiv_western_blot, hcv]
+        request_path: "sections.<ui_key>"
+        status: built
+        fields: { <<: [*other_header, *other_lab], Date: date, Value: value, Findings: findings }
+        # Findings is a locked field computed by the UI; it is sent as held.
+      # Microalbuminuria and PSA: the entered number is "Findings" in the UI and "value" in the API.
+      - ui_keys: [microalbuminuria, psa]
+        request_path: "sections.<ui_key>"
+        status: built
+        fields: { <<: [*other_header, *other_lab], Test Date: testDate, Findings: value, Result: findings }
+      # Parameter-list tests. Header from the root, rows in parameters[].
+      - ui_keys: [cbc_group, lft, lipids, ogtt_group, rua_group, sma12_group, tft_group, s13_group]
+        request_path: "sections.<ui_key>"
+        status: built
+        fields: { <<: *other_header, Date: date }
+        parameters:
+          cardinality: "1:N, one item per UI row"
+          item:
+            paramId: "echoed"
+            id: "echoed"
+            parameter: "row name"
+            value: "Value"
+            labRangeStart: "Normal Range from"
+            labRangeEnd: "Normal Range to"
+            unit: "Unit"
+            findings: "computed: ABNORMAL / NORMAL"
+
+# ============================================================================
+# MENU 6 - DECISION
+# ============================================================================
+  - menu: decision
+    label: "Decision"
+    sections:
+      - ui_key: bre_medical_decision
+        api_key: bre_medical_decision
+        status: not_sent
+      - ui_key: decision
+        request_path: sections.decision
+        status: built
+        fields: { Medical Decision: medicalDecision }       # dropdown Standard / Non-Standard
+        # Always editable (no Edit toggle, Save only).
+
+# ============================================================================
+# REQUEST SECTIONS IN THE SAMPLE WITH NO UI SAVE PATH
+# ============================================================================
+unmapped_request_sections:
+  - api_key: application_form_medical
+    note: "Display-only in the UI; not built."
+  - api_key: bre_medical_decision
+    note: "Display-only in the UI; not built."
+  - api_key: tele_mer.stp_details
+    note: "Not edited on this screen; not built."

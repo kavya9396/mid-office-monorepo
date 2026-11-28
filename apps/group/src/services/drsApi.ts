@@ -22,10 +22,8 @@ import {
 import { getGroupDrsTaskConfig } from "../config/drsTaskConfig";
 import groupDrsMock from "../modules/drs/mock/groupDrs.json";
 import refCmoDrsMock from "../modules/drs/mock/ref-cmo-drs.json";
-import hoCmoSpecialDrsMock from "../modules/drs/mock/ho-cmo-special-drs.json";
-import hoCmoReferralDrsMock from "../modules/drs/mock/ho-cmo-referral-drs.json";
-import vendorCmoEcgDrsMock from "../modules/drs/mock/vendor-cmo-ecg-drs.json";
-import vendorCmoTmtDrsMock from "../modules/drs/mock/vendor-cmo-tmt-drs.json";
+import hoCmoDrsMock from "../modules/drs/mock/ho-cmo-drs.json";
+import vendorCmoDrsMock from "../modules/drs/mock/vendor-cmo-drs.json";
 import guwDrsMock from "../../../../mock/drs/guw-informal-drs.json";
 import guwHodDrsMock from "../../../../mock/drs/guw-hod-drs.json";
 import guwSrUwDrsMock from "../../../../mock/drs/guw-sr-uw-drs.json";
@@ -128,10 +126,8 @@ export type CmoDrsQueryArg = {
 /** Mock CMO payloads, keyed by inbox `roleType`. */
 const CMO_DRS_MOCK_BY_ROLE: Record<string, unknown> = {
   REF_CMO_TASK: refCmoDrsMock,
-  HO_CMO_SPECIAL_TASK: hoCmoSpecialDrsMock,
-  HO_CMO_REFERRAL_TASK: hoCmoReferralDrsMock,
-  VENDOR_CMO_ECG_TASK: vendorCmoEcgDrsMock,
-  VENDOR_CMO_TMT_TASK: vendorCmoTmtDrsMock,
+  HO_CMO_TASK: hoCmoDrsMock,
+  VENDOR_CMO_TASK: vendorCmoDrsMock,
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -1036,7 +1032,10 @@ export const groupDrsApi = createApi({
         };
         try {
           if (useMock) {
-            const mock = CMO_DRS_MOCK_BY_ROLE[roleType.toUpperCase()] ?? refCmoDrsMock;
+            const mock = CMO_DRS_MOCK_BY_ROLE[roleType.toUpperCase()];
+            if (mock === undefined) {
+              return { error: customError(`CMO DRS mock is not configured for ${roleType}.`) };
+            }
             return { data: mapGuwDrsPayload(mock, memberId) };
           }
           const drsDataUrl = groupBusinessUrls.drsData;

@@ -1075,6 +1075,7 @@ export const FINANCIAL_DATE_FORMAT = "DD/MM/YYYY";
 export const FINANCIAL_MESSAGES = {
   sectionNotFound: "No financial section found.",
   documents: "Financial documents are available in the source application.",
+  documentsUnavailable: "Financial documents link is not available.",
   submitted: "Financial details submitted successfully.",
   sectionSaved: (title: string) => `${title} saved successfully.`,
   saveFailed: "Unable to save the financial details. Please try again.",

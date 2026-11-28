@@ -3,11 +3,8 @@
  * Structure, field definitions, dropdown options, and validation rules mirror
  * the "View Medical" module of design-reference/ui-prototypes/Group/DVT Informal/dvt-drs.html.
  */
-import {
-  MEDICAL_SCHEMA_EDUCATION,
-  MEDICAL_SCHEMA_GENDER,
-  MEDICAL_SCHEMA_OCCUPATION,
-} from "./medical.schema";
+import { getMasterList } from "@insurance-poc/utils";
+import { getMedicalMasterEntries } from "./medical.schema";
 
 /** [label, value, required?] */
 export type MedicalFieldDef = readonly [
@@ -29,6 +26,7 @@ export interface MedicalFamilyRow {
   age?: string;
   alive?: string;
   health?: string;
+  memberId?: number;
 }
 
 /**
@@ -42,22 +40,65 @@ export type MedicalParameterDef = readonly [
   options?: readonly MedicalOption[],
 ];
 
+/** Fetched entry of one `parameters` row (same index as the row): Value, Normal Range and Unit. */
+export interface MedicalParameterValue {
+  value: string;
+  from: string;
+  to: string;
+  unit: string;
+  paramId?: number;
+  id?: string;
+}
+
+/** One answer option of a questionnaire question, as returned by the master. */
+export interface MedicalQuestionOption {
+  key: string;
+  label: string;
+  /** "Y" makes `remarks` mandatory when this option is selected. */
+  remarksMandatory?: string;
+  /** Child question ids triggered by this option. */
+  subQuestionIds: readonly string[];
+}
+
+/** One question of a questionnaire section (API `question_table` item). */
+export interface MedicalQuestion {
+  id: string;
+  parentId: string | null;
+  /** Option key of `parentId` that shows this question; null when shown on YES / unconditionally. */
+  parentOption: string | null;
+  questionDesc: string;
+  questionDetails: string | null;
+  questionGroup: number;
+  mandatory: boolean;
+  questionType: "TEXT" | "NUMBER" | "SINGLESELECT" | "MULTISELECT";
+  answerType: readonly MedicalQuestionOption[] | null;
+  section: string;
+  response: string | null;
+  remarks: string | null;
+  /** Id of the stored answer, echoed back on save so the API updates it instead of inserting. */
+  responseId?: number | null;
+}
+
 export interface MedicalSection {
   key: string;
   groupKey: string;
   title: string;
+  /** Questions for a `questionnaire` layout, from the API. Replaces `fields` for that layout. */
+  questionnaire?: readonly MedicalQuestion[];
   /**
    * Test-parameter table shown below the field grid. Each row has a Value, a
    * Normal Range (from - to) and a computed Findings (Normal / Abnormal).
    */
   parameters?: readonly MedicalParameterDef[];
+  /** Fetched entries for `parameters`, one per row in the same order. Findings is always computed. */
+  parameterValues?: readonly MedicalParameterValue[];
   /** Heading shown above the `parameters` table. */
   parametersTitle?: string;
   /**
    * Renders a dedicated body instead of the default field grid.
    * `habitAddiction` expects `fields` in groups of three per habit: Indicator, Quantity, No. of Year.
    */
-  layout?: "familyHistory" | "habitAddiction";
+  layout?: "familyHistory" | "habitAddiction" | "questionnaire";
   /**
    * Labels of `fields` shown together as a one-row table below the field grid
    * (e.g. lab Value / Range / Unit / Findings), using the labels as column headers.
@@ -76,6 +117,15 @@ export interface MedicalSection {
   /** Number of columns for the field grid (default 3). */
   cols: number;
   fields: readonly MedicalFieldDef[];
+  /** Section and field metadata from API (retained for save operations). */
+  testDtlId?: number;
+  medAppDtlId?: number;
+  paramId?: number;
+  fieldIds?: Readonly<Record<string, number | null>>;
+  /** Habit sections fetched as an array: API `habitId` per habit (`HABITS[].api`), echoed back on save. */
+  habitIds?: Readonly<Record<string, number>>;
+  /** Blood pressure only: API `readingId` per reading sequence, echoed back on save. */
+  readingIds?: Readonly<Record<string, number>>;
 }
 
 export interface MedicalGroup {
@@ -87,23 +137,42 @@ export interface MedicalGroup {
 export type MedicalControlKind =
   | "text"
   | "number"
-  | "yesNo"
+  /** A plain number that is shown in Indian currency format when not being edited. */
+  | "currency"
+  /** Yes / No from the `misc` master (row type `YESNO`). */
+  | "miscYesNo"
   | "gender"
   | "placeOfExamination"
-  | "education"
-  | "occupation"
+  /** Education from the `misc` master (row type `EDUCATION`). */
+  | "miscEducation"
+  /** Occupation from the `misc` master (row type `OCCUPATION`). */
+  | "miscOccupation"
+  /** Tele/Video MER lists from the `misc` master (row types MED_TELE_DISCLOSURE, MED_TELE_MER_DETAIL, MED_TELE_ADV). */
+  | "teleDisclosure"
+  | "teleMerDetail"
+  | "teleAdversity"
   | "deadOrAlive"
   | "familyRelation"
-  | "build"
-  | "decision"
+  /** Tele family history Health Status from the `misc` master (row type `HLTH_STATUS`). */
+  | "healthStatus"
+  /** Auto populated Findings / Result: shown as text, no dropdown. */
   | "findings"
+  /** `misc` row type `MEDICAL_TYPE`. */
   | "medicalType"
+  /** `misc` row type `METS`. */
   | "mets"
-  | "negativePositive"
-  | "date";
+  | "date"
+  | "time";
 
 export interface MedicalOption {
   label: string;
+  value: string;
+}
+
+/** One entry of `table_of_medical_documents` in the fetch response. `value` is the section key. */
+export interface MedicalDocument {
+  code: string;
+  description: string;
   value: string;
 }
 
@@ -125,81 +194,6 @@ export type MedicalSubmitPayload = {
   reviews: Readonly<Record<string, "agree" | "disagree">>;
 };
 
-export const MEDICAL_YES_NO_OPTIONS: MedicalOption[] = [
-  { label: "Yes", value: "Yes" },
-  { label: "No", value: "No" },
-];
-
-const toMedicalOptions = (values: readonly string[]): MedicalOption[] =>
-  values.map((value) => ({ label: value, value }));
-
-export const MEDICAL_GENDER_OPTIONS: MedicalOption[] =
-  toMedicalOptions(MEDICAL_SCHEMA_GENDER);
-
-export const MEDICAL_PLACE_OF_EXAMINATION_OPTIONS: MedicalOption[] = [
-  { label: "Clinic", value: "Clinic" },
-  { label: "Res/Office", value: "Res/Office" },
-];
-
-export const MEDICAL_EDUCATION_OPTIONS: MedicalOption[] =
-  toMedicalOptions(MEDICAL_SCHEMA_EDUCATION);
-
-export const MEDICAL_OCCUPATION_OPTIONS: MedicalOption[] =
-  toMedicalOptions(MEDICAL_SCHEMA_OCCUPATION);
-
-export const MEDICAL_DEAD_OR_ALIVE_OPTIONS: MedicalOption[] = [
-  { label: "Alive", value: "Alive" },
-  { label: "Dead", value: "Dead" },
-];
-
-export const MEDICAL_FAMILY_RELATION_OPTIONS: MedicalOption[] = [
-  // { label: "Father", value: "Father" },
-  // { label: "Mother", value: "Mother" },
-  { label: "Brother", value: "Brother" },
-  { label: "Sister", value: "Sister" },
-  { label: "Spouse", value: "Spouse" },
-  // { label: "Son", value: "Son" },
-  // { label: "Daughter", value: "Daughter" },
-  // { label: "Grandfather", value: "Grandfather" },
-  // { label: "Grandmother", value: "Grandmother" },
-  // { label: "Other", value: "Other" },  
-];
-
-export const MEDICAL_BUILD_OPTIONS: MedicalOption[] = [
-  { label: "Normal", value: "Normal" },
-  { label: "Thin", value: "Thin" },
-  { label: "Muscular", value: "Muscular" },
-  { label: "Obese", value: "Obese" },
-  { label: "Stocky", value: "Stocky" },
-];
-
-export const MEDICAL_DECISION_OPTIONS: MedicalOption[] = [
-  { label: "Standard", value: "Standard" },
-  { label: "Non-Standard", value: "Non-Standard" },
-];
-
-export const MEDICAL_FINDINGS_OPTIONS: MedicalOption[] = [
-  { label: "Normal", value: "Normal" },
-  { label: "Abnormal", value: "Abnormal" },
-  { label: "Borderline", value: "Borderline" },
-];
-
-export const MEDICAL_NEGATIVE_POSITIVE_OPTIONS: MedicalOption[] = [
-  { label: "Negative", value: "Negative" },
-  { label: "Positive", value: "Positive" },
-];
-
-export const MEDICAL_METS_OPTIONS: MedicalOption[] = [
-  { label: "Good (\u2265 10 METS)", value: "Good (\u2265 10 METS)" },
-];
-
-export const MEDICAL_TYPE_OPTIONS: MedicalOption[] = [
-  { label: "Diagnostic", value: "Diagnostic" },
-  { label: "Pathology", value: "Pathology" },
-  { label: "Radiology", value: "Radiology" },
-  { label: "Special", value: "Special" },
-];
-
 /* ------------------------------------------------------------------ */
 /* 1. OVERVIEW                                                        */
 /* ------------------------------------------------------------------ */
@@ -220,7 +214,7 @@ export const MEDICAL_APPLICATION_FORM_LIFESTYLE_FIELDS: readonly MedicalFieldDef
 ];
 
 export const MEDICAL_APPLICATION_FORM_LIFESTYLE_SECTION: MedicalSection = {
-  key: "application_form_medical_lifestyle",
+  key: "application_form_medical",
   groupKey: "overview",
   title: "Application Form Medical & Lifestyle Details",
   cols: 3,
@@ -270,24 +264,25 @@ export const MEDICAL_MER_SECTION: MedicalSection = {
 };
 
 export const MEDICAL_HABIT_ADDICTIONS_FIELDS: readonly MedicalFieldDef[] = [
-  ["Cigarettes/beedis/cigar", "", true],
-  ["Cigarettes/beedis/cigar Quant", "", false],
-  ["Cigarettes/beedis/cigar Year", "", false],
-  ["Gutka / snuff / paan etc.", "", true],
-  ["Gutka / snuff / paan etc. Quant", "", false],
-  ["Gutka / snuff / paan etc. Year", "", false],
-  ["Narcotic Consumption", "", true],
-  ["Narcotic Consumption Quant", "", false],
-  ["Narcotic Consumption Year", "", false],
-  ["Beer/Wine/Hard liquor", "", true],
-  ["Beer/Wine/Hard liquor Quant", "", false],
-  ["Beer/Wine/Hard liquor Year", "", false],
+  ["Cigarettes/beedis/cigar - Indicator", "", true],
+  ["Cigarettes/beedis/cigar - Quantity", "", false],
+  ["Cigarettes/beedis/cigar - No. of Year", "", false],
+  ["Gutka / snuff / paan etc. - Indicator", "", true],
+  ["Gutka / snuff / paan etc. - Quantity", "", false],
+  ["Gutka / snuff / paan etc. - No. of Year", "", false],
+  ["Narcotic Consumption - Indicator", "", true],
+  ["Narcotic Consumption - Quantity", "", false],
+  ["Narcotic Consumption - No. of Year", "", false],
+  ["Beer/Wine/Hard liquor - Indicator", "", true],
+  ["Beer/Wine/Hard liquor - Quantity", "", false],
+  ["Beer/Wine/Hard liquor - No. of Year", "", false],
 ];
 
 export const MEDICAL_HABIT_ADDICTIONS_SECTION: MedicalSection = {
-  key: "habit_addictions",
+  key: "habit_and_addictions",
   groupKey: "mer",
   title: "Habit and Addictions",
+  layout: "habitAddiction",
   cols: 3,
   selectPlaceholder: "--Select--",
   fields: MEDICAL_HABIT_ADDICTIONS_FIELDS,
@@ -313,7 +308,7 @@ export const MEDICAL_MEASUREMENT_SECTION: MedicalSection = {
 
 /** Family members are added as table rows at runtime, so the section has no fixed fields. */
 export const MEDICAL_FAMILY_HISTORY_SECTION: MedicalSection = {
-  key: "family_history_health_status",
+  key: "family_history",
   groupKey: "mer",
   title: "Family history and health status",
   layout: "familyHistory",
@@ -321,47 +316,219 @@ export const MEDICAL_FAMILY_HISTORY_SECTION: MedicalSection = {
   fields: [],
 };
 
-export const MEDICAL_BP_PULSE_FIELDS: readonly MedicalFieldDef[] = [
-  // 5-column grid: row 1 = Systolic 1-4 + Avg, row 2 = Diastolic 1-4 + Avg, row 3 = Pulse Rate.
-  ["Systolic 1", "", true],
-  ["Systolic 2", "", false],
-  ["Systolic 3", "", false],
-  ["Systolic 4", "", false],
-  ["Avg Systolic", "", false],
-  ["Diastolic 1", "", true],
-  ["Diastolic 2", "", false],
-  ["Diastolic 3", "", false],
-  ["Diastolic 4", "", false],
-  ["Avg Diastolic", "", false],
-  ["Pulse Rate", "", true],
+/** Reading slots (readingId 1-4) always shown; the API can return more, see `createMedicalBpPulseSection`. */
+export const MEDICAL_BP_DEFAULT_READING_IDS: readonly number[] = [1, 2, 3, 4];
+
+/**
+ * Builds the BP & Pulse section for the given reading ids (ascending).
+ * Grid: row 1 = Systolic readings + Avg, row 2 = Diastolic readings + Avg, row 3 = Pulse Rate,
+ * so the grid has one column per reading plus one for the average.
+ */
+export function createMedicalBpPulseSection(readingIds: readonly number[]): MedicalSection {
+  const readings = (prefix: "Systolic" | "Diastolic"): MedicalFieldDef[] =>
+    readingIds.map((id): MedicalFieldDef => [`${prefix} ${id}`, "", id === 1]);
+  return {
+    key: "blood_pressure_and_pulse",
+    groupKey: "mer",
+    title: "Blood pressure and Pulse details",
+    cols: readingIds.length + 1,
+    fields: [
+      ...readings("Systolic"),
+      ["Avg Systolic", "", false],
+      ...readings("Diastolic"),
+      ["Avg Diastolic", "", false],
+      ["Pulse Rate", "", true],
+    ],
+  };
+}
+
+export const MEDICAL_BP_PULSE_SECTION: MedicalSection = createMedicalBpPulseSection(
+  MEDICAL_BP_DEFAULT_READING_IDS,
+);
+
+export const MEDICAL_BP_PULSE_FIELDS: readonly MedicalFieldDef[] = MEDICAL_BP_PULSE_SECTION.fields;
+
+/**
+ * Questionnaire items: one row per question with Response and Remarks.
+ * The question ID is shown as-is and is the key the API uses for the answer.
+ */
+const QUESTION_TYPES: readonly MedicalQuestion["questionType"][] = [
+  "TEXT",
+  "NUMBER",
+  "SINGLESELECT",
+  "MULTISELECT",
 ];
 
-export const MEDICAL_BP_PULSE_SECTION: MedicalSection = {
-  key: "blood_pressure_pulse_details",
-  groupKey: "mer",
-  title: "Blood pressure and Pulse details",
-  cols: 5,
-  fields: MEDICAL_BP_PULSE_FIELDS,
-};
+/** Multi-select option keys are joined with `#`, both on the screen and in the API. */
+export const MULTI_SELECT_SEPARATOR = "#";
 
-export const MEDICAL_QUESTION_TABLE_FIELDS: readonly MedicalFieldDef[] = [
-  ["Are you the examinees medical attendant?", "", true],
-  ["Is there any abnormality in general appearance?", "", true],
-  ["Describe Build", "", true],
-  ["Has there been any significant weight gain or weight loss?", "", true],
-  ["Has been hospitalized for accident/Medical treatment/Surgery?", "", true],
-  ["Any history of Cardiovascular disease / Hypertension / Diabetes?", "", true],
-  ["Any Respiratory / Asthma / TB / Lungs disorder?", "", true],
-  ["Any Gastrointestinal / Liver / Kidney disorder?", "", true],
-  ["Any Neurological / Psychiatric disorder / Epilepsy?", "", true],
-];
+/** Splits a multi-select answer into its option keys. */
+export function splitMultiSelect(value: string): string[] {
+  return value.split(MULTI_SELECT_SEPARATOR).filter(Boolean);
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function parseQuestionRows(raw: readonly unknown[]): readonly MedicalQuestion[] {
+  return raw.map((row, index) => {
+    if (!isRecord(row)) {
+      throw new Error(`Questionnaire row ${index} is not an object`);
+    }
+    const inferredType =
+      QUESTION_TYPES.find((type) => type === row.questionType) ??
+      (Array.isArray(row.answerType) && row.answerType.length > 0
+        ? "SINGLESELECT"
+        : "TEXT");
+    if (
+      typeof row.id !== "string" ||
+      typeof row.questionDesc !== "string"
+    ) {
+      throw new TypeError(`Questionnaire row ${index} has an invalid id or question`);
+    }
+    const answerType = Array.isArray(row.answerType)
+      ? row.answerType.map((option: Record<string, unknown>) => ({
+          key: String(option.key),
+          label: String(option.label),
+          subQuestionIds: Array.isArray(option.subQuestionIds)
+            ? option.subQuestionIds.map(String)
+            : [],
+          // V4 sends `remarkMandatory: true`; the earlier contract sent `remarksMandatory: "Y"`.
+          ...(option.remarksMandatory === "Y" || option.remarkMandatory === true
+            ? { remarksMandatory: "Y" }
+            : {}),
+        }))
+      : null;
+    return {
+      id: row.id,
+      parentId: typeof row.parentId === "string" ? row.parentId : null,
+      parentOption: typeof row.parentOption === "string" ? row.parentOption : null,
+      questionDesc: row.questionDesc,
+      questionDetails: typeof row.questionDetails === "string" ? row.questionDetails : null,
+      questionGroup: Number(row.questionGroup ?? 0),
+      mandatory: row.mandatory === true,
+      questionType: inferredType,
+      answerType,
+      section: String(row.section),
+      response: typeof row.response === "string" ? row.response : null,
+      remarks: typeof row.remarks === "string" ? row.remarks : null,
+      responseId: typeof row.responseId === "number" ? row.responseId : null,
+    };
+  });
+}
+
+/**
+ * Yes / No questions use the `misc` master rows of type `YESNO`: their options (key = master code,
+ * label = master description), the stored response and the `parentOption` of their sub-questions are
+ * switched from the API's `YES` / `NO` to the master codes. A question counts as Yes / No when it has
+ * two options and each is a master Yes / No entry (by code or description). Left unchanged while the
+ * master is not loaded.
+ */
+function wireYesNoQuestionsToMaster(
+  questions: readonly MedicalQuestion[],
+): readonly MedicalQuestion[] {
+  const master = getMedicalMasterEntries("misc", "YESNO");
+  if (master.length === 0) return questions;
+  const isSame = (text: string, entry: MedicalOption) => {
+    const lower = text.trim().toLowerCase();
+    return lower === entry.value.toLowerCase() || lower === entry.label.toLowerCase();
+  };
+  const keyMaps = new Map<string, Map<string, string>>();
+  const wired = questions.map((question) => {
+    const options = question.answerType;
+    if (
+      options?.length !== 2 ||
+      !options.every((option) => master.some((entry) => isSame(option.key, entry)))
+    ) {
+      return question;
+    }
+    const keyMap = new Map<string, string>();
+    const answerType = master.map((entry) => {
+      const old = options.find((option) => isSame(option.key, entry));
+      if (old) keyMap.set(old.key, entry.value);
+      return {
+        key: entry.value,
+        label: entry.label,
+        subQuestionIds: old?.subQuestionIds ?? [],
+        ...(old?.remarksMandatory ? { remarksMandatory: old.remarksMandatory } : {}),
+      };
+    });
+    keyMaps.set(question.id, keyMap);
+    const response =
+      question.response === null
+        ? null
+        : (master.find((entry) => isSame(question.response ?? "", entry))?.value ?? question.response);
+    return { ...question, answerType, response };
+  });
+  return wired.map((question) => {
+    const mapped =
+      question.parentId !== null && question.parentOption !== null
+        ? keyMaps.get(question.parentId)?.get(question.parentOption)
+        : undefined;
+    return mapped === undefined ? question : { ...question, parentOption: mapped };
+  });
+}
+
+/**
+ * Validates a questionnaire list from the API against `MedicalQuestion`.
+ * Throws on an unknown shape so bad data fails loudly, instead of a cast.
+ */
+export function parseMedicalQuestionnaire(raw: readonly unknown[]): readonly MedicalQuestion[] {
+  return wireYesNoQuestionsToMaster(parseQuestionRows(raw));
+}
+
+/**
+ * Returns the questions to show for a questionnaire. A question with a `parentId` is shown only when
+ * its parent is shown and its trigger is met: `parentOption` must be among the parent's selected keys
+ * (multi-select). When `parentOption` is null, the question is shown when the parent's response is "Y",
+ * when a selected option of the parent lists the question in its `subQuestionIds`, or when the parent has
+ * no options (text / number) and is itself shown.
+ * `responseOf` returns the stored response for a question id ("" when unanswered).
+ */
+export function getVisibleMedicalQuestions(
+  questions: readonly MedicalQuestion[],
+  responseOf: (questionId: string) => string,
+): readonly MedicalQuestion[] {
+  const byId = new Map(questions.map((question) => [question.id, question]));
+  const visible = new Map<string, boolean>();
+
+  const isVisible = (question: MedicalQuestion): boolean => {
+    const cached = visible.get(question.id);
+    if (cached !== undefined) return cached;
+    let result = true;
+    if (question.parentId !== null) {
+      const parent = byId.get(question.parentId);
+      if (!parent || !isVisible(parent)) {
+        result = false;
+      } else if (question.parentOption === null) {
+        const response = responseOf(parent.id);
+        const selected = splitMultiSelect(response);
+        const hasOptions = (parent.answerType?.length ?? 0) > 0;
+        const listedBySelectedOption =
+          parent.answerType?.some(
+            (option) => selected.includes(option.key) && option.subQuestionIds.includes(question.id),
+          ) ?? false;
+        result = ["Y", "YES"].includes(response) || listedBySelectedOption || !hasOptions;
+      } else {
+        result = splitMultiSelect(responseOf(parent.id)).includes(question.parentOption);
+      }
+    }
+    visible.set(question.id, result);
+    return result;
+  };
+
+  return questions.filter(isVisible);
+}
 
 export const MEDICAL_QUESTION_TABLE_SECTION: MedicalSection = {
   key: "question_table",
   groupKey: "mer",
   title: "Question Table",
+  layout: "questionnaire",
   cols: 3,
-  fields: MEDICAL_QUESTION_TABLE_FIELDS,
+  fields: [],
+  questionnaire: [],
 };
 
 /* ------------------------------------------------------------------ */
@@ -421,12 +588,16 @@ export const MEDICAL_TELE_MEASUREMENT_SECTION: MedicalSection = {
 const MEDICAL_TELE_MER_CONTROL_KINDS: Readonly<Record<string, MedicalControlKind>> = {
   Gender: "gender",
   "Date of Birth": "date",
-  "Telephonic MER": "yesNo",
-  Education: "education",
-  Occupation: "occupation",
-  "Annual Income": "number",
-  "Previous Insurance Declined": "yesNo",
-  "Medical Treatment": "yesNo",
+  "Telephonic MER": "miscYesNo",
+  Education: "miscEducation",
+  Occupation: "miscOccupation",
+  Disclosure: "teleDisclosure",
+  "MER Detail": "teleMerDetail",
+  "Annual Income": "currency",
+  "Previous Insurance Declined": "miscYesNo",
+  "Medical Treatment": "miscYesNo",
+  Adversity: "teleAdversity",
+  "Time of Tele call": "time",
 };
 
 export const MEDICAL_TELE_FAMILY_HISTORY_SECTION: MedicalSection = {
@@ -463,21 +634,14 @@ export const MEDICAL_TELE_HABIT_ADDICTION_SECTION: MedicalSection = {
   fields: MEDICAL_TELE_HABIT_ADDICTION_FIELDS,
 };
 
-export const MEDICAL_TELE_QUESTION_TABLE_FIELDS: readonly MedicalFieldDef[] = [
-  ["Are you the examinees medical attendant?", "", true],
-  ["Is there any abnormality in general appearance?", "", true],
-  ["Describe Build", "", true],
-  ["Has there been any significant weight gain or loss?", "", true],
-  ["Any history of serious illness or surgery?", "", true],
-  ["Any chronic medical condition?", "", true],
-];
-
 export const MEDICAL_TELE_QUESTION_TABLE_SECTION: MedicalSection = {
   key: "tele_question_table",
   groupKey: "tele_video_mer",
   title: "Question Table",
+  layout: "questionnaire",
   cols: 3,
-  fields: MEDICAL_TELE_QUESTION_TABLE_FIELDS,
+  fields: [],
+  questionnaire: [],
 };
 
 export const MEDICAL_TELE_DISPOSITION_FIELDS: readonly MedicalFieldDef[] = [
@@ -527,8 +691,6 @@ export const MEDICAL_BLOOD_UREA_FIELDS: readonly MedicalFieldDef[] = [
   ["Medical Type", "", true],
   ["Test Date", "", true],
   ["Findings", "", true],
-  ["Blood Urea", "", false],
-  ["BUN", "", false],
   ["Result", "", false],
   ["Examinee Name", "", false],
   ["Examinee Age", "", false],
@@ -539,7 +701,7 @@ export const MEDICAL_BLOOD_UREA_FIELDS: readonly MedicalFieldDef[] = [
 ];
 
 export const MEDICAL_BLOOD_UREA_SECTION: MedicalSection = {
-  key: "blood_urea_nitro",
+  key: "blood_urea_and_nitro",
   groupKey: "special_medical",
   title: "BLOOD UREA and NITRO",
   cols: 3,
@@ -584,7 +746,7 @@ const MEDICAL_STRESS_ECHO_FIELDS: readonly MedicalFieldDef[] = [
 ];
 
 export const MEDICAL_DOBUTAMINE_STRESS_ECHO_SECTION: MedicalSection = {
-  key: "dobutamine_stress_echo",
+  key: "dobutamine_stress_echocardiogram",
   groupKey: "special_medical",
   title: "DOBUTAMINE STRESS ECHOCARDIOGRAM",
   cols: 3,
@@ -593,7 +755,7 @@ export const MEDICAL_DOBUTAMINE_STRESS_ECHO_SECTION: MedicalSection = {
 };
 
 export const MEDICAL_EXERCISE_STRESS_ECHO_SECTION: MedicalSection = {
-  key: "exercise_stress_echo",
+  key: "exercise_stress_echocardiogram",
   groupKey: "special_medical",
   title: "EXERCISE STRESS ECHOCARDIOGRAM",
   cols: 3,
@@ -1423,12 +1585,190 @@ export const MEDICAL_GROUPS: readonly MedicalGroup[] = [
   },
 ];
 
+export const TELEMER_SECTIONS: readonly MedicalSection[] = [
+  MEDICAL_APPLICATION_FORM_LIFESTYLE_SECTION,
+  MEDICAL_TELE_MER_SECTION,
+  MEDICAL_TELE_MEASUREMENT_SECTION,
+  MEDICAL_TELE_FAMILY_HISTORY_SECTION,
+  MEDICAL_TELE_HABIT_ADDICTION_SECTION,
+  MEDICAL_TELE_QUESTION_TABLE_SECTION,
+  MEDICAL_TELE_DISPOSITION_SECTION,
+];
+
+export const TELEMER_GROUPS: readonly MedicalGroup[] = [
+  {
+    key: "overview",
+    name: "Overview",
+    sections: [MEDICAL_APPLICATION_FORM_LIFESTYLE_SECTION],
+  },
+  {
+    key: "tele_video_mer",
+    name: "TELE-VIDEO MER",
+    sections: [
+      MEDICAL_TELE_MER_SECTION,
+      MEDICAL_TELE_MEASUREMENT_SECTION,
+      MEDICAL_TELE_FAMILY_HISTORY_SECTION,
+      MEDICAL_TELE_HABIT_ADDICTION_SECTION,
+      MEDICAL_TELE_QUESTION_TABLE_SECTION,
+      MEDICAL_TELE_DISPOSITION_SECTION,
+    ],
+  },
+];
+
+/**
+ * Groups edited as one unit: the group's first section (MER, Tele MER) carries the single
+ * Edit / Save / Reset, and the remaining sub sections follow it. Only the first section is
+ * offered in the document dropdown.
+ */
+export const MEDICAL_COMBINED_GROUP_KEYS: readonly string[] = ["mer", "tele_video_mer"];
+
 /** Sections that are display-only: no Edit / Save / Reset buttons and not offered in the document dropdown. */
 export const MEDICAL_NON_EDITABLE_SECTION_KEYS: readonly string[] = [
   MEDICAL_APPLICATION_FORM_LIFESTYLE_SECTION.key,
   MEDICAL_BRE_DECISION_SECTION.key,
   MEDICAL_DECISION_SECTION.key,
 ];
+
+/**
+ * How a section's action buttons behave.
+ * - "edit":          Edit / Reset / Save
+ * - "review":        Agree button only
+ * - "editAndReview": Edit / Reset / Save and the Agree button
+ * - "readOnly":      no edit or review buttons, the section cannot be edited
+ * The History button is not an action on the data, so it is shown in every mode.
+ */
+export type MedicalActionMode = "edit" | "review" | "editAndReview" | "readOnly";
+
+/** Which sections and buttons a screen shows on the Medical page. Each app supplies its own values per screen. */
+export interface MedicalActionsConfig {
+  /**
+   * Section keys that are not rendered at all (cards, navigation, document dropdown), even when
+   * the API returns them. Omit to show every section the API returns.
+   */
+  hiddenSectionKeys?: readonly string[];
+  /**
+   * Mode for every section without an entry in `sectionModes`. Display-only sections (see
+   * `MEDICAL_NON_EDITABLE_SECTION_KEYS`) stay read-only unless listed in `sectionModes`.
+   * Omit to keep the built-in behaviour ("edit").
+   */
+  defaultMode?: MedicalActionMode;
+  /** Per-section override, keyed by section key (e.g. `ecg`). */
+  sectionModes?: Readonly<Record<string, MedicalActionMode>>;
+}
+
+/**
+ * Action mode of a section: the `actions.sectionModes` entry first, then the built-in behaviour. A
+ * display-only section is read-only; a section the user always fills in (Decision) is never read-only
+ * by default.
+ */
+export function resolveMedicalActionMode(
+  section: { key: string; alwaysEditable?: boolean },
+  actions?: MedicalActionsConfig,
+): MedicalActionMode {
+  const explicit = actions?.sectionModes?.[section.key];
+  if (explicit) return explicit;
+  if (!section.alwaysEditable && MEDICAL_NON_EDITABLE_SECTION_KEYS.includes(section.key)) {
+    return "readOnly";
+  }
+  return actions?.defaultMode ?? "edit";
+}
+
+/** True when the mode shows Edit / Reset / Save. */
+export const medicalModeCanEdit = (mode: MedicalActionMode): boolean =>
+  mode === "edit" || mode === "editAndReview";
+
+/** True when the mode shows the Agree button. */
+export const medicalModeCanReview = (mode: MedicalActionMode): boolean =>
+  mode === "review" || mode === "editAndReview";
+
+/** Drops the sections listed in `hiddenSectionKeys`, and the groups left without a section. */
+export function omitHiddenMedicalSections<
+  TSection extends { key: string },
+  TGroup extends { sections: readonly TSection[] },
+>(
+  sections: readonly TSection[],
+  groups: readonly TGroup[],
+  hiddenSectionKeys: readonly string[] | undefined,
+): { sections: readonly TSection[]; groups: readonly TGroup[] } {
+  if (!hiddenSectionKeys || hiddenSectionKeys.length === 0) return { sections, groups };
+  const isShown = (section: TSection) => !hiddenSectionKeys.includes(section.key);
+  return {
+    sections: sections.filter(isShown),
+    groups: groups
+      .map((group) => ({ ...group, sections: group.sections.filter(isShown) }))
+      .filter((group) => group.sections.length > 0),
+  };
+}
+
+/** `misc` master type that lists every medical document (`MED_DOC_TABLE`). */
+export const MED_DOC_TABLE_MISC_TYPE = "MED_DOC_TABLE";
+
+/**
+ * A document that only titles an accordion (e.g. code `010` MER, with `010.01` MER as the actual
+ * document under it): it has no section of its own.
+ */
+const isMedicalDocumentParent = (
+  document: Pick<MedicalDocument, "code">,
+  documents: readonly Pick<MedicalDocument, "code">[],
+): boolean =>
+  !document.code.includes(".") &&
+  documents.some((other) => other.code.startsWith(`${document.code}.`));
+
+/**
+ * Section keys listed in `table_of_medical_documents`; the `value` of a document is its section key.
+ * A combined group (Tele/Video MER) is listed as one document: when none of its other sections is listed,
+ * its sub sections follow it.
+ */
+export function getMedicalDocumentSectionKeys(
+  documents: readonly MedicalDocument[],
+): ReadonlySet<string> {
+  const keys = new Set(
+    documents
+      .filter((document) => !isMedicalDocumentParent(document, documents))
+      .map((document) => document.value),
+  );
+  MEDICAL_GROUPS.filter((group) => MEDICAL_COMBINED_GROUP_KEYS.includes(group.key)).forEach((group) => {
+    const [first, ...rest] = group.sections;
+    if (first && keys.has(first.key) && !rest.some((section) => keys.has(section.key))) {
+      rest.forEach((section) => keys.add(section.key));
+    }
+  });
+  return keys;
+}
+
+/**
+ * Options of the "Search and add new document" list: the active `MED_DOC_TABLE` documents of the master
+ * data that can be added (`offerableKeys`) and are not shown yet. The value is the section key. Returns
+ * `undefined` when the master is not loaded, so the caller can fall back to the built-in catalog.
+ */
+export function buildMedicalDocumentOptions(
+  shownKeys: ReadonlySet<string>,
+  offerableKeys: ReadonlySet<string>,
+): MedicalOption[] | undefined {
+  const entries = getMasterList("misc", MED_DOC_TABLE_MISC_TYPE)
+    .filter((entry) => entry.isActive === "Y")
+    .map((entry) => ({
+      code: entry.code,
+      description: entry.description,
+      value: entry.value ?? "",
+    }));
+  if (entries.length === 0) return undefined;
+  const seen = new Set<string>();
+  return entries.flatMap((entry) => {
+    const key = entry.value;
+    if (
+      key === "" ||
+      seen.has(key) ||
+      isMedicalDocumentParent(entry, entries) ||
+      !offerableKeys.has(key) ||
+      shownKeys.has(key)
+    ) {
+      return [];
+    }
+    seen.add(key);
+    return [{ label: entry.description, value: key }];
+  });
+}
 
 export const MEDICAL_LOCKED_FIELDS: ReadonlySet<string> = new Set<string>([
   "Application No.",
@@ -1442,6 +1782,7 @@ export const MEDICAL_LOCKED_FIELDS: ReadonlySet<string> = new Set<string>([
   "Heart Rate Result",
   "Physical Medical Decision",
   "Tele/Video MER Decision",
+  "Tele Type",
   "MunichRe Medical Decision",
   "MunichRe Rating",
   "BIU Medical Status",
@@ -1473,8 +1814,13 @@ export const MEDICAL_DATE_FORMAT = "DD/MM/YYYY";
 
 export const MEDICAL_MESSAGES = {
   documents: "Medical documents are available in the source application.",
+  documentsUnavailable: "Medical documents link is not available.",
   submitted: "Medical details submitted successfully.",
+  unsavedChanges: "Please save the medical details before submitting.",
   sectionSaved: (title: string) => `${title} saved successfully.`,
+  saveFailed: "Unable to save the medical details.",
+  sessionMissing: "Your session has expired. Please sign in again.",
+  partyMissing: "Unable to save: the applicant's party id is missing.",
   sectionNotFound: "No medical section found.",
   validationFailed: "Please correct the highlighted fields.",
   noHistory: "No history available for this section.",
@@ -1517,7 +1863,7 @@ const MEDICAL_IDENTITY_LABEL_RULES: readonly MedicalLabelRule[] = [
   [/^(Examinee )?Gender$/i, "gender"],
   [/^Unit Value$/i, "text"],
   [/^Place of Examination$/i, "placeOfExamination"],
-  [/Medical Decision|^STP Decision$/i, "decision"],
+  [/Medical Decision|^STP Decision$/i, "text"],
 ];
 
 const MEDICAL_RESULT_LABEL_RULES: readonly MedicalLabelRule[] = [
@@ -1529,16 +1875,15 @@ const MEDICAL_RESULT_LABEL_RULES: readonly MedicalLabelRule[] = [
 const MEDICAL_GENERAL_LABEL_RULES: readonly MedicalLabelRule[] = [
   // Habit & Addictions: "<habit> Quant" / "<habit> Year" are numeric; the habit itself is Yes/No.
   [/ (Quant|Year)$/i, "number"],
-  [/^Narcotic Consumption$/i, "yesNo"],
+  [/^Narcotic Consumption$/i, "miscYesNo"],
   [/Dead or Alive/i, "deadOrAlive"],
   [/^Relation Type$/i, "familyRelation"],
-  [/Describe Build/i, "build"],
   [
-    /^(Is\b|Tele-Video MER Conducted|Verified|Smoking|Diving|Tobacco|Alcohol|Narcotics|Adverse|Hazardous|Illness|Any\b|Cigarettes|Gutka|Beer)/i,
-    "yesNo",
+    /^(Is\b|Tele-Video MER Conducted|Verified|Family History As Per|Smoking|Diving|Tobacco|Alcohol|Narcotics|Adverse|Hazardous|Illness|Any\b|Cigarettes|Gutka|Beer)/i,
+    "miscYesNo",
   ],
-  [/Examinee Education/i, "education"],
-  [/Examinee Occupation/i, "occupation"],
+  [/Examinee Education/i, "miscEducation"],
+  [/Examinee Occupation/i, "miscOccupation"],
   [/(DOB|Date of Examination|Date of Tele-Video|\bDate\b|Test Date)/i, "date"],
   ...MEDICAL_NUMERIC_LABEL_PATTERNS.map(
     (pattern): MedicalLabelRule => [pattern, "number"],
@@ -1552,21 +1897,21 @@ const MEDICAL_NUMERIC_FINDINGS_SECTION_KEYS: ReadonlySet<string> = new Set([
   MEDICAL_PSA_SECTION.key,
 ]);
 
-const MEDICAL_NEGATIVE_POSITIVE_VALUE_SECTION_KEYS: ReadonlySet<string> =
-  new Set([
-    MEDICAL_COT_SECTION.key,
-    MEDICAL_HBSAG_SECTION.key,
-    MEDICAL_HIV_ELISA_SECTION.key,
-    MEDICAL_SERUM_COTININE_SECTION.key,
-    MEDICAL_HIV_WESTERN_BLOT_SECTION.key,
-    MEDICAL_HCV_SECTION.key,
-  ]);
+/** MER fields whose Yes / No options come from the `misc` master (row type `YESNO`). */
+const MEDICAL_MER_MISC_YES_NO_LABELS: ReadonlySet<string> = new Set([
+  "Is MER name same as proposal name?",
+  "Is Identity Proof and Application Photo Match",
+  "Any previous life Insurance policy decline/Postpone/issued on revised term SD",
+]);
 
 /** Rules that depend on the section as well as the label; undefined when none apply. */
 function resolveSectionLabelKind(
   sectionKey: string,
   label: string,
 ): MedicalControlKind | undefined {
+  if (sectionKey === MEDICAL_MER_SECTION.key && MEDICAL_MER_MISC_YES_NO_LABELS.has(label)) {
+    return "miscYesNo";
+  }
   if (MEDICAL_NUMERIC_FINDINGS_SECTION_KEYS.has(sectionKey) && label === "Findings") {
     return "number";
   }
@@ -1587,8 +1932,11 @@ export function resolveMedicalControlKind(
   if (sectionKey === MEDICAL_TELE_MER_SECTION.key) {
     return MEDICAL_TELE_MER_CONTROL_KINDS[label] ?? "text";
   }
-  if (sectionKey === MEDICAL_TELE_HABIT_ADDICTION_SECTION.key) {
-    return label.endsWith(" - Indicator") ? "yesNo" : "number";
+  if (
+    sectionKey === MEDICAL_TELE_HABIT_ADDICTION_SECTION.key ||
+    sectionKey === MEDICAL_HABIT_ADDICTIONS_SECTION.key
+  ) {
+    return label.endsWith(" - Indicator") ? "miscYesNo" : "number";
   }
 
   const identityKind = matchLabelRule(MEDICAL_IDENTITY_LABEL_RULES, label);
@@ -1600,44 +1948,32 @@ export function resolveMedicalControlKind(
   const resultKind = matchLabelRule(MEDICAL_RESULT_LABEL_RULES, label);
   if (resultKind) return resultKind;
 
-  if (MEDICAL_NEGATIVE_POSITIVE_VALUE_SECTION_KEYS.has(sectionKey) && label === "Value") {
-    return "negativePositive";
-  }
-
   return matchLabelRule(MEDICAL_GENERAL_LABEL_RULES, label) ?? "text";
 }
 
-export function getMedicalOptions(
-  kind: MedicalControlKind,
-): MedicalOption[] {
-  switch (kind) {
-    case "yesNo":
-      return MEDICAL_YES_NO_OPTIONS;
-    case "gender":
-      return MEDICAL_GENDER_OPTIONS;
-    case "placeOfExamination":
-      return MEDICAL_PLACE_OF_EXAMINATION_OPTIONS;
-    case "education":
-      return MEDICAL_EDUCATION_OPTIONS;
-    case "occupation":
-      return MEDICAL_OCCUPATION_OPTIONS;
-    case "deadOrAlive":
-      return MEDICAL_DEAD_OR_ALIVE_OPTIONS;
-    case "familyRelation":
-      return MEDICAL_FAMILY_RELATION_OPTIONS;
-    case "build":
-      return MEDICAL_BUILD_OPTIONS;
-    case "decision":
-      return MEDICAL_DECISION_OPTIONS;
-    case "findings":
-      return MEDICAL_FINDINGS_OPTIONS;
-    case "medicalType":
-      return MEDICAL_TYPE_OPTIONS;
-    case "mets":
-      return MEDICAL_METS_OPTIONS;
-    case "negativePositive":
-      return MEDICAL_NEGATIVE_POSITIVE_OPTIONS;
-    default:
-      return [];
-  }
+/** Post-login master list (and `misc` row type) behind each dropdown control kind. */
+const MEDICAL_MASTER_KINDS: Readonly<Partial<Record<MedicalControlKind, readonly [string, string?]>>> = {
+  gender: ["gender"],
+  miscYesNo: ["misc", "YESNO"],
+  placeOfExamination: ["misc", "EXAM_PL"],
+  miscEducation: ["misc", "EDUCATION"],
+  miscOccupation: ["misc", "OCCUPATION"],
+  teleDisclosure: ["misc", "MED_TELE_DISCLOSURE"],
+  teleMerDetail: ["misc", "MED_TELE_MER_DETAIL"],
+  teleAdversity: ["misc", "MED_TELE_ADV"],
+  deadOrAlive: ["misc", "DEAD_ALIVE"],
+  familyRelation: ["misc", "RELATION"],
+  healthStatus: ["misc", "HLTH_STATUS"],
+  medicalType: ["misc", "MEDICAL_TYPE"],
+  mets: ["misc", "METS"],
+};
+
+/** True when the control is a dropdown, even while its master list is still empty. */
+export const isMedicalDropdownKind = (kind: MedicalControlKind): boolean =>
+  MEDICAL_MASTER_KINDS[kind] !== undefined;
+
+/** Options of a control kind: the active entries of the post-login master (value = code, label = description). */
+export function getMedicalOptions(kind: MedicalControlKind): MedicalOption[] {
+  const source = MEDICAL_MASTER_KINDS[kind];
+  return source ? getMedicalMasterEntries(source[0], source[1]) : [];
 }
