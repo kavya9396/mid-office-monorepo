@@ -149,6 +149,12 @@ export const groupBusinessUrls = {
   get claimAuditList(): string {
     return configuredUrl(import.meta.env.VITE_GROUP_CLAIM_AUDIT_LIST_API);
   },
+  get reinsurerReferral(): string {
+    return configuredUrl(import.meta.env.VITE_GROUP_REINSURER_REFERRAL_API);
+  },
+  get referralSheetSave(): string {
+    return configuredUrl(import.meta.env.VITE_GROUP_REFERRAL_SHEET_SAVE_API);
+  },
   get financialFetch(): string {
     return configuredUrl(import.meta.env.VITE_FINANCIAL_FETCH_API);
   },
@@ -194,6 +200,12 @@ export const retailBusinessUrls = {
   },
   get claimAuditList(): string {
     return configuredUrl(import.meta.env.VITE_RETAIL_CLAIM_AUDIT_LIST_API);
+  },
+  get reinsurerReferral(): string {
+    return configuredUrl(import.meta.env.VITE_RETAIL_REINSURER_REFERRAL_API);
+  },
+  get referralSheetSave(): string {
+    return configuredUrl(import.meta.env.VITE_RETAIL_REFERRAL_SHEET_SAVE_API);
   },
 };
 

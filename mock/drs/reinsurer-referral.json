@@ -1,0 +1,93 @@
+{
+  "applicationNumber": "OB90318772",
+  "scope": "PARTY",
+  "partyId": "PTY1",
+  "product": "ICICI Pru ...",
+  "currentApplicationSa": "7000000",
+  "currentPremium": "12000",
+  "totalSumAssured": "10000000",
+  "natureOfDuty": "",
+  "applicationType": "",
+  "uwName": "",
+  "lifeAssured": { "name": "...", "partyId": "..." },
+  "proposer": { "name": "...", "partyId": "..." },
+  "previousPolicies": [
+    {
+      "policyOrApplicationId": "OB...",
+      "name": "...",
+      "product": "...",
+      "sumAssured": "...",
+      "premium": "...",
+      "proposalStatus": "...",
+      "fundValue": "",
+      "rcd": "",
+      "paidToDate": ""
+    }
+  ],
+  "socialCheck": "...",
+  "financialsOriginal": "...",
+  "financialsReferral": "...",
+  "medicalOriginal": "...",
+  "medicalReferral": "...",
+  "caseFacts": "...",
+  "ourRecommendation": "No remarks provided",
+  "reinsuranceRefNo": "...",
+  "reasonForReferral": "...",
+  "referralSheet": {
+    "socialCheck": "...",
+    "financials": "...",
+    "medical": "...",
+    "caseFacts": "...",
+    "ourRecommendation": "...",
+    "reinsuranceRefNo": "...",
+    "reasonForReferral": "..."
+  },
+  "reinsurerDetails": [
+    {
+      "partyId": "PTY1",
+      "code": "ABC",
+      "reinsurerNameSystem": "Munich Re",
+      "reinsurerNameUw": ""
+    }
+  ],
+  "products": [
+    {
+      "partyId": "PTY1",
+      "code": "ABC",
+      "productCode": "ABC",
+      "lineType": "BASE",
+      "productType": "...",
+      "tsar": "7 cr",
+      "loadingType": "",
+      "loadingValue": "",
+      "term": "",
+      "reinsurerIdSystem": "MR",
+      "reinsurerNameSystem": "Munich Re",
+      "reinsurerNameUw": "",
+      "reinsurerRemarks": "",
+      "reinsurerDecision": "",
+      "reinsurerDecisionId": "",
+      "reinsurerUwDecisionMatch": ""
+    }
+  ],
+  "documents": [
+    {
+      "udsUrnNumber": "URN1",
+      "fileName": "Application Form",
+      "url": "https://udsviewer-uat.../split?...",
+      "selected": true
+    },
+    {
+      "udsUrnNumber": "URN2",
+      "fileName": "PhotoId11 Proof",
+      "url": "https://udsviewer-uat.../split?...",
+      "selected": false
+    },
+    {
+      "udsUrnNumber": "URN3",
+      "fileName": "Address Proof",
+      "url": "https://udsviewer-uat.../split?...",
+      "selected": false
+    }
+  ]
+}

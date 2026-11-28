@@ -10,6 +10,7 @@ import type { PivvDetailRow } from "@insurance-poc/common/pivv-details";
 import type { RequirementItem } from "@insurance-poc/common/requirement-mgmt";
 import type { ComparisonRow } from "@insurance-poc/common/decision-bar";
 import type { RiskCardData, RiskCardField } from "@insurance-poc/common/risk-cards";
+import { mapReferralSheetForm, type ReferralSheetForm } from "@insurance-poc/common/referral-sheet";
 import type { Column } from "@insurance-poc/ui";
 import {
   applyBusinessApiAuthHeaders,
@@ -1098,6 +1099,71 @@ export function mapUsersByRole(payload: unknown): CuwAssigneeOption[] {
       "";
     return fullName ? [{ value: fullName, label: fullName, ntid }] : [];
   });
+}
+
+/** One row of the Reinsurer referral response (`reinsurerDetails[]`), listed in Reinsurer Details. */
+export interface ReinsurerReferralRow {
+  partyId: string;
+  code: string;
+  systemName: string;
+  uwName: string;
+}
+
+/** What the UI uses of the Reinsurer referral response: `reinsurerDetails[]` and `documents[]`. */
+export interface ReinsurerReferralData {
+  reinsurers: ReinsurerReferralRow[];
+  documents: ReinsurerReferralDocument[];
+  /** Editable referral sheet (popup) built from the same response; null when the response has no application. */
+  sheet: ReferralSheetForm | null;
+}
+
+/** One document of the Reinsurer referral response (`documents[]`), listed in Assign Documents. */
+export interface ReinsurerReferralDocument {
+  udsUrnNumber: string;
+  fileName: string;
+  url: string;
+  selected: boolean;
+}
+
+/** Maps `documents[]` of the reinsurer-referral response (the only part the UI uses); rows without a file name are dropped. */
+export function mapReinsurerReferralDocuments(payload: unknown): ReinsurerReferralDocument[] {
+  if (!isRecord(payload)) return [];
+  const root = isRecord(payload.data) ? payload.data : payload;
+  if (!Array.isArray(root.documents)) return [];
+  return root.documents.flatMap((doc) => {
+    if (!isRecord(doc)) return [];
+    const fileName = typeof doc.fileName === "string" ? doc.fileName.trim() : "";
+    if (!fileName) return [];
+    return [
+      {
+        udsUrnNumber: typeof doc.udsUrnNumber === "string" ? doc.udsUrnNumber : "",
+        fileName,
+        url: typeof doc.url === "string" ? doc.url : "",
+        selected: doc.selected === true,
+      },
+    ];
+  });
+}
+
+/** Maps `reinsurerDetails[]` (rows without a code are dropped) and `documents[]` of the reinsurer-referral response. */
+export function mapReinsurerReferral(payload: unknown): ReinsurerReferralData {
+  const root = isRecord(payload) && isRecord(payload.data) ? payload.data : payload;
+  const rawRows = isRecord(root) && Array.isArray(root.reinsurerDetails) ? root.reinsurerDetails : [];
+  const text = (value: unknown): string => (typeof value === "string" ? value.trim() : "");
+  const reinsurers = rawRows.flatMap((row): ReinsurerReferralRow[] => {
+    if (!isRecord(row)) return [];
+    const code = text(row.code);
+    if (!code) return [];
+    return [
+      {
+        partyId: text(row.partyId),
+        code,
+        systemName: text(row.reinsurerNameSystem),
+        uwName: text(row.reinsurerNameUw),
+      },
+    ];
+  });
+  return { reinsurers, documents: mapReinsurerReferralDocuments(payload), sheet: mapReferralSheetForm(payload) };
 }
 
 /* ------------------------------------------------------------------ */

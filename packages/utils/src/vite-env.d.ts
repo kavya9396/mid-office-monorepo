@@ -36,6 +36,8 @@ interface ImportMetaEnv {
   readonly VITE_GROUP_PARALLEL_DECISION_API?: string;
   readonly VITE_GROUP_DVT_VALIDATION_API?: string;
   readonly VITE_GROUP_CLAIM_AUDIT_LIST_API?: string;
+  readonly VITE_GROUP_REINSURER_REFERRAL_API?: string;
+  readonly VITE_GROUP_REFERRAL_SHEET_SAVE_API?: string;
   readonly VITE_FINANCE_SERVICE?: string;
   readonly VITE_FINANCIAL_FETCH_API?: string;
   readonly VITE_FINANCIAL_SAVE_API?: string;
@@ -44,6 +46,8 @@ interface ImportMetaEnv {
   readonly VITE_RETAIL_UW_DECISION_API?: string;
   readonly VITE_RETAIL_PARALLEL_DECISION_API?: string;
   readonly VITE_RETAIL_CLAIM_AUDIT_LIST_API?: string;
+  readonly VITE_RETAIL_REINSURER_REFERRAL_API?: string;
+  readonly VITE_RETAIL_REFERRAL_SHEET_SAVE_API?: string;
   readonly VITE_MMT_GRIEVANCE_FETCH_API?: string;
   readonly VITE_MMT_GRIEVANCE_SAVE_API?: string;
   readonly VITE_MEDICAL_SERVICE?: string;

@@ -23,12 +23,15 @@ import cuwUwDecisionMock from "../../../../mock/drs/cuw-uw-decision.json";
 import cuwClaimAuditListMock from "../../../../mock/drs/cuw-claim-audit-list.json";
 import cuwUwDecisionHistoryMock from "../../../../mock/drs/cuw-uw-decision-history.json";
 import usersByRoleMock from "../../../../mock/drs/users-by-role.json";
+import type { ReferralSheetRequest } from "@insurance-poc/common/referral-sheet";
+import reinsurerReferralMock from "../../../../mock/drs/reinsurer-referral.json";
 import type { CvtEditApplicantValues } from "../modules/drs/CvtEditApplicantDialog";
 import {
   CUW_LOB,
   mapCuwUwDecisions,
   mapDecisionHistory,
   mapRawRequirementRows,
+  mapReinsurerReferral,
   mapReferralDecisionHistory,
   mapRetailDrsPayload,
   mapUsersByRole,
@@ -37,6 +40,7 @@ import {
   type CuwUwDecisionRequest,
   type CuwUwDecisionResult,
   type ReferralDecisionHistoryRow,
+  type ReinsurerReferralData,
   type RetailDrsData,
 } from "./drsService";
 
@@ -425,6 +429,44 @@ export const retailDrsApi = createApi({
         return { data: result.data };
       },
     }),
+    /** Raise Referral > Reinsurer: request is `{ applicationNumber }` only; the UI uses `reinsurerDetails[]` and `documents[]` of the response. */
+    getReinsurerReferral: build.query<ReinsurerReferralData, string>({
+      async queryFn(applicationNumber, _api, _extra, baseQuery) {
+        if (useMock) return { data: mapReinsurerReferral(reinsurerReferralMock) };
+        const referralUrl = retailBusinessUrls.reinsurerReferral;
+        if (referralUrl.length === 0) {
+          return { error: customError("Reinsurer referral API is not configured.") };
+        }
+
+        const result = await baseQuery({
+          url: referralUrl,
+          method: "POST",
+          body: { applicationNumber },
+          headers: { accept: "*/*", "Content-Type": "application/json" },
+        });
+        if (result.error) return { error: result.error };
+        return { data: mapReinsurerReferral(result.data) };
+      },
+    }),
+    /** Referral Sheet popup > Save: the whole (edited) sheet form is the request body; the response is not used. */
+    saveReferralSheet: build.mutation<unknown, ReferralSheetRequest>({
+      async queryFn(arg, _api, _extra, baseQuery) {
+        if (useMock) return { data: null };
+        const saveUrl = retailBusinessUrls.referralSheetSave;
+        if (saveUrl.length === 0) {
+          return { error: customError("Referral sheet save API is not configured.") };
+        }
+
+        const result = await baseQuery({
+          url: saveUrl,
+          method: "POST",
+          body: arg,
+          headers: { accept: "*/*", "Content-Type": "application/json" },
+        });
+        if (result.error) return { error: result.error };
+        return { data: result.data };
+      },
+    }),
     /**
      * Member-level UW decision (decision code + remarks) for the CUW screen.
      * Raise Referral sends an array (one item per referral) and gets one saved decision per item back.
@@ -608,6 +650,8 @@ export const {
   useGetCuwUwDecisionHistoryQuery,
   useGetUsersByRoleQuery,
   useLazyGetCuwClaimAuditListQuery,
+  useGetReinsurerReferralQuery,
+  useSaveReferralSheetMutation,
   useGetCuwUwDecisionMutation,
   useSaveCuwParallelDecisionMutation,
   useGetRetailUwDecisionHistoryQuery,
