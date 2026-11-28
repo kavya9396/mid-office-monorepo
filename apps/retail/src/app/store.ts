@@ -7,6 +7,7 @@ import { retailCvtValidationApi } from "../services/cvtValidationApi";
 import { retailDrsApi } from "../services/drsApi";
 import { retailMmtGrievanceApi } from "../services/mmtGrievanceService";
 import { retailFinancialApi } from "../services/financialApi";
+import { retailMedicalApi } from "../services/medicalApi";
 import { retailInboxApi } from "../services/inboxApi";
 import { retailNsdlApi } from "../services/nsdlApi";
 
@@ -21,6 +22,7 @@ listenerMiddleware.startListening({
     listenerApi.dispatch(retailMmtGrievanceApi.util.resetApiState());
     listenerApi.dispatch(retailBreRetriggerApi.util.resetApiState());
     listenerApi.dispatch(retailFinancialApi.util.resetApiState());
+    listenerApi.dispatch(retailMedicalApi.util.resetApiState());
     listenerApi.dispatch(retailCvtValidationApi.util.resetApiState());
     listenerApi.dispatch(retailNsdlApi.util.resetApiState());
   },
@@ -36,6 +38,7 @@ export const store = configureStore({
     [retailMmtGrievanceApi.reducerPath]: retailMmtGrievanceApi.reducer,
     [retailBreRetriggerApi.reducerPath]: retailBreRetriggerApi.reducer,
     [retailFinancialApi.reducerPath]: retailFinancialApi.reducer,
+    [retailMedicalApi.reducerPath]: retailMedicalApi.reducer,
     [retailCvtValidationApi.reducerPath]: retailCvtValidationApi.reducer,
     [retailNsdlApi.reducerPath]: retailNsdlApi.reducer,
   },
@@ -50,6 +53,7 @@ export const store = configureStore({
         retailMmtGrievanceApi.middleware,
         retailBreRetriggerApi.middleware,
         retailFinancialApi.middleware,
+        retailMedicalApi.middleware,
         retailCvtValidationApi.middleware,
         retailNsdlApi.middleware,
       ),

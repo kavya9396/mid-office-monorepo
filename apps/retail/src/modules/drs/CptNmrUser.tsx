@@ -153,11 +153,24 @@ const CptNmrUser = () => {
     void navigate({ pathname: drsBasePath, search });
   };
 
+  const applicantBanner = (
+    <ApplicantBanner
+      sticky={false}
+      applicationNo={applicationNo}
+      rowDetails={drs.data.rowDetails}
+      rowDetailsOptions={CPT_NMR_BANNER_OPTIONS}
+    />
+  );
+
   if (isFinancialRoute) {
+    if (financialQuery.isLoading || financialQuery.isFetching) {
+      return <CustomLoader message="Loading financial details" />;
+    }
     return (
       <Financial
         applicationNumber={applicationNo}
         partyId={selectedApplicant?.partyId}
+        summary={applicantBanner}
         applicants={applicants.map((applicant) => ({
           key: applicant.id,
           label: applicant.label,
@@ -190,11 +203,7 @@ const CptNmrUser = () => {
         flexDirection: "column",
       }}
     >
-      <ApplicantBanner
-        applicationNo={applicationNo}
-        rowDetails={drs.data.rowDetails}
-        rowDetailsOptions={CPT_NMR_BANNER_OPTIONS}
-      />
+      {applicantBanner}
 
       <QuickLinksModule
         items={CPT_NMR_QUICK_LINKS}

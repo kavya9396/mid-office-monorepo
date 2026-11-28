@@ -1,6 +1,6 @@
 import type { MedicalActionsConfig } from "@insurance-poc/common/medical";
 
-export type RetailMedicalScreen = "cvt" | "cptNmr" | "cuw";
+export type RetailMedicalScreen = "cvt" | "cptNmr" | "cptMr" | "cuw";
 
 /**
  * Which sections and buttons each Retail screen shows on the Medical page.
@@ -22,6 +22,14 @@ export const RETAIL_MEDICAL_ACTIONS_CONFIG: Record<RetailMedicalScreen, MedicalA
     sectionModes: {},
   },
   cptNmr: {
+    hiddenSectionKeys: [
+      "bre_medical_decision", // BRE Medical Decision
+      "decision", // Decision
+    ],
+    defaultMode: "edit",
+    sectionModes: {},
+  },
+  cptMr: {
     hiddenSectionKeys: [
       "bre_medical_decision", // BRE Medical Decision
       "decision", // Decision

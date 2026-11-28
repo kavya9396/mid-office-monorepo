@@ -16,8 +16,6 @@ import {
 } from "@insurance-poc/common/medical";
 import medicalDataFetchMock from "../../../../mock/medical/medical-data-fetch.json";
 
-const MOCK_MEDICAL_DELAY_MS = 100;
-
 export interface MedicalFetchRequest {
   applicationNumber: string;
   partyId: string;
@@ -25,12 +23,6 @@ export interface MedicalFetchRequest {
 
 function customError(error: string): FetchBaseQueryError {
   return { status: "CUSTOM_ERROR", error };
-}
-
-function waitMs(ms: number): Promise<void> {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
 }
 
 function readError(reason: unknown): string {
@@ -46,6 +38,44 @@ function mapBody(body: unknown): { data: MedicalFetchResult | null } | { error: 
   }
 }
 
+type SaveResult = { data: MedicalSaveResponse } | { error: FetchBaseQueryError };
+
+const SAVE_FAILED_MESSAGE = "Unable to save the medical details.";
+
+/**
+ * An HTTP error (e.g. 400 validation) carries the API envelope in its body: keep it, so the screen can
+ * show the message and the field-level errors in `data`.
+ */
+function mapSaveHttpError(error: FetchBaseQueryError): SaveResult {
+  const message = readApiErrorMessage(error, SAVE_FAILED_MESSAGE);
+  const body: unknown = "data" in error ? error.data : undefined;
+  if (typeof body !== "object" || body === null || Array.isArray(body)) {
+    return { error: customError(message) };
+  }
+  return {
+    data: {
+      response_code: typeof error.status === "number" ? error.status : 400,
+      error: true,
+      message,
+      data: "data" in body ? body.data : undefined,
+    },
+  };
+}
+
+/**
+ * A 200 whose body says error / response_code >= 400 is a validation failure: keep the envelope
+ * so the screen shows the API's message and stays in edit mode.
+ */
+function mapSaveFailureBody(body: unknown): MedicalSaveResponse {
+  const failure = body as Partial<MedicalSaveResponse>;
+  return {
+    response_code: typeof failure.response_code === "number" ? failure.response_code : 400,
+    error: true,
+    message: readApiErrorMessage(body, SAVE_FAILED_MESSAGE),
+    data: failure.data,
+  };
+}
+
 export const groupMedicalApi = createApi({
   reducerPath: "groupMedicalApi",
   baseQuery: createBusinessBaseQuery(absoluteApiBaseUrl),
@@ -53,7 +83,6 @@ export const groupMedicalApi = createApi({
     getGroupMedicalDetails: build.query<MedicalFetchResult | null, MedicalFetchRequest>({
       async queryFn(request, _api, _extra, baseQuery) {
         if (useMock) {
-          await waitMs(MOCK_MEDICAL_DELAY_MS);
           return mapBody(medicalDataFetchMock);
         }
         const fetchUrl = groupBusinessUrls.medicalFetch;
@@ -80,7 +109,6 @@ export const groupMedicalApi = createApi({
     saveGroupMedical: build.mutation<MedicalSaveResponse, MedicalSaveRequest>({
       async queryFn(request, _api, _extra, baseQuery) {
         if (useMock) {
-          await waitMs(MOCK_MEDICAL_DELAY_MS);
           // Same envelope as `response_example_shape` in mock/medical/medical-data-save.json.
           return {
             data: {
@@ -106,36 +134,8 @@ export const groupMedicalApi = createApi({
           body: request,
           headers: { accept: "*/*", "Content-Type": "application/json" },
         });
-        // An HTTP error (e.g. 400 validation) carries the API envelope in its body: keep it, so the screen can
-        // show the message and the field-level errors in `data`.
-        if (result.error) {
-          const message = readApiErrorMessage(result.error, "Unable to save the medical details.");
-          const body: unknown = "data" in result.error ? result.error.data : undefined;
-          if (typeof body === "object" && body !== null && !Array.isArray(body)) {
-            return {
-              data: {
-                response_code: typeof result.error.status === "number" ? result.error.status : 400,
-                error: true,
-                message,
-                data: "data" in body ? body.data : undefined,
-              },
-            };
-          }
-          return { error: customError(message) };
-        }
-        // A 200 whose body says error / response_code >= 400 is a validation failure: keep the envelope
-        // so the screen shows the API's message and stays in edit mode.
-        if (isApiFailureBody(result.data)) {
-          const failure = result.data as Partial<MedicalSaveResponse>;
-          return {
-            data: {
-              response_code: typeof failure.response_code === "number" ? failure.response_code : 400,
-              error: true,
-              message: readApiErrorMessage(result.data, "Unable to save the medical details."),
-              data: failure.data,
-            },
-          };
-        }
+        if (result.error) return mapSaveHttpError(result.error);
+        if (isApiFailureBody(result.data)) return { data: mapSaveFailureBody(result.data) };
         return { data: result.data as MedicalSaveResponse };
       },
     }),

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   CustomBox,
   CustomButton,
@@ -8,7 +8,9 @@ import {
   CustomTypography,
   DeleteIcon,
 } from "@insurance-poc/ui";
+import { drsRoutePath } from "@insurance-poc/routes";
 import { clearDrsTaskIds, getDrsRoleLabel, readApiErrorMessage } from "@insurance-poc/utils";
+import { Medical } from "@insurance-poc/common/medical";
 import { QuickLinksModule, type QuickLinkItem } from "@insurance-poc/common/quick-links";
 import { ApplicantProfile } from "@insurance-poc/common/applicant-profile";
 import type { LifeAssuredTab } from "@insurance-poc/common/life-assured";
@@ -21,6 +23,8 @@ import {
 import { getRetailDrsTaskConfig } from "../../config/drsTaskConfig";
 import { useCompleteRetailTaskMutation } from "../../services/completeTaskApi";
 import { useGetRetailDrsQuery, useSaveRetailDrsRequirementsMutation } from "../../services/drsApi";
+import { useGetRetailMedicalDetailsQuery, useSaveRetailMedicalMutation } from "../../services/medicalApi";
+import { RETAIL_MEDICAL_ACTIONS_CONFIG } from "../config/medicalActions.config";
 import { requirementStatusOrder, requirementStatusVariants } from "./requirementData";
 
 /** Row 0 is the product / loan line, row 1 the policy / agent line, row 2 the rider sums assured. */
@@ -44,6 +48,15 @@ const CPT_MR_PROFILE_TABS: LifeAssuredTab[] = ["imageDetails", "personalKyc", "c
 /** Requirement save `lob` for Retail. */
 const RETAIL_LOB = "R";
 
+/** The selected applicant travels in the router's navigation state, so the URL stays `/medical`. */
+type ApplicantRouteState = { applicantId?: string };
+
+const readApplicantId = (state: unknown): string | undefined => {
+  if (typeof state !== "object" || state === null || !("applicantId" in state)) return undefined;
+  const { applicantId } = state as ApplicantRouteState;
+  return typeof applicantId === "string" && applicantId.trim().length > 0 ? applicantId.trim() : undefined;
+};
+
 function readQueryError(error: unknown): string {
   if (typeof error === "object" && error !== null) {
     if ("error" in error && typeof error.error === "string" && error.error.length > 0) {
@@ -61,6 +74,11 @@ const CptMrUser = () => {
   const { applicationNo: applicationNoParam } = useParams();
   const applicationNo = applicationNoParam?.trim() ?? "";
   const navigate = useNavigate();
+  const { search, pathname, state: locationState } = useLocation();
+  const isMedicalRoute = pathname.toLowerCase().includes("/drs/medical");
+  const drsBasePath = applicationNo.length > 0 ? drsRoutePath(applicationNo) : "";
+  const medicalPath = applicationNo.length > 0 ? drsRoutePath(applicationNo, "medical") : "";
+  const currentApplicantId = readApplicantId(locationState);
 
   const drsTaskConfig = getRetailDrsTaskConfig(CPT_MR_ROLE_TYPE);
   const drsQueryArg = { applicationNo, ...drsTaskConfig };
@@ -69,6 +87,14 @@ const CptMrUser = () => {
     // Always hit the DRS API when the screen mounts instead of serving the cached result.
     refetchOnMountOrArgChange: true,
   });
+  const applicants = drs.data?.applicants ?? [];
+  const selectedApplicant = applicants.find((applicant) => applicant.id === currentApplicantId) ?? applicants[0];
+  const activePartyId = selectedApplicant?.partyId ?? "";
+  const medicalQuery = useGetRetailMedicalDetailsQuery(
+    { applicationNumber: applicationNo, partyId: activePartyId },
+    { skip: !isMedicalRoute || !applicationNo || !activePartyId },
+  );
+  const [saveMedical] = useSaveRetailMedicalMutation();
   const [saveRetailDrsRequirements] = useSaveRetailDrsRequirementsMutation();
   const [completeRetailTask, completeRetailTaskState] = useCompleteRetailTaskMutation();
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
@@ -120,6 +146,66 @@ const CptMrUser = () => {
     );
   }
 
+  const closeSubPage = () => {
+    void navigate({ pathname: drsBasePath, search });
+  };
+
+  const applicantBanner = (
+    <ApplicantBanner
+      sticky={false}
+      applicationNo={applicationNo}
+      rowDetails={drs.data.rowDetails}
+      rowDetailsOptions={CPT_MR_BANNER_OPTIONS}
+    />
+  );
+
+  if (isMedicalRoute) {
+    const medicalApplicants = applicants.map((applicant) => ({ key: applicant.id, label: applicant.label }));
+    if (medicalQuery.isLoading || medicalQuery.isFetching) {
+      return <CustomLoader message="Loading medical details" />;
+    }
+    if (medicalQuery.isError) {
+      const message = readApiErrorMessage(medicalQuery.error);
+      return (
+        <CustomBox sx={{ p: 2 }}>
+          <CustomTypography>{message.length > 0 ? message : "Unable to load the medical details."}</CustomTypography>
+        </CustomBox>
+      );
+    }
+    // `null` means the API found no medical record; show that instead of another record.
+    if (medicalQuery.data === null) {
+      return (
+        <CustomBox sx={{ p: 2 }}>
+          <CustomTypography>No medical details found for this applicant.</CustomTypography>
+        </CustomBox>
+      );
+    }
+    return (
+      <Medical
+        // A new key per applicant resets the form state held inside Medical.
+        key={activePartyId}
+        summary={applicantBanner}
+        applicationNumber={applicationNo}
+        partyId={activePartyId}
+        applicants={medicalApplicants.length > 0 ? medicalApplicants : undefined}
+        initialApplicantKey={selectedApplicant?.id}
+        groups={medicalQuery.data?.groups}
+        sections={medicalQuery.data?.sections}
+        history={medicalQuery.data?.history}
+        actions={RETAIL_MEDICAL_ACTIONS_CONFIG.cptMr}
+        onApplicantChange={(applicantKey) => {
+          void navigate(
+            { pathname: medicalPath, search },
+            { replace: true, state: { applicantId: applicantKey } satisfies ApplicantRouteState },
+          );
+        }}
+        onBack={closeSubPage}
+        onSaveSection={(saveRequest) => saveMedical(saveRequest).unwrap()}
+        onSubmit={closeSubPage}
+      />
+    );
+  }
+
   return (
     <CustomBox
       sx={{
@@ -131,11 +217,7 @@ const CptMrUser = () => {
         flexDirection: "column",
       }}
     >
-      <ApplicantBanner
-        applicationNo={applicationNo}
-        rowDetails={drs.data.rowDetails}
-        rowDetailsOptions={CPT_MR_BANNER_OPTIONS}
-      />
+      {applicantBanner}
 
       <QuickLinksModule
         items={CPT_MR_QUICK_LINKS}
@@ -182,7 +264,16 @@ const CptMrUser = () => {
       />
 
       <CustomBox sx={{ display: "flex", justifyContent: "center", gap: "15px", py: 1 }}>
-        <CustomButton>View Medical</CustomButton>
+        <CustomButton
+          onClick={() => {
+            void navigate(
+              { pathname: medicalPath, search },
+              { state: { applicantId: selectedApplicant?.id } satisfies ApplicantRouteState },
+            );
+          }}
+        >
+          View Medical
+        </CustomButton>
         <CustomButton onClick={() => void handleSubmit()} disabled={completeRetailTaskState.isLoading}>
           Submit
         </CustomButton>

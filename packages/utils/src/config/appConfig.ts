@@ -150,10 +150,10 @@ export const groupBusinessUrls = {
     return configuredUrl(import.meta.env.VITE_GROUP_CLAIM_AUDIT_LIST_API);
   },
   get financialFetch(): string {
-    return configuredUrl(import.meta.env.VITE_GROUP_FINANCIAL_FETCH_API);
+    return configuredUrl(import.meta.env.VITE_FINANCIAL_FETCH_API);
   },
   get financialSave(): string {
-    return configuredUrl(import.meta.env.VITE_GROUP_FINANCIAL_SAVE_API);
+    return configuredUrl(import.meta.env.VITE_FINANCIAL_SAVE_API);
   },
   get medicalFetch(): string {
     return configuredUrl(import.meta.env.VITE_MEDICAL_FETCH_API);
@@ -169,10 +169,16 @@ export const retailBusinessUrls = {
     return configuredUrl(import.meta.env.VITE_RETAIL_DRS_DATA_API);
   },
   get financialFetch(): string {
-    return configuredUrl(import.meta.env.VITE_RETAIL_FINANCIAL_FETCH_API);
+    return configuredUrl(import.meta.env.VITE_FINANCIAL_FETCH_API);
   },
   get financialSave(): string {
-    return configuredUrl(import.meta.env.VITE_RETAIL_FINANCIAL_SAVE_API);
+    return configuredUrl(import.meta.env.VITE_FINANCIAL_SAVE_API);
+  },
+  get medicalFetch(): string {
+    return configuredUrl(import.meta.env.VITE_MEDICAL_FETCH_API);
+  },
+  get medicalSave(): string {
+    return configuredUrl(import.meta.env.VITE_MEDICAL_SAVE_API);
   },
   get cvtValidation(): string {
     return configuredUrl(import.meta.env.VITE_RETAIL_CVT_VALIDATION_API);

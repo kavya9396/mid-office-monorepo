@@ -376,6 +376,9 @@ const CvtUser = () => {
   );
 
   if (isFinancialRoute) {
+    if (financialQuery.isLoading || financialQuery.isFetching) {
+      return <CustomLoader message="Loading financial details" />;
+    }
     return (
       <Financial
         applicationNumber={applicationNo}

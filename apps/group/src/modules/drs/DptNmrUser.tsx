@@ -161,6 +161,9 @@ const DptNmrUser = () => {
   );
 
   if (isFinancialRoute) {
+    if (financialQuery.isLoading || financialQuery.isFetching) {
+      return <CustomLoader message="Loading financial details" />;
+    }
     const financialApplicants = applicants.map((applicant) => ({
       key: applicant.id,
       label: applicant.label,

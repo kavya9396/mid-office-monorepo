@@ -285,6 +285,9 @@ const CuwUser = () => {
                 onSubmit={(payload) => console.log("Submit medical", payload)}
               />
             ) : isFinancialRoute ? (
+              financialQuery.isLoading || financialQuery.isFetching ? (
+                <CustomLoader message="Loading financial details" />
+              ) : (
               <Financial
                 applicationNumber={applicationNo}
                 partyId={page.record.partyId || undefined}
@@ -301,6 +304,7 @@ const CuwUser = () => {
                 onSaveSection={(saveRequest) => saveFinancial(saveRequest).unwrap()}
                 onSubmit={closeFinancial}
               />
+              )
             ) : (
             <>
             {/* Summary wrap: risk cards + BRE card */}

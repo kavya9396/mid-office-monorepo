@@ -1,6 +1,6 @@
 import type { MedicalActionsConfig } from "@insurance-poc/common/medical";
 
-export type GroupMedicalScreen = "dvt" | "guw" | "dptNmr";
+export type GroupMedicalScreen = "dvt" | "guw" | "dptNmr" | "dptMr";
 
 /**
  * Which sections and buttons each Group screen shows on the Medical page.
@@ -22,6 +22,14 @@ export const GROUP_MEDICAL_ACTIONS_CONFIG: Record<GroupMedicalScreen, MedicalAct
     sectionModes: {},
   },
   dptNmr: {
+    hiddenSectionKeys: [
+      "bre_medical_decision", // BRE Medical Decision
+      "decision", // Decision
+    ],
+    defaultMode: "edit",
+    sectionModes: {},
+  },
+  dptMr: {
     hiddenSectionKeys: [
       "bre_medical_decision", // BRE Medical Decision
       "decision", // Decision
