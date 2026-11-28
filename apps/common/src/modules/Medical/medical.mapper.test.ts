@@ -297,7 +297,7 @@ describe("mapMedicalFetchPayload", () => {
     const source = {
       data: {
         sections: {
-          blood_urea_and_nitro: { findings: 20, bun: "9", result: "Normal", remark: "ok" },
+          blood_urea_and_nitro: { findings: 20, result: "Normal", remark: "ok" },
           dobutamine_stress_echocardiogram: { findings: "Normal", ejectionFraction: 60, remark: "r1" },
           exercise_stress_echocardiogram: { findings: "abnormal", rejectionAbnormality: "Normal", remark: "r2" },
           pap_smear: { findings: "Normal", remarks: "r3" },

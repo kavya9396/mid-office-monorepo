@@ -691,8 +691,6 @@ export const MEDICAL_BLOOD_UREA_FIELDS: readonly MedicalFieldDef[] = [
   ["Medical Type", "", true],
   ["Test Date", "", true],
   ["Findings", "", true],
-  ["Blood Urea", "", false],
-  ["BUN", "", false],
   ["Result", "", false],
   ["Examinee Name", "", false],
   ["Examinee Age", "", false],

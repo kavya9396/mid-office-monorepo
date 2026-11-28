@@ -250,8 +250,6 @@ const SPECIAL_MEDICAL_SOURCES: readonly FieldSource[] = [
   specialSource("2decho", "2decho", { ...STRESS_ECHO_KEYS, Remarks: "remarks" }),
   specialSource("blood_urea_and_nitro", "blood_urea_and_nitro", {
     Findings: "findings",
-    "Blood Urea": "bloodUrea",
-    BUN: "bun",
     Result: "result",
     Remark: "remark",
   }),
