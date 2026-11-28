@@ -20,7 +20,7 @@ function waitMs(ms: number): Promise<void> {
   });
 }
 
-export type BreRetriggerEventName = "BRE-GROUP" | "BRE-RETAIL" | "FE";
+export type BreRetriggerEventName = "BRE-GROUP" | "BRE-RETAIL" | "FE" | "ME";
 
 export type BreRetriggerLob = "G" | "R";
 

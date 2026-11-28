@@ -63,6 +63,7 @@ import {
   useSaveGroupFinancialMutation,
 } from "../../services/financialApi";
 import { GROUP_FINANCIAL_ACTIONS_CONFIG } from "../config/financialActions.config";
+import { GROUP_MEDICAL_ACTIONS_CONFIG } from "../config/medicalActions.config";
 import { getGroupDrsTaskConfig } from "../../config/drsTaskConfig";
 
 // Placeholder profile image (inline SVG).
@@ -283,6 +284,7 @@ const GuwUser = () => {
                     label: memberId || page.record.applicantName,
                   },
                 ]}
+                actions={GROUP_MEDICAL_ACTIONS_CONFIG.guw}
                 onBack={closeMedical}
                 onSubmit={(payload) => console.log("Submit medical", payload)}
               />

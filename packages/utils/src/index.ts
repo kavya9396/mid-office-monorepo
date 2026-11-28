@@ -9,6 +9,7 @@ export {
   masterUrls,
   mmtGrievanceUrls,
   nsdlUrls,
+  reinsurerDocUrls,
   retailBusinessUrls,
   useMock,
   userUrls,

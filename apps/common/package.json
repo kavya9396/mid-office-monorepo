@@ -129,6 +129,11 @@
       "import": "./src/modules/Medical/Medical.tsx",
       "default": "./src/modules/Medical/Medical.tsx"
     },
+    "./telemer": {
+      "types": "./src/modules/Telemer/index.ts",
+      "import": "./src/modules/Telemer/index.ts",
+      "default": "./src/modules/Telemer/index.ts"
+    },
     "./cmo": {
       "types": "./src/components/cmo/index.ts",
       "import": "./src/components/cmo/index.ts",

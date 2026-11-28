@@ -8,6 +8,7 @@ export {
   landingUrls,
   masterUrls,
   nsdlUrls,
+  reinsurerDocUrls,
   retailBusinessUrls,
   isApigeeMode,
   useMock,

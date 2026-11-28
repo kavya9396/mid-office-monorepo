@@ -63,6 +63,7 @@ import {
   useSaveRetailFinancialMutation,
 } from "../../services/financialApi";
 import { RETAIL_FINANCIAL_ACTIONS_CONFIG } from "../config/financialActions.config";
+import { RETAIL_MEDICAL_ACTIONS_CONFIG } from "../config/medicalActions.config";
 import { getRetailDrsTaskConfig } from "../../config/drsTaskConfig";
 
 // Placeholder profile image (inline SVG).
@@ -279,6 +280,7 @@ const CuwUser = () => {
                     label: memberId || page.record.applicantName,
                   },
                 ]}
+                actions={RETAIL_MEDICAL_ACTIONS_CONFIG.cuw}
                 onBack={closeMedical}
                 onSubmit={(payload) => console.log("Submit medical", payload)}
               />

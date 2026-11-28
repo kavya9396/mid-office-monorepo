@@ -16,6 +16,7 @@ import {
   colors,
   CustomAccordion,
   CustomButton,
+  CustomCheckbox,
   CustomDialog,
   CustomSearchSelect,
   CustomSelect,
@@ -27,19 +28,32 @@ import {
   ScrollToTop,
   type Column,
 } from "@insurance-poc/ui";
+import { formatIndianCurrency, getSessionUser } from "@insurance-poc/utils";
+import { retriggerBre } from "../../services/breRetrigger";
+import { useDocumentLink } from "../../hooks/useDocumentLink";
 import dayjs, { type Dayjs } from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import {
   getMedicalOptions,
   MEDICAL_DATE_FORMAT,
   MEDICAL_DEFAULT_APPLICANTS,
-  MEDICAL_FAMILY_RELATION_OPTIONS,
   type MedicalCmoDecision,
   type MedicalFamilyRow,
+  getVisibleMedicalQuestions,
+  MULTI_SELECT_SEPARATOR,
+  splitMultiSelect,
   MEDICAL_GROUPS,
   MEDICAL_LOCKED_FIELDS,
   MEDICAL_MESSAGES,
+  MEDICAL_COMBINED_GROUP_KEYS,
   MEDICAL_NON_EDITABLE_SECTION_KEYS,
+  buildMedicalDocumentOptions,
+  medicalModeCanEdit,
+  medicalModeCanReview,
+  omitHiddenMedicalSections,
+  resolveMedicalActionMode,
+  type MedicalActionMode,
+  type MedicalActionsConfig,
   MEDICAL_SECTIONS,
   resolveMedicalControlKind,
   type MedicalApplicantTab,
@@ -50,6 +64,13 @@ import {
   type MedicalSection,
   type MedicalSubmitPayload,
 } from "./medical.config";
+import {
+  buildMedicalSaveRequest,
+  formatMedicalSaveMessage,
+  readMedicalSaveSections,
+  type MedicalSaveRequest,
+  type MedicalSaveResponse,
+} from "./medical.save";
 import {
   calculateMedicalAverage,
   calculateMedicalMeasurements,
@@ -63,12 +84,36 @@ import {
 
 dayjs.extend(customParseFormat);
 
+export type { MedicalActionMode, MedicalActionsConfig } from "./medical.config";
+export { mapMedicalFetchPayload, type MedicalFetchResult } from "./medical.mapper";
+export {
+  buildMedicalSaveRequest,
+  type MedicalSaveRequest,
+  type MedicalSaveResponse,
+} from "./medical.save";
+
 export interface MedicalProps {
   summary?: ReactNode;
+  applicationNumber?: string;
+  partyId?: string;
   applicants?: readonly MedicalApplicantTab[];
   initialApplicantKey?: string;
   groups?: readonly MedicalGroup[];
   sections?: readonly MedicalSection[];
+  /**
+   * Every section the screen can offer in the "Search and add new document" list, even when the fetch
+   * did not return it. Choosing one that is missing adds it (empty) to the page. Defaults to all
+   * Medical sections and groups.
+   */
+  catalog?: {
+    sections: readonly MedicalSection[];
+    groups: readonly MedicalGroup[];
+  };
+  /**
+   * Which sections this screen shows. `hiddenSectionKeys` are never rendered (cards, navigation,
+   * document dropdown), even when the API returns them. Omit to show every section.
+   */
+  actions?: MedicalActionsConfig;
   /**
    * Past data per section key, shown by each section's History button as the
    * same read-only form. Entry `values` use the same ids as the submit payload.
@@ -78,7 +123,25 @@ export interface MedicalProps {
   onBack?: () => void;
   onViewDocuments?: () => void;
   onSubmit?: (payload: MedicalSubmitPayload) => void;
+  /**
+   * Called when a section's Save is clicked, with only the edited section(s) in the request. Resolves
+   * with the API envelope: the screen shows its `message` (validation failure or success) and leaves
+   * edit mode only when the save succeeded. A rejection is shown as an error.
+   */
+  onSaveSection?: (request: MedicalSaveRequest) => Promise<MedicalSaveResponse>;
 }
+
+/** Pulls a readable message out of a thrown Error or an RTK Query `{ error | data.message }` rejection. */
+const readSaveError = (reason: unknown): string => {
+  if (reason instanceof Error) return reason.message;
+  if (typeof reason !== "object" || reason === null) return "";
+  if ("error" in reason && typeof reason.error === "string") return reason.error;
+  if ("data" in reason && typeof reason.data === "object" && reason.data !== null) {
+    const { message } = reason.data as { message?: unknown };
+    if (typeof message === "string") return message;
+  }
+  return "";
+};
 
 /* ------------------------------------------------------------------ */
 /* In-memory reactive store                                            */
@@ -90,6 +153,8 @@ interface MedicalStore {
   get: (id: string) => string;
   set: (id: string, value: string) => void;
   subscribe: (id: string, listener: Listener) => () => void;
+  /** Fires on any change to a value whose id starts with `prefix`. */
+  subscribePrefix: (prefix: string, listener: Listener) => () => void;
   snapshot: () => Record<string, string>;
   pick: (prefix: string) => Record<string, string>;
   restore: (prefix: string, saved: Readonly<Record<string, string>>) => void;
@@ -164,8 +229,18 @@ const createInitialValues = (sections: readonly MedicalSection[]) => {
     section.fields.forEach(([, value], index) => {
       initial[fieldId(section.key, index)] = value;
     });
+    section.questionnaire?.forEach((question) => {
+      initial[`${section.key}-q-${question.id}-response`] = question.response ?? "";
+      initial[`${section.key}-q-${question.id}-remarks`] = question.remarks ?? "";
+    });
     section.parameters?.forEach(([, unit], index) => {
-      initial[`${section.key}-param-${index}-unit`] = unit;
+      const fetched = section.parameterValues?.[index];
+      initial[`${section.key}-param-${index}-unit`] = fetched?.unit || unit;
+      if (fetched) {
+        initial[`${section.key}-param-${index}-value`] = fetched.value;
+        initial[`${section.key}-param-${index}-from`] = fetched.from;
+        initial[`${section.key}-param-${index}-to`] = fetched.to;
+      }
     });
     if (section.layout === "familyHistory") {
       const familyRows = section.familyRows ?? FAMILY_DEFAULT_ROWS;
@@ -187,6 +262,12 @@ const createMedicalStore = (
 ): MedicalStore => {
   const values: Record<string, string> = { ...initial };
   const listeners: Record<string, Set<Listener>> = {};
+  const prefixListeners = new Map<string, Set<Listener>>();
+  const notifyPrefixes = (id: string) => {
+    prefixListeners.forEach((set, prefix) => {
+      if (id.startsWith(prefix)) set.forEach((listener) => listener());
+    });
+  };
 
   return {
     get: (id) => values[id] ?? "",
@@ -194,12 +275,24 @@ const createMedicalStore = (
       if (values[id] === value) return;
       values[id] = value;
       listeners[id]?.forEach((listener) => listener());
+      notifyPrefixes(id);
     },
     subscribe: (id, listener) => {
       listeners[id] ??= new Set<Listener>();
       listeners[id].add(listener);
       return () => {
         listeners[id]?.delete(listener);
+      };
+    },
+    subscribePrefix: (prefix, listener) => {
+      let set = prefixListeners.get(prefix);
+      if (!set) {
+        set = new Set<Listener>();
+        prefixListeners.set(prefix, set);
+      }
+      set.add(listener);
+      return () => {
+        prefixListeners.get(prefix)?.delete(listener);
       };
     },
     snapshot: () => ({ ...values }),
@@ -388,6 +481,33 @@ const HEAD_BUTTON_SX = {
   textTransform: "none",
 } as const;
 
+const REVIEW_BAR_SX = {
+  p: "7px 12px",
+  display: "flex",
+  justifyContent: "flex-end",
+  gap: "8px",
+  borderTop: "1px solid #E4E7EC",
+  bgcolor: "#FCFCFD",
+} as const;
+
+const reviewButtonSx = (color: string, hoverBorder: string, selected: boolean) =>
+  ({
+    border: "1px solid",
+    borderColor: selected ? color : "currentColor",
+    color: selected ? "#fff" : color,
+    bgcolor: selected ? color : "transparent",
+    fontSize: 13,
+    fontWeight: 500,
+    "&:hover": {
+      color: selected ? "#fff" : color,
+      bgcolor: selected ? color : "transparent",
+      borderColor: hoverBorder,
+    },
+  }) as const;
+
+const AGREE_SX = reviewButtonSx("#027A48", "#05603A", false);
+const AGREE_SELECTED_SX = reviewButtonSx("#027A48", "#05603A", true);
+
 const NAV_SX = {
   width: "280px",
   minWidth: "280px",
@@ -472,6 +592,15 @@ const RequiredMark = memo(function RequiredMark() {
   );
 });
 
+/** Asterisk beside a questionnaire Remarks field, shown while the selected Response requires it. */
+const RemarksRequiredMark = memo(function RemarksRequiredMark({
+  responseId,
+  isRequired,
+}: Readonly<{ responseId: string; isRequired: (responseKey?: string) => boolean }>) {
+  const responseValue = useFieldValue(responseId);
+  return isRequired(responseValue) ? <RequiredMark /> : null;
+});
+
 function RequiredHeader({
   label,
   required,
@@ -503,7 +632,53 @@ interface MedicalControlProps {
   validator?: MedicalFieldValidator;
   /** Store id of the field the validator's rules depend on. */
   dependencyId?: string;
+  /** Multi-select over `options`; the stored value is the selected keys joined by ",". */
+  multiple?: boolean;
 }
+
+/** Indian currency display for a stored plain number; a value that is not a number is shown as stored. */
+const formatIndianCurrencyOrRaw = (value: string): string => {
+  const formatted = formatIndianCurrency(value);
+  return formatted === "-" ? value : formatted;
+};
+
+
+/** Option key that is mutually exclusive with the other options of a multi-select question. */
+const MULTI_SELECT_NONE_KEY = "NO";
+
+/** Keys selected after toggling `key`. "NO" is exclusive: picking it clears every other option, and picking any other option clears "NO". */
+const toggleMultiSelectKey = (selectedKeys: readonly string[], key: string): string[] => {
+  if (selectedKeys.includes(key)) return selectedKeys.filter((item) => item !== key);
+  if (key === MULTI_SELECT_NONE_KEY) return [key];
+  return [...selectedKeys.filter((item) => item !== MULTI_SELECT_NONE_KEY), key];
+};
+
+interface ReadOnlyDisplayArgs {
+  value: string;
+  kind: MedicalControlKind;
+  multiple: boolean;
+  placeholder: string;
+  optionsOverride?: readonly MedicalOption[];
+}
+
+/** Text shown for a read-only control. */
+const getReadOnlyDisplayText = ({
+  value,
+  kind,
+  multiple,
+  placeholder,
+  optionsOverride,
+}: ReadOnlyDisplayArgs): string => {
+  if (multiple) {
+    const labels = splitMultiSelect(value)
+      .map((key) => optionsOverride?.find((option) => option.value === key)?.label)
+      .filter((label): label is string => label !== undefined);
+    return labels.join(", ") || placeholder;
+  }
+  if (kind === "currency" && value !== "") return formatIndianCurrencyOrRaw(value);
+  const options = optionsOverride ?? getMedicalOptions(kind);
+  return options.find((option) => option.value === value)?.label ?? (value || placeholder);
+};
 
 const MedicalControl = memo(function MedicalControl({
   id,
@@ -516,6 +691,7 @@ const MedicalControl = memo(function MedicalControl({
   options: optionsOverride,
   validator,
   dependencyId,
+  multiple = false,
 }: Readonly<MedicalControlProps>) {
   const store = useMedicalStore();
   const value = useFieldValue(id);
@@ -538,8 +714,13 @@ const MedicalControl = memo(function MedicalControl({
     !readOnly && (touched || attempted)
       ? validator?.validate(value, dependencyValue)
       : undefined;
+  const isMissingRequired =
+    !readOnly &&
+    validator?.isRequired(dependencyValue) === true &&
+    value.trim() === "";
 
   if (readOnly) {
+    const displayText = getReadOnlyDisplayText({ value, kind, multiple, placeholder, optionsOverride });
     return (
       <Box
         role="textbox"
@@ -548,12 +729,49 @@ const MedicalControl = memo(function MedicalControl({
         data-field={id}
         sx={READ_ONLY_DISPLAY_SX}
       >
-        {value}
+        {displayText}
       </Box>
     );
   }
 
   const options = optionsOverride ?? getMedicalOptions(kind);
+  if (multiple && options.length > 0) {
+    const selectedKeys = splitMultiSelect(value);
+    const toggle = (key: string) => {
+      const next = toggleMultiSelectKey(selectedKeys, key);
+      onChange(
+        options
+          .map((option) => option.value)
+          .filter((item) => next.includes(item))
+          .join(MULTI_SELECT_SEPARATOR),
+      );
+    };
+    return (
+      <Box sx={EDITABLE_CONTROL_SX} data-field={id} aria-label={ariaLabel}>
+        <Box
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            columnGap: 2,
+            rowGap: 0.5,
+            "& .MuiTypography-root": { fontSize: "12px" },
+          }}
+        >
+          {options.map((option) => (
+            <CustomCheckbox
+              key={option.value}
+              label={option.label}
+              checked={selectedKeys.includes(option.value)}
+              onChange={() => toggle(option.value)}
+            />
+          ))}
+        </Box>
+        {errorMessage && (
+          <Typography sx={{ color: "#B42318", fontSize: 12 }}>{errorMessage}</Typography>
+        )}
+      </Box>
+    );
+  }
   if (options.length > 0) {
     return (
       <Box sx={EDITABLE_CONTROL_SX} data-field={id}>
@@ -587,16 +805,33 @@ const MedicalControl = memo(function MedicalControl({
     );
   }
 
+  if (kind === "time") {
+    return (
+      <Box sx={EDITABLE_CONTROL_SX} data-field={id}>
+        <CustomTextField
+          fullWidth
+          value={value}
+          placeholder="hh:mm AM/PM"
+          onChange={(event) => onChange(event.target.value.toUpperCase())}
+          onBlur={() => setTouched(true)}
+          error={Boolean(errorMessage) || isMissingRequired}
+          helperText={errorMessage}
+          htmlInputProps={{ "aria-label": ariaLabel }}
+        />
+      </Box>
+    );
+  }
+
   return (
     <Box sx={EDITABLE_CONTROL_SX} data-field={id}>
       <CustomTextField
         fullWidth
-        type={kind === "number" ? "number" : type}
+        type={kind === "number" || kind === "currency" ? "number" : type}
         value={value}
         placeholder={placeholder}
         onChange={(event) => onChange(event.target.value)}
         onBlur={() => setTouched(true)}
-        error={Boolean(errorMessage)}
+        error={Boolean(errorMessage) || isMissingRequired}
         helperText={errorMessage}
         htmlInputProps={{ "aria-label": ariaLabel }}
       />
@@ -779,7 +1014,7 @@ const FamilyHistoryBody = memo(function FamilyHistoryBody({
           <MedicalControl
             id={familyRowKey(section.key, row.id, "health")}
             ariaLabel={`Health status, row ${row.id}`}
-            kind="text"
+            kind={section.key === "tele_family_history" ? "healthStatus" : "text"}
             readOnly={!editing}
           />
         ),
@@ -812,7 +1047,7 @@ const FamilyHistoryBody = memo(function FamilyHistoryBody({
         </Box>
         <Box sx={FAMILY_ADD_SELECT_SX}>
           <CustomSelect
-            options={MEDICAL_FAMILY_RELATION_OPTIONS}
+            options={getMedicalOptions("familyRelation")}
             value={selectedRelation}
             placeholder="Select a relation"
             disabled={!editing}
@@ -874,7 +1109,7 @@ const HabitAddictionBody = memo(function HabitAddictionBody({
     const control = (
       fieldIndex: string,
       label: string,
-      kind: "yesNo" | "number",
+      kind: "miscYesNo" | "number",
     ) => {
       const validator = validators[Number(fieldIndex)];
       return (
@@ -905,7 +1140,7 @@ const HabitAddictionBody = memo(function HabitAddictionBody({
         key: "indicator",
         header: "INDICATOR",
         width: "24%",
-        render: (value, row) => control(String(value), `${row.habit}: Indicator`, "yesNo"),
+        render: (value, row) => control(String(value), `${row.habit}: Indicator`, "miscYesNo"),
       },
       {
         key: "quantity",
@@ -1050,7 +1285,7 @@ const LabResultTable = memo(function LabResultTable({
 });
 
 /* ------------------------------------------------------------------ */
-/* Parameter table: Parameter / Value / Normal Range / Unit / Findings  */
+/* Parameter table: Parameter / Value / Lab Range Start / Lab Range End / Unit / Findings */
 /* Findings is derived: Abnormal when Value is outside the range.       */
 /* ------------------------------------------------------------------ */
 
@@ -1071,12 +1306,6 @@ const PARAM_TITLE_SX = {
   fontWeight: 700,
 } as const;
 const PARAM_TABLE_SX = { minWidth: 0, overflowX: "auto" } as const;
-const PARAM_RANGE_SX = {
-  display: "flex",
-  alignItems: "center",
-  gap: "6px",
-} as const;
-const PARAM_RANGE_SEPARATOR_SX = { color: "#667085", fontSize: 13 } as const;
 const PARAM_FINDINGS_SX = {
   display: "flex",
   alignItems: "center",
@@ -1198,29 +1427,27 @@ const ParameterTable = memo(function ParameterTable({
       {
         key: "name",
         header: "Parameter",
-        width: "22%",
+        width: "20%",
         render: (_value, row) => <ParameterName section={section} row={row} />,
       },
       {
         key: "index",
         header: "Value",
-        width: "16%",
+        width: "14%",
         render: (_value, row) =>
           control(row, "value", "Value", "number", row.options),
       },
       {
         key: "id",
-        header: "Normal Range",
-        width: "28%",
-        render: (_value, row) => (
-          <Box sx={PARAM_RANGE_SX}>
-            {control(row, "from", "Normal Range From")}
-            <Box component="span" sx={PARAM_RANGE_SEPARATOR_SX}>
-              -
-            </Box>
-            {control(row, "to", "Normal Range To")}
-          </Box>
-        ),
+        header: "Lab Range Start",
+        width: "16%",
+        render: (_value, row) => control(row, "from", "Lab Range Start"),
+      },
+      {
+        key: "options",
+        header: "Lab Range End",
+        width: "16%",
+        render: (_value, row) => control(row, "to", "Lab Range End"),
       },
       {
         key: "unit",
@@ -1257,6 +1484,164 @@ const ParameterTable = memo(function ParameterTable({
   );
 });
 
+/* ------------------------------------------------------------------ */
+/* Questionnaire: one row per question (ID, Question, Response, Remarks) */
+/* Each row is keyed by its position in `fields`, like any other field. */
+/* ------------------------------------------------------------------ */
+
+interface QuestionnaireRow {
+  id: string;
+  label: string;
+  /** Option label (or "Yes") of the parent response that asks this sub-question. Empty for top-level. */
+  triggeredBy: string;
+  index: number;
+  response: string;
+  remarks: string;
+}
+
+const QuestionnaireBody = memo(function QuestionnaireBody({
+  section,
+}: Readonly<{ section: MedicalSection }>) {
+  const editing = useContext(EditingContext);
+  const store = useMedicalStore();
+  const questions = section.questionnaire ?? [];
+  const responsePrefix = `${section.key}-q-`;
+  const responseKey = useSyncExternalStore(
+    useCallback(
+      (onStoreChange) => store.subscribePrefix(responsePrefix, onStoreChange),
+      [store, responsePrefix],
+    ),
+    () =>
+      questions
+        .map((question) => store.get(`${responsePrefix}${question.id}-response`))
+        .join("\u0000"),
+  );
+  const visibleQuestions = useMemo(
+    () =>
+      getVisibleMedicalQuestions(questions, (questionId) =>
+        store.get(`${responsePrefix}${questionId}-response`),
+      ),
+    // responseKey changes whenever a questionnaire response changes, so it drives the recompute.
+    [questions, store, responsePrefix, responseKey],
+  );
+  const rows = useMemo<QuestionnaireRow[]>(
+    () =>
+      visibleQuestions.map((question) => {
+        const parent = questions.find((item) => item.id === question.parentId);
+        const triggerOption =
+          question.parentOption === null
+            ? "Yes"
+            : parent?.answerType?.find((option) => option.key === question.parentOption)?.label ?? "";
+        return {
+          id: question.id,
+          label: question.questionDesc,
+          triggeredBy: question.parentId === null ? "" : triggerOption,
+          index: questions.indexOf(question),
+          response: question.response ?? "",
+          remarks: question.remarks ?? "",
+        };
+      }),
+    [questions, visibleQuestions],
+  );
+  const columns = useMemo<Column<QuestionnaireRow>[]>(
+    () => [
+      { key: "id", header: "ID", width: "6%" },
+      {
+        key: "label",
+        header: "Question",
+        width: "50%",
+        render: (_value, row) => (
+          <Box>
+            {row.label}
+            {row.triggeredBy && (
+              <Typography
+                component="div"
+                sx={{ color: "#7B716C", fontSize: 11, mt: "2px" }}
+              >
+                Asked for response: {row.triggeredBy}
+              </Typography>
+            )}
+          </Box>
+        ),
+      },
+      {
+        key: "response",
+        header: "Response",
+        width: "20%",
+        render: (_value, row) => {
+          const question = questions[row.index];
+          return (
+            <MedicalControl
+              id={`${section.key}-q-${row.id}-response`}
+              ariaLabel={`Response, question ${row.id}`}
+              kind="text"
+              readOnly={!editing}
+              multiple={question.questionType === "MULTISELECT"}
+              placeholder=""
+              options={question.answerType?.map((option) => ({
+                value: option.key,
+                label: option.label,
+              }))}
+            />
+          );
+        },
+      },
+      {
+        key: "remarks",
+        header: "Remarks",
+        width: "20%",
+        render: (_value, row) => {
+          const question = questions[row.index];
+          const responseId = `${section.key}-q-${row.id}-response`;
+          const remarksMandatoryFor = (responseKey: string) =>
+            question.answerType?.some(
+              (option) =>
+                option.key === responseKey && option.remarksMandatory === "Y",
+            ) ?? false;
+          const validator: MedicalFieldValidator = {
+            dependsOn: "response",
+            isRequired: (responseKey) => remarksMandatoryFor(responseKey ?? ""),
+            validate: (value, responseKey) =>
+              remarksMandatoryFor(responseKey ?? "") && value.trim() === ""
+                ? "Remarks are mandatory for the selected response"
+                : undefined,
+          };
+          return (
+            <Box sx={{ display: "flex", alignItems: "flex-start", gap: "2px" }}>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <MedicalControl
+                  id={`${section.key}-q-${row.id}-remarks`}
+                  ariaLabel={`Remarks, question ${row.id}`}
+                  kind="text"
+                  readOnly={!editing}
+                  validator={validator}
+                  dependencyId={responseId}
+                  placeholder=""
+                />
+              </Box>
+              {editing && (
+                <RemarksRequiredMark
+                  responseId={responseId}
+                  isRequired={validator.isRequired}
+                />
+              )}
+            </Box>
+          );
+        },
+      },
+    ],
+    [editing, questions, section.key],
+  );
+
+  return (
+    <CustomTable<QuestionnaireRow>
+      columns={columns}
+      data={rows}
+      getRowId={(row) => row.id}
+    />
+  );
+});
+
 const SectionBody = memo(function SectionBody({
   section,
 }: Readonly<SectionBodyProps>) {
@@ -1265,6 +1650,9 @@ const SectionBody = memo(function SectionBody({
   }
   if (section.layout === "habitAddiction") {
     return <HabitAddictionBody section={section} />;
+  }
+  if (section.layout === "questionnaire") {
+    return <QuestionnaireBody section={section} />;
   }
   const tableLabels = section.tableFieldLabels ?? [];
   return (
@@ -1292,30 +1680,100 @@ const SectionBody = memo(function SectionBody({
   );
 });
 
+/** A group of sections edited together with one Edit / Save / Reset (a single section by default). */
+interface MedicalEditUnit {
+  /** Key of the first section; it carries the unit's controls and is the editing state key. */
+  key: string;
+  title: string;
+  sectionKeys: readonly string[];
+}
+
+type ReviewDecision = "agree";
+
 interface SectionCardProps {
   section: MedicalSection;
+  /** Which buttons the section shows (Edit / Reset / Save, Agree, or none). */
+  mode: MedicalActionMode;
   editing: boolean;
+  /** The reviewer's decision for this card's unit, when the Agree button was used. */
+  review?: ReviewDecision;
+  onReview: (sectionKey: string, decision: ReviewDecision) => void;
+  /**
+   * False for sub sections that follow the group's single Edit / Save / Reset / History (MER, Tele MER).
+   */
+  ownsEditControls: boolean;
   validationAttempted: boolean;
   onEdit: (sectionKey: string) => void;
   onSave: (sectionKey: string) => void;
   onReset: (sectionKey: string) => void;
   onHistory: (sectionKey: string) => void;
+  /** Number of past records available for this card's History button (0 when none). */
+  historyCount: number;
   registerRef: (sectionKey: string, element: HTMLElement | null) => void;
 }
 
 const SectionCard = memo(function SectionCard({
   section,
+  mode,
   editing,
+  review,
+  onReview,
+  ownsEditControls,
   validationAttempted,
   onEdit,
   onSave,
   onReset,
   onHistory,
+  historyCount,
   registerRef,
 }: Readonly<SectionCardProps>) {
-  const alwaysEditable = Boolean(section.alwaysEditable);
-  const hasActions =
-    alwaysEditable || !MEDICAL_NON_EDITABLE_SECTION_KEYS.includes(section.key);
+  const canEdit = medicalModeCanEdit(mode);
+  const hasReviewActions = medicalModeCanReview(mode) && ownsEditControls;
+  // A section the user always fills in (Decision) is only editable while its mode allows editing.
+  const alwaysEditable = Boolean(section.alwaysEditable) && canEdit;
+  // History is a view of past data: it follows the built-in rule, not the mode.
+  const hasHistory =
+    ownsEditControls &&
+    (Boolean(section.alwaysEditable) ||
+      !MEDICAL_NON_EDITABLE_SECTION_KEYS.includes(section.key));
+  const hasActions = canEdit || hasHistory;
+
+  let editControls: ReactNode = null;
+  if (canEdit && (ownsEditControls || alwaysEditable)) {
+    if (editing || alwaysEditable) {
+      editControls = (
+        <>
+          {!alwaysEditable && (
+            <CustomButton
+              variant="outlined"
+              onClick={() => onReset(section.key)}
+              sx={HEAD_BUTTON_SX}
+            >
+              Reset
+            </CustomButton>
+          )}
+          <CustomButton
+            variant="contained"
+            onClick={() => onSave(section.key)}
+            sx={HEAD_BUTTON_SX}
+          >
+            Save
+          </CustomButton>
+        </>
+      );
+    } else {
+      editControls = (
+        <CustomButton
+          variant="outlined"
+          onClick={() => onEdit(section.key)}
+          sx={HEAD_BUTTON_SX}
+        >
+          Edit
+        </CustomButton>
+      );
+    }
+  }
+
   return (
     <Box
       component="article"
@@ -1330,41 +1788,16 @@ const SectionCard = memo(function SectionCard({
 
         {hasActions && (
           <Box sx={CARD_HEAD_ACTIONS_SX}>
-            {editing || alwaysEditable ? (
-              <>
-                {!alwaysEditable && (
-                  <CustomButton
-                    variant="outlined"
-                    onClick={() => onReset(section.key)}
-                    sx={HEAD_BUTTON_SX}
-                  >
-                    Reset
-                  </CustomButton>
-                )}
-                <CustomButton
-                  variant="contained"
-                  onClick={() => onSave(section.key)}
-                  sx={HEAD_BUTTON_SX}
-                >
-                  Save
-                </CustomButton>
-              </>
-            ) : (
+            {editControls}
+            {hasHistory && (
               <CustomButton
                 variant="outlined"
-                onClick={() => onEdit(section.key)}
+                onClick={() => onHistory(section.key)}
                 sx={HEAD_BUTTON_SX}
               >
-                Edit
+                History ({historyCount})
               </CustomButton>
             )}
-            <CustomButton
-              variant="outlined"
-              onClick={() => onHistory(section.key)}
-              sx={HEAD_BUTTON_SX}
-            >
-              History
-            </CustomButton>
           </Box>
         )}
       </Box>
@@ -1376,6 +1809,19 @@ const SectionCard = memo(function SectionCard({
           </ValidationAttemptedContext.Provider>
         </EditingContext.Provider>
       </Box>
+
+      {hasReviewActions && (
+        <Box role="group" aria-label={`${section.title} review`} sx={REVIEW_BAR_SX}>
+          <CustomButton
+            variant="outlined"
+            aria-pressed={review === "agree"}
+            onClick={() => onReview(section.key, "agree")}
+            sx={review === "agree" ? AGREE_SELECTED_SX : AGREE_SX}
+          >
+            Agree
+          </CustomButton>
+        </Box>
+      )}
     </Box>
   );
 });
@@ -1428,31 +1874,78 @@ const HISTORY_NOTICE_SX = {
   textAlign: "center",
 } as const;
 
-const MedicalHistoryDialog = memo(function MedicalHistoryDialog({
+/** One section's read-only form, filled with the selected past record. */
+const MedicalHistorySectionPanel = memo(function MedicalHistorySectionPanel({
   section,
-  entries,
-  onClose,
+  entry,
+  showTitle,
 }: Readonly<{
   section: MedicalSection;
-  entries: readonly MedicalHistoryEntry[];
-  onClose: () => void;
+  entry: MedicalHistoryEntry;
+  showTitle: boolean;
 }>) {
-  const [selectedId, setSelectedId] = useState(entries[0]?.id ?? "");
-  const entry = entries.find((item) => item.id === selectedId) ?? entries[0];
-
   // A separate store, so the live form is never touched by past data.
   const historyStore = useMemo(
     () =>
       createMedicalStore({
         ...createInitialValues([section]),
-        ...entry?.values,
+        ...entry.values,
       }),
     [section, entry],
   );
-  const entryOptions = useMemo(
-    () => entries.map(({ id, label }) => ({ label, value: id })),
-    [entries],
+
+  return (
+    <Box sx={{ minWidth: 0 }}>
+      {showTitle && (
+        <Typography component="h3" sx={{ ...CARD_TITLE_SX, mb: "8px" }}>
+          {section.title}
+        </Typography>
+      )}
+      <StoreContext.Provider value={historyStore}>
+        <EditingContext.Provider value={false}>
+          <ValidationAttemptedContext.Provider value={false}>
+            <SectionBody section={section} />
+          </ValidationAttemptedContext.Provider>
+        </EditingContext.Provider>
+      </StoreContext.Provider>
+    </Box>
   );
+});
+
+/**
+ * Consolidated History popup for one edit unit: a single section, or every sub section of MER /
+ * Tele MER stacked together. One record picker (shared id across the sub sections) switches all
+ * of them at once. Sections without past records are left out.
+ */
+const MedicalHistoryDialog = memo(function MedicalHistoryDialog({
+  title,
+  sections,
+  history,
+  onClose,
+}: Readonly<{
+  title: string;
+  sections: readonly MedicalSection[];
+  history: Readonly<Record<string, readonly MedicalHistoryEntry[]>> | undefined;
+  onClose: () => void;
+}>) {
+  const sectionsWithHistory = useMemo(
+    () => sections.filter((section) => (history?.[section.key]?.length ?? 0) > 0),
+    [sections, history],
+  );
+  // Records of the unit, in first-seen order, one per id.
+  const recordOptions = useMemo(() => {
+    const seen = new Map<string, string>();
+    sectionsWithHistory.forEach((section) =>
+      history?.[section.key]?.forEach(({ id, label }) => {
+        if (!seen.has(id)) seen.set(id, label);
+      }),
+    );
+    return Array.from(seen, ([value, label]) => ({ label, value }));
+  }, [sectionsWithHistory, history]);
+  const [selectedId, setSelectedId] = useState(recordOptions[0]?.value ?? "");
+  const activeId = recordOptions.some((option) => option.value === selectedId)
+    ? selectedId
+    : (recordOptions[0]?.value ?? "");
 
   return (
     <CustomDialog
@@ -1461,17 +1954,17 @@ const MedicalHistoryDialog = memo(function MedicalHistoryDialog({
       maxWidth="lg"
       title={
         <Typography component="span" sx={{ fontSize: 14, fontWeight: 700 }}>
-          {section.title} - History
+          {title} - History
         </Typography>
       }
     >
-      {entry ? (
+      {sectionsWithHistory.length > 0 ? (
         <>
-          {entries.length > 1 && (
+          {recordOptions.length > 1 && (
             <Box sx={{ mb: "12px", maxWidth: 280 }}>
               <CustomSelect
-                options={entryOptions}
-                value={entry.id}
+                options={recordOptions}
+                value={activeId}
                 placeholder="Select"
                 onChange={setSelectedId}
               />
@@ -1483,15 +1976,22 @@ const MedicalHistoryDialog = memo(function MedicalHistoryDialog({
               borderRadius: 2,
               p: 2,
               minWidth: 0,
+              display: "flex",
+              flexDirection: "column",
+              gap: "16px",
             }}
           >
-            <StoreContext.Provider value={historyStore}>
-              <EditingContext.Provider value={false}>
-                <ValidationAttemptedContext.Provider value={false}>
-                  <SectionBody section={section} />
-                </ValidationAttemptedContext.Provider>
-              </EditingContext.Provider>
-            </StoreContext.Provider>
+            {sectionsWithHistory.map((section) => {
+              const entry = history?.[section.key]?.find((item) => item.id === activeId);
+              return entry ? (
+                <MedicalHistorySectionPanel
+                  key={section.key}
+                  section={section}
+                  entry={entry}
+                  showTitle={sections.length > 1}
+                />
+              ) : null;
+            })}
           </Box>
         </>
       ) : (
@@ -1509,22 +2009,101 @@ const MedicalHistoryDialog = memo(function MedicalHistoryDialog({
 
 export function Medical({
   summary,
+  applicationNumber,
+  partyId,
   applicants = MEDICAL_DEFAULT_APPLICANTS,
   initialApplicantKey,
-  groups = MEDICAL_GROUPS,
-  sections = MEDICAL_SECTIONS,
+  groups: allGroups = MEDICAL_GROUPS,
+  sections: allSections = MEDICAL_SECTIONS,
+  catalog,
+  actions,
   onApplicantChange,
   onViewDocuments,
   onSubmit,
+  onSaveSection,
   history,
 }: Readonly<MedicalProps>) {
+  // Sections listed in `actions.hiddenSectionKeys` are dropped even when the API returns them. The result keeps
+  // the identity of the props when nothing is hidden, because `sectionsProp` keys the form store and saved state.
+  const hiddenSectionKeys = actions?.hiddenSectionKeys;
+  const { sections: sectionsProp, groups: groupsProp } = useMemo(
+    () => omitHiddenMedicalSections(allSections, allGroups, hiddenSectionKeys),
+    [allSections, allGroups, hiddenSectionKeys],
+  );
   const [activeApplicantKey, setActiveApplicantKey] = useState(
     initialApplicantKey ?? applicants[0]?.key ?? "",
   );
+  // The store is built once per `sections` prop, so a save never rebuilds it (other sections keep their edits).
   const store = useMemo(
-    () => createMedicalStore(createInitialValues(sections)),
-    [sections],
+    () => createMedicalStore(createInitialValues(sectionsProp)),
+    [sectionsProp],
   );
+  // Sections re-read from a save response (real memberId, habitId, readingId, responseId), by section key. They
+  // belong to one `sections` prop: a new prop (a refetch) drops them.
+  const [savedSections, setSavedSections] = useState<{
+    base: readonly MedicalSection[];
+    byKey: Readonly<Record<string, MedicalSection>>;
+  }>({ base: sectionsProp, byKey: {} });
+  const { sections: catalogSections, groups: catalogGroups } = useMemo(
+    () =>
+      omitHiddenMedicalSections(
+        catalog?.sections ?? MEDICAL_SECTIONS,
+        catalog?.groups ?? MEDICAL_GROUPS,
+        hiddenSectionKeys,
+      ),
+    [catalog, hiddenSectionKeys],
+  );
+  // Sections the user added from the document list although the fetch did not return them. They belong
+  // to one `sections` prop: a new prop (a refetch) drops them.
+  const [added, setAdded] = useState<{
+    base: readonly MedicalSection[];
+    keys: readonly string[];
+  }>({ base: sectionsProp, keys: [] });
+  const addedKeys = useMemo(
+    () => (added.base === sectionsProp ? added.keys : []),
+    [added, sectionsProp],
+  );
+  const sections = useMemo(() => {
+    const present = new Set(sectionsProp.map((section) => section.key));
+    const extra = catalogSections.filter(
+      (section) => addedKeys.includes(section.key) && !present.has(section.key),
+    );
+    const catalogOrder = (key: string) => {
+      const index = catalogSections.findIndex((section) => section.key === key);
+      return index === -1 ? Number.MAX_SAFE_INTEGER : index;
+    };
+    const combined =
+      extra.length === 0
+        ? sectionsProp
+        : [...sectionsProp, ...extra].sort(
+            (a, b) => catalogOrder(a.key) - catalogOrder(b.key),
+          );
+    return savedSections.base === sectionsProp
+      ? combined.map((section) => savedSections.byKey[section.key] ?? section)
+      : combined;
+  }, [sectionsProp, savedSections, addedKeys, catalogSections]);
+  // Left navigation groups: the fetched groups, plus the added sections in their catalog group.
+  const groups = useMemo(() => {
+    if (addedKeys.length === 0) return groupsProp;
+    const byKey = new Map(sections.map((section) => [section.key, section]));
+    const merged = catalogGroups.flatMap((catalogGroup) => {
+      const shown = new Set([
+        ...(groupsProp.find((group) => group.key === catalogGroup.key)?.sections.map(
+          (section) => section.key,
+        ) ?? []),
+        ...addedKeys,
+      ]);
+      const list = catalogGroup.sections.flatMap((catalogSection) => {
+        const section = byKey.get(catalogSection.key);
+        return section && shown.has(catalogSection.key) ? [section] : [];
+      });
+      return list.length > 0 ? [{ ...catalogGroup, sections: list }] : [];
+    });
+    const unlisted = groupsProp.filter(
+      (group) => !catalogGroups.some((catalogGroup) => catalogGroup.key === group.key),
+    );
+    return [...merged, ...unlisted];
+  }, [groupsProp, catalogGroups, addedKeys, sections]);
   // Measurements: feet, inches and BMI are disabled and auto calculated.
   useEffect(() => {
     const cleanups = MEASUREMENT_SECTION_LABELS.flatMap((labels) => {
@@ -1562,12 +2141,13 @@ export function Medical({
   // Blood pressure: Avg Systolic / Avg Diastolic are disabled and auto populated.
   useEffect(() => {
     const section = sections.find(
-      (s) => s.key === "blood_pressure_pulse_details",
+      (s) => s.key === "blood_pressure_and_pulse",
     );
     if (!section) return;
+    // Every reading shown counts (Systolic 1..N), however many the API returned.
     const idsOf = (prefix: string) =>
       section.fields.flatMap(([label], index) =>
-        new RegExp(`^${prefix} [1-3]$`).test(label)
+        new RegExp(String.raw`^${prefix} \d+$`).test(label)
           ? [fieldId(section.key, index)]
           : [],
       );
@@ -1594,6 +2174,7 @@ export function Medical({
   }, [sections, store]);
 
   const [editing, setEditing] = useState<Record<string, boolean>>({});
+  const [reviews, setReviews] = useState<Record<string, ReviewDecision>>({});
   const [validationAttempted, setValidationAttempted] = useState<
     Record<string, boolean>
   >({});
@@ -1612,8 +2193,19 @@ export function Medical({
   });
   const [snackbar, setSnackbar] = useState<{
     message: string;
-    severity: "success" | "warning";
+    severity: "success" | "warning" | "error";
   } | null>(null);
+  // UDS viewer link for "View Medical Documents", fetched once the screen has loaded for this application.
+  const documentsLink = useDocumentLink(applicationNumber, "medical");
+  const handleViewDocuments = useCallback(() => {
+    if (documentsLink) {
+      window.open(documentsLink, "_blank", "noopener,noreferrer");
+    } else if (onViewDocuments) {
+      onViewDocuments();
+    } else {
+      setSnackbar({ message: MEDICAL_MESSAGES.documentsUnavailable, severity: "error" });
+    }
+  }, [documentsLink, onViewDocuments]);
 
   const cardRefs = useRef<Record<string, HTMLElement | null>>({});
   const navItemRefs = useRef<Record<string, HTMLElement | null>>({});
@@ -1621,7 +2213,10 @@ export function Medical({
   const activeSectionKeyRef = useRef(activeSectionKey);
   activeSectionKeyRef.current = activeSectionKey;
   const originalsRef = useRef<Record<string, Record<string, string>>>({});
-  const dialogOriginalRef = useRef<Record<string, string>>({});
+  const dialogOriginalRef = useRef<Record<string, Record<string, string>>>({});
+  // Sections that `openDialog` added to the page for the open dialog and that are not saved yet. Cancelling
+  // the dialog removes them again; a successful Save keeps them.
+  const dialogAddedRef = useRef<readonly string[]>([]);
   const editingRef = useRef<Record<string, boolean>>({});
   const observerLockUntil = useRef(0);
 
@@ -1739,35 +2334,90 @@ export function Medical({
     };
   }, [groups, sections]);
 
-  const dialogSection = useMemo(
-    () => sections.find((section) => section.key === dialogKey),
-    [sections, dialogKey],
+  // Edit units: MER and Tele MER are edited as one unit (one Edit / Save for all their sub
+  // sections). Every other section is its own unit.
+  const unitBySection = useMemo(() => {
+    const map = new Map<string, MedicalEditUnit>();
+    groups.forEach((group) => {
+      if (!MEDICAL_COMBINED_GROUP_KEYS.includes(group.key) || group.sections.length === 0) {
+        return;
+      }
+      const unit: MedicalEditUnit = {
+        key: group.sections[0].key,
+        title: group.name,
+        sectionKeys: group.sections.map((s) => s.key),
+      };
+      unit.sectionKeys.forEach((key) => map.set(key, unit));
+    });
+    return map;
+  }, [groups]);
+
+  const getUnit = useCallback(
+    (sectionKey: string): MedicalEditUnit =>
+      unitBySection.get(sectionKey) ?? {
+        key: sectionKey,
+        title: sections.find((s) => s.key === sectionKey)?.title ?? "",
+        sectionKeys: [sectionKey],
+      },
+    [sections, unitBySection],
   );
-  const historySection = useMemo(
-    () => sections.find((section) => section.key === historyKey),
-    [sections, historyKey],
+
+  // A MER / Tele MER unit shows the largest record count among its sub sections.
+  const getHistoryCount = useCallback(
+    (sectionKey: string): number =>
+      Math.max(
+        0,
+        ...getUnit(sectionKey).sectionKeys.map((key) => history?.[key]?.length ?? 0),
+      ),
+    [getUnit, history],
+  );
+
+  const historyUnit = historyKey ? getUnit(historyKey) : undefined;
+  const historySections = useMemo(
+    () =>
+      (historyUnit?.sectionKeys ?? []).flatMap((key) => {
+        const found = sections.find((s) => s.key === key);
+        return found ? [found] : [];
+      }),
+    [historyUnit, sections],
+  );
+
+  const dialogUnit = dialogKey ? getUnit(dialogKey) : undefined;
+  const dialogSections = useMemo(
+    () =>
+      (dialogUnit?.sectionKeys ?? []).flatMap((key) => {
+        const found = sections.find((s) => s.key === key);
+        return found ? [found] : [];
+      }),
+    [dialogUnit, sections],
   );
 
   const startEditing = useCallback(
     (sectionKey: string) => {
-      if (editingRef.current[sectionKey]) return;
-      originalsRef.current[sectionKey] = store.pick(`${sectionKey}-`);
-      editingRef.current = { ...editingRef.current, [sectionKey]: true };
+      const unit = getUnit(sectionKey);
+      if (editingRef.current[unit.key]) return;
+      unit.sectionKeys.forEach((key) => {
+        originalsRef.current[key] = store.pick(`${key}-`);
+      });
+      editingRef.current = { ...editingRef.current, [unit.key]: true };
       setEditing(editingRef.current);
     },
-    [store],
+    [getUnit, store],
   );
 
   const stopEditing = useCallback(
     (sectionKey: string, restore: boolean) => {
-      if (!editingRef.current[sectionKey]) return;
+      const unit = getUnit(sectionKey);
+      if (!editingRef.current[unit.key]) return;
       if (restore) {
-        store.restore(`${sectionKey}-`, originalsRef.current[sectionKey] ?? {});
+        unit.sectionKeys.forEach((key) => {
+          store.restore(`${key}-`, originalsRef.current[key] ?? {});
+        });
       }
-      editingRef.current = { ...editingRef.current, [sectionKey]: false };
+      editingRef.current = { ...editingRef.current, [unit.key]: false };
       setEditing(editingRef.current);
     },
-    [store],
+    [getUnit, store],
   );
 
   const setAttempted = useCallback((sectionKey: string, value: boolean) => {
@@ -1826,78 +2476,265 @@ export function Medical({
     [store],
   );
 
-  const handleReset = useCallback(
+  const unitSections = useCallback(
     (sectionKey: string) => {
-      setAttempted(sectionKey, false);
-      stopEditing(sectionKey, true);
+      const unit = getUnit(sectionKey);
+      return unit.sectionKeys.flatMap((key) => {
+        const found = sections.find((s) => s.key === key);
+        return found ? [found] : [];
+      });
     },
-    [setAttempted, stopEditing],
+    [getUnit, sections],
   );
 
-  const handleSave = useCallback(
+  const handleReview = useCallback(
+    (sectionKey: string, decision: ReviewDecision) => {
+      unitSections(sectionKey).forEach((s) => setAttempted(s.key, false));
+      stopEditing(sectionKey, true);
+      const unitKey = getUnit(sectionKey).key;
+      setReviews((current) =>
+        current[unitKey] === decision ? current : { ...current, [unitKey]: decision },
+      );
+    },
+    [getUnit, setAttempted, stopEditing, unitSections],
+  );
+
+  const handleReset = useCallback(
     (sectionKey: string) => {
-      const section = sections.find((s) => s.key === sectionKey);
-      if (section && !validateSection(section)) {
-        setAttempted(sectionKey, true);
+      unitSections(sectionKey).forEach((s) => setAttempted(s.key, false));
+      stopEditing(sectionKey, true);
+    },
+    [setAttempted, stopEditing, unitSections],
+  );
+
+  /** Sends the unit's sections to the Save API and re-reads the saved sections. Returns true when the API accepted it. */
+  const saveUnitToApi = useCallback(
+    async (
+      save: NonNullable<MedicalProps["onSaveSection"]>,
+      unit: MedicalEditUnit,
+      unitSectionList: readonly MedicalSection[],
+    ): Promise<boolean> => {
+      // Every applicant profile has a party id; it is the DB correlation key, so a save never goes without it.
+      const activePartyId = partyId?.trim() ?? "";
+      if (activePartyId.length === 0) {
+        setSnackbar({ message: MEDICAL_MESSAGES.partyMissing, severity: "error" });
+        return false;
+      }
+      // `createdBy` is the logged-in user id, the same value the header profile shows.
+      const createdBy = getSessionUser()?.username.trim() ?? "";
+      if (createdBy.length === 0) {
+        setSnackbar({ message: MEDICAL_MESSAGES.sessionMissing, severity: "error" });
+        return false;
+      }
+      const request = buildMedicalSaveRequest({
+        applicationNumber: applicationNumber ?? "",
+        partyId: activePartyId,
+        createdBy,
+        sections: unitSectionList,
+        values: store.snapshot(),
+      });
+      try {
+        const response = await save(request);
+        const failed = response.error || response.response_code !== 200;
+        // Success shows the API's top-level message; a failure appends the field-level errors to it.
+        setSnackbar({
+          message: formatMedicalSaveMessage(
+            response,
+            failed ? MEDICAL_MESSAGES.saveFailed : MEDICAL_MESSAGES.sectionSaved(unit.title),
+          ),
+          severity: failed ? "error" : "success",
+        });
+        if (failed) return false;
+        // The response echoes the fetch structure: re-read the saved sections from it, so the form holds what
+        // the database stored (real memberId, habitId, readingId, responseId) and a second Save updates the
+        // same rows instead of inserting them again. Other sections, and their unsaved edits, are untouched.
+        const refreshed = readMedicalSaveSections(response, unit.sectionKeys);
+        if (refreshed.length > 0) {
+          refreshed.forEach((section) => {
+            store.restore(`${section.key}-`, createInitialValues([section]));
+          });
+          setSavedSections((previous) => ({
+            base: sectionsProp,
+            byKey: {
+              ...(previous.base === sectionsProp ? previous.byKey : {}),
+              ...Object.fromEntries(refreshed.map((section) => [section.key, section])),
+            },
+          }));
+        }
+        return true;
+      } catch (reason: unknown) {
+        setSnackbar({
+          message: readSaveError(reason) || MEDICAL_MESSAGES.saveFailed,
+          severity: "error",
+        });
+        return false;
+      }
+    },
+    [applicationNumber, partyId, sectionsProp, store],
+  );
+
+  /**
+   * Validates the edited unit, then sends only that unit's sections to the Save API. The API either
+   * rejects it (validation message, edit mode stays on) or accepts it (success message, edit mode ends).
+   * Returns true when the unit was saved.
+   */
+  const saveUnit = useCallback(
+    async (sectionKey: string): Promise<boolean> => {
+      const unit = getUnit(sectionKey);
+      const unitSectionList = unitSections(sectionKey);
+      const invalid = unitSectionList.filter((s) => !validateSection(s));
+      if (invalid.length > 0) {
+        unitSectionList.forEach((s) =>
+          setAttempted(s.key, invalid.some((i) => i.key === s.key)),
+        );
         setSnackbar({
           message: MEDICAL_MESSAGES.validationFailed,
           severity: "warning",
         });
-        return;
+        return false;
       }
-      setAttempted(sectionKey, false);
+      unitSectionList.forEach((s) => setAttempted(s.key, false));
+      if (onSaveSection) {
+        const saved = await saveUnitToApi(onSaveSection, unit, unitSectionList);
+        if (!saved) return false;
+      } else {
+        setSnackbar({
+          message: MEDICAL_MESSAGES.sectionSaved(unit.title),
+          severity: "success",
+        });
+      }
       stopEditing(sectionKey, false);
-      setSnackbar({
-        message: MEDICAL_MESSAGES.sectionSaved(section?.title ?? ""),
-        severity: "success",
-      });
+      return true;
     },
-    [sections, setAttempted, stopEditing, validateSection],
+    [
+      getUnit,
+      onSaveSection,
+      saveUnitToApi,
+      setAttempted,
+      stopEditing,
+      unitSections,
+      validateSection,
+    ],
+  );
+
+  const handleSave = useCallback(
+    (sectionKey: string) => {
+      void saveUnit(sectionKey);
+    },
+    [saveUnit],
+  );
+
+  // The edit unit of a catalog section: MER / Tele MER are one unit of all their sub sections.
+  const getCatalogUnit = useCallback(
+    (sectionKey: string): MedicalEditUnit => {
+      const group = catalogGroups.find(
+        (item) =>
+          MEDICAL_COMBINED_GROUP_KEYS.includes(item.key) &&
+          item.sections.some((section) => section.key === sectionKey),
+      );
+      return group && group.sections.length > 0
+        ? {
+            key: group.sections[0].key,
+            title: group.name,
+            sectionKeys: group.sections.map((section) => section.key),
+          }
+        : {
+            key: sectionKey,
+            title: catalogSections.find((section) => section.key === sectionKey)?.title ?? "",
+            sectionKeys: [sectionKey],
+          };
+    },
+    [catalogGroups, catalogSections],
   );
 
   const openDialog = useCallback(
     (sectionKey: string) => {
       if (!sectionKey) return;
-      dialogOriginalRef.current = store.pick(`${sectionKey}-`);
-      setDialogKey(sectionKey);
+      const unit = getCatalogUnit(sectionKey);
+      // A section the fetch did not return is added to the page empty, then opened for editing.
+      const shownKeys = new Set(sections.map((section) => section.key));
+      const missing = catalogSections.filter(
+        (section) => unit.sectionKeys.includes(section.key) && !shownKeys.has(section.key),
+      );
+      dialogAddedRef.current = missing.map((section) => section.key);
+      if (missing.length > 0) {
+        missing.forEach((section) => {
+          store.restore(`${section.key}-`, createInitialValues([section]));
+        });
+        setAdded((previous) => ({
+          base: sectionsProp,
+          keys: Array.from(
+            new Set([
+              ...(previous.base === sectionsProp ? previous.keys : []),
+              ...missing.map((section) => section.key),
+            ]),
+          ),
+        }));
+      }
+      dialogOriginalRef.current = Object.fromEntries(
+        unit.sectionKeys.map((key) => [key, store.pick(`${key}-`)]),
+      );
+      setDialogKey(unit.key);
       setDialogOpen(true);
     },
-    [store],
+    [catalogSections, getCatalogUnit, sections, sectionsProp, store],
   );
 
   const closeDialog = useCallback(() => {
     if (dialogKey) {
-      store.restore(`${dialogKey}-`, dialogOriginalRef.current);
-      setAttempted(dialogKey, false);
+      unitSections(dialogKey).forEach((s) => {
+        store.restore(`${s.key}-`, dialogOriginalRef.current[s.key] ?? {});
+        setAttempted(s.key, false);
+      });
+    }
+    // A document added only for this dialog is dropped again: it appears on the page only after Save.
+    const discarded = dialogAddedRef.current;
+    dialogAddedRef.current = [];
+    if (discarded.length > 0) {
+      setAdded((previous) => ({
+        base: sectionsProp,
+        keys: (previous.base === sectionsProp ? previous.keys : []).filter(
+          (key) => !discarded.includes(key),
+        ),
+      }));
     }
     setDialogOpen(false);
-  }, [dialogKey, setAttempted, store]);
+  }, [dialogKey, sectionsProp, setAttempted, store, unitSections]);
 
   const saveDialog = useCallback(() => {
     if (!dialogKey) return;
-    if (dialogSection && !validateSection(dialogSection)) {
-      setAttempted(dialogKey, true);
-      setSnackbar({
-        message: MEDICAL_MESSAGES.validationFailed,
-        severity: "warning",
-      });
-      return;
-    }
-    setAttempted(dialogKey, false);
-    stopEditing(dialogKey, false);
-    setSnackbar({
-      message: MEDICAL_MESSAGES.sectionSaved(dialogSection?.title ?? ""),
-      severity: "success",
+    void saveUnit(dialogKey).then((saved) => {
+      if (!saved) return;
+      dialogAddedRef.current = [];
+      setDialogOpen(false);
     });
-    setDialogOpen(false);
-  }, [dialogKey, dialogSection, setAttempted, stopEditing, validateSection]);
+  }, [dialogKey, saveUnit]);
 
   const handleApplicantChange = (applicantKey: string) => {
     setActiveApplicantKey(applicantKey);
     onApplicantChange?.(applicantKey);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    // A section still in edit mode has not been saved (Save and Reset both leave edit mode).
+    if (Object.values(editingRef.current).some(Boolean)) {
+      setSnackbar({ message: MEDICAL_MESSAGES.unsavedChanges, severity: "warning" });
+      return;
+    }
+
+    if (applicationNumber) {
+      try {
+        const result = await retriggerBre(applicationNumber, { eventName: "ME" });
+        if ("error" in result && result.error) {
+          setSnackbar({ message: result.error, severity: "error" });
+          return;
+        }
+      } catch {
+        setSnackbar({ message: "Unable to retrigger BRE.", severity: "error" });
+        return;
+      }
+    }
+
     onSubmit?.({
       applicantKey: activeApplicantKey,
       values: store.snapshot(),
@@ -1909,18 +2746,32 @@ export function Medical({
   const activeApplicant = applicants.find(
     (applicant) => applicant.key === activeApplicantKey,
   );
-  const applicantTabs = useMemo(
-    () => applicants.map(({ key, label }) => ({ key, label })),
-    [applicants],
-  );
+  /** Only the selected applicant is shown in the tabs; falls back to all when none matches. */
+  const applicantTabs = useMemo(() => {
+    const visible = activeApplicant ? [activeApplicant] : applicants;
+    return visible.map(({ key, label }) => ({ key, label }));
+  }, [activeApplicant, applicants]);
 
-  const editableOptions = useMemo(
-    () =>
-      sections
-        .filter((section) => !MEDICAL_NON_EDITABLE_SECTION_KEYS.includes(section.key))
-        .map((section) => ({ label: section.title, value: section.key })),
-    [sections],
-  );
+  // The documents still to add: the `MED_DOC_TABLE` master documents that are not shown yet (the built-in
+  // catalog when the master is not loaded). Only the first section of a combined group (MER, Tele MER) is
+  // listed; its sub sections open together with it.
+  const editableOptions = useMemo(() => {
+    const shownKeys = new Set(sections.map((section) => section.key));
+    const offerable = catalogSections.filter(
+      (section) =>
+        !MEDICAL_NON_EDITABLE_SECTION_KEYS.includes(section.key) &&
+        getCatalogUnit(section.key).key === section.key,
+    );
+    return (
+      buildMedicalDocumentOptions(shownKeys, new Set(offerable.map((section) => section.key))) ??
+      offerable
+        .filter((section) => !shownKeys.has(section.key))
+        .map((section) => ({
+          label: getCatalogUnit(section.key).title,
+          value: section.key,
+        }))
+    );
+  }, [sections, catalogSections, getCatalogUnit]);
 
   return (
     <StoreContext.Provider value={store}>
@@ -1994,17 +2845,7 @@ export function Medical({
             />
           </Box>
 
-          <CustomButton
-            variant="text"
-            onClick={() =>
-              onViewDocuments
-                ? onViewDocuments()
-                : setSnackbar({
-                    message: MEDICAL_MESSAGES.documents,
-                    severity: "success",
-                  })
-            }
-          >
+          <CustomButton variant="text" onClick={handleViewDocuments}>
             View Medical Documents
           </CustomButton>
         </Box>
@@ -2084,12 +2925,17 @@ export function Medical({
               <SectionCard
                 key={section.key}
                 section={section}
-                editing={Boolean(editing[section.key])}
+                mode={resolveMedicalActionMode(section, actions)}
+                review={reviews[getUnit(section.key).key]}
+                onReview={handleReview}
+                editing={Boolean(editing[getUnit(section.key).key])}
+                ownsEditControls={getUnit(section.key).sectionKeys[0] === section.key}
                 validationAttempted={Boolean(validationAttempted[section.key])}
                 onEdit={startEditing}
                 onSave={handleSave}
                 onReset={handleReset}
                 onHistory={setHistoryKey}
+                historyCount={getHistoryCount(section.key)}
                 registerRef={registerRef}
               />
             ))}
@@ -2113,12 +2959,11 @@ export function Medical({
               minHeight: 28,
               px: "11px",
               py: "4px",
-              borderRadius: "50px",
-              fontSize: 13,
+              fontSize: 12,
               fontWeight: 700,
             }}
           >
-            Submit
+            Call BRE
           </CustomButton>
         </Box>
 
@@ -2129,7 +2974,7 @@ export function Medical({
           maxWidth="lg"
           title={
             <Typography component="span" sx={{ fontSize: 14, fontWeight: 700 }}>
-              {dialogSection?.title}
+              {dialogUnit?.title}
             </Typography>
           }
           actionsSx={{ justifyContent: "center" }}
@@ -2142,30 +2987,42 @@ export function Medical({
             </CustomButton>
           }
         >
-          {dialogSection && (
+          {dialogSections.length > 0 && (
             <Box
               sx={{
                 backgroundColor: "#F6F6F6",
                 borderRadius: 2,
                 p: 2,
                 minWidth: 0,
+                display: "flex",
+                flexDirection: "column",
+                gap: "16px",
               }}
             >
               <EditingContext.Provider value>
-                <ValidationAttemptedContext.Provider
-                  value={Boolean(validationAttempted[dialogSection.key])}
-                >
-                  <SectionBody section={dialogSection} />
-                </ValidationAttemptedContext.Provider>
+                {dialogSections.map((dialogSection) => (
+                  <ValidationAttemptedContext.Provider
+                    key={dialogSection.key}
+                    value={Boolean(validationAttempted[dialogSection.key])}
+                  >
+                    {dialogSections.length > 1 && (
+                      <Typography component="h3" sx={CARD_TITLE_SX}>
+                        {dialogSection.title}
+                      </Typography>
+                    )}
+                    <SectionBody section={dialogSection} />
+                  </ValidationAttemptedContext.Provider>
+                ))}
               </EditingContext.Provider>
             </Box>
           )}
         </CustomDialog>
 
-        {historySection && (
+        {historyUnit && (
           <MedicalHistoryDialog
-            section={historySection}
-            entries={history?.[historySection.key] ?? []}
+            title={historyUnit.title}
+            sections={historySections}
+            history={history}
             onClose={() => setHistoryKey(null)}
           />
         )}

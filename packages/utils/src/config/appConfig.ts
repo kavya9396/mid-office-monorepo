@@ -105,6 +105,13 @@ export const breUrls = {
   },
 };
 
+/** Reinsurer / UDS document link fetch (Medical "View Medical Documents"). Empty when unset — mock mode skips it. */
+export const reinsurerDocUrls = {
+  get fetch(): string {
+    return configuredUrl(import.meta.env.VITE_REINSURER_DOC_FETCH_API);
+  },
+};
+
 /** CMO decision fetch (HO CMO and Vendor CMO). Empty when unset — mock mode skips it. */
 export const cmoDecisionUrls = {
   get fetch(): string {
@@ -147,6 +154,12 @@ export const groupBusinessUrls = {
   },
   get financialSave(): string {
     return configuredUrl(import.meta.env.VITE_GROUP_FINANCIAL_SAVE_API);
+  },
+  get medicalFetch(): string {
+    return configuredUrl(import.meta.env.VITE_MEDICAL_FETCH_API);
+  },
+  get medicalSave(): string {
+    return configuredUrl(import.meta.env.VITE_MEDICAL_SAVE_API);
   },
 };
 

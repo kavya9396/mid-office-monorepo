@@ -1,0 +1,4584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tele-MER Review &amp; Verification - ICICI Prudential</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #e45f14;
+      --primary-dark: #c94f0e;
+      --primary-light: #fff3ec;
+      --maroon: #9a2529;
+      --bg: #fff8f3;
+      --surface: #ffffff;
+      --border: #e4dedb;
+      --border-light: #f1d8c8;
+      --text-main: #302a27;
+      --text-muted: #7b716c;
+      --success: #2e7d32;
+      --success-bg: #edf7ed;
+      --error: #d32f2f;
+      --error-bg: #fde8e8;
+      --header-grad: linear-gradient(to bottom, #f58220 0%, #e65318 42%, #c92e27 72%, #98252b 100%);
+      --radius: 4px;
+      --font: 'Mulish', Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font); }
+    body { background-color: var(--bg); color: var(--text-main); font-size: 11.5px; line-height: 1.35; }
+
+    /* Sticky App Header - GUW Style */
+    .app-header {
+      height: 57px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: stretch;
+      color: #fff;
+      background: var(--header-grad);
+      box-shadow: 0 3px 12px rgba(111, 24, 24, .25);
+    }
+    .header-back {
+      width: 44px;
+      border: 0;
+      border-right: 1px solid rgba(255, 255, 255, .25);
+      border-radius: 0;
+      background: rgba(126, 22, 31, .42);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      font-size: 20px;
+      transition: background 0.15s;
+    }
+    .header-back:hover { background: rgba(126, 22, 31, .62); }
+    .header-logo-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-left: 14px;
+    }
+    .header-brand {
+      font-size: 15px;
+      font-weight: 900;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+    .header-subtag {
+      background: rgba(255,255,255,0.2);
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+    .header-spacer { flex: 1; }
+    .header-date {
+      align-self: center;
+      min-width: 150px;
+      padding-right: 12px;
+      text-align: right;
+      border-right: 1px solid rgba(255, 255, 255, .35);
+      line-height: 1.3;
+    }
+    .header-date div:first-child { opacity: .9; font-size: 11px; }
+    .header-date div:last-child { margin-top: 1px; font-size: 10.5px; font-weight: 700; }
+    .user-menu-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 16px 0 12px;
+    }
+    .user-avatar {
+      display: grid;
+      place-items: center;
+      width: 32px;
+      height: 32px;
+      border: 1px solid rgba(255, 255, 255, .45);
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .2);
+      font-weight: 800;
+      font-size: 11.5px;
+    }
+    .user-name {
+      font-size: 11.5px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    /* Main Container with Scroll Minimization */
+    main.main-content {
+      height: calc(100vh - 57px);
+      overflow-y: auto;
+      padding-bottom: 52px;
+    }
+
+    /* Compact GUW Applicant Banner */
+    .banner-shell {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      padding: 4px 6px 0;
+      background: #fff;
+    }
+    .banner {
+      display: grid;
+      grid-template-columns: 88px minmax(0, 1fr) auto;
+      margin-bottom: 4px;
+      overflow: hidden;
+      background: #ffead7;
+      color: #000;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(169, 33, 41, .12);
+    }
+    .banner-avatar {
+      min-height: 52px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(145deg, #e45f14, #c83c2f);
+    }
+    .banner-avatar span {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border: 1.5px solid rgba(255, 255, 255, .45);
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .18);
+      color: #fff;
+      font-weight: 900;
+      font-size: 13px;
+    }
+    .banner-content {
+      padding: 5px 12px;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .banner-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .banner-title strong {
+      font-size: 13.5px;
+      font-weight: 900;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .app-pill {
+      padding: 1px 7px;
+      border: 1px solid rgba(169, 33, 41, .2);
+      border-radius: 12px;
+      background: #fff;
+      color: #a92129;
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .banner-line {
+      font-size: 11px;
+      line-height: 1.35;
+      color: #3b322e;
+      margin-top: 1px;
+    }
+    .banner-line.product {
+      font-size: 10px;
+      font-weight: 800;
+      color: #7e161f;
+    }
+    .banner-actions {
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      gap: 6px;
+    }
+    .btn-banner-action {
+      padding: 3px 9px;
+      border: 1px solid #e45f14;
+      border-radius: 14px;
+      background: #fff4ec;
+      color: #a92129;
+      font-size: 10.5px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    /* Multi-Life Tabs and Overall Action Bar */
+    .tabs-bar {
+      background: #fff;
+      border-bottom: 2px solid var(--border);
+      padding: 3px 8px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .tabs-container { display: flex; gap: 4px; }
+    .life-tab {
+      padding: 5px 12px;
+      border: 1px solid var(--border);
+      border-bottom: none;
+      border-radius: 5px 5px 0 0;
+      background: #f7f4f1;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease-in-out;
+    }
+    .life-tab:hover:not(.active) {
+      background: #ffead7;
+      color: var(--maroon);
+    }
+    /* Distinct background on selected tab */
+    .life-tab.active {
+      background: var(--maroon);
+      color: #ffffff;
+      border-color: var(--maroon);
+      font-weight: 800;
+    }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #bbb; }
+    .status-dot.completed { background: #4caf50; }
+    .status-dot.dirty { background: #ff9800; }
+    .life-tab.active .status-dot.completed { background: #81c784; box-shadow: 0 0 0 1px #fff; }
+
+    .overall-edit-actions { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
+
+    /* Page Content Grid - Compact & Dense */
+    .content-area {
+      padding: 4px 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    /* Flat Section Cards (Non-collapsible, Minimalist) */
+    .section-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+      overflow: hidden;
+    }
+    .card-header {
+      padding: 4px 8px;
+      background: #fdfbf9;
+      border-bottom: 1px solid #ede8e5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .card-title {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--maroon);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn {
+      padding: 4px 10px;
+      border-radius: 3px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s;
+      line-height: 1.2;
+    }
+    .btn-secondary { background: #fff; border-color: var(--border); color: var(--text-main); }
+    .btn-secondary:hover { background: #f9f7f5; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-outline-primary { background: transparent; border-color: var(--primary); color: var(--primary); }
+    .btn-outline-primary:hover { background: var(--primary-light); }
+
+    .card-body { padding: 6px 8px; }
+
+    /* Compact 4 and 5 column form grids */
+    .grid-5 { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px 8px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px 8px; }
+
+    .field-group { display: flex; flex-direction: column; gap: 2px; }
+    .field-group label {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #554f4b;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .field-group label .req { color: var(--error); margin-left: 2px; }
+    .field-control {
+      padding: 3px 6px;
+      border: 1px solid #dcd5d1;
+      border-radius: 3px;
+      font-size: 11.5px;
+      height: 25px;
+      line-height: 1.2;
+      background: #fcfcfc;
+      color: var(--text-main);
+      width: 100%;
+    }
+    .field-control:disabled, .field-control[readonly] {
+      background: #f4f2f0;
+      color: #444;
+      border-color: #e5e0dc;
+      cursor: not-allowed;
+    }
+    .field-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 1.5px rgba(228,95,20,0.15); }
+
+    /* Tables - Dense */
+    .custom-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 2px; }
+    .custom-table th, .custom-table td {
+      border: 1px solid var(--border);
+      padding: 4px 6px;
+      text-align: left;
+      vertical-align: middle;
+    }
+    .custom-table th { background: #f7f4f1; font-weight: 800; color: var(--text-main); font-size: 10.5px; }
+    .custom-table tr:hover { background: #fffcf9; }
+
+    /* Questionnaire Table Styling */
+    .q-id { font-weight: 800; color: var(--maroon); width: 45px; font-size: 10.5px; }
+    .q-desc { font-weight: 600; color: var(--text-main); line-height: 1.25; font-size: 11px; }
+    .q-trigger-note { color: var(--primary); font-size: 10px; margin-top: 1px; font-weight: 700; }
+    .q-row-child { background: #faf8f6; }
+    .q-table-search {
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .q-search-input {
+      padding: 3px 8px;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      width: 260px;
+      font-size: 11px;
+      height: 24px;
+    }
+
+    /* Multi-select Pills */
+    .multiselect-box { display: flex; flex-direction: column; gap: 2px; }
+    .multiselect-pills { display: flex; flex-wrap: wrap; gap: 3px; }
+    .pill-opt {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #fff;
+      cursor: pointer;
+      user-select: none;
+      font-weight: 700;
+      transition: all 0.15s;
+    }
+    .pill-opt.selected {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    .pill-opt.disabled {
+      cursor: not-allowed;
+      opacity: 0.85;
+    }
+
+    /* Sticky Footer - Compact */
+    .sticky-footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 44px;
+      background: #fff;
+      border-top: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      z-index: 50;
+      box-shadow: 0 -2px 6px rgba(0,0,0,0.05);
+    }
+    .footer-left { display: flex; align-items: center; gap: 10px; font-size: 11.5px; color: var(--text-muted); }
+    .footer-right { display: flex; align-items: center; gap: 8px; }
+
+    /* Dialog Modal */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200;
+      display: none; align-items: center; justify-content: center;
+    }
+    .modal-box {
+      background: #fff; border-radius: 6px; width: 400px; padding: 18px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.2); text-align: center;
+    }
+    .modal-box.modal-wide {
+      width: 980px; max-width: 95vw; max-height: 90vh; overflow-y: auto; text-align: left; padding: 14px 18px;
+    }
+    .modal-title { font-size: 14px; font-weight: 800; color: var(--maroon); margin-bottom: 4px; }
+    .modal-body { font-size: 12px; color: var(--text-main); margin-bottom: 12px; }
+    .modal-actions { display: flex; justify-content: center; gap: 8px; }
+
+    /* History Attempt Tabs */
+    .hist-tabs { display: flex; gap: 6px; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+    .hist-tab-btn {
+      padding: 4px 10px; border: 1px solid var(--border); border-radius: 4px; background: #f7f4f1;
+      font-size: 11px; font-weight: 700; color: var(--text-muted); cursor: pointer; transition: all 0.15s;
+    }
+    .hist-tab-btn.active {
+      background: var(--maroon); color: #fff; border-color: var(--maroon); font-weight: 800;
+    }
+
+    /* History Replica Container */
+    .hist-replica-wrap {
+      display: flex; flex-direction: column; gap: 6px; background: #fbf9f7; padding: 6px; border: 1px solid #eedfd8; border-radius: 4px;
+    }
+    .hist-meta-bar {
+      display: flex; align-items: center; justify-content: space-between; background: #fff;
+      padding: 6px 10px; border: 1px solid var(--border); border-radius: 3px; font-size: 11px;
+    }
+  </style>
+</head>
+<body data-screen="telemer-screen">
+
+  <!-- Header - Styled exact as GUW Header -->
+  <header class="app-header" data-section="app-header">
+    <button class="header-back" title="Back to Inbox" onclick="window.history.back()">‹</button>
+    <div class="header-logo-title">
+      <div class="header-brand">ICICI PRUDENTIAL</div>
+      <span class="header-subtag">Tele-MER Verification</span>
+    </div>
+    <div class="header-spacer"></div>
+    <div class="header-date">
+      <div>Wednesday, 19 Nov 2026</div>
+      <div>Session: 14:22 min</div>
+    </div>
+    <div class="user-menu-wrap">
+      <div class="user-avatar">UW</div>
+      <div class="user-name">UW001</div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <!-- Compact GUW Applicant Summary Banner -->
+    <div class="banner-shell" data-section="applicant-banner">
+      <div class="banner">
+        <div class="banner-avatar">
+          <span>AY</span>
+        </div>
+        <div class="banner-content">
+          <div class="banner-title">
+            <strong id="banner-name">ARYA YAN</strong>
+            <span class="app-pill">App No: <strong id="banner-appno">OS90377743</strong></span>
+            <span class="app-pill" style="background:#e8f5e9; color:#2e7d32; border-color:#c8e6c9;">Tele-MER</span>
+          </div>
+          <div class="banner-line">
+            Life Assured 1 / Female / 68 Yrs (01/01/1956) / PG / Salaried / Income: ₹20,00,000 / Mumbai
+          </div>
+          <div class="banner-line product">
+            iProtect Smart (101N123V01) | Base SA: ₹1,00,00,000 | CI Rider: ₹25,00,000 | WOP: Active
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Multi-Life Applicant Tabs with Distinct Selected Background and History Action -->
+    <div class="tabs-bar" data-section="applicant-tabs">
+      <div class="tabs-container">
+        <button class="life-tab active" onclick="selectLife('la1', this)">
+          <span class="status-dot completed" id="dot-la1"></span>
+          Life Assured 1 (ARYA YAN)
+        </button>
+        <button class="life-tab" onclick="selectLife('la2', this)">
+          <span class="status-dot dirty" id="dot-la2"></span>
+          Life Assured 2 (Ananya Yan)
+        </button>
+        <button class="life-tab" onclick="selectLife('proposer', this)">
+          <span class="status-dot" id="dot-proposer"></span>
+          Proposer (Self)
+        </button>
+      </div>
+
+      <div class="overall-edit-actions">
+        <button class="btn btn-secondary" id="btn-view-doc" onclick="openDocumentModal()">View Documents</button>
+        <button class="btn btn-secondary" id="btn-telemer-history" onclick="openHistoryModal()">History</button>
+        <button class="btn btn-primary" id="btn-overall-edit" onclick="toggleOverallEdit()">Edit Telemer</button>
+        <button class="btn btn-secondary" id="btn-overall-cancel" style="display:none;" onclick="cancelOverallEdit()">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Main Content Area - Dense 5-Column Grid -->
+    <div class="content-area">
+
+      <!-- Section 1: Overview - Application Form Medical & Lifestyle Details -->
+      <article class="section-card" data-section="application-form-lifestyle">
+        <div class="card-header">
+          <div class="card-title">1. Application Form Medical &amp; Lifestyle Details</div>
+        </div>
+        <div class="card-body">
+          <div class="grid-5">
+            <div class="field-group">
+              <label>Height (cm)</label>
+              <input type="text" class="field-control" value="160" readonly>
+            </div>
+            <div class="field-group">
+              <label>Weight (kg)</label>
+              <input type="text" class="field-control" value="60" readonly>
+            </div>
+            <div class="field-group">
+              <label>BMI</label>
+              <input type="text" class="field-control" value="23.44" readonly>
+            </div>
+            <div class="field-group">
+              <label>Family History As Per App Form</label>
+              <input type="text" class="field-control" value="No" readonly>
+            </div>
+            <div class="field-group">
+              <label>Smoking</label>
+              <input type="text" class="field-control" value="No" readonly>
+            </div>
+            <div class="field-group">
+              <label>Diving</label>
+              <input type="text" class="field-control" value="No" readonly>
+            </div>
+            <div class="field-group">
+              <label>Tobacco</label>
+              <input type="text" class="field-control" value="No" readonly>
+            </div>
+            <div class="field-group">
+              <label>Alcohol</label>
+              <input type="text" class="field-control" value="Yes" readonly>
+            </div>
+            <div class="field-group">
+              <label>Narcotics</label>
+              <input type="text" class="field-control" value="No" readonly>
+            </div>
+            <div class="field-group">
+              <label>Adverse</label>
+              <input type="text" class="field-control" value="No" readonly>
+            </div>
+            <div class="field-group">
+              <label>Hazardous Occupation</label>
+              <input type="text" class="field-control" value="No" readonly>
+            </div>
+            <div class="field-group">
+              <label>Illness Impairment</label>
+              <input type="text" class="field-control" value="None" readonly>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Section 2: Tele/Video MER Details (5 Columns per Row) -->
+      <article class="section-card" data-section="tele-mer-details">
+        <div class="card-header">
+          <div class="card-title">2. Tele/Video MER</div>
+        </div>
+        <div class="card-body" id="sec-tele-mer">
+          <div class="grid-5">
+            <div class="field-group">
+              <label>Application No.</label>
+              <input type="text" class="field-control tele-editable" value="OS90377743" disabled data-field="applicationNo" readonly>
+            </div>
+            <div class="field-group">
+              <label>First Name</label>
+              <input type="text" class="field-control tele-editable" value="ARYA" disabled data-field="firstName">
+            </div>
+            <div class="field-group">
+              <label>Last Name</label>
+              <input type="text" class="field-control tele-editable" value="YAN" disabled data-field="lastName">
+            </div>
+            <div class="field-group">
+              <label>Gender</label>
+              <select class="field-control tele-editable" disabled data-field="gender">
+                <option>Male</option>
+                <option selected>Female</option>
+                <option>Transgender</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label>Date of Birth</label>
+              <input type="text" class="field-control tele-editable" value="01/01/1956" disabled data-field="dateOfBirth">
+            </div>
+            <div class="field-group">
+              <label>Telephonic MER</label>
+              <select class="field-control tele-editable" disabled data-field="telephonicMer">
+                <option>Yes</option>
+                <option selected>No</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label>Time of Tele call</label>
+              <input type="text" class="field-control tele-editable" value="14:30" disabled data-field="timeOfTeleCall">
+            </div>
+            <div class="field-group">
+              <label>Education</label>
+              <select class="field-control tele-editable" disabled data-field="education">
+                <option>Graduate</option>
+                <option selected>Post Graduate</option>
+                <option>HSC</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label>Occupation</label>
+              <select class="field-control tele-editable" disabled data-field="occupation">
+                <option selected>Salaried</option>
+                <option>Self Employed</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label>Disclosure</label>
+              <input type="text" class="field-control tele-editable" value="Material" disabled data-field="disclosure">
+            </div>
+            <div class="field-group">
+              <label>Adversity</label>
+              <select class="field-control tele-editable" disabled data-field="adversity">
+                <option selected>No</option>
+                <option>Yes</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label>Annual Income</label>
+              <input type="number" class="field-control tele-editable" value="2000000" disabled data-field="annualIncome">
+            </div>
+            <div class="field-group">
+              <label>Examiner Name</label>
+              <input type="text" class="field-control tele-editable" value="Mina" disabled data-field="examinerName">
+            </div>
+            <div class="field-group">
+              <label>Registration ID</label>
+              <input type="text" class="field-control tele-editable" value="123456" disabled data-field="registrationId">
+            </div>
+            <div class="field-group">
+              <label>MER Detail</label>
+              <input type="text" class="field-control tele-editable" value="Video MER" disabled data-field="merDetail">
+            </div>
+            <div class="field-group">
+              <label>Prev Ins. Declined</label>
+              <select class="field-control tele-editable" disabled data-field="previousInsuranceDeclined">
+                <option selected>Yes</option>
+                <option>No</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label>Medical Treatment</label>
+              <select class="field-control tele-editable" disabled data-field="medicalTreatment">
+                <option selected>Yes</option>
+                <option>No</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label>Address (City/State)</label>
+              <input type="text" class="field-control tele-editable" value="Mumbai, Maharashtra" disabled data-field="address">
+            </div>
+            <div class="field-group">
+              <label>Tele Findings</label>
+              <input type="text" class="field-control tele-editable" value="ok" disabled data-field="teleFindings">
+            </div>
+            <div class="field-group">
+              <label>Tele MER Final Remark</label>
+              <input type="text" class="field-control tele-editable" value="ok" disabled data-field="tmerFinalRemark">
+            </div>
+            <div class="field-group">
+              <label>Tele Type</label>
+              <input type="text" class="field-control tele-editable" value="Video-MER" disabled data-field="teleType" readonly>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Section 3: Measurements (5 in 1 Single Row) -->
+      <article class="section-card" data-section="tele-measurements">
+        <div class="card-header">
+          <div class="card-title">3. Measurements</div>
+        </div>
+        <div class="card-body" id="sec-measurements">
+          <div class="grid-5">
+            <div class="field-group">
+              <label>Height (cms)</label>
+              <input type="number" class="field-control tele-editable" id="val-height" value="160" disabled oninput="calcBMI()">
+            </div>
+            <div class="field-group">
+              <label>Height (ft)</label>
+              <input type="number" class="field-control" id="val-ft" value="5" readonly disabled>
+            </div>
+            <div class="field-group">
+              <label>Inches</label>
+              <input type="number" class="field-control" id="val-in" value="3" readonly disabled>
+            </div>
+            <div class="field-group">
+              <label>Weight (kgs)</label>
+              <input type="number" class="field-control tele-editable" id="val-weight" value="60" disabled oninput="calcBMI()">
+            </div>
+            <div class="field-group">
+              <label>BMI</label>
+              <input type="text" class="field-control" id="val-bmi" value="23.44" readonly disabled style="font-weight:800; color:var(--primary);">
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Section 4: Family History -->
+      <article class="section-card" data-section="tele-family-history">
+        <div class="card-header">
+          <div class="card-title">4. Family History</div>
+          <button class="btn btn-outline-primary" style="display:none;" id="btn-add-member" onclick="addFamilyRow()">+ Add Member</button>
+        </div>
+        <div class="card-body" id="sec-family">
+          <table class="custom-table" id="family-table">
+            <thead>
+              <tr>
+                <th style="width:20%;">Relation</th>
+                <th style="width:12%;">Age</th>
+                <th style="width:20%;">Dead or Alive</th>
+                <th style="width:38%;">Health Status</th>
+                <th style="width:10%; text-align:center;">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><input type="text" class="field-control tele-editable" value="Father" disabled></td>
+                <td><input type="number" class="field-control tele-editable" value="55" disabled></td>
+                <td>
+                  <select class="field-control tele-editable" disabled>
+                    <option selected>Alive</option>
+                    <option>Dead</option>
+                  </select>
+                </td>
+                <td><input type="text" class="field-control tele-editable" value="Good" disabled></td>
+                <td style="text-align:center;"><button class="btn btn-secondary btn-del" disabled onclick="removeRow(this)">Del</button></td>
+              </tr>
+              <tr>
+                <td><input type="text" class="field-control tele-editable" value="Mother" disabled></td>
+                <td><input type="number" class="field-control tele-editable" value="51" disabled></td>
+                <td>
+                  <select class="field-control tele-editable" disabled>
+                    <option selected>Alive</option>
+                    <option>Dead</option>
+                  </select>
+                </td>
+                <td><input type="text" class="field-control tele-editable" value="Good" disabled></td>
+                <td style="text-align:center;"><button class="btn btn-secondary btn-del" disabled onclick="removeRow(this)">Del</button></td>
+              </tr>
+              <tr>
+                <td><input type="text" class="field-control tele-editable" value="Spouse" disabled></td>
+                <td><input type="number" class="field-control tele-editable" value="32" disabled></td>
+                <td>
+                  <select class="field-control tele-editable" disabled>
+                    <option selected>Alive</option>
+                    <option>Dead</option>
+                  </select>
+                </td>
+                <td><input type="text" class="field-control tele-editable" value="Healthy" disabled></td>
+                <td style="text-align:center;"><button class="btn btn-secondary btn-del" disabled onclick="removeRow(this)">Del</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <!-- Section 5: Habit and Addiction -->
+      <article class="section-card" data-section="tele-habit-addiction">
+        <div class="card-header">
+          <div class="card-title">5. Habit and Addiction</div>
+        </div>
+        <div class="card-body" id="sec-habits">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th style="width:35%;">Habit</th>
+                <th style="width:25%;">Indicator</th>
+                <th style="width:20%;">Quantity</th>
+                <th style="width:20%;">No. of Years</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Cigarette/beedis/cigar</strong></td>
+                <td>
+                  <select class="field-control tele-editable" disabled>
+                    <option selected>No</option>
+                    <option>Yes</option>
+                  </select>
+                </td>
+                <td><input type="number" class="field-control tele-editable" value="2" disabled></td>
+                <td><input type="number" class="field-control tele-editable" value="10" disabled></td>
+              </tr>
+              <tr>
+                <td><strong>Gutka/Snuff/Paan etc.</strong></td>
+                <td>
+                  <select class="field-control tele-editable" disabled>
+                    <option selected>No</option>
+                    <option>Yes</option>
+                  </select>
+                </td>
+                <td><input type="number" class="field-control tele-editable" value="1" disabled></td>
+                <td><input type="number" class="field-control tele-editable" value="" disabled placeholder="-"></td>
+              </tr>
+              <tr>
+                <td><strong>Narcotic Consumption</strong></td>
+                <td>
+                  <select class="field-control tele-editable" disabled>
+                    <option selected>No</option>
+                    <option>Yes</option>
+                  </select>
+                </td>
+                <td><input type="number" class="field-control tele-editable" value="1" disabled></td>
+                <td><input type="number" class="field-control tele-editable" value="" disabled placeholder="-"></td>
+              </tr>
+              <tr>
+                <td><strong>Beer/Wine/Hard liquor</strong></td>
+                <td>
+                  <select class="field-control tele-editable" disabled>
+                    <option>No</option>
+                    <option selected>Yes</option>
+                  </select>
+                </td>
+                <td><input type="number" class="field-control tele-editable" value="4" disabled></td>
+                <td><input type="number" class="field-control tele-editable" value="12" disabled></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <!-- Section 6: Question Table (Complete Hierarchy with Multi-Select Subquestion Triggers) -->
+      <article class="section-card" data-section="tele-questionnaire">
+        <div class="card-header">
+          <div class="card-title">6. Question Table</div>
+          <div class="q-table-search" style="margin-bottom:0;">
+            <input type="text" class="q-search-input" id="q-search" placeholder="Search questions..." oninput="filterQuestions()">
+            <span id="lbl-shown-count" style="font-size:10.5px; color:var(--text-muted); font-weight:700;">All Active Questions</span>
+          </div>
+        </div>
+        <div class="card-body" id="sec-quest">
+          <table class="custom-table" id="question-table">
+            <thead>
+              <tr>
+                <th style="width:6%;">ID</th>
+                <th style="width:48%;">Question</th>
+                <th style="width:24%;">Response</th>
+                <th style="width:22%;">Remarks</th>
+              </tr>
+            </thead>
+            <tbody id="q-tbody">
+              <!-- Dynamically populated with all Telemer questions & multi-select subquestions -->
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <!-- Section 7: Disposition Details (Single Row Grid) -->
+      <article class="section-card" data-section="tele-disposition">
+        <div class="card-header">
+          <div class="card-title">7. Disposition Details</div>
+        </div>
+        <div class="card-body" id="sec-disposition">
+          <div class="grid-4">
+            <div class="field-group">
+              <label>TUW Status</label>
+              <select class="field-control tele-editable" disabled>
+                <option selected>COMPLETED</option>
+                <option>PENDING</option>
+                <option>REFERRED</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label>Remark</label>
+              <input type="text" class="field-control tele-editable" value="OK" disabled>
+            </div>
+            <div class="field-group">
+              <label>Note</label>
+              <input type="text" class="field-control tele-editable" value="OK" disabled>
+            </div>
+            <div class="field-group">
+              <label>Remarks2</label>
+              <input type="text" class="field-control tele-editable" value="OK" disabled>
+            </div>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </main>
+
+  <!-- Sticky Bottom Footer - Compact -->
+  <footer class="sticky-footer" data-section="decision-footer">
+    <div class="footer-left">
+      <span>Active: <strong id="lbl-active-life" style="color:var(--text-main);">Life Assured 1</strong></span>
+      <span>|</span>
+      <span>Completed: <strong id="lbl-completed-count" style="color:var(--success);">1 of 3</strong></span>
+    </div>
+    <div class="footer-right">
+      <button class="btn btn-secondary" id="btn-save-life" onclick="saveCurrentLife()">Save Current Life</button>
+      <button class="btn btn-primary" id="btn-final-submit" onclick="handleFinalSubmit()">Submit &amp; Complete Task</button>
+    </div>
+  </footer>
+
+  <!-- Task Completion Modal Dialog -->
+  <div class="modal-overlay" id="submit-modal">
+    <div class="modal-box">
+      <div class="modal-title">Complete Tele-MER Task?</div>
+      <div class="modal-body" id="modal-desc">
+        Data for all lives has been validated and saved. Submitting will close task <strong>TSK-10293</strong> and redirect to Inbox.
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-success" onclick="confirmTaskCompletion()">Confirm &amp; Submit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Historical Tele-MER Details Modal Dialog (Read-Only Replica of Telemer Sections) -->
+  <div class="modal-overlay" id="history-modal">
+    <div class="modal-box modal-wide">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; border-bottom:1px solid var(--border); padding-bottom:6px;">
+        <div>
+          <div class="modal-title">Historical Tele-MER Records (Read-Only Replica)</div>
+          <div style="font-size:11px; color:var(--text-muted);">
+            Applicant: <strong id="hist-applicant-name" style="color:var(--text-main);">Life Assured 1 (ARYA YAN)</strong> | App No: <strong>OS90377743</strong>
+          </div>
+        </div>
+        <button class="btn btn-secondary" style="padding:2px 8px; font-size:11px;" onclick="closeHistoryModal()">✕</button>
+      </div>
+
+      <!-- Multiple Historical Attempts Selector -->
+      <div class="hist-tabs">
+        <button class="hist-tab-btn active" id="btn-hist-attempt-2" onclick="switchHistAttempt(2, this)">
+          Attempt #2 (12 Nov 2026, 11:30 AM - Video-MER)
+        </button>
+        <button class="hist-tab-btn" id="btn-hist-attempt-1" onclick="switchHistAttempt(1, this)">
+          Attempt #1 (08 Nov 2026, 04:15 PM - Telephonic-MER)
+        </button>
+      </div>
+
+      <div class="modal-body" style="margin-bottom:8px;">
+        <!-- Metadata Strip for Active Attempt -->
+        <div class="hist-meta-bar" style="margin-bottom:6px;">
+          <div>
+            Examiner: <strong id="hist-examiner">Dr. Mina Sharma</strong> (<span id="hist-regid">REG-123456 / MedTPA</span>) |
+            Call Duration: <strong id="hist-duration">14 min 22 sec</strong>
+          </div>
+        </div>
+
+        <!-- Full Replica of Telemer Screen Sections in Read-Only Mode -->
+        <div class="hist-replica-wrap">
+
+          <!-- Section 1 Replica: Application Form Medical & Lifestyle Details -->
+          <article class="section-card">
+            <div class="card-header">
+              <div class="card-title">1. Application Form Medical &amp; Lifestyle Details</div>
+            </div>
+            <div class="card-body">
+              <div class="grid-5">
+                <div class="field-group">
+                  <label>Height (cm)</label>
+                  <input type="text" class="field-control" value="160" readonly disabled>
+                </div>
+                <div class="field-group">
+                  <label>Weight (kg)</label>
+                  <input type="text" class="field-control" value="60" readonly disabled>
+                </div>
+                <div class="field-group">
+                  <label>BMI</label>
+                  <input type="text" class="field-control" value="23.44" readonly disabled>
+                </div>
+                <div class="field-group">
+                  <label>Family History As Per App Form</label>
+                  <input type="text" class="field-control" value="No" readonly disabled>
+                </div>
+                <div class="field-group">
+                  <label>Smoking</label>
+                  <input type="text" class="field-control" value="No" readonly disabled>
+                </div>
+                <div class="field-group">
+                  <label>Diving</label>
+                  <input type="text" class="field-control" value="No" readonly disabled>
+                </div>
+                <div class="field-group">
+                  <label>Tobacco</label>
+                  <input type="text" class="field-control" value="No" readonly disabled>
+                </div>
+                <div class="field-group">
+                  <label>Alcohol</label>
+                  <input type="text" class="field-control" value="Yes" readonly disabled>
+                </div>
+                <div class="field-group">
+                  <label>Narcotics</label>
+                  <input type="text" class="field-control" value="No" readonly disabled>
+                </div>
+                <div class="field-group">
+                  <label>Adverse</label>
+                  <input type="text" class="field-control" value="No" readonly disabled>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- Section 2 Replica: Tele/Video MER Details -->
+          <article class="section-card">
+            <div class="card-header">
+              <div class="card-title">2. Tele/Video MER</div>
+            </div>
+            <div class="card-body">
+              <div class="grid-5">
+                <div class="field-group">
+                  <label>Application No.</label>
+                  <input type="text" class="field-control" value="OS90377743" readonly disabled>
+                </div>
+                <div class="field-group">
+                  <label>First Name</label>
+                  <input type="text" class="field-control" id="hsec-fname" value="ARYA" readonly disabled>
+                </div>
+                <div class="field-group">
+                  <label>Last Name</label>
+                  <input type="text" class="field-control" id="hsec-lname" value="YAN" readonly disabled>
+                </div>
+                <div class="field-group">
+                  <label>Gender</label>
+                  <input type="text" class="field-control" value="Female" readonly disabled>
+                </div>
+                <div class="field-group">
+                  <label>Date of Birth</label>
+                  <input type="text" class="field-control" value="01/01/1956" readonly disabled>
+                </div>
+                <div class="field-group">
+                  <label>Telephonic MER</label>
+                  <input type="text" class="field-control" id="hsec-telemer" value="No" readonly disabled>
+                </div>
+                <div class="field-group">
+                  <label>Time of Tele call</label>
+                  <input type="text" class="field-control" id="hsec-calltime" value="14:30" readonly disabled>
+                </div>
+                <div class="field-group">
+                  <label>Education</label>
+                  <input type="text" class="field-control" value="Post Graduate" readonly disabled>
+                </div>
+                <div class="field-group">
+                  <label>Occupation</label>
+                  <input type="text" class="field-control" value="Salaried" readonly disabled>
+                </div>
+                <div class="field-group">
+                  <label>Disclosure</label>
+                  <input type="text" class="field-control" id="hsec-disclosure" value="Material" readonly disabled>
+                </div>
+                <div class="field-group">
+                  <label>Adversity</label>
+                  <input type="text" class="field-control" value="No" readonly disabled>
+                </div>
+                <div class="field-group">
+                  <label>Annual Income</label>
+                  <input type="text" class="field-control" value="2000000" readonly disabled>
+                </div>
+                <div class="field-group">
+                  <label>Examiner Name</label>
+                  <input type="text" class="field-control" id="hsec-examiner-fld" value="Dr. Mina Sharma" readonly disabled>
+                </div>
+                <div class="field-group">
+                  <label>Registration ID</label>
+                  <input type="text" class="field-control" id="hsec-regid-fld" value="REG-123456" readonly disabled>
+                </div>
+                <div class="field-group">
+                  <label>MER Detail</label>
+                  <input type="text" class="field-control" id="hsec-merdetail" value="Video MER" readonly disabled>
+                </div>
+                <div class="field-group">
+                  <label>Prev Ins. Declined</label>
+                  <input type="text" class="field-control" value="Yes" readonly disabled>
+                </div>
+                <div class="field-group">
+                  <label>Medical Treatment</label>
+                  <input type="text" class="field-control" value="Yes" readonly disabled>
+                </div>
+                <div class="field-group">
+                  <label>Address (City/State)</label>
+                  <input type="text" class="field-control" value="Mumbai, Maharashtra" readonly disabled>
+                </div>
+                <div class="field-group">
+                  <label>Tele Findings</label>
+                  <input type="text" class="field-control" id="hsec-telefindings" value="Video verified, scoliosis observed" readonly disabled>
+                </div>
+                <div class="field-group">
+                  <label>Tele MER Final Remark</label>
+                  <input type="text" class="field-control" id="hsec-finalremark" value="Approved with standard terms" readonly disabled>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- Section 3 Replica: Measurements -->
+          <article class="section-card">
+            <div class="card-header">
+              <div class="card-title">3. Measurements</div>
+            </div>
+            <div class="card-body">
+              <div class="grid-5">
+                <div class="field-group">
+                  <label>Height (cms)</label>
+                  <input type="text" class="field-control" value="160" readonly disabled>
+                </div>
+                <div class="field-group">
+                  <label>Height (ft)</label>
+                  <input type="text" class="field-control" value="5" readonly disabled>
+                </div>
+                <div class="field-group">
+                  <label>Inches</label>
+                  <input type="text" class="field-control" value="3" readonly disabled>
+                </div>
+                <div class="field-group">
+                  <label>Weight (kgs)</label>
+                  <input type="text" class="field-control" value="60" readonly disabled>
+                </div>
+                <div class="field-group">
+                  <label>BMI</label>
+                  <input type="text" class="field-control" value="23.44" readonly disabled style="font-weight:800; color:var(--primary);">
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- Section 4 Replica: Family History -->
+          <article class="section-card">
+            <div class="card-header">
+              <div class="card-title">4. Family History</div>
+            </div>
+            <div class="card-body">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th style="width:25%;">Relation</th>
+                    <th style="width:15%;">Age</th>
+                    <th style="width:25%;">Dead or Alive</th>
+                    <th style="width:35%;">Health Status</th>
+                  </tr>
+                </thead>
+                <tbody id="hist-family-tbody">
+                  <tr>
+                    <td>Father</td>
+                    <td>55</td>
+                    <td>Alive</td>
+                    <td>Good</td>
+                  </tr>
+                  <tr>
+                    <td>Mother</td>
+                    <td>51</td>
+                    <td>Alive</td>
+                    <td>Good</td>
+                  </tr>
+                  <tr>
+                    <td>Spouse</td>
+                    <td>32</td>
+                    <td>Alive</td>
+                    <td>Healthy</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+
+          <!-- Section 5 Replica: Habit and Addiction -->
+          <article class="section-card">
+            <div class="card-header">
+              <div class="card-title">5. Habit and Addiction</div>
+            </div>
+            <div class="card-body">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th style="width:35%;">Habit</th>
+                    <th style="width:25%;">Indicator</th>
+                    <th style="width:20%;">Quantity</th>
+                    <th style="width:20%;">No. of Years</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Cigarette/beedis/cigar</strong></td>
+                    <td>No</td>
+                    <td>2</td>
+                    <td>10</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Gutka/Snuff/Paan etc.</strong></td>
+                    <td>No</td>
+                    <td>1</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Narcotic Consumption</strong></td>
+                    <td>No</td>
+                    <td>1</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Beer/Wine/Hard liquor</strong></td>
+                    <td>Yes</td>
+                    <td>4</td>
+                    <td>12</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+
+          <!-- Section 6 Replica: Question Table -->
+          <article class="section-card">
+            <div class="card-header">
+              <div class="card-title">6. Question Table (Recorded Responses)</div>
+            </div>
+            <div class="card-body">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th style="width:8%;">ID</th>
+                    <th style="width:48%;">Question</th>
+                    <th style="width:22%;">Recorded Response</th>
+                    <th style="width:22%;">Remarks</th>
+                  </tr>
+                </thead>
+                <tbody id="hist-q-tbody">
+                  <tr>
+                    <td class="q-id">1</td>
+                    <td class="q-desc">Is there any physical deformity or disorder?</td>
+                    <td><strong style="color:var(--error);">Yes</strong></td>
+                    <td>Certificate attached</td>
+                  </tr>
+                  <tr class="q-row-child">
+                    <td class="q-id">1.1</td>
+                    <td class="q-desc">Name of the deformity?</td>
+                    <td>Scoliosis</td>
+                    <td>-</td>
+                  </tr>
+                  <tr class="q-row-child">
+                    <td class="q-id">1.4</td>
+                    <td class="q-desc">% of Disability?</td>
+                    <td>15%</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td class="q-id">6</td>
+                    <td class="q-desc">Is there any history of Chest pain, palpitations, breathlessness, heart attack, or heart disease?</td>
+                    <td>No</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td class="q-id">7</td>
+                    <td class="q-desc">Is there any history of High Blood pressure, Diabetes, or High Cholesterol?</td>
+                    <td>No</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td class="q-id">26</td>
+                    <td class="q-desc">Any previous life insurance policy declined, postponed, or issued on revised terms?</td>
+                    <td><strong style="color:var(--error);">Yes</strong></td>
+                    <td>Postponed 2 yrs ago, accepted now</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+
+          <!-- Section 7 Replica: Disposition Details -->
+          <article class="section-card">
+            <div class="card-header">
+              <div class="card-title">7. Disposition Details</div>
+            </div>
+            <div class="card-body">
+              <div class="grid-3">
+                <div class="field-group">
+                  <label>Remark</label>
+                  <input type="text" class="field-control" id="hsec-disp-remark" value="OK" readonly disabled>
+                </div>
+                <div class="field-group">
+                  <label>Note</label>
+                  <input type="text" class="field-control" id="hsec-disp-note" value="OK" readonly disabled>
+                </div>
+                <div class="field-group">
+                  <label>Remarks2</label>
+                  <input type="text" class="field-control" value="OK" readonly disabled>
+                </div>
+              </div>
+            </div>
+          </article>
+
+        </div>
+      </div>
+
+      <div class="modal-actions" style="justify-content:flex-end;">
+        <button class="btn btn-secondary" onclick="closeHistoryModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Document Viewer Modal Dialog -->
+  <div class="modal-overlay" id="document-modal">
+    <div class="modal-box" style="width: 580px; max-width: 90vw; text-align: left; padding: 14px 18px;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; border-bottom:1px solid var(--border); padding-bottom:6px;">
+        <div>
+          <div class="modal-title">Application &amp; Medical Documents</div>
+          <div style="font-size:11px; color:var(--text-muted);">
+            Applicant: <strong id="doc-applicant-name" style="color:var(--text-main);">Life Assured 1 (ARYA YAN)</strong> | App No: <strong>OS90377743</strong>
+          </div>
+        </div>
+        <button class="btn btn-secondary" style="padding:2px 8px; font-size:11px;" onclick="closeDocumentModal()">✕</button>
+      </div>
+
+      <div class="modal-body" style="margin-bottom:12px;">
+        <table class="custom-table">
+          <thead>
+            <tr>
+              <th style="width:50%;">Document Name</th>
+              <th style="width:25%;">Uploaded Date</th>
+              <th style="width:25%; text-align:center;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Tele-MER Report PDF (Dr. Mina Sharma)</strong></td>
+              <td>12 Nov 2026</td>
+              <td style="text-align:center;">
+                <button class="btn btn-secondary" style="padding:2px 8px; font-size:10.5px;" onclick="alert('Opening Tele-MER Report PDF viewer...')">View PDF</button>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Application Form (Duly Signed)</strong></td>
+              <td>02 Nov 2026</td>
+              <td style="text-align:center;">
+                <button class="btn btn-secondary" style="padding:2px 8px; font-size:10.5px;" onclick="alert('Opening Signed Application Form...')">View PDF</button>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Disability Certificate (Scoliosis 15%)</strong></td>
+              <td>05 Nov 2026</td>
+              <td style="text-align:center;">
+                <button class="btn btn-secondary" style="padding:2px 8px; font-size:10.5px;" onclick="alert('Opening Disability Certificate...')">View File</button>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Previous Insurance Policy &amp; Terms Letter</strong></td>
+              <td>05 Nov 2026</td>
+              <td style="text-align:center;">
+                <button class="btn btn-secondary" style="padding:2px 8px; font-size:10.5px;" onclick="alert('Opening Previous Insurance Document...')">View File</button>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Aadhaar / Video KYC Verification Document</strong></td>
+              <td>12 Nov 2026</td>
+              <td style="text-align:center;">
+                <button class="btn btn-secondary" style="padding:2px 8px; font-size:10.5px;" onclick="alert('Opening KYC Verification Record...')">View File</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="modal-actions" style="justify-content:flex-end;">
+        <button class="btn btn-secondary" onclick="closeDocumentModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Master Questionnaire Dataset with Multi-Select and Option-Specific Subquestion Triggers (Full 256 Question Hierarchy)
+    const TELEMER_QUESTIONNAIRE = [
+  {
+    "id": "1",
+    "desc": "Is there any physical deformity or disorder?",
+    "parentId": null,
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "Yes",
+    "remarks": ""
+  },
+  {
+    "id": "1.1",
+    "desc": "Name of the deformity?",
+    "parentId": "1",
+    "parentOption": null,
+    "type": "TEXT",
+    "response": "Scoliosis",
+    "remarks": ""
+  },
+  {
+    "id": "1.2",
+    "desc": "Since how many years?",
+    "parentId": "1",
+    "parentOption": null,
+    "type": "NUMBER",
+    "response": "8",
+    "remarks": ""
+  },
+  {
+    "id": "1.3",
+    "desc": "Which part of the body is affected?",
+    "parentId": "1",
+    "parentOption": null,
+    "type": "TEXT",
+    "response": "Spine",
+    "remarks": ""
+  },
+  {
+    "id": "1.4",
+    "desc": "% of Disability?",
+    "parentId": "1",
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "100"
+    ],
+    "response": "15%",
+    "remarks": ""
+  },
+  {
+    "id": "1.5",
+    "desc": "Do you have Disability Certificate?",
+    "parentId": "1",
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "Yes",
+    "remarks": ""
+  },
+  {
+    "id": "1.6",
+    "desc": "Surgery done if any?",
+    "parentId": "1",
+    "parentOption": null,
+    "type": "TEXT",
+    "response": "None",
+    "remarks": ""
+  },
+  {
+    "id": "1.7",
+    "desc": "Can you carry out your daily activities with ease?",
+    "parentId": "1",
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "Yes",
+    "remarks": ""
+  },
+  {
+    "id": "1.8",
+    "desc": "Do you require support to walk if yes what type of support? (If leg affected)",
+    "parentId": "1",
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No support needed",
+    "remarks": ""
+  },
+  {
+    "id": "2",
+    "desc": "Have you experienced a significant weight change (gain/ loss) of 5 kgs or more?",
+    "parentId": null,
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "2.1",
+    "desc": "Are you facing any health issues?",
+    "parentId": "2",
+    "parentOption": null,
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "2.2",
+    "desc": "Have you done some weight loss/weight gain programme?",
+    "parentId": "2",
+    "parentOption": null,
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "3",
+    "desc": "In the past, has the Life assured been hospitalized for Accident/ Medical treatment / Surgery? (If Yes, provide details)",
+    "parentId": null,
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "3.1",
+    "desc": "History of Hospitaisation?",
+    "parentId": "3",
+    "parentOption": null,
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "3.2",
+    "desc": "How many years back?",
+    "parentId": "3",
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "0.9",
+      "1",
+      "60"
+    ],
+    "response": "0",
+    "remarks": ""
+  },
+  {
+    "id": "3.3",
+    "desc": "What was the reason for hospitalization?",
+    "parentId": "3",
+    "parentOption": null,
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "3.4",
+    "desc": "How many days were you hospitalized ?",
+    "parentId": "3",
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "100"
+    ],
+    "response": "0",
+    "remarks": ""
+  },
+  {
+    "id": "3.5",
+    "desc": "How long did you take medications? Can you name the medicine.",
+    "parentId": "3",
+    "parentOption": null,
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "3.6",
+    "desc": "Is the symptom reoccurred? current status? Any complaints after that?",
+    "parentId": "3",
+    "parentOption": null,
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "3.7",
+    "desc": "PME's available/Not available?",
+    "parentId": "3",
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "4",
+    "desc": "In the past, has the Life assured Undergone any blood tests,HIV/Hep B/Hep C/Radiological tests like USG / 2-D Echo / CT scan/MRI/Mammogram or any other tests?",
+    "parentId": null,
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "4.1",
+    "desc": "PME's available/Not available?",
+    "parentId": "4",
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "4.2",
+    "desc": "What are the findings ?",
+    "parentId": "4",
+    "parentOption": null,
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "4.3",
+    "desc": "Are the reports normal?",
+    "parentId": "4",
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "4.4",
+    "desc": "Did the doctor advice you for any medicines ? Name of Medicines if any",
+    "parentId": "4",
+    "parentOption": null,
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "5",
+    "desc": "Any history of Angioplasty, Bypass, Open Heart Surgery?",
+    "parentId": null,
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "5.1",
+    "desc": "Any 2D/Echo/Angiography/CT Scan/MRI suggested to you?",
+    "parentId": "5",
+    "parentOption": null,
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "5.2",
+    "desc": "History of angioplasty/Bypass done?",
+    "parentId": "5",
+    "parentOption": null,
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "5.3",
+    "desc": "how many years back?",
+    "parentId": "5",
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "0.9",
+      "1",
+      "60"
+    ],
+    "response": "0",
+    "remarks": ""
+  },
+  {
+    "id": "5.4",
+    "desc": "What were symptoms?",
+    "parentId": "5",
+    "parentOption": null,
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "5.5",
+    "desc": "No of stents placed , current treatment details?",
+    "parentId": "5",
+    "parentOption": null,
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "5.6",
+    "desc": "PME available not available?",
+    "parentId": "5",
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "6",
+    "desc": "Any history of heart diseases-chest pain/palpitations/ Breathlessness on exertion?",
+    "parentId": null,
+    "parentOption": null,
+    "type": "MULTISELECT",
+    "options": [
+      "Chest Pain",
+      "Palpitations",
+      "Breathlessness on Exertion",
+      "Others",
+      "No"
+    ],
+    "response": [
+      "No"
+    ],
+    "remarks": ""
+  },
+  {
+    "id": "6.1",
+    "desc": "Chest Pain - Since how many years?",
+    "parentId": "6",
+    "parentOption": "Chest Pain",
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "0.9",
+      "1",
+      "60"
+    ],
+    "response": "0",
+    "remarks": ""
+  },
+  {
+    "id": "6.1.1",
+    "desc": "What were the complaints or sysmptoms?",
+    "parentId": "6",
+    "parentOption": "Chest Pain",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "6.1.2",
+    "desc": "Any Investigations done?",
+    "parentId": "6",
+    "parentOption": "Chest Pain",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "6.1.3",
+    "desc": "What was the diagnosis?",
+    "parentId": "6",
+    "parentOption": "Chest Pain",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "6.1.4",
+    "desc": "What was the treatment taken? Any hospitalisation?",
+    "parentId": "6",
+    "parentOption": "Chest Pain",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "6.2",
+    "desc": "Palpitations - Since how many years?",
+    "parentId": "6",
+    "parentOption": "Palpitations",
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "0.9",
+      "1",
+      "60"
+    ],
+    "response": "0",
+    "remarks": ""
+  },
+  {
+    "id": "6.2.1",
+    "desc": "What were the complaints or sysmptoms?",
+    "parentId": "6",
+    "parentOption": "Palpitations",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "6.2.2",
+    "desc": "Any Investigations done?",
+    "parentId": "6",
+    "parentOption": "Palpitations",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "6.2.3",
+    "desc": "What was the diagnosis?",
+    "parentId": "6",
+    "parentOption": "Palpitations",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "6.2.4",
+    "desc": "What was the treatment taken? Any hospitalisation?",
+    "parentId": "6",
+    "parentOption": "Palpitations",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "6.3",
+    "desc": "Breathlessness on exertion- Since how many years?",
+    "parentId": "6",
+    "parentOption": "Breathlessness on Exertion",
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "0.9",
+      "1",
+      "60"
+    ],
+    "response": "0",
+    "remarks": ""
+  },
+  {
+    "id": "6.3.1",
+    "desc": "What were the complaints or sysmptoms?",
+    "parentId": "6",
+    "parentOption": "Breathlessness on Exertion",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "6.3.2",
+    "desc": "Any Investigations done?",
+    "parentId": "6",
+    "parentOption": "Breathlessness on Exertion",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "6.3.3",
+    "desc": "What was the diagnosis?",
+    "parentId": "6",
+    "parentOption": "Breathlessness on Exertion",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "6.3.4",
+    "desc": "What was the treatment taken? Any hospitalisation?",
+    "parentId": "6",
+    "parentOption": "Breathlessness on Exertion",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "7",
+    "desc": "Is the life assured suffering from BP/Diabetes/Cholesterol/Lipid?",
+    "parentId": null,
+    "parentOption": null,
+    "type": "MULTISELECT",
+    "options": [
+      "BP",
+      "Diabetes",
+      "Cholesterol",
+      "Lipid",
+      "Others",
+      "No"
+    ],
+    "response": [
+      "No"
+    ],
+    "remarks": ""
+  },
+  {
+    "id": "7.1",
+    "desc": "Diabetes Mellitus -Since how many years?",
+    "parentId": "7",
+    "parentOption": "Diabetes",
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "0.9",
+      "1",
+      "60"
+    ],
+    "response": "0",
+    "remarks": ""
+  },
+  {
+    "id": "7.1.1",
+    "desc": "What medication are you currently taking?",
+    "parentId": "7",
+    "parentOption": "Diabetes",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "7.1.2",
+    "desc": "Do you have any Complaints or any Symptoms?",
+    "parentId": "7",
+    "parentOption": "Diabetes",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "7.1.3",
+    "desc": "Can you tell us when you completed your last check-up. Latest checkup done? Current status?",
+    "parentId": "7",
+    "parentOption": "Diabetes",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "7.1.4",
+    "desc": "Are you suffering from any complications due to diabetes ie neuropathy? retinopathy? ulcers? Diabetic foot?",
+    "parentId": "7",
+    "parentOption": "Diabetes",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "7.2",
+    "desc": "BP (Hypertension)-Since how many years?",
+    "parentId": "7",
+    "parentOption": "BP",
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "0.9",
+      "1",
+      "60"
+    ],
+    "response": "0",
+    "remarks": ""
+  },
+  {
+    "id": "7.2.1",
+    "desc": "What Medications are you currently taking?",
+    "parentId": "7",
+    "parentOption": "BP",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "7.2.2",
+    "desc": "Do you have any complaints? symptoms?",
+    "parentId": "7",
+    "parentOption": "BP",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "7.2.3",
+    "desc": "When was the last checkup done? Reports status",
+    "parentId": "7",
+    "parentOption": "BP",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "7.3",
+    "desc": "Elevated Cholesterol-Since how many years?",
+    "parentId": "7",
+    "parentOption": "Cholesterol",
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "0.9",
+      "1",
+      "60"
+    ],
+    "response": "0",
+    "remarks": ""
+  },
+  {
+    "id": "7.3.1",
+    "desc": "What Medications are you currently taking ?",
+    "parentId": "7",
+    "parentOption": "Cholesterol",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "7.3.2",
+    "desc": "Do you have any complaints or symptoms currently?",
+    "parentId": "7",
+    "parentOption": "Cholesterol",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "7.3.3",
+    "desc": "latest checkup done? Reports status",
+    "parentId": "7",
+    "parentOption": "Cholesterol",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "8",
+    "desc": "Any history of breathlessness, wheezing cough, bronchitis, asthma, TB or any other lung disease?",
+    "parentId": null,
+    "parentOption": null,
+    "type": "MULTISELECT",
+    "options": [
+      "Breathlessness",
+      "Wheezing cough",
+      "Bronchitis",
+      "Asthma",
+      "TB",
+      "Others",
+      "No"
+    ],
+    "response": [
+      "No"
+    ],
+    "remarks": ""
+  },
+  {
+    "id": "8.1",
+    "desc": "Asthma/Breathing difficulty: since how many years are you suffering ?",
+    "parentId": "8",
+    "parentOption": "Asthma",
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "0.9",
+      "1",
+      "60"
+    ],
+    "response": "0",
+    "remarks": ""
+  },
+  {
+    "id": "8.1.1",
+    "desc": "do you know the aggravating factor that trigger ?",
+    "parentId": "8",
+    "parentOption": "Asthma",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "8.1.2",
+    "desc": "can you tell us the medicines you were using for Asthma?",
+    "parentId": "8",
+    "parentOption": "Asthma",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "8.1.3",
+    "desc": "Have you been hospitalized for this complaint .",
+    "parentId": "8",
+    "parentOption": "Asthma",
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "8.1.4",
+    "desc": "DO you have the latest PFT?X-ray done/PME's available?",
+    "parentId": "8",
+    "parentOption": "Asthma",
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "8.1.5",
+    "desc": "Have you visited any doctor recently , did you have any aggravation of asthma in the night? , When was the last episodes you had? .",
+    "parentId": "8",
+    "parentOption": "Asthma",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "8.2",
+    "desc": "Currently are you suffering from TB or History of TB?",
+    "parentId": "8",
+    "parentOption": "TB",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "8.2.1",
+    "desc": "Pulmonary/Extrapulmonary?",
+    "parentId": "8",
+    "parentOption": "TB",
+    "type": "SINGLESELECT",
+    "options": [
+      "Pulmonary",
+      "Extrapulmonary"
+    ],
+    "response": "Pulmonary",
+    "remarks": ""
+  },
+  {
+    "id": "8.2.2",
+    "desc": "since how many years were you suffering from TB , what were the Symptoms?",
+    "parentId": "8",
+    "parentOption": "TB",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "8.2.3",
+    "desc": "What was the treatmenth given?",
+    "parentId": "8",
+    "parentOption": "TB",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "8.2.4",
+    "desc": "What were in the investigations done ?.",
+    "parentId": "8",
+    "parentOption": "TB",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "8.2.5",
+    "desc": "Are you on medication currently?,",
+    "parentId": "8",
+    "parentOption": "TB",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "8.2.6",
+    "desc": "Do you have any complaints now ?",
+    "parentId": "8",
+    "parentOption": "TB",
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "8.2.7",
+    "desc": "Any recurrence?",
+    "parentId": "8",
+    "parentOption": "TB",
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "8.2.8",
+    "desc": "Do you have PME's available/Not available?",
+    "parentId": "8",
+    "parentOption": "TB",
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "8.2.9",
+    "desc": "If Pulmonary then do you have pleural effusion history..",
+    "parentId": "8",
+    "parentOption": "TB",
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "8.2.10",
+    "desc": "Have you underwent AKT Treatment?",
+    "parentId": "8",
+    "parentOption": "TB",
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "8.2.11",
+    "desc": "Do you have Tapping history? ( removal of fluid from lung ) .",
+    "parentId": "8",
+    "parentOption": "TB",
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "9",
+    "desc": "Is there any history of evidence of cancer, tumor, growth or cyst/lymph gland?",
+    "parentId": null,
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "9.1",
+    "desc": "Known case of or history of lump/growth/tumor/Cancer,-",
+    "parentId": "9",
+    "parentOption": null,
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "9.2",
+    "desc": "Can you tell us when was it first noticed . Since when?",
+    "parentId": "9",
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "0.9",
+      "1",
+      "60"
+    ],
+    "response": "0",
+    "remarks": ""
+  },
+  {
+    "id": "9.3",
+    "desc": "What were the investigations done?",
+    "parentId": "9",
+    "parentOption": null,
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "9.4",
+    "desc": "Treatment , Any Biopsy done ,any chemo or radio therapy taken.?",
+    "parentId": "9",
+    "parentOption": null,
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "9.5",
+    "desc": "Do you have PME 's?",
+    "parentId": "9",
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "10",
+    "desc": "Is there: Any history of hernia, disease of liver, gall bladder, pancreas, stomach, intestine?",
+    "parentId": null,
+    "parentOption": null,
+    "type": "MULTISELECT",
+    "options": [
+      "Stomach",
+      "Gall Bladder",
+      "Hernia",
+      "Pancreas",
+      "Intestine",
+      "Others",
+      "No"
+    ],
+    "response": [
+      "No"
+    ],
+    "remarks": ""
+  },
+  {
+    "id": "10.1",
+    "desc": "Do you have any history of Stomach complaints?",
+    "parentId": "10",
+    "parentOption": "Stomach",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "10.1.1",
+    "desc": "Since when?",
+    "parentId": "10",
+    "parentOption": "Stomach",
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "0.9",
+      "1",
+      "60"
+    ],
+    "response": "0",
+    "remarks": ""
+  },
+  {
+    "id": "10.1.2",
+    "desc": "What are/were the symptoms?",
+    "parentId": "10",
+    "parentOption": "Stomach",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "10.1.3",
+    "desc": "What treatment has been taken?",
+    "parentId": "10",
+    "parentOption": "Stomach",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "10.1.4",
+    "desc": "What is your Current status?",
+    "parentId": "10",
+    "parentOption": "Stomach",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "10.1.5",
+    "desc": "PME's available/Not available?",
+    "parentId": "10",
+    "parentOption": "Stomach",
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "10.2",
+    "desc": "Gall bladder stone or Inflammation -What are the symptoms?",
+    "parentId": "10",
+    "parentOption": "Gall Bladder",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "10.2.1",
+    "desc": "Did you require any hospitalization /any surgery?",
+    "parentId": "10",
+    "parentOption": "Gall Bladder",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "10.2.2",
+    "desc": "What treatment have you taken?",
+    "parentId": "10",
+    "parentOption": "Gall Bladder",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "10.2.3",
+    "desc": "Any complications you faced?",
+    "parentId": "10",
+    "parentOption": "Gall Bladder",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "10.2.4",
+    "desc": "What is your current status?",
+    "parentId": "10",
+    "parentOption": "Gall Bladder",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "10.2.5",
+    "desc": "PME's available/not available?",
+    "parentId": "10",
+    "parentOption": "Gall Bladder",
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "10.3",
+    "desc": "Hernia-Since when?",
+    "parentId": "10",
+    "parentOption": "Hernia",
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "0.9",
+      "1",
+      "60"
+    ],
+    "response": "0",
+    "remarks": ""
+  },
+  {
+    "id": "10.3.1",
+    "desc": "type? right inguinal, left inguinal, Umbilical?",
+    "parentId": "10",
+    "parentOption": "Hernia",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "10.3.2",
+    "desc": "symptoms,",
+    "parentId": "10",
+    "parentOption": "Hernia",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "10.3.3",
+    "desc": "Treatment? any hospitalization? surgery? Laparoscopic?",
+    "parentId": "10",
+    "parentOption": "Hernia",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "10.3.4",
+    "desc": "PME's available/Not available?",
+    "parentId": "10",
+    "parentOption": "Hernia",
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "10.3.5",
+    "desc": "Current status",
+    "parentId": "10",
+    "parentOption": "Hernia",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "11",
+    "desc": "Is there: Any history of piles, fissure, fistula, ulcerative colitis?",
+    "parentId": null,
+    "parentOption": null,
+    "type": "MULTISELECT",
+    "options": [
+      "Piles",
+      "Fissure",
+      "Fistula",
+      "Ulcerative Colitis",
+      "Others",
+      "No"
+    ],
+    "response": [
+      "No"
+    ],
+    "remarks": ""
+  },
+  {
+    "id": "11.1",
+    "desc": "Piles- When was the diagnosis of Piles done?",
+    "parentId": "11",
+    "parentOption": "Piles",
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "0.9",
+      "1",
+      "60"
+    ],
+    "response": "0",
+    "remarks": ""
+  },
+  {
+    "id": "11.2",
+    "desc": "What are the symptoms?",
+    "parentId": "11",
+    "parentOption": "Piles",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "11.3",
+    "desc": "What Treatment have you taken?",
+    "parentId": "11",
+    "parentOption": "Piles",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "11.4",
+    "desc": "Did you require any Hospitalization or Surgery ?",
+    "parentId": "11",
+    "parentOption": "Piles",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "11.5",
+    "desc": "What is your current status?",
+    "parentId": "11",
+    "parentOption": "Piles",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "11.6",
+    "desc": "PME's available/Not available?",
+    "parentId": "11",
+    "parentOption": "Piles",
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "11.7",
+    "desc": "Bleeding piles if severe then-Any anaemia due to it?",
+    "parentId": "11",
+    "parentOption": "Piles",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "12",
+    "desc": "Is there: Any history of jaundice or any liver disorder? If yes, any viral markers done?",
+    "parentId": null,
+    "parentOption": null,
+    "type": "MULTISELECT",
+    "options": [
+      "Jaundice",
+      "Fatty Liver",
+      "Others",
+      "No"
+    ],
+    "response": [
+      "No"
+    ],
+    "remarks": ""
+  },
+  {
+    "id": "12.1",
+    "desc": "Jaundice-When did you suffer from Jaundice?",
+    "parentId": "12",
+    "parentOption": "Jaundice",
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "0.9",
+      "1",
+      "60"
+    ],
+    "response": "0",
+    "remarks": ""
+  },
+  {
+    "id": "12.1.1",
+    "desc": "What were your symptoms?",
+    "parentId": "12",
+    "parentOption": "Jaundice",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "12.1.2",
+    "desc": "What treatment has been taken?",
+    "parentId": "12",
+    "parentOption": "Jaundice",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "12.1.3",
+    "desc": "What is your current status?",
+    "parentId": "12",
+    "parentOption": "Jaundice",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "12.1.4",
+    "desc": "Did you suffer from any complications?",
+    "parentId": "12",
+    "parentOption": "Jaundice",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "12.1.5",
+    "desc": "PME's available/Not available?",
+    "parentId": "12",
+    "parentOption": "Jaundice",
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "12.2",
+    "desc": "Fatty Liver-When was the diagnosis of Fatty liver done?",
+    "parentId": "12",
+    "parentOption": "Fatty Liver",
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "0.9",
+      "1",
+      "60"
+    ],
+    "response": "0",
+    "remarks": ""
+  },
+  {
+    "id": "12.2.1",
+    "desc": "What are the symptoms?",
+    "parentId": "12",
+    "parentOption": "Fatty Liver",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "12.2.2",
+    "desc": "What Treatment have you taken?",
+    "parentId": "12",
+    "parentOption": "Fatty Liver",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "12.2.3",
+    "desc": "Did you require any Hospitalization or Surgery ?",
+    "parentId": "12",
+    "parentOption": "Fatty Liver",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "12.2.4",
+    "desc": "What is your current status?",
+    "parentId": "12",
+    "parentOption": "Fatty Liver",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "12.2.5",
+    "desc": "PME's available/Not available?",
+    "parentId": "12",
+    "parentOption": "Fatty Liver",
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "13",
+    "desc": "Has the Life assured suffered from or is suffering from kidney, ureter, bladder disease, stones, or any other urinary disease or disorders of reproductive system?",
+    "parentId": null,
+    "parentOption": null,
+    "type": "MULTISELECT",
+    "options": [
+      "Kidney Stone",
+      "Kidney Failure",
+      "Others",
+      "No"
+    ],
+    "response": [
+      "No"
+    ],
+    "remarks": ""
+  },
+  {
+    "id": "13.1",
+    "desc": "Kidney stone-? When was the diagnosis done?",
+    "parentId": "13",
+    "parentOption": "Kidney Stone",
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "0.9",
+      "1",
+      "60"
+    ],
+    "response": "0",
+    "remarks": ""
+  },
+  {
+    "id": "13.1.1",
+    "desc": "What is the size and site of stone?",
+    "parentId": "13",
+    "parentOption": "Kidney Stone",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "13.1.2",
+    "desc": "What treatment have you taken?",
+    "parentId": "13",
+    "parentOption": "Kidney Stone",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "13.1.3",
+    "desc": "Have you undergone surgery?",
+    "parentId": "13",
+    "parentOption": "Kidney Stone",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "13.1.4",
+    "desc": "Has the stone passed in urine or not?",
+    "parentId": "13",
+    "parentOption": "Kidney Stone",
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "13.1.5",
+    "desc": "Repeat USG done to check, any reoccurrence?",
+    "parentId": "13",
+    "parentOption": "Kidney Stone",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "13.1.6",
+    "desc": "What is your current status?",
+    "parentId": "13",
+    "parentOption": "Kidney Stone",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "13.1.7",
+    "desc": "PME's available/not available?",
+    "parentId": "13",
+    "parentOption": "Kidney Stone",
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "13.2",
+    "desc": "Kidney failure/polycystic kidney/Horse shoe kidney/Single Kidney/-how did you come to know?",
+    "parentId": "13",
+    "parentOption": "Kidney Failure",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "13.2.1",
+    "desc": "Accidental findings? What are the Signs and symptoms?",
+    "parentId": "13",
+    "parentOption": "Kidney Failure",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "13.2.2",
+    "desc": "Do you have BP shoot up?",
+    "parentId": "13",
+    "parentOption": "Kidney Failure",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "13.2.3",
+    "desc": "In case of-Kidney failure? Dialysis -Did you undergo Haemodialysis/peritoneal dialysis?",
+    "parentId": "13",
+    "parentOption": "Kidney Failure",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "13.2.4",
+    "desc": "Have you undergone Kidney transplant/donor history?",
+    "parentId": "13",
+    "parentOption": "Kidney Failure",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "13.2.5",
+    "desc": "What is your current status?",
+    "parentId": "13",
+    "parentOption": "Kidney Failure",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "13.2.6",
+    "desc": "When was the last Kidney function tests and serum creatinine done?",
+    "parentId": "13",
+    "parentOption": "Kidney Failure",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "14",
+    "desc": "Any history of arthritis / fracture / joint surgery / gout Or disorders of connective tissues?",
+    "parentId": null,
+    "parentOption": null,
+    "type": "MULTISELECT",
+    "options": [
+      "GOUT",
+      "Fracture",
+      "Rheumatoid Arthritis",
+      "Others",
+      "No"
+    ],
+    "response": [
+      "No"
+    ],
+    "remarks": ""
+  },
+  {
+    "id": "14.1",
+    "desc": "GOUT- How was it diagnosed?",
+    "parentId": "14",
+    "parentOption": "GOUT",
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "0.9",
+      "1",
+      "60"
+    ],
+    "response": "0",
+    "remarks": ""
+  },
+  {
+    "id": "14.1.1",
+    "desc": "Since when are you having issues?",
+    "parentId": "14",
+    "parentOption": "GOUT",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "14.1.2",
+    "desc": "Any Investigations done?",
+    "parentId": "14",
+    "parentOption": "GOUT",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "14.1.3",
+    "desc": "What is your current status?",
+    "parentId": "14",
+    "parentOption": "GOUT",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "14.1.4",
+    "desc": "When was the last check up done? Are reports available?",
+    "parentId": "14",
+    "parentOption": "GOUT",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "14.2",
+    "desc": "Fracture-History of fracture/when did you suffer from fracture? How many years?",
+    "parentId": "14",
+    "parentOption": "Fracture",
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "0.9",
+      "1",
+      "60"
+    ],
+    "response": "0",
+    "remarks": ""
+  },
+  {
+    "id": "14.2.1",
+    "desc": "Which Parts were affected?-site like arm/forearm/joints/thigh/below the knees?",
+    "parentId": "14",
+    "parentOption": "Fracture",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "14.2.2",
+    "desc": "Plaster/surgery done? Plaster-How many months? Surgery-if implant? Has the implant been placed is in situ or removed? After how many months?",
+    "parentId": "14",
+    "parentOption": "Fracture",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "14.2.3",
+    "desc": "What is your Current status?",
+    "parentId": "14",
+    "parentOption": "Fracture",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "14.2.4",
+    "desc": "PME's available /not available?",
+    "parentId": "14",
+    "parentOption": "Fracture",
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "14.3",
+    "desc": "Rheumatoid Arthritis- since when, if long standing any deformity.",
+    "parentId": "14",
+    "parentOption": "Rheumatoid Arthritis",
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "0.9",
+      "1",
+      "60"
+    ],
+    "response": "0",
+    "remarks": ""
+  },
+  {
+    "id": "14.3.1",
+    "desc": "Any steroids consumed. Last ESR/CRP/RA Test done? reports?",
+    "parentId": "14",
+    "parentOption": "Rheumatoid Arthritis",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "14.3.2",
+    "desc": "If Ankyl spondylitis -history in detail? HLA test? any disability?",
+    "parentId": "14",
+    "parentOption": "Rheumatoid Arthritis",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "15",
+    "desc": "Are you suffering from any issues concerning eyes/ears/nose/mouth/throat?",
+    "parentId": null,
+    "parentOption": null,
+    "type": "MULTISELECT",
+    "options": [
+      "EAR",
+      "EYE",
+      "Others",
+      "No"
+    ],
+    "response": [
+      "No"
+    ],
+    "remarks": ""
+  },
+  {
+    "id": "15.1",
+    "desc": "EAR-Did you suffer from Deafness or Otitis media?",
+    "parentId": "15",
+    "parentOption": "EAR",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "15.1.1",
+    "desc": "When was the diagnosis done? /any aid needed?",
+    "parentId": "15",
+    "parentOption": "EAR",
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "0.9",
+      "1",
+      "60"
+    ],
+    "response": "0",
+    "remarks": ""
+  },
+  {
+    "id": "15.1.2",
+    "desc": "Did you have any symptoms - any discharge/pain/ any injury?",
+    "parentId": "15",
+    "parentOption": "EAR",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "15.1.3",
+    "desc": "Audiogram done?",
+    "parentId": "15",
+    "parentOption": "EAR",
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "15.1.4",
+    "desc": "Percentage of deafness",
+    "parentId": "15",
+    "parentOption": "EAR",
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "100"
+    ],
+    "response": "0",
+    "remarks": ""
+  },
+  {
+    "id": "15.2",
+    "desc": "EYE-Have you suffered from Cataract/Glaucoma?-PME's available?",
+    "parentId": "15",
+    "parentOption": "EYE",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "15.2.1",
+    "desc": "Any issues of blindness-do you know the reason?",
+    "parentId": "15",
+    "parentOption": "EYE",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "15.2.2",
+    "desc": "What is your occupation?",
+    "parentId": "15",
+    "parentOption": "EYE",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "15.2.3",
+    "desc": "Are you aware of the percentage of blindness?",
+    "parentId": "15",
+    "parentOption": "EYE",
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "100"
+    ],
+    "response": "0",
+    "remarks": ""
+  },
+  {
+    "id": "15.2.4",
+    "desc": "Are your daily activities being managed?",
+    "parentId": "15",
+    "parentOption": "EYE",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "15.3",
+    "desc": "Others ; Current status,",
+    "parentId": "15",
+    "parentOption": "Others",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "15.3.1",
+    "desc": "Any investigation or surgery done ,",
+    "parentId": "15",
+    "parentOption": "Others",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "15.3.2",
+    "desc": "details of treatment received",
+    "parentId": "15",
+    "parentOption": "Others",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "16",
+    "desc": "Is there any history of Fits/ seizures, paralysis, abnormal gait, speech, fainting, frequent headaches or any disorder of brain or spinal cord?",
+    "parentId": null,
+    "parentOption": null,
+    "type": "MULTISELECT",
+    "options": [
+      "Fits/Epilepsy",
+      "Paralysis",
+      "Frequent Headache",
+      "Others",
+      "No"
+    ],
+    "response": [
+      "No"
+    ],
+    "remarks": ""
+  },
+  {
+    "id": "16.1",
+    "desc": "Fits/epilepsy-When are you suffering from these issues?",
+    "parentId": "16",
+    "parentOption": "Fits/Epilepsy",
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "0.9",
+      "1",
+      "60"
+    ],
+    "response": "0",
+    "remarks": ""
+  },
+  {
+    "id": "16.1.1",
+    "desc": "What are the symptoms-like-fainting, jerks, stiffness of body with tongue bites?",
+    "parentId": "16",
+    "parentOption": "Fits/Epilepsy",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "16.1.2",
+    "desc": "What are the medications? Have you been Hospitalized?",
+    "parentId": "16",
+    "parentOption": "Fits/Epilepsy",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "16.1.3",
+    "desc": "When was your Last EEG done?",
+    "parentId": "16",
+    "parentOption": "Fits/Epilepsy",
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "0.9",
+      "1",
+      "60"
+    ],
+    "response": "0",
+    "remarks": ""
+  },
+  {
+    "id": "16.1.4",
+    "desc": "When was your last visit to neurologist?",
+    "parentId": "16",
+    "parentOption": "Fits/Epilepsy",
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "0.9",
+      "1",
+      "60"
+    ],
+    "response": "0",
+    "remarks": ""
+  },
+  {
+    "id": "16.1.5",
+    "desc": "Any current health issues?",
+    "parentId": "16",
+    "parentOption": "Fits/Epilepsy",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "16.1.6",
+    "desc": "PME?s available/not available?",
+    "parentId": "16",
+    "parentOption": "Fits/Epilepsy",
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "16.2",
+    "desc": "Paralysis -When was the Episode?,",
+    "parentId": "16",
+    "parentOption": "Paralysis",
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "0.9",
+      "1",
+      "60"
+    ],
+    "response": "0",
+    "remarks": ""
+  },
+  {
+    "id": "16.2.1",
+    "desc": "What are the symptoms?",
+    "parentId": "16",
+    "parentOption": "Paralysis",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "16.2.2",
+    "desc": "Which parts in the body are affected?",
+    "parentId": "16",
+    "parentOption": "Paralysis",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "16.2.3",
+    "desc": "Have you done tests like CT/MRI ? ,Are reports available or not?",
+    "parentId": "16",
+    "parentOption": "Paralysis",
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "16.2.4",
+    "desc": "What is your current health status?",
+    "parentId": "16",
+    "parentOption": "Paralysis",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "16.3",
+    "desc": "Are you suffering from Frequent headache?",
+    "parentId": "16",
+    "parentOption": "Frequent Headache",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "16.3.1",
+    "desc": "Any issues of frequent fainting? -since when?",
+    "parentId": "16",
+    "parentOption": "Frequent Headache",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "16.3.2",
+    "desc": "How many years Years?",
+    "parentId": "16",
+    "parentOption": "Frequent Headache",
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "0.9",
+      "1",
+      "60"
+    ],
+    "response": "0",
+    "remarks": ""
+  },
+  {
+    "id": "16.3.3",
+    "desc": "What are the symptoms?",
+    "parentId": "16",
+    "parentOption": "Frequent Headache",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "16.3.4",
+    "desc": "Are you taking any medication?",
+    "parentId": "16",
+    "parentOption": "Frequent Headache",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "16.3.5",
+    "desc": "Have you been hospitalized?",
+    "parentId": "16",
+    "parentOption": "Frequent Headache",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "16.3.6",
+    "desc": "Do you have MRI/CT reports?",
+    "parentId": "16",
+    "parentOption": "Frequent Headache",
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "16.3.7",
+    "desc": "What is your current status ?",
+    "parentId": "16",
+    "parentOption": "Frequent Headache",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "16.3.8",
+    "desc": "PME's available?",
+    "parentId": "16",
+    "parentOption": "Frequent Headache",
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "17",
+    "desc": "Has the Life assured suffered from or suffering from Low Hemoglobin /thalassaemia, thyroid dysfunction/skin disorder or any blood disorder??",
+    "parentId": null,
+    "parentOption": null,
+    "type": "MULTISELECT",
+    "options": [
+      "HB/Blood Disorder/Anaemia",
+      "Thalessamia",
+      "Thyroid",
+      "Skin",
+      "Others",
+      "No"
+    ],
+    "response": [
+      "No"
+    ],
+    "remarks": ""
+  },
+  {
+    "id": "17.1",
+    "desc": "HB/Blood disorder/anaemia-Since how many years?",
+    "parentId": "17",
+    "parentOption": "HB/Blood Disorder/Anaemia",
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "0.9",
+      "1",
+      "60"
+    ],
+    "response": "0",
+    "remarks": ""
+  },
+  {
+    "id": "17.1.1",
+    "desc": "What are the symptoms?",
+    "parentId": "17",
+    "parentOption": "HB/Blood Disorder/Anaemia",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "17.1.2",
+    "desc": "What are your report values ?",
+    "parentId": "17",
+    "parentOption": "HB/Blood Disorder/Anaemia",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "17.1.3",
+    "desc": "Are you taking any medications?",
+    "parentId": "17",
+    "parentOption": "HB/Blood Disorder/Anaemia",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "17.1.4",
+    "desc": "Are you taking any supplements?",
+    "parentId": "17",
+    "parentOption": "HB/Blood Disorder/Anaemia",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "17.1.5",
+    "desc": "Have you undergone blood transfusion?",
+    "parentId": "17",
+    "parentOption": "HB/Blood Disorder/Anaemia",
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "17.1.6",
+    "desc": "When was the latest checkup done? Any reports available/Not available?",
+    "parentId": "17",
+    "parentOption": "HB/Blood Disorder/Anaemia",
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "0.9",
+      "1",
+      "60"
+    ],
+    "response": "0",
+    "remarks": ""
+  },
+  {
+    "id": "17.2",
+    "desc": "Thalessamia-Thalasemia -Is it Thalassemia Minor/Major?",
+    "parentId": "17",
+    "parentOption": "Thalessamia",
+    "type": "SINGLESELECT",
+    "options": [
+      "Thalassemia Minor",
+      "Thalassemia Major"
+    ],
+    "response": "Thalassemia Minor",
+    "remarks": ""
+  },
+  {
+    "id": "17.2.1",
+    "desc": "How did you come to know?",
+    "parentId": "17",
+    "parentOption": "Thalessamia",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "17.2.2",
+    "desc": "When was it diagnosed?",
+    "parentId": "17",
+    "parentOption": "Thalessamia",
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "0.9",
+      "1",
+      "60"
+    ],
+    "response": "0",
+    "remarks": ""
+  },
+  {
+    "id": "17.2.3",
+    "desc": "When was the Last Check Up done?",
+    "parentId": "17",
+    "parentOption": "Thalessamia",
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "0.9",
+      "1",
+      "60"
+    ],
+    "response": "0",
+    "remarks": ""
+  },
+  {
+    "id": "17.2.4",
+    "desc": "Have you required any blood transfusion?",
+    "parentId": "17",
+    "parentOption": "Thalessamia",
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "17.3",
+    "desc": "Thyroid-Hypothyroid/Hyperthyroid?",
+    "parentId": "17",
+    "parentOption": "Thyroid",
+    "type": "SINGLESELECT",
+    "options": [
+      "Hypothyroid",
+      "Hyperthyroid"
+    ],
+    "response": "Hypothyroid",
+    "remarks": ""
+  },
+  {
+    "id": "17.3.1",
+    "desc": "When was it diagnosed?",
+    "parentId": "17",
+    "parentOption": "Thyroid",
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "0.9",
+      "1",
+      "60"
+    ],
+    "response": "0",
+    "remarks": ""
+  },
+  {
+    "id": "17.3.2",
+    "desc": "What are the symptoms?",
+    "parentId": "17",
+    "parentOption": "Thyroid",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "17.3.3",
+    "desc": "Any medication you are on?",
+    "parentId": "17",
+    "parentOption": "Thyroid",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "17.3.4",
+    "desc": "What is your current status?",
+    "parentId": "17",
+    "parentOption": "Thyroid",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "17.3.5",
+    "desc": "When was the latest checkup done?",
+    "parentId": "17",
+    "parentOption": "Thyroid",
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "0.9",
+      "1",
+      "60"
+    ],
+    "response": "0",
+    "remarks": ""
+  },
+  {
+    "id": "17.3.6",
+    "desc": "PME's available/not available?",
+    "parentId": "17",
+    "parentOption": "Thyroid",
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "17.4",
+    "desc": "Skin-When was the issue diagnosed?",
+    "parentId": "17",
+    "parentOption": "Skin",
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "0.9",
+      "1",
+      "60"
+    ],
+    "response": "0",
+    "remarks": ""
+  },
+  {
+    "id": "17.4.1",
+    "desc": "What are the symptoms?",
+    "parentId": "17",
+    "parentOption": "Skin",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "17.4.2",
+    "desc": "What are the aggravating factors?",
+    "parentId": "17",
+    "parentOption": "Skin",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "17.4.3",
+    "desc": "What is site of patch if Eczema or Psoriasis?",
+    "parentId": "17",
+    "parentOption": "Skin",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "17.4.4",
+    "desc": "What is your current status?",
+    "parentId": "17",
+    "parentOption": "Skin",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "17.4.5",
+    "desc": "Chronic Psoriasis-Do you have any any Deformity?",
+    "parentId": "17",
+    "parentOption": "Skin",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "17.4.6",
+    "desc": "Are you on Any steroids?",
+    "parentId": "17",
+    "parentOption": "Skin",
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "18",
+    "desc": "Any treatment taken for psychological issues like stress/anxiety/Depression or Mental ailment?",
+    "parentId": null,
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "18.1",
+    "desc": "Any diagnosis of Schizophrenia/Bipolar personality/stress/depression, anxiety? -",
+    "parentId": "18",
+    "parentOption": null,
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "18.2",
+    "desc": "since how many years?",
+    "parentId": "18",
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "0.9",
+      "1",
+      "60"
+    ],
+    "response": "0",
+    "remarks": ""
+  },
+  {
+    "id": "18.3",
+    "desc": "What are the symptoms?",
+    "parentId": "18",
+    "parentOption": null,
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "18.4",
+    "desc": "Are you on medication?",
+    "parentId": "18",
+    "parentOption": null,
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "18.5",
+    "desc": "Did you undergo counselling ?",
+    "parentId": "18",
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "18.6",
+    "desc": "PME's available/not available?",
+    "parentId": "18",
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "19",
+    "desc": "Were you ever hospitalized for Covid infection or its complication or do you have any ongoing complications related to covid-19 Infection?",
+    "parentId": null,
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "19.1",
+    "desc": "Please mention the date of admission and discharge after recovery",
+    "parentId": "19",
+    "parentOption": null,
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "19.2",
+    "desc": "How many days were you hospitalised",
+    "parentId": "19",
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "100"
+    ],
+    "response": "0",
+    "remarks": ""
+  },
+  {
+    "id": "19.3",
+    "desc": "Did you require ICU (Intensive Care Unit) admission and care?",
+    "parentId": "19",
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "19.4",
+    "desc": "Did you suffer from prolonged complications lasting more than 4 weeks? YES/NO",
+    "parentId": "19",
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "19.4.1",
+    "desc": "If yes, please mention date of recovery",
+    "parentId": "19.4",
+    "parentOption": null,
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "20",
+    "desc": "Any adverse menstrual history and Last Menstrual Period?",
+    "parentId": null,
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "20.1",
+    "desc": "Please let us know your last menstrual period?",
+    "parentId": "20",
+    "parentOption": null,
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "20.2",
+    "desc": "If Not menstruating ask when did she started her Menopause?",
+    "parentId": "20",
+    "parentOption": null,
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "21",
+    "desc": "Any history of miscarriage, abortion, MTP, gestational HT/DM? If yes give details.",
+    "parentId": null,
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "21.1",
+    "desc": "Have you taken any Treatment for gestational issues? When was last check-up done ?",
+    "parentId": "21",
+    "parentOption": null,
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "22",
+    "desc": "Are you currently pregnant? If yes, number of weeks.",
+    "parentId": null,
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "22.1",
+    "desc": "Do you have any gestational issues?",
+    "parentId": "22",
+    "parentOption": null,
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "22.2",
+    "desc": "Have you done investigations? any ANC check up done with reports availability.",
+    "parentId": "22",
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "23",
+    "desc": "Is there any history of disease related to uterus,cervix,ovaries and breast lump/cysts? If yes give details.",
+    "parentId": null,
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "23.1",
+    "desc": "What are the symptoms?",
+    "parentId": "23",
+    "parentOption": null,
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "23.2",
+    "desc": "Since how many years?",
+    "parentId": "23",
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "0",
+      "0.9",
+      "1",
+      "60"
+    ],
+    "response": "0",
+    "remarks": ""
+  },
+  {
+    "id": "23.3",
+    "desc": "Are you on any medications?",
+    "parentId": "23",
+    "parentOption": null,
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "23.4",
+    "desc": "Have you done PAP Smear and Mammography?",
+    "parentId": "23",
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "23.5",
+    "desc": "PME's available/not available?",
+    "parentId": "23",
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "24",
+    "desc": "Have you undergone any of these tests: pap smear, mammogram or ultrasound of pelvis? If yes, please give details of date, reason and result.",
+    "parentId": null,
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "24.1",
+    "desc": "PME's available/Not available?",
+    "parentId": "24",
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "24.2",
+    "desc": "What are the findings ?",
+    "parentId": "24",
+    "parentOption": null,
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "24.3",
+    "desc": "Are the reports normal?",
+    "parentId": "24",
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "24.4",
+    "desc": "Did the doctor advice you for any medicines ?",
+    "parentId": "24",
+    "parentOption": null,
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "25",
+    "desc": "Are you currently under any form of medication?",
+    "parentId": null,
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "No",
+    "remarks": ""
+  },
+  {
+    "id": "25.1",
+    "desc": "Any consumption of medications?",
+    "parentId": "25",
+    "parentOption": null,
+    "type": "TEXT",
+    "response": "",
+    "remarks": ""
+  },
+  {
+    "id": "26",
+    "desc": "Any previous life insurance declined or issued on revised terms?",
+    "parentId": null,
+    "parentOption": null,
+    "type": "SINGLESELECT",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "response": "Yes",
+    "remarks": ""
+  },
+  {
+    "id": "26.1",
+    "desc": "Previous insurance declined remarks",
+    "parentId": "26",
+    "parentOption": null,
+    "type": "TEXT",
+    "response": "Postponed 2 years ago due to BMI, accepted now.",
+    "remarks": ""
+  }
+];
+
+    let isOverallEditing = false;
+    let activeLifeKey = 'la1';
+    let lifeCompletionStatus = { la1: true, la2: false, proposer: false };
+
+    function isQuestionVisible(q) {
+      if (!q.parentId) return true;
+      const parentQ = TELEMER_QUESTIONNAIRE.find(p => p.id === q.parentId);
+      if (!parentQ || !isQuestionVisible(parentQ)) return false;
+
+      if (Array.isArray(parentQ.response)) {
+        return parentQ.response.includes(q.parentOption);
+      }
+      if (q.parentOption === null || q.parentOption === 'Yes') {
+        return parentQ.response === 'Yes' || parentQ.response === 'Y';
+      }
+      return parentQ.response === q.parentOption;
+    }
+
+    function renderQuestionnaireTable() {
+      const tbody = document.getElementById('q-tbody');
+      tbody.innerHTML = '';
+
+      TELEMER_QUESTIONNAIRE.forEach(q => {
+        const isChild = q.parentId !== null;
+        const isVisible = isQuestionVisible(q);
+
+        const tr = document.createElement('tr');
+        tr.id = 'q-row-' + q.id.replace(/\./g, '-');
+        if (isChild) {
+          tr.className = `q-row-child q-child-of-${q.parentId.replace(/\./g, '-')}`;
+        }
+        if (!isVisible) {
+          tr.style.display = 'none';
+        }
+
+        let controlHtml = '';
+        if (q.type === 'MULTISELECT') {
+          const selectedVals = Array.isArray(q.response) ? q.response : [q.response];
+          const pillTags = q.options.map(opt => {
+            const isSelected = selectedVals.includes(opt);
+            return `<span class="pill-opt ${isSelected ? 'selected' : ''} ${!isOverallEditing ? 'disabled' : ''}" onclick="handleMultiPillClick('${q.id}', '${opt}')">${opt}</span>`;
+          }).join('');
+          controlHtml = `<div class="multiselect-box"><div class="multiselect-pills">${pillTags}</div></div>`;
+        } else if (q.type === 'SINGLESELECT') {
+          const opts = q.options || ['No', 'Yes'];
+          const optTags = opts.map(o => `<option ${q.response === o ? 'selected' : ''}>${o}</option>`).join('');
+          controlHtml = `<select class="field-control tele-editable" disabled onchange="handleQuestionResponse('${q.id}', this.value)">${optTags}</select>`;
+        } else {
+          controlHtml = `<input type="${q.type === 'NUMBER' ? 'number' : 'text'}" class="field-control tele-editable" value="${q.response || ''}" disabled oninput="handleQuestionText('${q.id}', this.value)">`;
+        }
+
+        tr.innerHTML = `
+          <td class="q-id">${q.id}</td>
+          <td>
+            <div class="q-desc">${q.desc}</div>
+            ${isChild && q.parentOption ? `<div class="q-trigger-note">Asked for response: <strong>${q.parentOption}</strong></div>` : ''}
+          </td>
+          <td>${controlHtml}</td>
+          <td><input type="text" class="field-control tele-editable" value="${q.remarks || ''}" disabled placeholder="" oninput="handleQuestionRemarks('${q.id}', this.value)"></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function handleMultiPillClick(id, opt) {
+      if (!isOverallEditing) return;
+      const q = TELEMER_QUESTIONNAIRE.find(item => item.id === id);
+      if (!q) return;
+
+      let current = Array.isArray(q.response) ? [...q.response] : [];
+      if (opt === 'No') {
+        current = ['No'];
+      } else {
+        current = current.filter(x => x !== 'No');
+        if (current.includes(opt)) {
+          current = current.filter(x => x !== opt);
+          if (current.length === 0) current = ['No'];
+        } else {
+          current.push(opt);
+        }
+      }
+      q.response = current;
+      renderQuestionnaireTable();
+      document.querySelectorAll('.tele-editable').forEach(el => {
+        if (!el.hasAttribute('readonly')) el.disabled = false;
+      });
+    }
+
+    function handleQuestionResponse(id, val) {
+      const q = TELEMER_QUESTIONNAIRE.find(item => item.id === id);
+      if (q) {
+        q.response = val;
+      }
+      renderQuestionnaireTable();
+      document.querySelectorAll('.tele-editable').forEach(el => {
+        if (!el.hasAttribute('readonly')) el.disabled = false;
+      });
+    }
+
+    function handleQuestionText(id, val) {
+      const q = TELEMER_QUESTIONNAIRE.find(item => item.id === id);
+      if (q) q.response = val;
+    }
+
+    function handleQuestionRemarks(id, val) {
+      const q = TELEMER_QUESTIONNAIRE.find(item => item.id === id);
+      if (q) q.remarks = val;
+    }
+
+    function filterQuestions() {
+      const query = document.getElementById('q-search').value.toLowerCase().trim();
+      const rows = document.querySelectorAll('#q-tbody tr');
+      let shownCount = 0;
+
+      rows.forEach(tr => {
+        const text = tr.innerText.toLowerCase();
+        if (!query || text.includes(query)) {
+          if (query) {
+            tr.style.display = 'table-row';
+            shownCount++;
+          } else {
+            const id = tr.querySelector('.q-id').innerText;
+            const q = TELEMER_QUESTIONNAIRE.find(item => item.id === id);
+            if (isQuestionVisible(q)) {
+              tr.style.display = 'table-row';
+              shownCount++;
+            } else {
+              tr.style.display = 'none';
+            }
+          }
+        } else {
+          tr.style.display = 'none';
+        }
+      });
+
+      document.getElementById('lbl-shown-count').innerText = query ? `${shownCount} items` : 'All Active Questions';
+    }
+
+    // Switch tab directly without popup
+    function selectLife(key, el) {
+      document.querySelectorAll('.life-tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      activeLifeKey = key;
+      document.getElementById('lbl-active-life').innerText = el.innerText.trim();
+      const histName = document.getElementById('hist-applicant-name');
+      if (histName) histName.innerText = el.innerText.trim();
+      const docName = document.getElementById('doc-applicant-name');
+      if (docName) docName.innerText = el.innerText.trim();
+      if (isOverallEditing) {
+        cancelOverallEdit();
+      }
+    }
+
+    function openDocumentModal() {
+      const docModal = document.getElementById('document-modal');
+      if (docModal) docModal.style.display = 'flex';
+    }
+
+    function closeDocumentModal() {
+      const docModal = document.getElementById('document-modal');
+      if (docModal) docModal.style.display = 'none';
+    }
+
+    function openHistoryModal() {
+      const histModal = document.getElementById('history-modal');
+      if (histModal) histModal.style.display = 'flex';
+    }
+
+    function closeHistoryModal() {
+      const histModal = document.getElementById('history-modal');
+      if (histModal) histModal.style.display = 'none';
+    }
+
+    function switchHistAttempt(attemptNum, el) {
+      document.querySelectorAll('.hist-tab-btn').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+
+      if (attemptNum === 2) {
+        document.getElementById('hist-examiner').innerText = 'Dr. Mina Sharma';
+        document.getElementById('hist-regid').innerText = 'REG-123456 / MedTPA';
+        document.getElementById('hist-duration').innerText = '14 min 22 sec';
+
+        document.getElementById('hsec-telemer').value = 'No';
+        document.getElementById('hsec-calltime').value = '14:30';
+        document.getElementById('hsec-examiner-fld').value = 'Dr. Mina Sharma';
+        document.getElementById('hsec-regid-fld').value = 'REG-123456';
+        document.getElementById('hsec-merdetail').value = 'Video MER';
+        document.getElementById('hsec-telefindings').value = 'Video verified, scoliosis observed';
+        document.getElementById('hsec-finalremark').value = 'Approved with standard terms';
+        document.getElementById('hsec-disp-remark').value = 'OK';
+        document.getElementById('hsec-disp-note').value = 'OK';
+      } else {
+        document.getElementById('hist-examiner').innerText = 'Tele-Nurse Priya V';
+        document.getElementById('hist-regid').innerText = 'REG-994821 / TeleConnect';
+        document.getElementById('hist-duration').innerText = '3 min 45 sec';
+
+        document.getElementById('hsec-telemer').value = 'Yes';
+        document.getElementById('hsec-calltime').value = '16:15';
+        document.getElementById('hsec-examiner-fld').value = 'Tele-Nurse Priya V';
+        document.getElementById('hsec-regid-fld').value = 'REG-994821';
+        document.getElementById('hsec-merdetail').value = 'Telephonic MER';
+        document.getElementById('hsec-telefindings').value = 'Incomplete - Deformity disclosed over phone';
+        document.getElementById('hsec-finalremark').value = 'Video-MER recommended for posture check';
+        document.getElementById('hsec-disp-remark').value = 'Converted to Video MER';
+        document.getElementById('hsec-disp-note').value = 'Re-appointment booked for 12 Nov';
+      }
+    }
+
+    function toggleOverallEdit() {
+      const btn = document.getElementById('btn-overall-edit');
+      const cancelBtn = document.getElementById('btn-overall-cancel');
+      const addBtn = document.getElementById('btn-add-member');
+      const editables = document.querySelectorAll('.tele-editable');
+      const delBtns = document.querySelectorAll('.btn-del');
+
+      if (!isOverallEditing) {
+        // Switch to Edit Mode
+        isOverallEditing = true;
+        btn.innerText = 'Save Telemer';
+        btn.classList.remove('btn-primary');
+        btn.classList.add('btn-success');
+        cancelBtn.style.display = 'inline-block';
+        if (addBtn) addBtn.style.display = 'inline-block';
+
+        renderQuestionnaireTable();
+        document.querySelectorAll('.tele-editable').forEach(el => {
+          if (!el.hasAttribute('readonly')) el.disabled = false;
+        });
+        delBtns.forEach(el => el.disabled = false);
+      } else {
+        // Save Telemer
+        saveCurrentLife();
+        cancelOverallEdit();
+      }
+    }
+
+    function cancelOverallEdit() {
+      isOverallEditing = false;
+      const btn = document.getElementById('btn-overall-edit');
+      const cancelBtn = document.getElementById('btn-overall-cancel');
+      const addBtn = document.getElementById('btn-add-member');
+      const delBtns = document.querySelectorAll('.btn-del');
+
+      btn.innerText = 'Edit Telemer';
+      btn.classList.remove('btn-success');
+      btn.classList.add('btn-primary');
+      cancelBtn.style.display = 'none';
+      if (addBtn) addBtn.style.display = 'none';
+
+      renderQuestionnaireTable();
+      document.querySelectorAll('.tele-editable').forEach(el => el.disabled = true);
+      delBtns.forEach(el => el.disabled = true);
+    }
+
+    function calcBMI() {
+      const h = parseFloat(document.getElementById('val-height').value);
+      const w = parseFloat(document.getElementById('val-weight').value);
+      if (h > 0 && w > 0) {
+        const bmi = (w / ((h / 100) * (h / 100))).toFixed(2);
+        document.getElementById('val-bmi').value = bmi;
+      }
+    }
+
+    function addFamilyRow() {
+      const tbody = document.querySelector('#family-table tbody');
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><input type="text" class="field-control tele-editable" value="Son"></td>
+        <td><input type="number" class="field-control tele-editable" value="10"></td>
+        <td>
+          <select class="field-control tele-editable">
+            <option selected>Alive</option>
+            <option>Dead</option>
+          </select>
+        </td>
+        <td><input type="text" class="field-control tele-editable" value="Healthy"></td>
+        <td style="text-align:center;"><button class="btn btn-secondary btn-del" onclick="removeRow(this)">Del</button></td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    function removeRow(btn) {
+      btn.closest('tr').remove();
+    }
+
+    function saveCurrentLife() {
+      lifeCompletionStatus[activeLifeKey] = true;
+      document.getElementById('dot-' + activeLifeKey).className = 'status-dot completed';
+      const completedCount = Object.values(lifeCompletionStatus).filter(Boolean).length;
+      document.getElementById('lbl-completed-count').innerText = `${completedCount} of 3`;
+    }
+
+    function handleFinalSubmit() {
+      const allCompleted = Object.values(lifeCompletionStatus).every(Boolean);
+      if (!allCompleted) {
+        if (!confirm('Some lives are still marked pending. Do you want to mark all completed and submit?')) {
+          return;
+        }
+      }
+      document.getElementById('submit-modal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('submit-modal').style.display = 'none';
+    }
+
+    function confirmTaskCompletion() {
+      closeModal();
+      alert('Tele-MER Task TSK-10293 completed successfully. Redirecting to Inbox...');
+      window.location.href = '#inbox';
+    }
+
+    // Initialize table on load
+    renderQuestionnaireTable();
+  </script>
+</body>
+</html>
